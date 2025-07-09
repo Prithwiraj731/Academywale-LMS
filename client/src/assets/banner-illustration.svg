@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="220" viewBox="0 0 320 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#00eaff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Books -->
+    <rect x="40" y="160" width="240" height="24" rx="4" />
+    <rect x="60" y="130" width="200" height="22" rx="4" />
+    <rect x="80" y="105" width="160" height="20" rx="4" />
+    <!-- Graduation cap base -->
+    <rect x="120" y="80" width="80" height="12" rx="3" />
+    <!-- Cap top (parallelogram) -->
+    <polygon points="90,75 230,75 200,60 120,60" />
+    <!-- Tassel -->
+    <line x1="200" y1="60" x2="210" y2="90" />
+    <circle cx="210" cy="90" r="4" />
+    <line x1="210" y1="90" x2="215" y2="110" />
+    <circle cx="215" cy="110" r="2.5" />
+  </g>
+</svg> 

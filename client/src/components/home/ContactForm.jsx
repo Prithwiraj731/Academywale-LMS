@@ -1,0 +1,17 @@
+import React from 'react';
+
+export default function ContactForm() {
+  return (
+    <section className="py-12 bg-white/70">
+      <div className="max-w-2xl mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-blue-800 mb-8 text-center font-pacifico">Get In Touch</h2>
+        <form className="bg-white rounded-xl shadow p-8 flex flex-col gap-4">
+          <input type="text" placeholder="Full Name" className="px-4 py-3 rounded border" />
+          <input type="text" placeholder="Phone Number" className="px-4 py-3 rounded border" />
+          <input type="text" placeholder="City" className="px-4 py-3 rounded border" />
+          <button type="submit" className="bg-blue-600 text-white rounded px-4 py-3 font-semibold hover:bg-blue-700">Request a Call Back</button>
+        </form>
+      </div>
+    </section>
+  );
+} 

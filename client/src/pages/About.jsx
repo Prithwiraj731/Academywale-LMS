@@ -1,0 +1,72 @@
+import Particles from '../components/common/Particles';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+
+export default function About() {
+  return (
+    <div className="relative min-h-screen flex flex-col bg-gray-900 overflow-x-hidden">
+      {/* Animated Background */}
+      <Particles
+        particleColors={['#ffffff', '#00eaff', '#ffd600']}
+        particleCount={180}
+        particleSpread={12}
+        speed={0.12}
+        particleBaseSize={80}
+        moveParticlesOnHover={true}
+        alphaParticles={false}
+        disableRotation={false}
+      />
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar />
+        {/* Hero Section */}
+        <section className="flex flex-col items-center justify-center text-center py-20 px-4 bg-transparent">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse">About <span className="text-[#ffd600]">AcademyWale</span></h1>
+          <p className="text-xl md:text-2xl text-cyan-200 max-w-2xl mx-auto mb-8">Empowering students with the best CA & CMA education, top faculties, and a vibrant learning community. We believe in making professional success accessible to everyone!</p>
+        </section>
+        {/* Mission & Vision */}
+        <section className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-10 px-2 sm:px-4 py-6 sm:py-10">
+          <div className="bg-white/90 rounded-2xl shadow-xl p-4 sm:p-8 max-w-xs sm:max-w-md w-full border-t-4 border-[#ffd600] hover:scale-105 transition-transform">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0a6ebd] mb-2">Our Mission</h2>
+            <p className="text-gray-700 text-base sm:text-lg">To provide high-quality, affordable, and accessible education for CA & CMA aspirants, leveraging technology and the best teaching talent in India.</p>
+          </div>
+          <div className="bg-white/90 rounded-2xl shadow-xl p-4 sm:p-8 max-w-xs sm:max-w-md w-full border-t-4 border-[#00eaff] hover:scale-105 transition-transform">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0a6ebd] mb-2">Our Vision</h2>
+            <p className="text-gray-700 text-base sm:text-lg">To be the most trusted platform for commerce education, inspiring and enabling every student to achieve their professional dreams.</p>
+          </div>
+        </section>
+        {/* Team Section */}
+        <section className="py-8 sm:py-12 px-2 sm:px-4">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white text-center mb-6 sm:mb-8">Meet Our Team</h2>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
+            {/* Example team cards, replace with real data/images if available */}
+            <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#0a6ebd] to-[#00eaff] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-4xl text-white font-bold">A</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Ankit Sharma</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Founder & CEO</p>
+            </div>
+            <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#ffd600] to-[#00eaff] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-4xl text-white font-bold">S</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Sneha Verma</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Head of Academics</p>
+            </div>
+            <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#0a6ebd] to-[#ffd600] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                <span className="text-2xl sm:text-4xl text-white font-bold">R</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Rahul Mehta</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Tech Lead</p>
+            </div>
+          </div>
+        </section>
+        <div className="mt-auto">
+          <Footer />
+        </div>
+      </div>
+    </div>
+  );
+} 
