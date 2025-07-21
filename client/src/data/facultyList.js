@@ -1,0 +1,1 @@
+// Deprecated: All faculty data is now managed in the database. This file is no longer used. 

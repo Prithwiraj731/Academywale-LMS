@@ -1,82 +1,64 @@
-import React from 'react';
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import "./categories.css";
 
-const categories = [
-  { 
-    name: 'CA INTER', 
-    img: 'https://placehold.co/120x120?text=CA+I',
-    color: 'from-blue-600 to-blue-700',
-    description: 'Intermediate level preparation'
-  },
-  { 
-    name: 'CA FINAL', 
-    img: 'https://placehold.co/120x120?text=CA+Final',
-    color: 'from-blue-700 to-blue-800',
-    description: 'Final level expertise'
-  },
-  { 
-    name: 'CMA INTER', 
-    img: 'https://placehold.co/120x120?text=CMA+I',
-    color: 'from-purple-600 to-purple-700',
-    description: 'CMA intermediate level'
-  },
-  { 
-    name: 'CMA FINAL', 
-    img: 'https://placehold.co/120x120?text=CMA+Final',
-    color: 'from-purple-700 to-purple-800',
-    description: 'CMA final preparation'
-  },
+const steps = [
+  { title: "Choose Course", icon: "📚", desc: "Find the perfect course for your goals." },
+  { title: "Learn from Experts", icon: "🎓", desc: "Get guidance from top faculty." },
+  { title: "Practice & Revise", icon: "📝", desc: "Test yourself and master concepts." },
+  { title: "Get Support", icon: "🤝", desc: "Doubt-solving and mentorship." },
+  { title: "Achieve Success", icon: "🏆", desc: "Crack your exams and celebrate!" },
 ];
 
-export default function Categories() {
+const Categories = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 section-light">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary mb-6">
-            Explore our Categories
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose from our comprehensive range of professional courses designed to help you excel in your career
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {categories.map((cat, index) => (
-            <div 
-              key={cat.name} 
-              className="group cursor-pointer animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+    <section className="timeline-section-premium">
+      <div className="timeline-heading-container">
+        <h2 className="timeline-heading">Your Learning Journey</h2>
+        <div className="timeline-subtitle">How Academywale helps you succeed, step by step</div>
+      </div>
+      <div className="timeline-scroll-wrapper">
+        <div className="timeline-scroll-fade left" />
+        <motion.div
+          className="timeline-container-premium"
+          ref={ref}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={{
+            visible: { transition: { staggerChildren: 0.18 } },
+          }}
+        >
+          {/* Animated line */}
+          <motion.div
+            className="timeline-line-premium"
+            initial={{ scaleX: 0 }}
+            animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          />
+          {steps.map((step, idx) => (
+            <motion.div
+              className="timeline-step-premium"
+              key={step.title}
+              variants={{
+                hidden: { opacity: 0, y: 60, scale: 0.92 },
+                visible: { opacity: 1, y: 0, scale: 1 },
+              }}
+              transition={{ type: "spring", stiffness: 120, damping: 16 }}
+              whileHover={{ scale: 1.06, boxShadow: "0 8px 32px 0 #60a5fa33" }}
             >
-              <div className="card p-3 sm:p-6 text-center hover-lift h-full">
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br ${cat.color} rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <img 
-                    src={cat.img} 
-                    alt={cat.name} 
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-lg" 
-                  />
-                </div>
-                <h3 className="font-heading font-semibold text-gray-800 mb-1 sm:mb-2 text-base sm:text-lg">
-                  {cat.name}
-                </h3>
-                <p className="text-gray-600 text-xs sm:text-sm">
-                  {cat.description}
-                </p>
-                <div className="mt-2 sm:mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="text-primary font-semibold text-xs sm:text-sm hover:underline">
-                    Learn More →
-                  </button>
-                </div>
-              </div>
-            </div>
+              <div className="timeline-step-icon-premium">{step.icon}</div>
+              <div className="timeline-step-title-premium">{step.title}</div>
+              <div className="timeline-step-desc-premium">{step.desc}</div>
+            </motion.div>
           ))}
-        </div>
-        
-        <div className="text-center mt-12">
-          <button className="btn-primary text-lg px-8 py-4">
-            View All Categories
-          </button>
-        </div>
+        </motion.div>
+        <div className="timeline-scroll-fade right" />
       </div>
     </section>
   );
-} 
+};
+
+export default Categories;

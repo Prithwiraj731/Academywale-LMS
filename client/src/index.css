@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 * {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
   box-sizing: border-box;
 }
 
@@ -27,12 +27,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3b82f6;
+  background: #20b2aa;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
+  background: #17817a;
 }
 
 /* Glass morphism effects */
@@ -51,7 +51,7 @@ body {
 /* Professional font classes */
 .font-heading {
   font-family: 'Poppins', sans-serif;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .font-body {
@@ -60,37 +60,37 @@ body {
 
 /* Exact facultywala.com colors */
 .bg-primary {
-  background-color: #1e40af;
+  background-color: #20b2aa;
 }
 
 .bg-secondary {
-  background-color: #3b82f6;
+  background-color: #e0f7f4;
 }
 
 .bg-accent {
-  background-color: #60a5fa;
+  background-color: #17817a;
 }
 
 .text-primary {
-  color: #1e40af;
+  color: #20b2aa;
 }
 
 .text-secondary {
-  color: #3b82f6;
+  color: #17817a;
 }
 
 .text-accent {
-  color: #60a5fa;
+  color: #17817a;
 }
 
 /* Hover effects */
 .hover-lift {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 16px 32px rgba(59,130,246,0.12), 0 4px 8px rgba(0,0,0,0.04);
 }
 
 /* Button styles */
@@ -113,26 +113,26 @@ body {
 
 /* Card styles */
 .card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255,255,255,0.97);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border-radius: 20px;
+  border: 1.5px solid #20b2aa22;
+  box-shadow: 0 8px 32px #20b2aa18;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 24px 48px #20b2aa33;
 }
 
 /* Section backgrounds */
 .section-light {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.8) 100%);
+  background: linear-gradient(135deg, #e0f7f4 0%, #f1f5f9 100%);
 }
 
 .section-dark {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.05) 0%, rgba(51, 65, 85, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(32, 178, 170, 0.05) 0%, rgba(23, 129, 122, 0.05) 100%);
 }
 
 /* Blob animations */

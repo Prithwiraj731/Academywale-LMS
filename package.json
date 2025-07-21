@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "multer": "^2.0.1",
+    "react-awesome-button": "^7.0.5",
+    "react-modal": "^3.16.3"
+  }
+}

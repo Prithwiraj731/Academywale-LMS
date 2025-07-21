@@ -3,25 +3,25 @@ import React from 'react';
 const numbers = [
   { 
     label: 'Students Network', 
-    value: '50K+',
+    value: '50+',
     icon: '👥',
     description: 'Active learners'
   },
   { 
     label: 'Successful Orders', 
-    value: '100K+',
+    value: '100+',
     icon: '📦',
     description: 'Completed orders'
   },
   { 
     label: 'Authorised Faculties', 
-    value: '50+',
+    value: '10+',
     icon: '👨‍🏫',
     description: 'Expert teachers'
   },
   { 
     label: 'Test Series', 
-    value: '200+',
+    value: '100+',
     icon: '📝',
     description: 'Practice tests'
   },

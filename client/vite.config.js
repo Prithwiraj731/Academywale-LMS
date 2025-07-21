@@ -1,17 +1,30 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['721ed95840e3.ngrok-free.app'],
+    allowedHosts: ['26afa0291245.ngrok-free.app'],
     proxy: {
+      '/api': 'http://localhost:5000',
       '/user': 'http://localhost:5000',
-      '/admin': 'http://localhost:5000',
       '/course': 'http://localhost:5000',
       '/cart': 'http://localhost:5000',
       '/order': 'http://localhost:5000',
-    }
-  }
+    },
+  },
+  // Add this for SPA fallback in Vite preview/build
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+      },
+    },
+  },
+  preview: {
+    // This ensures fallback to index.html for client-side routes
+    fallback: true,
+  },
 });

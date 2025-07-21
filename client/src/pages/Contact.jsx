@@ -4,17 +4,42 @@ import Footer from '../components/layout/Footer';
 import { useState } from 'react';
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for email.js integration
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitted(true);
+        setForm({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setError(data.message || 'Failed to send message. Please try again.');
+      }
+    } catch (err) {
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +68,19 @@ export default function Contact() {
           {/* Contact Form */}
           <form onSubmit={handleSubmit} className="bg-white/90 rounded-2xl shadow-xl p-4 sm:p-8 w-full max-w-xs sm:max-w-md border-t-4 border-[#00eaff] flex flex-col gap-4 hover:scale-105 transition-transform">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#0a6ebd] mb-2">Send a Message</h2>
+            
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+            
+            {submitted && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                Thank you for your message! We will get back to you soon.
+              </div>
+            )}
+            
             <input
               type="text"
               name="name"
@@ -51,6 +89,7 @@ export default function Contact() {
               onChange={handleChange}
               className="px-3 sm:px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00eaff] text-sm sm:text-base"
               required
+              disabled={loading}
             />
             <input
               type="email"
@@ -60,6 +99,17 @@ export default function Contact() {
               onChange={handleChange}
               className="px-3 sm:px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00eaff] text-sm sm:text-base"
               required
+              disabled={loading}
+            />
+            <input
+              type="text"
+              name="subject"
+              placeholder="Subject"
+              value={form.subject}
+              onChange={handleChange}
+              className="px-3 sm:px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00eaff] text-sm sm:text-base"
+              required
+              disabled={loading}
             />
             <textarea
               name="message"
@@ -69,27 +119,46 @@ export default function Contact() {
               rows={5}
               className="px-3 sm:px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00eaff] text-sm sm:text-base"
               required
+              disabled={loading}
             />
             <button
               type="submit"
-              className="bg-[#00eaff] hover:bg-[#0a6ebd] text-white font-bold py-2 px-4 sm:px-6 rounded transition-colors text-base sm:text-lg shadow"
-              disabled={submitted}
+              className={`font-bold py-2 px-4 sm:px-6 rounded transition-colors text-base sm:text-lg shadow ${
+                loading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#00eaff] hover:bg-[#0a6ebd]'
+              } text-white`}
+              disabled={loading || submitted}
             >
-              {submitted ? 'Message Sent!' : 'Send Message'}
+              {loading ? 'Sending...' : submitted ? 'Message Sent!' : 'Send Message'}
             </button>
           </form>
           {/* Contact Info */}
-          <div className="flex flex-col items-center gap-4 sm:gap-6 bg-white/90 rounded-2xl shadow-xl p-4 sm:p-8 w-full max-w-xs sm:max-w-md border-t-4 border-[#ffd600] hover:scale-105 transition-transform">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0a6ebd] mb-2">Contact Info</h2>
-            <div className="flex flex-col gap-1 sm:gap-2 text-gray-700 text-base sm:text-lg">
-              <span><strong>Email:</strong> support@academywale.com</span>
-              <span><strong>Phone:</strong> 8910416751</span>
-              <span><strong>Website:</strong> www.academywale.com</span>
-            </div>
-            <div className="flex gap-3 sm:gap-4 mt-2 sm:mt-4">
-              <a href="https://wa.me/918910416751" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 sm:p-3 shadow-lg"><i className="fab fa-whatsapp text-xl sm:text-2xl"></i></a>
-              <a href="https://www.youtube.com/@AcademyWale" target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 sm:p-3 shadow-lg"><i className="fab fa-youtube text-xl sm:text-2xl"></i></a>
-              <a href="https://twitter.com/AcademyWale" target="_blank" rel="noopener noreferrer" className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 sm:p-3 shadow-lg"><i className="fab fa-twitter text-xl sm:text-2xl"></i></a>
+          <div className="flex flex-col items-center gap-4 sm:gap-6 bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-xs sm:max-w-md border-2 border-blue-200 hover:scale-105 transition-transform">
+            <h2 className="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 drop-shadow">Contact Info</h2>
+            <div className="flex flex-col gap-4 text-gray-800 text-base sm:text-lg w-full">
+              <div className="flex items-center gap-3">
+                <span className="text-green-600 text-2xl">🟢</span>
+                <span>
+                  WhatsApp or call us on
+                  <a href="https://wa.me/919693320108" className="text-blue-600 hover:underline ml-2" target="_blank" rel="noopener noreferrer">+91 9693320108</a>,
+                  <a href="https://wa.me/916203132544" className="text-blue-600 hover:underline ml-2" target="_blank" rel="noopener noreferrer">+91 6203132544</a>
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-red-600 text-2xl">✉️</span>
+                <span>
+                  E-mail your query on
+                  <a href="mailto:Support@academywale.com" className="text-blue-600 hover:underline ml-2">Support@academywale.com</a>
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-yellow-500 text-2xl">🌐</span>
+                <span>
+                  Website:
+                  <a href="https://academywale.com" className="text-blue-600 hover:underline ml-2" target="_blank" rel="noopener noreferrer">academywale.com</a>
+                </span>
+              </div>
             </div>
           </div>
         </section>

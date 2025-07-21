@@ -20,9 +20,13 @@ export default function About() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
         {/* Hero Section */}
-        <section className="flex flex-col items-center justify-center text-center py-20 px-4 bg-transparent">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse">About <span className="text-[#ffd600]">AcademyWale</span></h1>
-          <p className="text-xl md:text-2xl text-cyan-200 max-w-2xl mx-auto mb-8">Empowering students with the best CA & CMA education, top faculties, and a vibrant learning community. We believe in making professional success accessible to everyone!</p>
+        <section className="flex flex-col items-center justify-center py-16 px-4 bg-transparent">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse text-center">About <span className="text-[#ffd600]">AcademyWale</span></h1>
+          <p className="text-base sm:text-lg md:text-xl text-cyan-200 max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto mb-8 text-left md:text-center leading-relaxed md:leading-8">
+            AcademyWale is a trusted educational platform committed to delivering high-quality learning experiences through strategic partnerships with some of the most reputed faculties across India. We bring together expert educators, dynamic content, and a student-first approach to provide affordable and result-oriented courses for competitive and professional exams.<br/><br/>
+            With a vision to empower every learner, AcademyWale collaborates with top-rated faculties from diverse domains like CMA, CA, CS, and other commerce-related streams, ensuring students get access to the best guidance, updated curriculum, and practical insights — all in one place.<br/><br/>
+            Whether you're a beginner or a repeater, our platform is your one-stop solution for quality education at your convenience. Together with our partner faculties, we aim to build a learning ecosystem where students succeed not just in exams, but in their careers.
+          </p>
         </section>
         {/* Mission & Vision */}
         <section className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-10 px-2 sm:px-4 py-6 sm:py-10">
