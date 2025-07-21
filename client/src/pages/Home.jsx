@@ -66,19 +66,19 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <button
                 onClick={() => navigate('/courses/ca/inter')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 text-white font-bold shadow-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/ca/foundation')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 text-white font-bold shadow-xl hover:from-blue-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Foundation
               </button>
               <button
                 onClick={() => navigate('/courses/ca/final')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-red-400 to-orange-400 text-white font-bold shadow-xl hover:from-red-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-red-200"
+                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Final
               </button>
@@ -87,13 +87,13 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <button
                 onClick={() => navigate('/courses/cma/inter')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 text-white font-bold shadow-xl hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-indigo-200"
+                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CMA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/cma/foundation')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-green-400 to-blue-400 text-white font-bold shadow-xl hover:from-green-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-green-200"
+                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CMA Foundation
               </button>
