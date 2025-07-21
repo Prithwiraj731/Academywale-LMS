@@ -62,6 +62,9 @@ export default function Home() {
         <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="relative z-10 flex flex-col items-center w-full">
           <div className="grid grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="mt-6 text-center text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg">
+            Choose your path to success
+          </div>
             {/* Left: CA */}
             <div className="flex flex-col gap-6">
               <button
@@ -104,9 +107,6 @@ export default function Home() {
                 CMA Final
               </button>
             </div>
-          </div>
-          <div className="mt-6 text-center text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg">
-            Choose your path to success
           </div>
         </div>
       </div>
