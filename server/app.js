@@ -18,7 +18,11 @@ const app = express();
 
 // Enable CORS for frontend (Vite runs on port 5173)
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.vercel.app'
+  ],
   credentials: true
 }));
 

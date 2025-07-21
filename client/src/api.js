@@ -51,6 +51,16 @@ api.interceptors.response.use(
   }
 );
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+export async function registerUser(data) {
+  return fetch(`${API_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+}
+
 // NOTE: All user-related API calls should use relative paths (e.g., '/register', '/login', '/profile')
 //       This will resolve to '/user/register', '/user/login', etc. due to the baseURL.
 
