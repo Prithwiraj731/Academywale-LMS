@@ -8,7 +8,7 @@ import { PinContainer } from '../components/ui/3d-pin';
 export default function FacultiesPage() {
   const [faculties, setFaculties] = useState([]);
   useEffect(() => {
-    fetch('/api/faculties')
+    fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
   }, []);

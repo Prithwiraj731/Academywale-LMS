@@ -11,7 +11,7 @@ export default function Navbar() {
   // Live faculty list
   const [faculties, setFaculties] = useState([]);
   useEffect(() => {
-    fetch('/api/faculties')
+    fetch(`${import.meta.env.VITE_API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
   }, []);
