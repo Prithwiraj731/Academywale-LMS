@@ -57,9 +57,6 @@ export default function Home() {
       <Categories />
       {/* Rearranged CA/CMA Path Buttons Section */}
       <div className="relative py-16 flex justify-center items-center overflow-hidden">
-          <div className="mt-6 text-center text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg">
-            Choose your path to success
-          </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 opacity-90"></div>
         <div className="absolute -top-10 left-1/4 w-72 h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
@@ -107,6 +104,9 @@ export default function Home() {
                 CMA Final
               </button>
             </div>
+          </div>
+          <div className="mt-6 text-center text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg">
+            Choose your path to success
           </div>
         </div>
       </div>
