@@ -138,19 +138,26 @@ export default function AdminDashboard() {
     setFacultyAddStatus('');
     setFacultyAddError('');
     if (!facultyAdd.firstName.trim()) {
-      setFacultyAddError('Faculty first name is required.');
+      setFacultyAddError('Faculty name is required.');
+      return;
+    }
+    if (!facultyAdd.bio.trim()) {
+      setFacultyAddError('Faculty bio is required.');
+      return;
+    }
+    if (!facultyAdd.image) {
+      setFacultyAddError('Faculty image is required.');
       return;
     }
     const formData = new FormData();
-    formData.append('firstName', facultyAdd.firstName.trim().toUpperCase());
-    formData.append('lastName', facultyAdd.lastName);
-    formData.append('bio', facultyAdd.bio);
+    // Send full name as firstName, leave lastName blank
+    formData.append('firstName', facultyAdd.firstName.trim());
+    formData.append('lastName', '');
+    formData.append('bio', facultyAdd.bio.trim());
     formData.append('teaches', JSON.stringify(facultyAdd.teaches));
-    if (facultyAdd.image) {
-      formData.append('image', facultyAdd.image);
-    } // else: backend will set default image
+    formData.append('image', facultyAdd.image);
     try {
-      const res = await fetch(`/api/admin/faculty`, {
+      const res = await fetch('/api/admin/faculty', {
         method: 'POST',
         body: formData
       });
