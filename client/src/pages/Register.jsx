@@ -24,10 +24,11 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify({ name: form.name, email: form.email, mobile: form.mobile, password: form.password, confirmPassword: form.confirmPassword })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Registration failed');
