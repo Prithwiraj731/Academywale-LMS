@@ -7,6 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 exports.register = async (req, res) => {
   try {
     const { name, email, password, confirmPassword, mobile } = req.body;
+    console.log('Register request:', { name, email, mobile, password, confirmPassword }); // Debug log
     if (!name || !email || !password || !confirmPassword || !mobile) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
