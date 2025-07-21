@@ -10,7 +10,7 @@ const COURSE_OPTIONS = [
   'CA Inter', 'CMA Inter', 
   'CA Final', 'CMA Final'
 ];
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Modal styles
 const modalStyles = {
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
     formData.append('teaches', JSON.stringify(facultyAdd.teaches));
     formData.append('image', facultyAdd.image);
     try {
-      const res = await fetch('/api/admin/faculty', {
+      const res = await fetch(`${API_URL}/api/admin/faculty`, {
         method: 'POST',
         body: formData
       });
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
 
   // Fetch faculties on mount
   useEffect(() => {
-    fetch('/api/faculties')
+    fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
   }, []);
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
     formData.append('name', instituteAdd.name.trim());
     formData.append('image', instituteAdd.image);
     try {
-      const res = await fetch('/api/admin/institutes', {
+      const res = await fetch(`${API_URL}/api/admin/institutes`, {
         method: 'POST',
         body: formData
       });
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch('/api/admin/coupons');
+      const res = await fetch(`${API_URL}/api/admin/coupons`);
       const data = await res.json();
       if (res.ok && data.success) setCoupons(data.coupons);
     } catch {}
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const res = await fetch('/api/admin/coupons', {
+      const res = await fetch(`${API_URL}/api/admin/coupons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
   const handleDeleteCoupon = async code => {
     if (!window.confirm('Delete this coupon?')) return;
     try {
-      await fetch(`/api/admin/coupons/${code}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/api/admin/coupons/${code}`, { method: 'DELETE' });
       fetchCoupons();
     } catch {}
   };
@@ -486,7 +486,7 @@ export default function AdminDashboard() {
         if (k !== 'posterUrl') formData.append(k, v);
       });
       if (editPoster) formData.append('poster', editPoster);
-      const res = await fetch(`/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
+      const res = await fetch(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
         method: 'PUT',
         body: formData
       });
@@ -512,7 +512,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this course?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/courses/${facultySlug}/${idx}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/admin/courses/${facultySlug}/${idx}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         fetchCourses(facultySlug);
@@ -575,14 +575,14 @@ export default function AdminDashboard() {
         if (k !== 'image' && k !== 'slug') formData.append(k, v);
       });
       if (editFacultyImage) formData.append('image', editFacultyImage);
-      const res = await fetch(`/api/admin/faculty/${editFacultySlug}`, {
+      const res = await fetch(`${API_URL}/api/admin/faculty/${editFacultySlug}`, {
         method: 'PUT',
         body: formData
       });
       const data = await res.json();
       if (res.ok && data.success) {
         // Refresh faculties list after edit
-        fetch('/api/faculties').then(res => res.json()).then(data => setFaculties(data.faculties || []));
+        fetch(`${API_URL}/api/faculties`).then(res => res.json()).then(data => setFaculties(data.faculties || []));
         setEditFacultyModalOpen(false);
       } else {
         setEditFacultyError(data.error || 'Failed to update faculty');
@@ -597,11 +597,11 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this faculty?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/faculty/${slug}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/admin/faculty/${slug}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         // Refresh faculties list after delete
-        fetch('/api/faculties').then(res => res.json()).then(data => setFaculties(data.faculties || []));
+        fetch(`${API_URL}/api/faculties`).then(res => res.json()).then(data => setFaculties(data.faculties || []));
       } else {
         alert(data.error || 'Failed to delete faculty');
       }
@@ -640,13 +640,13 @@ export default function AdminDashboard() {
         if (k !== 'image' && k !== '_id') formData.append(k, v);
       });
       if (editInstituteImage) formData.append('image', editInstituteImage);
-      const res = await fetch(`/api/admin/institutes/${editInstituteId}`, {
+      const res = await fetch(`${API_URL}/api/admin/institutes/${editInstituteId}`, {
         method: 'PUT',
         body: formData
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        fetch('/api/institutes').then(res => res.json()).then(data => setInstitutes(data.institutes || []));
+        fetch(`${API_URL}/api/institutes`).then(res => res.json()).then(data => setInstitutes(data.institutes || []));
         setEditInstituteModalOpen(false);
       } else {
         setEditInstituteError(data.error || 'Failed to update institute');
@@ -661,10 +661,10 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this institute?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/institutes/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/admin/institutes/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
-        fetch('/api/institutes').then(res => res.json()).then(data => setInstitutes(data.institutes || []));
+        fetch(`${API_URL}/api/institutes`).then(res => res.json()).then(data => setInstitutes(data.institutes || []));
       } else {
         alert(data.error || 'Failed to delete institute');
       }
@@ -678,7 +678,7 @@ export default function AdminDashboard() {
   const [institutes, setInstitutes] = useState([]);
   // Fetch institutes on mount
   useEffect(() => {
-    fetch('/api/institutes')
+    fetch(`${API_URL}/api/institutes`)
       .then(res => res.json())
       .then(data => setInstitutes(data.institutes || []));
   }, []);
@@ -696,7 +696,7 @@ export default function AdminDashboard() {
 
   // Fetch testimonials
   useEffect(() => {
-    fetch('/api/testimonials')
+    fetch(`${API_URL}/api/testimonials`)
       .then(res => res.json())
       .then(data => setTestimonials(data.testimonials || []));
   }, []);
@@ -724,13 +724,13 @@ export default function AdminDashboard() {
     formData.append('text', testimonialAdd.text.trim());
     if (testimonialAdd.image) formData.append('image', testimonialAdd.image);
     try {
-      const res = await fetch('/api/testimonials', { method: 'POST', body: formData });
+      const res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.success) {
         setTestimonialStatus('Testimonial added!');
         setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
         setTimeout(() => setTestimonialStatus(''), 2000);
-        fetch('/api/testimonials').then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+        fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
         setTestimonialError(data.error || 'Failed to add testimonial');
       }
@@ -764,11 +764,11 @@ export default function AdminDashboard() {
     formData.append('text', editTestimonialData.text);
     if (editTestimonialData.image) formData.append('image', editTestimonialData.image);
     try {
-      const res = await fetch(`/api/testimonials/${editTestimonialData._id}`, { method: 'PUT', body: formData });
+      const res = await fetch(`${API_URL}/api/testimonials/${editTestimonialData._id}`, { method: 'PUT', body: formData });
       const data = await res.json();
       if (res.ok && data.success) {
         setEditTestimonialModalOpen(false);
-        fetch('/api/testimonials').then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+        fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
         setEditTestimonialError(data.error || 'Failed to update testimonial');
       }
@@ -780,8 +780,8 @@ export default function AdminDashboard() {
   const handleDeleteTestimonial = async id => {
     if (!window.confirm('Delete this testimonial?')) return;
     try {
-      await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
-      fetch('/api/testimonials').then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+      await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'DELETE' });
+      fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
     } catch {}
   };
 
