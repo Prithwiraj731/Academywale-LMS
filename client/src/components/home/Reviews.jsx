@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export default function Reviews() {
   const [testimonials, setTestimonials] = useState([]);
   useEffect(() => {
-    fetch('/api/testimonials')
+    fetch(`${API_URL}/api/testimonials`)
       .then(res => res.json())
       .then(data => setTestimonials(data.testimonials || []));
   }, []);

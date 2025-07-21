@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoursePurchase from '../components/common/CoursePurchase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function InstituteDetailPage() {
   const { slug } = useParams();
@@ -15,13 +15,13 @@ export default function InstituteDetailPage() {
 
   useEffect(() => {
     const name = slug.replace(/_/g, ' ');
-    fetch(`/api/institutes`)
+    fetch(`${API_URL}/api/institutes`)
       .then(res => res.json())
       .then(data => {
         const inst = (data.institutes || []).find(i => i.name === name);
         setInstitute(inst || null);
       });
-    fetch('/api/faculties')
+    fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => {
         if (data.faculties) {

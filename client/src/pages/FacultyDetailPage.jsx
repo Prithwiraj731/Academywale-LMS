@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function FacultyDetailPage() {
   const { slug } = useParams();
@@ -17,7 +17,7 @@ export default function FacultyDetailPage() {
   const [selectedMode, setSelectedMode] = useState(MODES[0]);
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[0]);
   const [purchaseStatus, setPurchaseStatus] = useState({});
-  const [facultyInfo, setFacultyInfo] = useState({ bio: '', teaches: [], imageUrl: '' });
+  const [facultyInfo, setFacultyInfo] = useState({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedBook, setSelectedBook] = useState('');
@@ -30,7 +30,7 @@ export default function FacultyDetailPage() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`/api/courses/${slug}`);
+        const res = await fetch(`${API_URL}/api/courses/${slug}`);
         const data = await res.json();
         if (res.ok) {
           const coursesData = data.courses || [];
@@ -57,12 +57,19 @@ export default function FacultyDetailPage() {
           const res = await fetch(`${API_URL}/api/faculty-info/${slug}`);
           const data = await res.json();
           if (res.ok && data.bio !== undefined) {
-            setFacultyInfo({ bio: data.bio || '', teaches: data.teaches || [], imageUrl: data.imageUrl || '' });
+            setFacultyInfo({
+              bio: data.bio || '',
+              teaches: data.teaches || [],
+              imageUrl: data.imageUrl || '',
+              firstName: data.firstName || '',
+              lastName: data.lastName || '',
+              slug: data.slug || ''
+            });
           } else {
-            setFacultyInfo({ bio: '', teaches: [], imageUrl: '' });
+            setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
           }
         } catch {
-          setFacultyInfo({ bio: '', teaches: [], imageUrl: '' });
+          setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
         }
       }
     }
@@ -93,8 +100,8 @@ export default function FacultyDetailPage() {
     }));
   };
 
-  // Use the first course's facultyName as the display name if available
-  const displayFacultyName = courses[0]?.facultyName || facultyInfo.firstName + (facultyInfo.lastName ? ' ' + facultyInfo.lastName : '');
+  // Use the correct display name
+  const displayFacultyName = (facultyInfo.firstName ? facultyInfo.firstName : '') + (facultyInfo.lastName ? ' ' + facultyInfo.lastName : '');
 
   // Mode/duration selection per course
   const getCourseModes = (course) => {

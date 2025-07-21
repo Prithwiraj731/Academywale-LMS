@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoursePurchase from '../components/common/CoursePurchase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CoursesPage() {
   const { type, level } = useParams(); // 'ca' or 'cma', and 'foundation', 'inter', 'final'
@@ -16,7 +16,7 @@ export default function CoursesPage() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch('/api/faculties');
+        const res = await fetch(`${API_URL}/api/faculties`);
         const data = await res.json();
         if (res.ok && Array.isArray(data.faculties)) {
           // Flatten all courses with faculty info, filter by courseType
