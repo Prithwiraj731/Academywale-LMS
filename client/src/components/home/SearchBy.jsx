@@ -2,22 +2,22 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const institutes = [
-  { name: 'Avinash Lala Classes', img: '/src/assets/institues/Avinash Lala Classes.jpg' },
-  { name: 'CA Buddy', img: '/src/assets/institues/CA Buddy.png' },
-  { name: 'Bishnu Kedia Classes', img: '/src/assets/institues/Bishnu Kedia Classes.png' },
-  { name: 'COC Education', img: '/src/assets/institues/COC Education.png' },
-  { name: 'BB Virtuals', img: '/src/assets/institues/BB Virtuals.png' },
-  { name: 'Gopal Bhoot Classes', img: '/src/assets/institues/Gopal Bhoot Classes.gif' },
-  { name: 'CA Praveen Jindal', img: '/src/assets/institues/CA Praveen Jindal.png' },
-  { name: 'Siddharth Agarrwal Classes', img: '/src/assets/institues/Siddharth Agarrwal Classes.jpg' },
-  { name: 'Navin Classes', img: '/src/assets/institues/Navin Classes.jpg' },
-  { name: 'Harshad Jaju Classes', img: '/src/assets/institues/Harshad Jaju Classes.png' },
-  { name: 'AADITYA JAIN CLASSES', img: '/src/assets/institues/AADITYA JAIN CLASSES.png' },
-  { name: 'Yashwant Mangal Classes', img: '/src/assets/institues/Yashwant Mangal Classes.avif' },
-  { name: 'Nitin Guru Classes', img: '/src/assets/institues/Nitin Guru Classes.png' },
-  { name: 'Ekatvam', img: '/src/assets/institues/Ekatvam.png' },
-  { name: 'Shivangi Agarwal', img: '/src/assets/institues/Shivangi Agarwal.png' },
-  { name: 'Ranjan Periwal Classes', img: '/src/assets/institues/Ranjan Periwal Classes.jpg' },
+  { name: 'Avinash Lala Classes', img: '/institutes/avinash_lala_classes.jpg' },
+  { name: 'CA Buddy', img: '/institutes/ca_buddy.png' },
+  { name: 'Bishnu Kedia Classes', img: '/institutes/bishnu_kedia_classes.png' },
+  { name: 'COC Education', img: '/institutes/coc_education.png' },
+  { name: 'BB Virtuals', img: '/institutes/bb_virtuals.png' },
+  { name: 'Gopal Bhoot Classes', img: '/institutes/gopal_bhoot_classes.gif' },
+  { name: 'CA Praveen Jindal', img: '/institutes/ca_praveen_jindal.png' },
+  { name: 'Siddharth Agarrwal Classes', img: '/institutes/siddharth_agarrwal_classes.jpg' },
+  { name: 'Navin Classes', img: '/institutes/navin_classes.jpg' },
+  { name: 'Harshad Jaju Classes', img: '/institutes/harshad_jaju_classes.png' },
+  { name: 'AADITYA JAIN CLASSES', img: '/institutes/aaditya_jain_classes.png' },
+  { name: 'Yashwant Mangal Classes', img: '/institutes/yashwant_mangal_classes.avif' },
+  { name: 'Nitin Guru Classes', img: '/institutes/nitin_guru_classes.png' },
+  { name: 'Ekatvam', img: '/institutes/ekatvam.png' },
+  { name: 'Shivangi Agarwal', img: '/institutes/shivangi_agarwal.png' },
+  { name: 'Ranjan Periwal Classes', img: '/institutes/ranjan_periwal_classes.jpg' },
 ];
 
 export default function SearchBy() {
