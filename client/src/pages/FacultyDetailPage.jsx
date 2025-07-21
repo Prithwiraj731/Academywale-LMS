@@ -128,6 +128,14 @@ export default function FacultyDetailPage() {
     return '/logo.svg';
   };
 
+  const getPosterUrl = (course) => {
+    if (course.posterUrl) {
+      if (course.posterUrl.startsWith('http')) return course.posterUrl;
+      if (course.posterUrl.startsWith('/uploads')) return `${API_URL}${course.posterUrl}`;
+    }
+    return '/logo.svg';
+  };
+
   const filterCourses = (filter) => {
     setSelectedFilter(filter);
     if (filter === 'all') {
@@ -218,7 +226,7 @@ export default function FacultyDetailPage() {
                 {/* Course Poster Only */}
                 <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl overflow-hidden shadow-lg border-4 border-blue-200 bg-gray-100 flex-shrink-0 flex items-center justify-center">
                   {course.posterUrl ? (
-                    <img src={`http://localhost:5000${course.posterUrl}`} alt="Poster" className="object-cover w-full h-full" />
+                    <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">No Poster</div>
                   )}
@@ -313,7 +321,7 @@ export default function FacultyDetailPage() {
                   ) : (
                     <div className="mt-4 sm:mt-7 w-full sm:w-auto">
                       <button
-                        onClick={() => navigate(`/payment/${slug}/${idx}`, { state: { selectedAttempt: selectedDuration } })}
+                        onClick={() => navigate(`/payment/${facultyInfo.slug}/${idx}`, { state: { selectedAttempt: selectedDuration } })}
                         className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-700 transition-all text-lg w-full sm:w-auto"
                       >
                         Buy Now

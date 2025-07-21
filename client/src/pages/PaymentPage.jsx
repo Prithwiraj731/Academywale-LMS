@@ -34,8 +34,26 @@ const PaymentPage = () => {
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
-    fetchCourseDetails();
+    async function fetchCourse() {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(`${API_URL}/api/courses/${slug}`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.courses) && data.courses[courseIndex]) {
+          setCourse(data.courses[courseIndex]);
+        } else {
+          setError('Course not found or unavailable.');
+        }
+      } catch (err) {
+        setError('Server error');
+      }
+      setLoading(false);
+    }
+    if (slug && courseIndex !== undefined) fetchCourse();
   }, [slug, courseIndex]);
 
   useEffect(() => {

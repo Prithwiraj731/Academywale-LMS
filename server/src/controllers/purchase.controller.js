@@ -21,10 +21,8 @@ exports.purchaseCourse = async (req, res) => {
       });
     }
 
-    // Find the faculty
-    const firstName = facultyName.split(' ')[0].toUpperCase();
-    const faculty = await Faculty.findOne({ firstName });
-    
+    // Find the faculty by slug
+    const faculty = await Faculty.findOne({ slug: facultyName });
     if (!faculty) {
       return res.status(404).json({
         success: false,
@@ -150,9 +148,8 @@ exports.checkCoursePurchase = async (req, res) => {
   try {
     const { userId, facultyName, courseIndex } = req.params;
 
-    const firstName = facultyName.split(' ')[0].toUpperCase();
-    const faculty = await Faculty.findOne({ firstName });
-    
+    // Find the faculty by slug
+    const faculty = await Faculty.findOne({ slug: facultyName });
     if (!faculty) {
       return res.status(404).json({
         success: false,
