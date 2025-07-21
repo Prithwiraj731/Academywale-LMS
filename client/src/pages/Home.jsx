@@ -53,7 +53,8 @@ export default function Home() {
       <Navbar />
       <Hero />
       <div className="h-4 sm:h-8" />
-      <Numbers />
+      {/* Move Categories (Your Learning Journey) section to the top */}
+      <Categories />
       {/* Rearranged CA/CMA Path Buttons Section */}
       <div className="relative py-16 flex justify-center items-center overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 opacity-90"></div>
@@ -110,7 +111,7 @@ export default function Home() {
         </div>
       </div>
       {/* End rearranged section */}
-      <Categories />
+      <Numbers />
       {/* Restore Meet Our Expert Faculties section */}
       <section className="flex-1 py-10 sm:py-14 px-2 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
