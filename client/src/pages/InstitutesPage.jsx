@@ -8,7 +8,7 @@ export default function InstitutesPage() {
   const [institutes, setInstitutes] = useState([]);
 
   useEffect(() => {
-    fetch('/api/institutes')
+    fetch(`${API_URL}/api/institutes`)
       .then(res => res.json())
       .then(data => setInstitutes(data.institutes || []));
   }, []);
