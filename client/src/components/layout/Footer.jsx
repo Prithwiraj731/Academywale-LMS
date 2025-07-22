@@ -4,18 +4,18 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Main footer content */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Company info */}
-          <div className="md:col-span-1">
-            <div className="flex items-center space-x-3 mb-6">
-              <img src="/FooterLogo.svg" alt="Academywale Footer Logo" className="h-20 w-auto object-contain" />
+          <div className="sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+              <img src="/FooterLogo.svg" alt="Academywale Footer Logo" className="h-16 sm:h-20 w-auto object-contain" />
             </div>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <p className="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
               Academywale is India's most reliable platform for CA & CMA aspirants to access high-quality exam preparation resources. 
               We offer online video lectures, pendrive classes, test series, and study materials from some of the best faculties across the country.
             </p>
-            <div className="flex space-x-4 mt-6">
+            <div className="flex space-x-4 mt-4 sm:mt-6">
               <a href="https://chat.whatsapp.com/HmUSCs1IguT7Tew1z82JwO" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition">
                 {/* Official WhatsApp Logo */}
                 <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,41 +36,38 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading font-semibold text-lg mb-6">Quick Links</h4>
-            <ul className="space-y-3">
-              <li><a href="/about" className="text-gray-300 hover:text-white transition">About Us</a></li>
-              <li><a href="/faculties" className="text-gray-300 hover:text-white transition">Our Faculties</a></li>
-              <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition">Privacy Policy</a></li>
+            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Quick Links</h4>
+            <ul className="space-y-2 sm:space-y-3">
+              <li><a href="/about" className="text-gray-300 hover:text-white transition text-sm sm:text-base">About Us</a></li>
+              <li><a href="/faculties" className="text-gray-300 hover:text-white transition text-sm sm:text-base">Our Faculties</a></li>
+              <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition text-sm sm:text-base">Privacy Policy</a></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-heading font-semibold text-lg mb-6">Contact Us</h4>
-            <div className="space-y-1">
-              <div className="flex items-start space-x-3">
-
-              </div>
+            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Contact Us</h4>
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center space-x-3">
                 <svg className="w-5 h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                <span className="text-gray-300">+91 6203132544</span>
+                <span className="text-gray-300 text-sm sm:text-base">+91 6203132544</span>
               </div>
               <div className="flex items-center space-x-3">
                 <svg className="w-5 h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                <span className="text-gray-300">support@academywale.com</span>
+                <span className="text-gray-300 text-sm sm:text-base break-all">support@academywale.com</span>
               </div>
             </div>
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h4 className="font-heading font-semibold text-lg mb-6">Get In Touch</h4>
-            <p className="text-gray-300 mb-4">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Get In Touch</h4>
+            <p className="text-gray-300 mb-4 text-sm sm:text-base">
               Simply fill out the form to request a callback from one of our team members.
             </p>
             <form className="space-y-3" action="mailto:Support@academywale.com" method="POST" encType="text/plain">
@@ -78,26 +75,26 @@ export default function Footer() {
                 type="text" 
                 name="Full Name" 
                 placeholder="Full Name" 
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa]"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
                 required
               />
               <input 
                 type="text" 
                 name="Phone Number" 
                 placeholder="Phone Number" 
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa]"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
                 required
               />
               <input 
                 type="text" 
                 name="City" 
                 placeholder="City" 
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa]"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
                 required
               />
               <button 
                 type="submit" 
-                className="w-full bg-[#20b2aa] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#17817a] transition"
+                className="w-full bg-[#20b2aa] text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-[#17817a] transition text-sm sm:text-base"
               >
                 Request a Call Back
               </button>
