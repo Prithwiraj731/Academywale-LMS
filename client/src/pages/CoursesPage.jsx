@@ -100,12 +100,12 @@ export default function CoursesPage() {
                 <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
                 <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
               </div>
-              <button
-                onClick={() => navigate(`/payment/${encodeURIComponent(course.facultyName.split(' ')[0])}/${idx}`)}
+   <button
+                onClick={() => navigate(`/payment/${encodeURIComponent(type)}/${course._id}`)}
                 className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
               >
                 Buy Now
-              </button>
+              </button
             </div>
           ))}
         </div>
