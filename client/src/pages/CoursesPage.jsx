@@ -105,7 +105,7 @@ export default function CoursesPage() {
                 className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
               >
                 Buy Now
-              </button
+              </button>
             </div>
           ))}
         </div>
