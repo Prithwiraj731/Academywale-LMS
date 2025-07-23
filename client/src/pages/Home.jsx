@@ -61,9 +61,9 @@ export default function Home() {
         <div className="absolute -top-10 left-1/4 w-40 xs:w-56 sm:w-72 h-40 xs:h-56 sm:h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-32 xs:w-48 sm:w-60 h-32 xs:h-48 sm:h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="relative z-10 flex flex-col items-center w-full">
-          <div className="flex flex-col md:flex-row gap-8 max-w-3xl mx-auto px-4 xs:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto px-4 xs:px-6">
             {/* Left: CA */}
-            <div className="flex flex-col gap-6 md:w-1/2">
+            <div className="flex flex-col gap-6">
               <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CA Courses</h3>
               <button
                 onClick={() => navigate('/courses/ca/inter')}
@@ -85,7 +85,7 @@ export default function Home() {
               </button>
             </div>
             {/* Right: CMA */}
-            <div className="flex flex-col gap-6 md:w-1/2">
+            <div className="flex flex-col gap-6">
               <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CMA Courses</h3>
               <button
                 onClick={() => navigate('/courses/cma/inter')}
