@@ -30,7 +30,7 @@ const numbers = [
 
 export default function Numbers() {
   return (
-    <section className="py-10 xs:py-16 sm:py-20 section-dark relative overflow-hidden">
+    <section className="py-10 xs:py-16 sm:py-20 bg-gray-900 relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 w-32 h-32 bg-primary rounded-full"></div>
@@ -59,7 +59,7 @@ export default function Numbers() {
                   {num.icon}
                 </div>
               </div>
-              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-black mb-1 xs:mb-2">{num.value}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-1 xs:mb-2">{num.value}</h3>
               <p className="text-base xs:text-lg text-gray-300">{num.label}</p>
               <p className="text-xs xs:text-sm text-gray-400 mt-1 xs:mt-2">{num.description}</p>
             </div>
@@ -67,7 +67,7 @@ export default function Numbers() {
         </div>
         
         <div className="mt-8 xs:mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 xs:gap-6 sm:gap-8">
-          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center">
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div className="bg-blue-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
               <FaHeadset className="text-blue-600 text-xl xs:text-2xl" />
             </div>
@@ -77,7 +77,7 @@ export default function Numbers() {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center">
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
             <div className="bg-green-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
               <FaSmile className="text-green-600 text-xl xs:text-2xl" />
             </div>
@@ -87,7 +87,7 @@ export default function Numbers() {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center sm:col-span-2 md:col-span-1">
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl sm:col-span-2 md:col-span-1">
             <div className="bg-purple-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
               <FaMapMarkerAlt className="text-purple-600 text-xl xs:text-2xl" />
             </div>
