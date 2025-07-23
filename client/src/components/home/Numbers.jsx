@@ -59,7 +59,7 @@ export default function Numbers() {
                   {num.icon}
                 </div>
               </div>
-              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-1 xs:mb-2">{num.value}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-black mb-1 xs:mb-2">{num.value}</h3>
               <p className="text-base xs:text-lg text-gray-300">{num.label}</p>
               <p className="text-xs xs:text-sm text-gray-400 mt-1 xs:mt-2">{num.description}</p>
             </div>
