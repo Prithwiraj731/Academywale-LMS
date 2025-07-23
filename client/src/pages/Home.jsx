@@ -55,59 +55,65 @@ export default function Home() {
       <div className="h-4 sm:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
       <Categories />
-      {/* Rearranged CA/CMA Path Buttons Section */}
+{/* Rearranged CA/CMA Path Buttons Section */}
       <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 opacity-90"></div>
         <div className="absolute -top-10 left-1/4 w-40 xs:w-56 sm:w-72 h-40 xs:h-56 sm:h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-32 xs:w-48 sm:w-60 h-32 xs:h-48 sm:h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
-        <div className="relative z-10 flex flex-col items-center w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto px-4 xs:px-6">
-            {/* Left: CA */}
-            <div className="flex flex-col gap-6">
-              <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CA Courses</h3>
-              <button
-                onClick={() => navigate('/courses/ca/foundation')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
-              >
-                CA Foundation
-              </button>
-              <button
-                onClick={() => navigate('/courses/ca/inter')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
-              >
-                CA Inter
-              </button>
-              <button
-                onClick={() => navigate('/courses/ca/final')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
-              >
-                CA Final
-              </button>
-            </div>
-            {/* Right: CMA */}
-            <div className="flex flex-col gap-6">
-              <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CMA Courses</h3>
-              <button
-                onClick={() => navigate('/courses/cma/foundation')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
-              >
-                CMA Foundation
-              </button>
-              <button
-                onClick={() => navigate('/courses/cma/inter')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
-              >
-                CMA Inter
-              </button>
-              <button
-                onClick={() => navigate('/courses/cma/final')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
-              >
-                CMA Final
-              </button>
-            </div>
+        
+        <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4">
+          {/* Titles */}
+          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full mb-6">
+            <h3 className="text-xl font-bold text-center text-gray-800">CA Courses</h3>
+            <h3 className="text-xl font-bold text-center text-gray-800">CMA Courses</h3>
           </div>
-          <div className="mt-4 xs:mt-5 sm:mt-6 text-center text-base xs:text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg px-4">
+
+          {/* Button Grid */}
+          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-6 w-full">
+            {/* --- Foundation Row --- */}
+            <button
+              onClick={() => navigate('/courses/ca/foundation')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+            >
+              Foundation
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/foundation')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+            >
+              Foundation
+            </button>
+
+            {/* --- Inter Row --- */}
+            <button
+              onClick={() => navigate('/courses/ca/inter')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+            >
+              Inter
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+            >
+              Inter
+            </button>
+
+            {/* --- Final Row --- */}
+            <button
+              onClick={() => navigate('/courses/ca/final')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+            >
+              Final
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/final')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+            >
+              Final
+            </button>
+          </div>
+
+          <div className="mt-8 text-center text-base xs:text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg px-4">
             Choose your path to success
           </div>
         </div>
