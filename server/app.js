@@ -66,6 +66,24 @@ app.use('/api/purchase', purchaseRoutes);
 const couponRoutes = require('./src/routes/coupon.routes');
 app.use(couponRoutes);
 
+const multer = require('multer');
+
+// Configure Multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, 'uploads')); // Store files in the uploads directory
+  },
+  filename: (req, file, cb) => {
+    // Generate a unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    const filename = file.fieldname + '-' + uniqueSuffix + fileExtension;
+    cb(null, filename);
+  }
+});
+
+const upload = multer({ storage: storage });
+
 const testimonialRoutes = require('./src/routes/testimonial.routes');
 app.use('/api/testimonials', testimonialRoutes);
 
