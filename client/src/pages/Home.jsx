@@ -66,16 +66,16 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CA Courses</h3>
               <button
-                onClick={() => navigate('/courses/ca/inter')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
-              >
-                CA Inter
-              </button>
-              <button
                 onClick={() => navigate('/courses/ca/foundation')}
                 className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
               >
                 CA Foundation
+              </button>
+              <button
+                onClick={() => navigate('/courses/ca/inter')}
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+              >
+                CA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/ca/final')}
@@ -88,16 +88,16 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <h3 className="text-xl font-bold text-center text-gray-800 mb-2">CMA Courses</h3>
               <button
-                onClick={() => navigate('/courses/cma/inter')}
-                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
-              >
-                CMA Inter
-              </button>
-              <button
                 onClick={() => navigate('/courses/cma/foundation')}
                 className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
               >
                 CMA Foundation
+              </button>
+              <button
+                onClick={() => navigate('/courses/cma/inter')}
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+              >
+                CMA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/cma/final')}
