@@ -23,11 +23,11 @@ const institutes = [
 export default function SearchBy() {
   const navigate = useNavigate();
   return (
-    <section className="py-16 section-light">
+    <section className="py-10 xs:py-12 sm:py-16 section-light">
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-blue-800 text-center mb-10 font-pacifico">
+        <h2 className="text-2xl xs:text-3xl md:text-4xl font-bold text-blue-800 text-center mb-6 xs:mb-8 sm:mb-10 font-pacifico">
           <button
-            className="hover:underline text-blue-700 transition-colors duration-200 text-4xl font-extrabold"
+            className="hover:underline text-blue-700 transition-colors duration-200 text-2xl xs:text-3xl sm:text-4xl font-extrabold"
             onClick={() => navigate('/institutes')}
           >
             Search by Institutes
@@ -35,17 +35,17 @@ export default function SearchBy() {
         </h2>
         {/* Carousel */}
         <div className="w-full overflow-x-auto scrollbar-hide">
-          <div className="flex gap-8 py-4 animate-scroll-x">
+          <div className="flex gap-4 xs:gap-6 sm:gap-8 py-4 animate-scroll-x">
             {[...institutes, ...institutes].map(inst => (
-              <div key={inst.name + Math.random()} className="flex flex-col items-center min-w-[180px] max-w-[200px]">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg bg-white flex items-center justify-center mb-2 border-2 border-blue-200">
+              <div key={inst.name + Math.random()} className="flex flex-col items-center min-w-[120px] xs:min-w-[150px] sm:min-w-[180px] max-w-[160px] xs:max-w-[180px] sm:max-w-[200px]">
+                <div className="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg bg-white flex items-center justify-center mb-1 xs:mb-2 border-2 border-blue-200">
                   <img
                     src={inst.img}
                     alt={inst.name}
                     className="object-contain w-full h-full hover:scale-110 transition-transform duration-300"
                   />
                 </div>
-                <span className="text-base font-semibold text-gray-700 text-center whitespace-nowrap mt-1">
+                <span className="text-sm xs:text-base font-semibold text-gray-700 text-center whitespace-nowrap mt-1">
                   {inst.name}
                 </span>
               </div>
@@ -65,4 +65,4 @@ export default function SearchBy() {
       </div>
     </section>
   );
-} 
+}

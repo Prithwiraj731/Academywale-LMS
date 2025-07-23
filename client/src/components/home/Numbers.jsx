@@ -29,7 +29,7 @@ const numbers = [
 
 export default function Numbers() {
   return (
-    <section className="py-20 section-dark relative overflow-hidden">
+    <section className="py-10 xs:py-16 sm:py-20 section-dark relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 w-32 h-32 bg-primary rounded-full"></div>
@@ -38,59 +38,65 @@ export default function Numbers() {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary mb-6">
+        <div className="text-center mb-8 xs:mb-12 sm:mb-16">
+          <h2 className="text-3xl xs:text-4xl md:text-5xl font-heading font-bold text-primary mb-4 xs:mb-6">
             Our Numbers Say it All
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg xs:text-xl text-gray-600 max-w-3xl mx-auto">
             Join thousands of successful students who have achieved their goals with Academywale
           </p>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 xs:gap-6 md:gap-8">
           {numbers.map((num, index) => (
             <div 
               key={num.label} 
-              className="text-center animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.2}s` }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-4 xs:p-5 sm:p-6 text-center transform transition-all duration-300 hover:scale-105 hover:bg-white/20"
             >
-              <div className="card p-4 sm:p-8 hover-lift">
-                <div className="text-2xl sm:text-4xl mb-2 sm:mb-4">
+              <div className="flex justify-center mb-3 xs:mb-4">
+                <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                   {num.icon}
                 </div>
-                <div className="text-2xl sm:text-4xl md:text-5xl font-heading font-bold text-primary mb-1 sm:mb-2">
-                  {num.value}
-                </div>
-                <h3 className="font-heading font-semibold text-gray-800 mb-1 sm:mb-2 text-base sm:text-lg">
-                  {num.label}
-                </h3>
-                <p className="text-gray-600 text-xs sm:text-sm">
-                  {num.description}
-                </p>
               </div>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-1 xs:mb-2">{num.value}</h3>
+              <p className="text-base xs:text-lg text-gray-300">{num.label}</p>
+              <p className="text-xs xs:text-sm text-gray-400 mt-1 xs:mt-2">{num.description}</p>
             </div>
           ))}
         </div>
         
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center space-x-8 bg-white/80 backdrop-blur-sm rounded-full px-8 py-4 shadow-lg">
-            <div className="text-center">
-              <div className="text-2xl font-heading font-bold text-primary">24/7</div>
-              <div className="text-sm text-gray-600">Support</div>
+        <div className="mt-8 xs:mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 xs:gap-6 sm:gap-8">
+          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center">
+            <div className="bg-blue-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaHeadset className="text-blue-600 text-xl xs:text-2xl" />
             </div>
-            <div className="w-px h-12 bg-gray-300"></div>
-            <div className="text-center">
-              <div className="text-2xl font-heading font-bold text-primary">100%</div>
-              <div className="text-sm text-gray-600">Satisfaction</div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">24/7 Support</h3>
+              <p className="text-gray-600 text-sm xs:text-base">Always here to help you</p>
             </div>
-            <div className="w-px h-12 bg-gray-300"></div>
-            <div className="text-center">
-              <div className="text-2xl font-heading font-bold text-primary">50+</div>
-              <div className="text-sm text-gray-600">Cities</div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center">
+            <div className="bg-green-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaSmile className="text-green-600 text-xl xs:text-2xl" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">98% Satisfaction</h3>
+              <p className="text-gray-600 text-sm xs:text-base">From our students</p>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-4 xs:p-5 sm:p-6 flex items-center sm:col-span-2 md:col-span-1">
+            <div className="bg-purple-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaMapMarkerAlt className="text-purple-600 text-xl xs:text-2xl" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">50+ Cities</h3>
+              <p className="text-gray-600 text-sm xs:text-base">Across India</p>
             </div>
           </div>
         </div>
       </div>
     </section>
   );
-} 
+}

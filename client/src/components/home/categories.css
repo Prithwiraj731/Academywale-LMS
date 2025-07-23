@@ -7,6 +7,7 @@
 .timeline-heading-container {
   text-align: center;
   margin-bottom: 2.5rem;
+  padding: 0 1rem;
 }
 .timeline-heading {
   color: #1e293b;
@@ -15,17 +16,23 @@
   letter-spacing: -1px;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 12px #c7d2fe33;
+  line-height: 1.2;
 }
 .timeline-subtitle {
   color: #64748b;
   font-size: 1.15rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .timeline-scroll-wrapper {
   position: relative;
   width: 100%;
   overflow: visible;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 .timeline-container-premium {
   position: relative;
@@ -48,7 +55,40 @@
   border-radius: 3px;
   z-index: 0;
   transform-origin: left center;
-  box-shadow: 0 2px 12px 0 #c7d2fe33;
+  box-shadow: 0 2px 12px 0 rgba(99, 102, 241, 0.3);
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 2px 12px 0 rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 16px 0 rgba(99, 102, 241, 0.4);
+  }
+  100% {
+    box-shadow: 0 2px 12px 0 rgba(99, 102, 241, 0.2);
+  }
+}
+
+@keyframes swipe {
+  0% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(-5px);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-swipe {
+  animation: swipe 1.5s infinite;
 }
 .timeline-step-premium {
   position: relative;
@@ -59,17 +99,37 @@
   padding: 2.2rem 2.2rem 1.5rem 2.2rem;
   margin-bottom: 1.5rem;
   text-align: center;
-  transition: box-shadow 0.3s, transform 0.3s;
+  transition: all 0.3s ease;
   cursor: pointer;
   min-width: 180px;
   max-width: 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  will-change: transform, box-shadow;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 900px) {
+  .timeline-step-premium {
+    min-width: 150px;
+    max-width: 180px;
+    padding: 1.8rem 1.5rem 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
 }
 .timeline-step-premium:hover {
   box-shadow: 0 12px 40px 0 #60a5fa33, 0 4px 24px 0 #c7d2fe22;
   background: linear-gradient(135deg, #e0e7ef 60%, #f1f5f9 100%);
+  transform: translateY(-8px);
+}
+
+@media (hover: none) {
+  .timeline-step-premium:active {
+    box-shadow: 0 12px 40px 0 #60a5fa33, 0 4px 24px 0 #c7d2fe22;
+    background: linear-gradient(135deg, #e0e7ef 60%, #f1f5f9 100%);
+    transform: translateY(-5px);
+  }
 }
 .timeline-step-icon-premium {
   width: 64px;
@@ -78,10 +138,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e0e7ef;
+  background: linear-gradient(135deg, #e0e7ef 0%, #f1f5f9 100%);
   border-radius: 50%;
-  box-shadow: 0 2px 12px #c7d2fe22;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
   font-size: 2.5rem;
+  transition: all 0.3s ease;
+  color: #4f46e5;
+}
+
+.timeline-step-premium:hover .timeline-step-icon-premium {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ef 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.2);
+}
+
+@media (hover: none) {
+  .timeline-step-premium:active .timeline-step-icon-premium {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ef 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.2);
+  }
 }
 .timeline-step-title-premium {
   color: #1e293b;
@@ -97,12 +173,26 @@
   font-weight: 400;
   margin-top: 0.1rem;
 }
+
 @media (max-width: 900px) {
+  .timeline-section-premium {
+    padding: 3rem 0 2rem 0;
+  }
+  .timeline-heading {
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+  }
+  .timeline-subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
   .timeline-scroll-wrapper {
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding: 0 1rem;
+    margin-bottom: 0.5rem;
   }
   .timeline-scroll-wrapper::-webkit-scrollbar {
     display: none;
@@ -120,6 +210,7 @@
     right: 50px;
     width: auto;
     min-width: 300px;
+    height: 5px;
   }
   .timeline-scroll-fade {
     display: block;
@@ -138,9 +229,108 @@
     right: 0;
     background: linear-gradient(270deg, #f8fafc 80%, transparent 100%);
   }
+  
+  /* Timeline step styles for mobile */
+  .timeline-step-icon-premium {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 0.7rem auto;
+    font-size: 2rem;
+  }
+  .timeline-step-title-premium {
+    font-size: 1rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0.2rem;
+  }
+  .timeline-step-desc-premium {
+    font-size: 0.85rem;
+  }
+  .timeline-step-premium:hover {
+    transform: translateY(-5px);
+  }
 }
 @media (min-width: 901px) {
   .timeline-scroll-fade {
     display: none;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .timeline-section-premium {
+    padding: 2rem 0 1.5rem 0;
+  }
+  .timeline-heading {
+    font-size: 1.75rem;
+  }
+  .timeline-subtitle {
+    font-size: 0.9rem;
+  }
+  .timeline-container-premium {
+    min-width: 600px;
+    gap: 1rem;
+  }
+  .timeline-step-premium {
+    min-width: 120px;
+    max-width: 150px;
+    padding: 1.5rem 1.2rem 1rem 1.2rem;
+  }
+  .timeline-step-icon-premium {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .timeline-step-title-premium {
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.1rem;
+  }
+  .timeline-step-desc-premium {
+    font-size: 0.75rem;
+  }
+}
+
+/* Very small devices */
+@media (max-width: 360px) {
+  .timeline-section-premium {
+    padding: 1.5rem 0 1rem 0;
+  }
+  .timeline-heading {
+    font-size: 1.5rem;
+  }
+  .timeline-subtitle {
+    font-size: 0.8rem;
+  }
+  .timeline-container-premium {
+    min-width: 480px;
+    gap: 0.8rem;
+    padding-bottom: 1rem;
+  }
+  .timeline-line-premium {
+    height: 4px;
+  }
+  .timeline-step-premium {
+    min-width: 90px;
+    max-width: 120px;
+    padding: 1.2rem 0.8rem 0.8rem 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  .timeline-step-icon-premium {
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    margin-bottom: 0.4rem;
+  }
+  .timeline-step-title-premium {
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.1rem;
+  }
+  .timeline-step-desc-premium {
+    font-size: 0.7rem;
+  }
+  .timeline-scroll-wrapper {
+    padding: 0 0.5rem;
   }
 }

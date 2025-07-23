@@ -56,29 +56,29 @@ export default function Home() {
       {/* Move Categories (Your Learning Journey) section to the top */}
       <Categories />
       {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-16 flex justify-center items-center overflow-hidden">
+      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 opacity-90"></div>
-        <div className="absolute -top-10 left-1/4 w-72 h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
+        <div className="absolute -top-10 left-1/4 w-40 xs:w-56 sm:w-72 h-40 xs:h-56 sm:h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-32 xs:w-48 sm:w-60 h-32 xs:h-48 sm:h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
         <div className="relative z-10 flex flex-col items-center w-full">
-          <div className="grid grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 max-w-3xl mx-auto px-4 xs:px-6">
             {/* Left: CA */}
             <div className="flex flex-col gap-6">
               <button
                 onClick={() => navigate('/courses/ca/inter')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/ca/foundation')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Foundation
               </button>
               <button
                 onClick={() => navigate('/courses/ca/final')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CA Final
               </button>
@@ -87,25 +87,25 @@ export default function Home() {
             <div className="flex flex-col gap-6">
               <button
                 onClick={() => navigate('/courses/cma/inter')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CMA Inter
               </button>
               <button
                 onClick={() => navigate('/courses/cma/foundation')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CMA Foundation
               </button>
               <button
                 onClick={() => navigate('/courses/cma/final')}
-                className="text-lg md:text-xl px-6 md:px-8 py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
+                className="text-base xs:text-lg md:text-xl px-4 xs:px-6 md:px-8 py-2 xs:py-3 md:py-4 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400 text-white font-bold shadow-xl hover:from-teal-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-teal-200"
               >
                 CMA Final
               </button>
             </div>
           </div>
-          <div className="mt-6 text-center text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg">
+          <div className="mt-4 xs:mt-5 sm:mt-6 text-center text-base xs:text-lg text-gray-700 font-semibold tracking-wide drop-shadow-lg px-4">
             Choose your path to success
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function Home() {
           {topFaculties.length === 0 ? (
             <div className="text-center text-gray-400 py-12">No faculties yet. Please check back soon!</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-6">
               {topFaculties.map(fac => {
                 const name = fac.firstName + (fac.lastName ? ' ' + fac.lastName : '');
                 return (
@@ -129,10 +129,10 @@ export default function Home() {
                     key={fac.slug}
                     title={name.replace(/_/g, ' ')}
                     href={`/faculties/${fac.slug}`}
-                    containerClassName="w-full h-full min-w-[160px] sm:min-w-[200px] max-w-[200px] sm:max-w-[240px] min-h-[220px] sm:min-h-[300px] max-h-[240px] sm:max-h-[320px] mx-auto"
+                    containerClassName="w-full h-full min-w-[140px] xs:min-w-[160px] sm:min-w-[200px] max-w-[160px] xs:max-w-[180px] sm:max-w-[240px] min-h-[180px] xs:min-h-[200px] sm:min-h-[300px] max-h-[200px] xs:max-h-[220px] sm:max-h-[320px] mx-auto"
                   >
-                    <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 sm:p-6 cursor-pointer hover:scale-105 w-full h-full">
-                      <div className="w-20 h-20 sm:w-28 sm:h-28 mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
+                    <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-2 xs:p-3 sm:p-6 cursor-pointer hover:scale-105 w-full h-full">
+                      <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-28 sm:h-28 mb-2 xs:mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
                         <img
                           src={getFacultyImage(fac)}
                           alt={name}
@@ -140,7 +140,7 @@ export default function Home() {
                           style={{ background: '#fff' }}
                         />
                       </div>
-                      <div className="text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
+                      <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
                         {name.replace(/_/g, ' ')}
                       </div>
                     </div>
@@ -169,4 +169,4 @@ export default function Home() {
       <Footer />
     </div>
   );
-} 
+}

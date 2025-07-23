@@ -9,21 +9,23 @@ const partners = [
 
 export default function Partners() {
   return (
-    <section className="py-12 bg-white/70">
+    <section className="py-10 xs:py-12 sm:py-16 bg-gradient-to-r from-[#f0f9ff] via-white to-[#f0f9ff]">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-blue-800 font-pacifico">Our Partners</h2>
-          <a href="#" className="text-blue-600 font-semibold hover:underline">View all</a>
+        <div className="flex items-center justify-between mb-4 xs:mb-6 sm:mb-8">
+          <h2 className="text-2xl xs:text-2xl sm:text-3xl font-bold text-blue-800 font-pacifico">Our Partners</h2>
+          <Link to="/partners" className="text-sm xs:text-base text-blue-600 hover:underline font-medium">View all</Link>
         </div>
-        <div className="flex flex-nowrap md:flex-wrap gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible pb-2 min-w-0">
+        <div className="flex flex-nowrap md:flex-wrap gap-3 xs:gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible pb-2 min-w-0">
           {partners.map((p) => (
-            <div key={p.name} className="flex flex-col items-center bg-white rounded-xl shadow p-3 sm:p-4 w-28 sm:w-32 md:w-36 min-w-0 max-w-xs flex-shrink-0 md:flex-shrink md:mb-4">
-              <img src={p.img} alt={p.name} className="w-16 h-10 sm:w-20 sm:h-12 mb-2 rounded object-cover border-2 border-blue-200" />
-              <span className="text-xs sm:text-base font-semibold text-gray-700 text-center whitespace-normal break-words leading-tight mt-1">{p.name}</span>
+            <div key={p.name} className="flex-shrink-0 w-32 xs:w-36 sm:w-40 md:w-1/4 lg:w-1/5 bg-white rounded-lg shadow-md p-3 xs:p-4 flex flex-col items-center">
+              <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-2 xs:mb-3">
+                <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain" />
+              </div>
+              <div className="text-center text-xs xs:text-sm sm:text-base font-medium text-gray-800">{p.name}</div>
             </div>
           ))}
         </div>
       </div>
     </section>
   );
-} 
+}

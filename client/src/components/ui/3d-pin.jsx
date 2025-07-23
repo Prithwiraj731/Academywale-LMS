@@ -14,14 +14,40 @@ export const PinContainer = ({
     "translate(-50%,-50%) rotateX(0deg)"
   );
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Check for mobile devices on mount and window resize
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const onMouseEnter = () => {
-    setTransform("translate(-50%,-50%) rotateX(40deg) scale(0.8)");
-    setIsHovered(true);
+    if (!isMobile) {
+      setTransform("translate(-50%,-50%) rotateX(40deg) scale(0.8)");
+      setIsHovered(true);
+    }
   };
   const onMouseLeave = () => {
-    setTransform("translate(-50%,-50%) rotateX(0deg) scale(1)");
-    setIsHovered(false);
+    if (!isMobile) {
+      setTransform("translate(-50%,-50%) rotateX(0deg) scale(1)");
+      setIsHovered(false);
+    }
+  };
+  
+  // For mobile, use click/tap to toggle hover state
+  const handleClick = (e) => {
+    if (isMobile) {
+      e.preventDefault();
+      setIsHovered(!isHovered);
+      setTransform(isHovered 
+        ? "translate(-50%,-50%) rotateX(0deg) scale(1)" 
+        : "translate(-50%,-50%) rotateX(40deg) scale(0.8)");
+    }
   };
 
   return (
@@ -32,6 +58,7 @@ export const PinContainer = ({
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={handleClick}
       href={href || "/"}
     >
       <div
@@ -57,8 +84,20 @@ export const PinContainer = ({
 };
 
 export const PinPerspective = ({ title, href }) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Check for mobile devices on mount and window resize
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <motion.div className="pointer-events-none w-96 h-80 flex items-center justify-center opacity-0 group-hover/pin:opacity-100 z-[60] transition duration-500">
+    <motion.div className={`pointer-events-none ${isMobile ? 'w-full max-w-[300px]' : 'w-96'} ${isMobile ? 'h-64' : 'h-80'} flex items-center justify-center opacity-0 group-hover/pin:opacity-100 z-[60] transition duration-500`}>
       <div className="w-full h-full -mt-7 flex-none inset-0">
         <div className="absolute top-0 inset-x-0 flex justify-center">
           <a
@@ -148,4 +187,4 @@ export const PinPerspective = ({ title, href }) => {
       </div>
     </motion.div>
   );
-}; 
+};

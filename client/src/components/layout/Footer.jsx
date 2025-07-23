@@ -4,8 +4,8 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Main footer content */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8 lg:gap-12">
           {/* Company info */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center space-x-3 mb-4 sm:mb-6">
@@ -105,12 +105,12 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+        <div className="max-w-7xl mx-auto px-4 py-4 xs:py-5 sm:py-6">
+          <div className="flex flex-col xs:flex-row justify-between items-center">
+            <div className="text-gray-400 text-xs xs:text-sm mb-2 xs:mb-0">
               ©2025 Academywale. All Rights Reserved.
             </div>
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-xs xs:text-sm">
               Designed and developed by Prithwiraj
             </div>
           </div>
