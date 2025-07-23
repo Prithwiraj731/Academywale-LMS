@@ -12,6 +12,8 @@ export default function Reviews() {
   const getImageUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('/uploads')) return `${API_URL}${url}`;
+    // Add this condition to handle relative paths without /uploads
+    if (url && !url.startsWith('/')) return `${API_URL}/uploads/${url}`;
     return url;
   };
   return (
