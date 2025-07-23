@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaHeadset, FaSmile, FaMapMarkerAlt } from 'react-icons/fa';
 
 const numbers = [
   { 

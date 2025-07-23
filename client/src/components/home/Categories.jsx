@@ -36,7 +36,8 @@ const Categories = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   
   useEffect(() => {
-    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    const isTouchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouchEnabled);
   }, []);
 
   return (
