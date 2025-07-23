@@ -11,7 +11,8 @@ export default function Reviews() {
   }, []);
  const getImageUrl = (url) => {
     if(!url) return ''
-    return `${API_URL}/uploads/${url}`;
+   if (url) return `${API_URL}/uploads/${url}`;
+    return '';
   };
   return (
     <section className="py-8 xs:py-10 sm:py-12 bg-gradient-to-r from-[#e0f7f4] via-white to-[#e0f7f4]">

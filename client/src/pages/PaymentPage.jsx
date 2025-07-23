@@ -23,7 +23,7 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   console.log('PaymentPage user:', user);
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const isAdmin = user?.role === 'admin';
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
