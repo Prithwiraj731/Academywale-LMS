@@ -28,11 +28,7 @@ export default function Home() {
   // Helper to get image
   const getFacultyImage = fac => {
     if (fac.imageUrl) {
-      if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
-      if (fac.imageUrl.startsWith('/uploads')) return `${API_URL}${fac.imageUrl}`;
-      if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
-      // Add this condition to handle relative paths without /uploads
-      if (fac.imageUrl && !fac.imageUrl.startsWith('/')) return `${API_URL}/uploads/${fac.imageUrl}`;
+      return `${API_URL}/uploads/${fac.imageUrl}`;
     }
     return '/logo.svg';
   };

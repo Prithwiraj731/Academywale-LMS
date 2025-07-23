@@ -9,12 +9,9 @@ export default function Reviews() {
       .then(res => res.json())
       .then(data => setTestimonials(data.testimonials || []));
   }, []);
-  const getImageUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('/uploads')) return `${API_URL}${url}`;
-    // Add this condition to handle relative paths without /uploads
-    if (url && !url.startsWith('/')) return `${API_URL}/uploads/${url}`;
-    return url;
+ const getImageUrl = (url) => {
+    if(!url) return ''
+    return `${API_URL}/uploads/${url}`;
   };
   return (
     <section className="py-8 xs:py-10 sm:py-12 bg-gradient-to-r from-[#e0f7f4] via-white to-[#e0f7f4]">
