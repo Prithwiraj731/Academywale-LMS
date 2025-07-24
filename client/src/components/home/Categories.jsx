@@ -5,7 +5,7 @@ import "./categories.css";
 const steps = [
   { title: "Choose Course", icon: "📚", desc: "Find the perfect course for your goals." },
   { title: "Learn from Experts", icon: "🎓", desc: "Get guidance from top faculty." },
-  { title: "Practice & Revise", icon: "📝", desc: "Test yourself and master concepts." },
+  { title: "Practice & Review", icon: "📝", desc: "Test yourself and master concepts." },
   { title: "Get Support", icon: "🤝", desc: "Doubt-solving and mentorship." },
   { title: "Achieve Success", icon: "🏆", desc: "Crack your exams and celebrate!" },
 ];
