@@ -82,7 +82,7 @@ export default function Numbers() {
               <FaSmile className="text-green-600 text-xl xs:text-2xl" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 text-base xs:text-lg">98% Satisfaction</h3>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">100% Satisfaction</h3>
               <p className="text-gray-600 text-sm xs:text-base">From our students</p>
             </div>
           </div>
@@ -92,8 +92,8 @@ export default function Numbers() {
               <FaMapMarkerAlt className="text-purple-600 text-xl xs:text-2xl" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 text-base xs:text-lg">50+ Cities</h3>
-              <p className="text-gray-600 text-sm xs:text-base">Across India</p>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">All cities across India</h3>
+              <p className="text-gray-600 text-sm xs:text-base">Trusted</p>
             </div>
           </div>
         </div>
