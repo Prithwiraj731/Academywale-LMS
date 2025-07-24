@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CoursePurchase from '../components/common/CoursePurchase';
 
-const API_URL = import.meta.env.VITE_API_URL;
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+if (!API_URL) {
+  console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
+}
+console.log('API_URL:', API_URL);
 
 export default function CoursesPage() {
   const { type, level } = useParams(); // 'ca' or 'cma', and 'foundation', 'inter', 'final'
@@ -57,7 +62,11 @@ export default function CoursesPage() {
   const getPosterUrl = (course) => {
     if (course.posterUrl) {
       if (course.posterUrl.startsWith('http')) return course.posterUrl;
-      if (course.posterUrl.startsWith('/uploads')) return `${API_URL}${course.posterUrl}`;
+      if (course.posterUrl.startsWith('/uploads')) {
+        const fullUrl = `${API_URL}${course.posterUrl}`;
+        console.log('Image URL:', fullUrl);
+        return fullUrl;
+      }
     }
     return '/logo.svg';
   };
@@ -112,4 +121,4 @@ export default function CoursesPage() {
       </div>
     </div>
   );
-} 
+}
