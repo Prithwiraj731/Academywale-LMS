@@ -92,6 +92,9 @@ app.use('/api/testimonials', testimonialRoutes);
 // Serve static files from /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve static files from /static
+app.use('/static', express.static(path.join(__dirname, 'static')));
+
 // Connect to DB and start server
 dbConnection().then(() => {
   const PORT = process.env.PORT || 5000;
