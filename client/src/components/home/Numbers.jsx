@@ -55,9 +55,9 @@ export default function Numbers() {
               className="bg-white/10 backdrop-blur-sm rounded-xl p-4 xs:p-5 sm:p-6 text-center transform transition-all duration-300 hover:scale-105 hover:bg-white/20"
             >
               <div className="flex justify-center mb-3 xs:mb-4">
-                <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+              <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                   {num.icon}
-                </div>
+              </div>
               </div>
               <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-1 xs:mb-2">{num.value}</h3>
               <p className="text-base xs:text-lg text-gray-300">{num.label}</p>
