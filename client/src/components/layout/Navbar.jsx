@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
+  const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
+  const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -153,85 +155,117 @@ export default function Navbar() {
           {/* Mobile Navigation */}
           {isMenuOpen && (
             <div className="lg:hidden py-4 border-t border-gray-200 bg-white">
-              <div className="space-y-3">
+              <div>
                 <Link 
                   to="/" 
-                  className="block py-2 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </Link>
-                <div className="space-y-2">
-                  <div className="font-semibold text-primary py-2 px-2">CA Courses</div>
-                  <Link 
-                    to="/courses/ca/foundation" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
+                <div>
+                  <button
+                    onClick={() => setIsCaDropdownOpen(!isCaDropdownOpen)}
+                    className="w-full flex justify-between items-center font-semibold text-primary py-1.5 px-2 focus:outline-none"
                   >
-                    CA Foundation
-                  </Link>
-                  <Link 
-                    to="/courses/ca/inter" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    CA Inter
-                  </Link>
-                  <Link 
-                    to="/courses/ca/final" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    CA Final
-                  </Link>
+                    CA Courses
+                    <svg
+                      className={`w-4 h-4 ml-1 transform transition-transform duration-200 ${isCaDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  {isCaDropdownOpen && (
+                    <div className="pl-6">
+                      <Link 
+                        to="/courses/ca/foundation" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CA Foundation
+                      </Link>
+                      <Link 
+                        to="/courses/ca/inter" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CA Inter
+                      </Link>
+                      <Link 
+                        to="/courses/ca/final" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CA Final
+                      </Link>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <div className="font-semibold text-primary py-2 px-2">CMA Courses</div>
-                  <Link 
-                    to="/courses/cma/foundation" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
+                <div>
+                  <button
+                    onClick={() => setIsCmaDropdownOpen(!isCmaDropdownOpen)}
+                    className="w-full flex justify-between items-center font-semibold text-primary py-1.5 px-2 focus:outline-none"
                   >
-                    CMA Foundation
-                  </Link>
-                  <Link 
-                    to="/courses/cma/inter" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    CMA Inter
-                  </Link>
-                  <Link 
-                    to="/courses/cma/final" 
-                    className="block py-2 pl-6 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    CMA Final
-                  </Link>
+                    CMA Courses
+                    <svg
+                      className={`w-4 h-4 ml-1 transform transition-transform duration-200 ${isCmaDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  {isCmaDropdownOpen && (
+                    <div className="pl-6">
+                      <Link 
+                        to="/courses/cma/foundation" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CMA Foundation
+                      </Link>
+                      <Link 
+                        to="/courses/cma/inter" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CMA Inter
+                      </Link>
+                      <Link 
+                        to="/courses/cma/final" 
+                        className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CMA Final
+                      </Link>
+                    </div>
+                  )}
                 </div>
                 <a 
                   href="#" 
-                  className="block py-2 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                 >
                   Test Series
                 </a>
                 <Link 
                   to="/faculties" 
-                  className="block py-2 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   All Faculties
                 </Link>
                 <Link 
                   to="/about" 
-                  className="block py-2 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About
                 </Link>
                 <Link 
                   to="/contact" 
-                  className="block py-2 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
