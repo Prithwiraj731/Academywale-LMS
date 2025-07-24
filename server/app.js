@@ -21,7 +21,9 @@ app.use(cors({
   origin: [
     'https://academywale.com',
     'https://www.academywale.com',
-    'https://academywale-lms.vercel.app'
+    'https://academywale-lms.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
   ],
   credentials: true
 }));

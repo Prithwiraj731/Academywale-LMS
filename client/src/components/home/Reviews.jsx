@@ -10,9 +10,12 @@ export default function Reviews() {
       .then(data => setTestimonials(data.testimonials || []));
   }, []);
  const getImageUrl = (url) => {
-    if(!url) return ''
-   if (url) return `${API_URL}/uploads/${url}`;
-    return '';
+    if (!url) return '';
+    // If url already contains /uploads/, avoid duplicating
+    if (url.startsWith('/uploads/')) {
+      return `${API_URL}${url}`;
+    }
+    return `${API_URL}/uploads/${url}`;
   };
   return (
     <section className="py-8 xs:py-10 sm:py-12 bg-gradient-to-r from-[#e0f7f4] via-white to-[#e0f7f4]">
@@ -24,11 +27,11 @@ export default function Reviews() {
           {testimonials.length === 0 ? (
             <div className="text-gray-400 text-center col-span-2">No testimonials yet.</div>
           ) : testimonials.map((rev) => (
-            <div key={rev._id} className="flex items-center bg-white rounded-xl shadow p-3 xs:p-4 sm:p-6 gap-2 xs:gap-3 sm:gap-4">
-              {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-8 h-8 xs:w-10 xs:h-10 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-[#20b2aa]" />}
+            <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-6 gap-4 xs:gap-6 sm:gap-8 border border-yellow-200" style={{ fontFamily: "'Indie Flower', cursive" }}>
+              {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#d4af37]" />}
               <div>
-                <div className="font-semibold text-gray-800 text-xs xs:text-sm sm:text-base">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>
-                <div className="text-gray-600 text-xs xs:text-xs sm:text-sm">{rev.text}</div>
+                <div className="font-semibold text-gray-800 text-sm xs:text-base sm:text-lg">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>
+                <div className="text-gray-700 text-sm xs:text-base sm:text-lg italic mt-1">{rev.text}</div>
               </div>
             </div>
           ))}
