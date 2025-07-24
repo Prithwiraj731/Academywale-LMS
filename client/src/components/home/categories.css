@@ -1,4 +1,4 @@
-{ position: relative;
+position: relative;
   z-index: 1;
   background: linear-gradient(135deg, #f1f5f9 60%, #e0e7ef 100%);
   box-shadow: 0 4px 24px 0 #c7d2fe22;
@@ -16,6 +16,7 @@
   will-change: transform, box-shadow;
   -webkit-tap-highlight-color: transparent;
 }
+=======
 .timeline-step-premium {
   position: relative;
   z-index: 1;
