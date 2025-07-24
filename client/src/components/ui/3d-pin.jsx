@@ -39,14 +39,12 @@ export const PinContainer = ({
     }
   };
   
-  // For mobile, use click/tap to toggle hover state
+  // For mobile, allow click/tap to navigate instead of toggling hover state
   const handleClick = (e) => {
     if (isMobile) {
-      e.preventDefault();
-      setIsHovered(!isHovered);
-      setTransform(isHovered 
-        ? "translate(-50%,-50%) rotateX(0deg) scale(1)" 
-        : "translate(-50%,-50%) rotateX(40deg) scale(0.8)");
+      // Allow navigation on mobile click, do not prevent default or toggle hover
+      // So do nothing here to allow default anchor behavior
+      return;
     }
   };
 
