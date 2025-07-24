@@ -1,29 +1,29 @@
 import React from 'react';
-import { FaHeadset, FaSmile, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaHeadset, FaSmile, FaMapMarkerAlt, FaUsers, FaBoxOpen, FaChalkboardTeacher, FaRegFileAlt } from 'react-icons/fa';
 
 const numbers = [
   { 
     label: 'Students Network', 
     value: '50+',
-    icon: '👥',
+    icon: <FaUsers className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Active learners'
   },
   { 
     label: 'Successful Orders', 
     value: '100+',
-    icon: '📦',
+    icon: <FaBoxOpen className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Completed orders'
   },
   { 
     label: 'Authorised Faculties', 
     value: '30+',
-    icon: '👨‍🏫',
+    icon: <FaChalkboardTeacher className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Expert teachers'
   },
   { 
     label: 'Test Series', 
     value: '100+',
-    icon: '📝',
+    icon: <FaRegFileAlt className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Practice tests'
   },
 ];
@@ -55,7 +55,7 @@ export default function Numbers() {
               className="bg-white/10 backdrop-blur-sm rounded-xl p-4 xs:p-5 sm:p-6 text-center transform transition-all duration-300 hover:scale-105 hover:bg-white/20"
             >
               <div className="flex justify-center mb-3 xs:mb-4">
-              <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+              <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 rounded-full bg-primary/20 flex items-center justify-center">
                   {num.icon}
               </div>
               </div>
