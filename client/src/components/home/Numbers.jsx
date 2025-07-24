@@ -16,7 +16,7 @@ const numbers = [
   },
   { 
     label: 'Authorised Faculties', 
-    value: '10+',
+    value: '30+',
     icon: '👨‍🏫',
     description: 'Expert teachers'
   },
