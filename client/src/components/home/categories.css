@@ -1,3 +1,21 @@
+{ position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #f1f5f9 60%, #e0e7ef 100%);
+  box-shadow: 0 4px 24px 0 #c7d2fe22;
+  border-radius: 2rem;
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  will-change: transform, box-shadow;
+  -webkit-tap-highlight-color: transparent;
+}
 .timeline-step-premium {
   position: relative;
   z-index: 1;
@@ -17,7 +35,18 @@
   will-change: transform, box-shadow;
   -webkit-tap-highlight-color: transparent;
 }
+>>>>>>> REPLACE
 
+<<<<<<< SEARCH
+@media (max-width: 900px) {
+  .timeline-step-premium {
+    min-width: 150px;
+    max-width: 180px;
+    padding: 1.8rem 1.5rem 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
+=======
 @media (max-width: 900px) {
   .timeline-step-premium {
     min-width: 180px;
@@ -26,7 +55,17 @@
     margin-bottom: 1rem;
   }
 }
+>>>>>>> REPLACE
 
+<<<<<<< SEARCH
+@media (max-width: 480px) {
+  .timeline-step-premium {
+    min-width: 120px;
+    max-width: 150px;
+    padding: 1.5rem 1.2rem 1rem 1.2rem;
+  }
+}
+=======
 @media (max-width: 480px) {
   .timeline-step-premium {
     min-width: 150px;
@@ -34,7 +73,18 @@
     padding: 1.5rem 1.2rem 1rem 1.2rem;
   }
 }
+>>>>>>> REPLACE
 
+<<<<<<< SEARCH
+@media (max-width: 360px) {
+  .timeline-step-premium {
+    min-width: 90px;
+    max-width: 120px;
+    padding: 1.2rem 0.8rem 0.8rem 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+}
+=======
 @media (max-width: 360px) {
   .timeline-step-premium {
     min-width: 120px;
