@@ -14,7 +14,7 @@ export default function Hero() {
       <img
         src={bannerImg}
         alt="Banner"
-        className="w-full h-48 xs:h-64 sm:h-80 md:h-[440px] lg:h-[520px] object-cover shadow-2xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:brightness-105 relative z-20 align-bottom"
+        className="w-full h-auto xs:h-64 sm:h-80 md:h-[440px] lg:h-[520px] object-contain sm:object-cover shadow-2xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:brightness-105 relative z-20 align-bottom"
         style={{ display: 'block', marginBottom: 0, paddingBottom: 0 }}
       />
       {/* SVG wave now sits directly below the image as a section divider */}
