@@ -33,6 +33,7 @@
   overflow: visible;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  background-color: #e0e7ef;
 }
 .timeline-container-premium {
   position: relative;
@@ -228,6 +229,16 @@
   .timeline-scroll-fade.right {
     right: 0;
     background: linear-gradient(270deg, #e0e7ef 80%, transparent 100%);
+  }
+  @media (max-width: 480px) {
+    .timeline-scroll-fade {
+      width: 16px;
+    }
+  }
+  @media (max-width: 360px) {
+    .timeline-scroll-fade {
+      display: none;
+    }
   }
   
   /* Timeline step styles for mobile */
