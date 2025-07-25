@@ -28,7 +28,7 @@ export default function Home() {
   // Helper to get image
   const getFacultyImage = fac => {
     if (fac.imageUrl) {
-      return `${API_URL}/uploads/${fac.imageUrl}`;
+      return `/uploads/${fac.imageUrl}`;
     }
     return '/logo.svg';
   };
