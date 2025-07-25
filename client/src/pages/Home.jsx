@@ -117,7 +117,6 @@ export default function Home() {
       </div>
       {/* End rearranged section */}
       <Categories />
-      <Numbers />
       {/* Restore Meet Our Expert Faculties section */}
       <section className="flex-1 py-10 sm:py-14 px-2 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
@@ -144,7 +143,7 @@ export default function Home() {
                           alt={name}
                           className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
                           style={{ background: '#fff' }}
-                        />
+                          />
                       </div>
                       <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
                         {name.replace(/_/g, ' ')}
@@ -170,6 +169,7 @@ export default function Home() {
       </section>
       <SearchBy />
       {/* <Partners /> */}
+      <Numbers />
       <Reviews />
       <ContactForm />
       <Footer />
