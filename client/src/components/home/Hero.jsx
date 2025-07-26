@@ -19,10 +19,10 @@ export default function Hero() {
       className="relative z-10 w-full flex flex-col justify-center items-center overflow-hidden bg-transparent"
       style={{ height: 'auto' }}
     >
-      <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
-        {/* Subtle blue gradient overlay for vibrancy */}
+      {/* Removed white overlay by deleting the gradient overlay div */}
+      {/* <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
         <div className="w-full h-full bg-gradient-to-br from-blue-100/70 via-blue-50/60 to-transparent" />
-      </div>
+      </div> */}
       <div className="w-full overflow-hidden relative">
         <div
           className="flex transition-transform duration-700 ease-in-out"
@@ -38,6 +38,26 @@ export default function Hero() {
             />
           ))}
         </div>
+        {/* Left arrow */}
+        <button
+          onClick={() => setCurrentIndex((currentIndex - 1 + banners.length) % banners.length)}
+          className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 shadow-md z-30"
+          aria-label="Previous Banner"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        {/* Right arrow */}
+        <button
+          onClick={() => setCurrentIndex((currentIndex + 1) % banners.length)}
+          className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 shadow-md z-30"
+          aria-label="Next Banner"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
       {/* SVG wave now sits directly below the image as a section divider */}
       <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-16 xs:h-20 sm:h-24 md:h-32 z-30 -mt-6 xs:-mt-8 sm:-mt-10">
