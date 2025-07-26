@@ -324,11 +324,11 @@ export default function AdminDashboard() {
   };
 
   const requiredFields = [
-    { name: 'facultySlug', label: 'Faculty' },
     { name: 'subject', label: 'Subject' },
     { name: 'noOfLecture', label: 'No Of Lecture' },
     { name: 'poster', label: 'Poster' },
     { name: 'courseType', label: 'Course Type' },
+    { name: 'institute', label: 'Institute' },
   ];
 
   const handleChange = e => {
@@ -341,17 +341,26 @@ export default function AdminDashboard() {
     }
   };
 
-  // Fetch courses for a faculty
-  const fetchCourses = async (facultyName) => {
-    const firstName = facultyName.split(' ')[0].toUpperCase();
+  // Fetch courses for a faculty or institute
+  const fetchCourses = async (facultyName, instituteName) => {
+    let url = '';
+    if (facultyName) {
+      const firstName = facultyName.split(' ')[0].toUpperCase();
+      url = `${API_URL}/api/courses/${firstName}`;
+    } else if (instituteName) {
+      url = `${API_URL}/api/institutes/${encodeURIComponent(instituteName)}/courses`;
+    } else {
+      setCourses([]);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/courses/${firstName}`);
+      const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
         setCourses(data.courses || []);
-        setFacultyQueried(firstName);
+        setFacultyQueried(facultyName || '');
       } else {
         setCourses([]);
         setError(data.error || 'Could not fetch courses');
@@ -372,9 +381,9 @@ export default function AdminDashboard() {
     e.preventDefault();
     setSuccess('');
     setError('');
-    // Extra validation for facultyName
-    if (!form.facultySlug) {
-      setError('Please select a valid Faculty.');
+    // Extra validation for facultySlug and institute
+    if (!form.facultySlug && !form.institute) {
+      setError('Please select either a Faculty or an Institute.');
       return;
     }
     // Validate required fields
@@ -387,7 +396,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('facultySlug', form.facultySlug);
+      if (form.facultySlug) formData.append('facultySlug', form.facultySlug);
       formData.append('subject', form.subject);
       formData.append('noOfLecture', form.noOfLecture);
       formData.append('books', form.books);
@@ -414,7 +423,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (res.ok) {
         setSuccess('Course added!');
-        fetchCourses(form.facultySlug); // Use facultySlug to fetch courses
+        fetchCourses(form.facultySlug, form.institute);
         setForm({ facultySlug: '', subject: '', noOfLecture: '', books: '', videoLanguage: '', validityStartFrom: '', videoRunOn: '', doubtSolving: '', supportMail: '', supportCall: '', poster: null, mode: MODES[0], timing: '', description: '', title: '', costPrice: '', sellingPrice: '', courseType: COURSE_OPTIONS[0], institute: '' });
         setPosterPreview(null);
         setModesText('Recorded,Live,Pendrive');

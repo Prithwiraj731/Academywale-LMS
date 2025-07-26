@@ -32,30 +32,34 @@ exports.addCourse = async (req, res) => {
       courseLevel,
       institute // NEW: from form
     } = req.body;
-    
-    if (!facultySlug || !facultySlug.trim()) {
-      return res.status(400).json({ error: 'Faculty slug is required.' });
-    }
-    if (!institute || !institute.trim()) {
-      return res.status(400).json({ error: 'Institute is required.' });
-    }
-    // Validate institute exists
-    const inst = await Institute.findOne({ name: institute });
-    if (!inst) {
-      return res.status(400).json({ error: 'Selected institute does not exist.' });
-    }
-    const faculty = await Faculty.findOne({ slug: facultySlug });
-    if (!faculty) {
-      return res.status(404).json({ error: 'Faculty not found.' });
+
+    if ((!facultySlug || !facultySlug.trim()) && (!institute || !institute.trim())) {
+      return res.status(400).json({ error: 'Either Faculty slug or Institute is required.' });
     }
 
-    // Backend validation for facultyName
-    if (!faculty.firstName || !faculty.firstName.trim()) {
-      return res.status(400).json({ error: 'Faculty Name is required.' });
+    // Validate institute exists if provided
+    let inst = null;
+    if (institute && institute.trim()) {
+      inst = await Institute.findOne({ name: institute });
+      if (!inst) {
+        return res.status(400).json({ error: 'Selected institute does not exist.' });
+      }
     }
-    const firstName = faculty.firstName.split(' ')[0].toUpperCase();
-    if (!firstName) {
-      return res.status(400).json({ error: 'Faculty Name must include at least one word.' });
+
+    let faculty = null;
+    if (facultySlug && facultySlug.trim()) {
+      faculty = await Faculty.findOne({ slug: facultySlug });
+      if (!faculty) {
+        return res.status(404).json({ error: 'Faculty not found.' });
+      }
+      // Backend validation for facultyName
+      if (!faculty.firstName || !faculty.firstName.trim()) {
+        return res.status(400).json({ error: 'Faculty Name is required.' });
+      }
+      const firstName = faculty.firstName.split(' ')[0].toUpperCase();
+      if (!firstName) {
+        return res.status(400).json({ error: 'Faculty Name must include at least one word.' });
+      }
     }
 
     // Validate costPrice and sellingPrice
@@ -81,7 +85,7 @@ exports.addCourse = async (req, res) => {
       // Save the relative path to the uploaded file
       posterUrl = `/uploads/${req.file.filename}`;
     }
-    
+
     let parsedModes = [];
     let parsedDurations = [];
     if (modes) {
@@ -93,7 +97,7 @@ exports.addCourse = async (req, res) => {
 
     // Create course object with all required and optional fields
     const courseData = {
-      facultyName: faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : ''),
+      facultyName: faculty ? (faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '')) : '',
       subject: subject,
       noOfLecture: noOfLecture,
       duration: 'Not specified', // Default value since it's not in the form
@@ -113,12 +117,24 @@ exports.addCourse = async (req, res) => {
       modes: parsedModes,
       durations: parsedDurations,
       courseType: courseType,
-      institute // Save the institute name
+      institute: institute || '' // Save the institute name or empty string
     };
-    // console.log('COURSE DATA TO SAVE:', courseData);
-    faculty.courses.push(courseData);
-    await faculty.save();
-    res.status(201).json({ message: 'Course added', faculty });
+
+    if (faculty) {
+      faculty.courses.push(courseData);
+      await faculty.save();
+      res.status(201).json({ message: 'Course added to faculty', faculty });
+    } else if (inst) {
+      // If no faculty, add course to institute's courses array (assuming Institute model has courses array)
+      if (!inst.courses) {
+        inst.courses = [];
+      }
+      inst.courses.push(courseData);
+      await inst.save();
+      res.status(201).json({ message: 'Course added to institute', institute: inst });
+    } else {
+      res.status(400).json({ error: 'Invalid request: no faculty or institute found.' });
+    }
   } catch (err) {
     console.error('Error adding course:', err);
     res.status(500).json({ error: err.message });
