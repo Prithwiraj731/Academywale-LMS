@@ -15,6 +15,8 @@ import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
 import InstitutesPage from './InstitutesPage';
 
+import banner3 from '../assets/banner3.png';
+
 export default function Home() {
   const navigate = useNavigate();
   const [faculties, setFaculties] = useState([]);
@@ -168,6 +170,14 @@ export default function Home() {
         </div>
       </section>
       <SearchBy />
+      {/* Insert banner3.png here */}
+      <div className="my-8 sm:my-12 flex justify-center px-4">
+        <img
+          src={banner3}
+          alt="Banner"
+          className="w-full max-w-6xl h-auto object-contain rounded-lg shadow-lg"
+        />
+      </div>
       {/* <Partners /> */}
       <Numbers />
       <Reviews />

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import bannerImg from '../../assets/banner.png';
 import banner2Img from '../../assets/banner2.png';
@@ -33,7 +34,7 @@ export default function Hero() {
               key={idx}
               src={banner}
               alt={`Banner ${idx + 1}`}
-              className="w-full h-auto xs:h-64 sm:h-80 md:h-[440px] lg:h-[520px] object-contain sm:object-cover shadow-2xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:brightness-105 relative z-20 align-bottom flex-shrink-0"
+              className="w-full h-auto xs:h-64 sm:h-72 md:h-96 lg:h-[400px] object-cover shadow-2xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:brightness-105 relative z-20 align-bottom flex-shrink-0"
               style={{ display: 'block', marginBottom: 0, paddingBottom: 0, minWidth: '100%' }}
             />
           ))}
