@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/uploads/:path*", "destination": "https://api.academywale.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://api.academywale.com/api/:path*" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
