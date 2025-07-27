@@ -55,16 +55,12 @@ export default function Home() {
       <div className="h-4 sm:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
 {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden">
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 opacity-90"></div>
-        <div className="absolute -top-10 left-1/4 w-40 xs:w-56 sm:w-72 h-40 xs:h-56 sm:h-72 bg-gradient-to-tr from-blue-300 via-purple-200 to-pink-200 opacity-30 rounded-full filter blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-32 xs:w-48 sm:w-60 h-32 xs:h-48 sm:h-60 bg-gradient-to-tr from-green-200 via-blue-200 to-purple-200 opacity-20 rounded-full filter blur-2xl animate-pulse"></div>
-        
-        <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4">
+      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden bg-gray-900 text-white">
+        <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4 pt-6 pb-8">
           {/* Titles */}
           <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full mb-6">
-            <h3 className="text-xl font-bold text-center text-gray-800">CA Courses</h3>
-            <h3 className="text-xl font-bold text-center text-gray-800">CMA Courses</h3>
+            <h3 className="text-xl font-bold text-center">CA Courses</h3>
+            <h3 className="text-xl font-bold text-center">CMA Courses</h3>
           </div>
 
           {/* Button Grid */}
