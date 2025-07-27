@@ -171,11 +171,11 @@ export default function Home() {
       </section>
       <SearchBy />
       {/* Insert banner3.png here */}
-      <div className="my-8 sm:my-12 flex justify-center px-4">
+      <div className="my-8 sm:my-12 w-full flex justify-center px-0">
         <img
           src={banner3}
           alt="Banner"
-          className="w-full max-w-6xl h-auto object-contain rounded-lg shadow-lg"
+          className="w-full h-auto object-cover rounded-lg shadow-lg"
         />
       </div>
       {/* <Partners /> */}
