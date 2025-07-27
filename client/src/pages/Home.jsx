@@ -68,13 +68,13 @@ export default function Home() {
             {/* --- Foundation Row --- */}
             <button
               onClick={() => navigate('/courses/ca/foundation')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Foundation
             </button>
             <button
               onClick={() => navigate('/courses/cma/foundation')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Foundation
             </button>
