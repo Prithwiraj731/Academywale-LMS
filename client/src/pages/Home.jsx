@@ -82,13 +82,13 @@ export default function Home() {
             {/* --- Inter Row --- */}
             <button
               onClick={() => navigate('/courses/ca/inter')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Inter
             </button>
             <button
               onClick={() => navigate('/courses/cma/inter')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Inter
             </button>
@@ -96,13 +96,13 @@ export default function Home() {
             {/* --- Final Row --- */}
             <button
               onClick={() => navigate('/courses/ca/final')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-xl hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Final
             </button>
             <button
               onClick={() => navigate('/courses/cma/final')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 animate-pulse focus:outline-none focus:ring-4 focus:ring-purple-200"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Final
             </button>
@@ -157,7 +157,7 @@ export default function Home() {
             <div className="flex justify-center mt-8">
               <button
                 onClick={() => navigate('/faculties')}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-2xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg tracking-wide animate-pulse"
+              className="px-8 py-3 bg-teal-600 text-white font-bold rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-teal-400 text-lg tracking-wide"
               >
                 Other Faculties
               </button>
@@ -167,13 +167,13 @@ export default function Home() {
       </section>
       <SearchBy />
       {/* Insert banner3.png here */}
-      <div className="my-8 sm:my-12 w-full flex justify-center px-0">
-        <img
-          src={banner3}
-          alt="Banner"
-          className="w-full h-auto object-cover rounded-lg shadow-lg"
-        />
-      </div>
+          <div className="my-4 sm:my-6 w-full flex justify-center px-0">
+            <img
+              src={banner3}
+              alt="Banner"
+              className="w-full h-auto object-cover rounded-lg shadow-lg"
+            />
+          </div>
       {/* <Partners /> */}
       <Numbers />
       <Reviews />
