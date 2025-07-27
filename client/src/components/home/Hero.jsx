@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import bannerImg from '../../assets/banner.png';
 import banner2Img from '../../assets/banner2.png';
@@ -17,7 +16,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative z-10 w-full flex flex-col justify-center items-center overflow-hidden bg-transparent pt-16"
+      className="relative z-10 w-full flex flex-col justify-center items-center overflow-hidden bg-transparent pt-8"
       style={{ height: 'auto' }}
     >
       {/* Removed white overlay by deleting the gradient overlay div */}
