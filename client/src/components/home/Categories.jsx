@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import banner4 from "../../assets/banner4.png";
 import "./categories.css";
 
 const steps = [
@@ -43,8 +44,11 @@ const Categories = () => {
   return (
     <section className="timeline-section-premium py-10 xs:py-12 sm:py-16">
       <div className="timeline-heading-container px-4">
-        <h2 className="timeline-heading text-2xl xs:text-3xl md:text-4xl mb-6 xs:mb-8 sm:mb-12">Your Learning Journey</h2>
-        <div className="timeline-subtitle">How Academywale helps you succeed, step by step</div>
+        <img
+          src={banner4}
+          alt="Learning Journey Banner"
+          className="w-full h-auto object-cover rounded-lg shadow-lg transition-transform duration-500 ease-in-out hover:scale-105 cursor-pointer"
+        />
       </div>
       <div className="timeline-scroll-wrapper">
         <div className="timeline-scroll-fade left" />
