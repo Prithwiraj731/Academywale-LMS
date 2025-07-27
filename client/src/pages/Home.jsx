@@ -167,13 +167,13 @@ export default function Home() {
       </section>
       <SearchBy />
       {/* Insert banner3.png here */}
-          <div className="my-0 w-full max-w-full overflow-hidden">
+          {/* <div className="my-0 w-full max-w-full overflow-hidden">
             <img
               src={banner3}
               alt="Banner"
               className="w-full h-auto object-cover"
             />
-          </div>
+          </div> */}
       {/* <Partners /> */}
       <Numbers />
       <Reviews />
