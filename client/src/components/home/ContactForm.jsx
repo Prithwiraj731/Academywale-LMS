@@ -7,6 +7,7 @@ export default function ContactForm() {
     city: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -17,7 +18,9 @@ export default function ContactForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitted) return; // prevent multiple submissions
+    if (submitted || loading) return; // prevent multiple submissions
+
+    setLoading(true);
 
     const payload = {
       name: formData.name,
@@ -34,9 +37,11 @@ export default function ContactForm() {
         },
         body: JSON.stringify(payload),
       });
+      setLoading(false);
       setSubmitted(true);
     } catch (error) {
       // Fail silently, do not show error to user
+      setLoading(false);
       setSubmitted(true);
     }
   };
@@ -54,7 +59,7 @@ export default function ContactForm() {
             value={formData.name}
             onChange={handleChange}
             required
-            disabled={submitted}
+            disabled={submitted || loading}
           />
           <input
             type="text"
@@ -64,7 +69,7 @@ export default function ContactForm() {
             value={formData.phone}
             onChange={handleChange}
             required
-            disabled={submitted}
+            disabled={submitted || loading}
           />
           <input
             type="text"
@@ -74,14 +79,23 @@ export default function ContactForm() {
             value={formData.city}
             onChange={handleChange}
             required
-            disabled={submitted}
+            disabled={submitted || loading}
           />
           <button
             type="submit"
-            disabled={submitted}
-            className={`bg-blue-600 text-white rounded px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base font-semibold hover:bg-blue-700 transition-colors duration-300 ${submitted ? 'cursor-default' : ''}`}
+            disabled={submitted || loading}
+            className={`bg-blue-600 text-white rounded px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base font-semibold hover:bg-blue-700 transition-colors duration-300 ${submitted || loading ? 'cursor-default' : ''}`}
           >
-            {submitted ? 'We will get back soon' : 'Request a Call Back'}
+            {loading ? (
+              <svg className="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            ) : submitted ? (
+              'We will get back soon'
+            ) : (
+              'Request a Call Back'
+            )}
           </button>
         </form>
       </div>
