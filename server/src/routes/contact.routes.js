@@ -38,8 +38,11 @@ router.post('/', async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
+    console.log('Contact form submission received:', { name, email, subject, message });
+
     // Validate required fields
     if (!name || !email || !subject || !message) {
+      console.log('Validation failed: Missing fields');
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
@@ -49,6 +52,7 @@ router.post('/', async (req, res) => {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log('Validation failed: Invalid email format');
       return res.status(400).json({
         success: false,
         message: 'Please provide a valid email address'
@@ -62,6 +66,8 @@ router.post('/', async (req, res) => {
       subject,
       message
     });
+
+    console.log('Email send result:', emailResult);
 
     if (emailResult.success) {
       res.status(200).json({
