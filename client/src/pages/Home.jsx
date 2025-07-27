@@ -55,7 +55,7 @@ export default function Home() {
       <div className="h-4 sm:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
 {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden bg-black bg-opacity-50 text-white relative z-10">
+      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden bg-#111827 bg-opacity-50 text-white relative z-10">
         <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4 pt-6 pb-8">
           {/* Titles */}
           <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full mb-6">
