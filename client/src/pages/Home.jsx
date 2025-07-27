@@ -15,7 +15,7 @@ import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
 import InstitutesPage from './InstitutesPage';
 
-import banner3 from '../assets/banner3.png';
+// import banner3 from '../assets/banner3.png';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ export default function Home() {
       <div className="h-4 sm:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
 {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden bg-gray-900 text-white">
+      <div className="relative py-10 xs:py-12 sm:py-16 flex justify-center items-center overflow-hidden bg-black bg-opacity-50 text-white relative z-10">
         <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4 pt-6 pb-8">
           {/* Titles */}
           <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full mb-6">
@@ -167,11 +167,11 @@ export default function Home() {
       </section>
       <SearchBy />
       {/* Insert banner3.png here */}
-          <div className="my-4 sm:my-6 w-full flex justify-center px-0">
+          <div className="my-0 w-full max-w-full overflow-hidden">
             <img
               src={banner3}
               alt="Banner"
-              className="w-full h-auto object-cover rounded-lg shadow-lg"
+              className="w-full h-auto object-cover"
             />
           </div>
       {/* <Partners /> */}
