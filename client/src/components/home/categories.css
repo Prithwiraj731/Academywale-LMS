@@ -9,6 +9,14 @@
   margin-bottom: 2.5rem;
   padding: 0 1rem;
 }
+
+/* Override for full width banner4 image container */
+.timeline-heading-container.full-width-banner {
+  padding: 0 !important;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+}
 .timeline-heading {
   color: #1e293b;
   font-size: 2.5rem;

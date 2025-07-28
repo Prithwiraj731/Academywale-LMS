@@ -43,13 +43,19 @@ const Categories = () => {
 
   return (
     <section className="timeline-section-premium py-10 xs:py-12 sm:py-16">
-      <div className="timeline-heading-container px-4" style={{ overflow: 'visible' }}>
+      <div className="timeline-heading-container px-4 full-width-banner" style={{ overflow: 'visible' }}>
         <img
           src={banner4}
           alt="Learning Journey Banner"
           className="w-full h-auto object-contain rounded-lg shadow-lg transition-transform duration-500 ease-in-out hover:scale-105 cursor-pointer"
           style={{ maxHeight: '400px' }}
         />
+      </div>
+      {/* Footer style section under banner4 */}
+      <div className="bg-gray-900 text-white py-6 mt-4 rounded-lg shadow-lg animate-fadeIn">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm sm:text-base">
+          Choose your path to success
+        </div>
       </div>
       <div className="timeline-scroll-wrapper">
         <div className="timeline-scroll-fade left" />

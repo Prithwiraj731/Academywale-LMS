@@ -3,11 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 const institutes = [
   { name: 'Avinash Lala Classes', img: '/institutes/avinash_lala_classes.jpg' },
-  { name: 'CA Buddy', img: '/institutes/ca_buddy.png' },
   { name: 'Bishnu Kedia Classes', img: '/institutes/bishnu_kedia_classes.png' },
   { name: 'COC Education', img: '/institutes/coc_education.png' },
-  { name: 'BB Virtuals', img: '/institutes/bb_virtuals.png' },
-  { name: 'Gopal Bhoot Classes', img: '/institutes/gopal_bhoot_classes.gif' },
   { name: 'CA Praveen Jindal', img: '/institutes/ca_praveen_jindal.png' },
   { name: 'Siddharth Agarrwal Classes', img: '/institutes/siddharth_agarrwal_classes.jpg' },
   { name: 'Navin Classes', img: '/institutes/navin_classes.jpg' },
