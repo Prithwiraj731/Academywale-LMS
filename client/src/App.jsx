@@ -47,8 +47,22 @@ function AppRoutes() {
         <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
         <Route path="/payment/:slug/:courseIndex" element={<PaymentPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/register" element={<SignUp />} />
+        <Route
+          path="/login"
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+              <SignIn />
+            </div>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+              <SignUp />
+            </div>
+          }
+        />
         <Route path="/dashboard" element={isSignedIn ? <StudentDashboard /> : <Navigate to="/login" />} />
         <Route path="/student-dashboard" element={isSignedIn ? <StudentDashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<Admin />} />
