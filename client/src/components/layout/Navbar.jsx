@@ -30,7 +30,7 @@ export default function Navbar() {
     <>
       {/* Top contact bar */}
       <div className="bg-gray-900 text-white text-sm sm:text-base">
-        <div className="max-w-7xl mx-auto px-4 py-1 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-0 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
           <div className="flex items-center space-x-6 mb-1 sm:mb-0">
             <div className="flex items-center space-x-2">
               <svg className="w-4 h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
@@ -71,7 +71,7 @@ export default function Navbar() {
       {/* Main navigation */}
       <nav className="bg-white sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 relative z-50">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14">
             {/* Logo only */}
             <div className="flex items-center">
               <img src="/academywale.svg" alt="Academywale Logo" className="h-10 lg:h-16 w-auto object-contain" />
