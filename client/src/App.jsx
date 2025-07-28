@@ -17,7 +17,7 @@ import InstituteDetailPage from './pages/InstituteDetailPage.jsx';
 
 import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
 
-function AppRoutes() {
+function App() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const { isSignedIn, user } = useUser();
