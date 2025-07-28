@@ -15,7 +15,7 @@ import CoursesPage from './pages/CoursesPage';
 import InstitutesPage from './pages/InstitutesPage';
 import InstituteDetailPage from './pages/InstituteDetailPage.jsx';
 
-import { SignedIn, SignedOut, SignIn, SignUp, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
 
 function AppRoutes() {
   const location = useLocation();
