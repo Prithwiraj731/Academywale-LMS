@@ -29,8 +29,8 @@ export default function Navbar() {
     <>
       {/* Top contact bar */}
       <div className="bg-gray-900 text-white text-sm sm:text-base">
-        <div className="max-w-7xl mx-auto px-5  flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
-          <div className="flex items-center space-x-8 mb-0 sm:mb-0">
+        <div className="max-w-7xl mx-auto px-3 py-0 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
+          <div className="flex items-center space-x-6 mb-0 sm:mb-0">
             <div className="flex items-center space-x-3">
               <svg className="w-5 h-5 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
@@ -69,7 +69,7 @@ export default function Navbar() {
       </div>
       {/* Main navigation */}
       <nav className="bg-white sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 relative z-50">
+        <div className="max-w-7xl mx-auto px-3 py-1 relative z-50">
           <div className="flex items-center justify-between h-14">
             {/* Logo only */}
             <div className="flex items-center">
@@ -146,8 +146,8 @@ export default function Navbar() {
             <div className="flex items-center space-x-4 sm:space-x-6 relative">
             {!user ? (
               <button
-                onClick={() => navigate('/login')}
-                className="px-5 sm:px-10 py-3 sm:py-4 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-base sm:text-xl"
+                onClick={() => openSignIn()}
+                className="px-5 sm:px-10 py-2 sm:py-3 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-base sm:text-xl"
               >
                 Account
               </button>
@@ -168,7 +168,7 @@ export default function Navbar() {
                       className="block px-5 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                       onClick={() => setProfileMenu(false)}
                     >
-                      Dashboard
+                      Student Dashboard
                     </Link>
                     <button
                       onClick={handleLogout}
