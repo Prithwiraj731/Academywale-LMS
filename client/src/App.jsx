@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -7,12 +7,7 @@ import { useEffect, useState } from 'react';
 import FacultiesPage from './pages/FacultiesPage.jsx';
 import FacultyDetailPage from './pages/FacultyDetailPage.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import { AuthProvider } from './context/AuthContext';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
-import { useAuth } from './context/AuthContext';
-import { Navigate } from 'react-router-dom';
 import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentPage from './pages/PaymentPage';
@@ -20,11 +15,12 @@ import CoursesPage from './pages/CoursesPage';
 import InstitutesPage from './pages/InstitutesPage';
 import InstituteDetailPage from './pages/InstituteDetailPage.jsx';
 
+import { SignedIn, SignedOut, SignIn, SignUp, UserButton } from '@clerk/clerk-react';
 
 function AppRoutes() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { isSignedIn, user } = useUser();
 
   useEffect(() => {
     setLoading(true);
@@ -35,6 +31,14 @@ function AppRoutes() {
   return (
     <>
       <LoadingOverlay show={loading} />
+      <header className="p-4 flex justify-end space-x-4 bg-gray-100">
+        <SignedOut>
+          <SignIn />
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </header>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -43,10 +47,10 @@ function AppRoutes() {
         <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
         <Route path="/payment/:slug/:courseIndex" element={<PaymentPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={user ? <StudentDashboard /> : <Navigate to="/login" />} />
-        <Route path="/student-dashboard" element={user ? <StudentDashboard /> : <Navigate to="/login" />} />
+        <Route path="/login" element={<SignIn />} />
+        <Route path="/register" element={<SignUp />} />
+        <Route path="/dashboard" element={isSignedIn ? <StudentDashboard /> : <Navigate to="/login" />} />
+        <Route path="/student-dashboard" element={isSignedIn ? <StudentDashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/courses/:type" element={<CoursesPage />} />
@@ -60,10 +64,8 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   );
 }

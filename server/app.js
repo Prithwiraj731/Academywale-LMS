@@ -63,7 +63,9 @@ const contactRoutes = require('./src/routes/contact.routes');
 app.use('/api/contact', contactRoutes);
 
 const purchaseRoutes = require('./src/routes/purchase.routes');
-app.use('/api/purchase', purchaseRoutes);
+const requireAuth = require('./src/middlewares/clerkAuth.middleware');
+
+app.use('/api/purchase', requireAuth, purchaseRoutes);
 
 const couponRoutes = require('./src/routes/coupon.routes');
 app.use(couponRoutes);
