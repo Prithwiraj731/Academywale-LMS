@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { SignIn } from '@clerk/clerk-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
-  const [showSignIn, setShowSignIn] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, isSignedIn } = useUser();
+  const { openSignIn, signOut } = useClerk();
   const navigate = useNavigate();
 
   // Live faculty list
@@ -21,7 +20,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    signOut();
     setProfileMenu(false);
     navigate('/');
   };
@@ -145,39 +144,42 @@ export default function Navbar() {
 
             {/* Account/Profile Button */}
             <div className="flex items-center space-x-2 sm:space-x-4 relative">
-              {!user ? (
-                <Link to="/login" className="px-4 sm:px-8 py-2 sm:py-3 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-sm sm:text-lg">
-                  Account
-                </Link>
-              ) : (
-                <div className="relative">
-                  <button
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-400 hover:shadow-lg transition focus:outline-none"
-                    onClick={() => setProfileMenu((v) => !v)}
-                  >
-                    <span className="text-blue-700 font-bold text-sm sm:text-lg uppercase">
-                      {user.name ? user.name[0] : 'U'}
-                    </span>
-                  </button>
-                  {profileMenu && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-50">
-                      <Link
-                        to="/dashboard"
-                        className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                        onClick={() => setProfileMenu(false)}
-                      >
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+            {!user ? (
+              <button
+                onClick={() => openSignIn()}
+                className="px-4 sm:px-8 py-2 sm:py-3 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-sm sm:text-lg"
+              >
+                Account
+              </button>
+            ) : (
+              <div className="relative">
+                <button
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-400 hover:shadow-lg transition focus:outline-none"
+                  onClick={() => setProfileMenu((v) => !v)}
+                >
+                  <span className="text-blue-700 font-bold text-sm sm:text-lg uppercase">
+                    {user.name ? user.name[0] : 'U'}
+                  </span>
+                </button>
+                {profileMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <Link
+                      to="/dashboard"
+                      className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                      onClick={() => setProfileMenu(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
               {/* Mobile menu button */}
               <button
                 className="lg:hidden p-2 rounded-md text-gray-700 hover:text-primary"
