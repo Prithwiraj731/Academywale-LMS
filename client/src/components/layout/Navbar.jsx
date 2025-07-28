@@ -29,7 +29,7 @@ export default function Navbar() {
     <>
       {/* Top contact bar */}
       <div className="bg-gray-900 text-white text-sm sm:text-base">
-        <div className="max-w-7xl mx-auto px-3 py-0 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
+        <div className="max-w-7xl mx-auto px-5 py-0 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
           <div className="flex items-center space-x-6 mb-0 sm:mb-0">
             <div className="flex items-center space-x-3">
               <svg className="w-5 h-5 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
