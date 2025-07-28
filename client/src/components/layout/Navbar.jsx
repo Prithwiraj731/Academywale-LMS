@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { SignIn } from '@clerk/clerk-react';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -271,8 +273,7 @@ export default function Navbar() {
                         className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        CMA Inter
-                      </Link>
+                        CMA Inter</Link>
                       <Link 
                         to="/courses/cma/final" 
                         className="block py-1 pl-0 pr-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
@@ -283,31 +284,16 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-                <a 
-                  href="#" 
-                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                >
+                <a href="#" className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   Test Series
                 </a>
-                <Link 
-                  to="/faculties" 
-                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <Link to="/faculties" className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   All Faculties
                 </Link>
-                <Link 
-                  to="/about" 
-                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <Link to="/about" className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   About
                 </Link>
-                <Link 
-                  to="/contact" 
-                  className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <Link to="/contact" className="block py-1.5 px-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   Contact
                 </Link>
               </div>

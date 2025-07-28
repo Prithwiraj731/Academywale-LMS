@@ -33,7 +33,7 @@ function AppRoutes() {
       <LoadingOverlay show={loading} />
       <header className="p-4 flex justify-end space-x-4 bg-gray-100">
         <SignedOut>
-          <SignIn />
+          {/* Removed SignIn component to prevent sign-in box showing by default */}
         </SignedOut>
         <SignedIn>
           <UserButton />
