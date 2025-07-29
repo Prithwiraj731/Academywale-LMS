@@ -150,7 +150,9 @@ export default function Contact() {
                 <span className="text-red-600 text-2xl">✉️</span>
                 <span>
                   E-mail your query on
-                  <a href="mailto:Support@academywale.com" className="text-blue-600 hover:underline ml-2">Support@academywale.com</a>
+                  <a href="https://mail.google.com/mail/?view=cm&fs=1&to=support@academywale.com"  target="_blank" >
+                  Support@academywale.com
+                  </a>
                 </span>
               </div>
               <div className="flex items-center gap-3">
