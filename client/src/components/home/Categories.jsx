@@ -42,7 +42,7 @@ const Categories = () => {
   }, []);
 
   return (
-    <section className="timeline-section-premium bg-gray-900 text-white py-10 xs:py-12 sm:py-16 rounded-lg shadow-lg animate-fadeIn">
+    <section className="timeline-section-premium bg-gray-900 text-white py-0 xs:py-12 sm:py-16 rounded-lg shadow-lg animate-fadeIn">
       <div className="timeline-heading-container px-0 full-width-banner" style={{ overflow: 'visible' }}>
         <img
           src={banner4}
