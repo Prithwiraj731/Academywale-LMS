@@ -6,8 +6,6 @@ export default function ContactForm() {
     phone: '',
     city: '',
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -16,34 +14,18 @@ export default function ContactForm() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (submitted || loading) return; // prevent multiple submissions
 
-    setLoading(true);
+    // Construct mailto URL with encoded subject and body
+    const subject = encodeURIComponent('Request a Call Back');
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nPhone Number: ${formData.phone}\nCity: ${formData.city}`
+    );
+    const mailtoUrl = `mailto:support@academywale.com?subject=${subject}&body=${body}`;
 
-    const payload = {
-      name: formData.name,
-      email: 'no-reply@academywale.com', // placeholder since no email input
-      subject: 'Request a Call Back',
-      message: `Phone Number: ${formData.phone}\nCity: ${formData.city}`,
-    };
-
-    try {
-      await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      setLoading(false);
-      setSubmitted(true);
-    } catch (error) {
-      // Fail silently, do not show error to user
-      setLoading(false);
-      setSubmitted(true);
-    }
+    // Redirect to mailto URL to open user's email client (Gmail)
+    window.location.href = mailtoUrl;
   };
 
   return (
@@ -59,7 +41,6 @@ export default function ContactForm() {
             value={formData.name}
             onChange={handleChange}
             required
-            disabled={submitted || loading}
           />
           <input
             type="text"
@@ -69,7 +50,6 @@ export default function ContactForm() {
             value={formData.phone}
             onChange={handleChange}
             required
-            disabled={submitted || loading}
           />
           <input
             type="text"
@@ -79,23 +59,12 @@ export default function ContactForm() {
             value={formData.city}
             onChange={handleChange}
             required
-            disabled={submitted || loading}
           />
           <button
             type="submit"
-            disabled={submitted || loading}
-            className={`bg-blue-600 text-white rounded px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base font-semibold hover:bg-blue-700 transition-colors duration-300 ${submitted || loading ? 'cursor-default' : ''}`}
+            className="bg-blue-600 text-white rounded px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-            ) : submitted ? (
-              'We will get back soon'
-            ) : (
-              'Request a Call Back'
-            )}
+            Request a Call Back
           </button>
         </form>
       </div>
