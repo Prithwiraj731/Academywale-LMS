@@ -1,7 +1,7 @@
 .timeline-section-premium {
   position: relative;
   background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
-  padding: 4rem 0 2.5rem 0;
+  padding: 0 0 2.5rem 0;
   overflow: hidden;
 }
 .timeline-heading-container {
