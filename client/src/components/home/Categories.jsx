@@ -52,7 +52,6 @@ const Categories = () => {
         />
       </div>
       <div className="max-w-7xl mx-auto px-4 text-center text-sm sm:text-base mt-6">
-        Choose your path to success
       </div>
       <div className="timeline-scroll-wrapper">
         <div className="timeline-scroll-fade left" />
