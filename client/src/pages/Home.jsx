@@ -40,16 +40,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-white overflow-x-hidden">
-      <Particles
-        particleColors={['#ffffff', '#00eaff', '#ffd600']}
-        particleCount={180}
-        particleSpread={12}
-        speed={0.12}
-        particleBaseSize={80}
-        moveParticlesOnHover={true}
-        alphaParticles={false}
-        disableRotation={false}
-      />
+      {/* Removed the first Particles component to restrict particles to dark background section only */}
       <Navbar />
       <Hero />
       <div className="h-4 sm:h-8" />
