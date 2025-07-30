@@ -35,8 +35,8 @@ export default function Home() {
     return '/logo.svg';
   };
 
-  // Only show first 10 faculties on homepage
-  const topFaculties = faculties.slice(0, 10);
+  // Only show first 9 faculties on homepage
+  const topFaculties = faculties.slice(0, 9);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-white overflow-x-hidden">
@@ -155,13 +155,13 @@ export default function Home() {
             </div>
           )}
           {/* Other Faculties Button */}
-          {faculties.length > 10 && (
+          {faculties.length > 9 && (
             <div className="flex justify-center mt-8">
               <button
                 onClick={() => navigate('/faculties')}
               className="px-8 py-3 bg-teal-600 text-white font-bold rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-teal-400 text-lg tracking-wide"
               >
-                Other Faculties
+                Browse All Faculty
               </button>
             </div>
           )}
