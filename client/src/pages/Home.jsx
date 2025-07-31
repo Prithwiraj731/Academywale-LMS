@@ -19,6 +19,9 @@ import InstitutesPage from './InstitutesPage';
 
 export default function Home() {
   const navigate = useNavigate();
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [faculties, setFaculties] = useState([]);
   useEffect(() => {
     fetch(`${API_URL}/api/faculties`)
@@ -26,11 +29,12 @@ export default function Home() {
       .then(data => setFaculties(data.faculties || []));
   }, []);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   // Helper to get image
   const getFacultyImage = fac => {
-    if (fac.imageUrl) {
-      return `/uploads/${fac.imageUrl}`;
+    if (fac.imageUrl && fac.imageUrl !== '/logo.svg') {
+      if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
+      if (fac.imageUrl.startsWith('/uploads')) return `${API_URL}${fac.imageUrl}`;
+      if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
     }
     return '/logo.svg';
   };
