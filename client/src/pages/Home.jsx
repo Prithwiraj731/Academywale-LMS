@@ -33,7 +33,12 @@ export default function Home() {
   const getFacultyImage = fac => {
     if (fac.imageUrl && fac.imageUrl !== '/logo.svg') {
       if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
-      if (fac.imageUrl.startsWith('/uploads')) return `${API_URL}${fac.imageUrl}`;
+      if (fac.imageUrl.startsWith('/uploads')) {
+        // Ensure no duplicated /uploads in URL
+        const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+        const imagePath = fac.imageUrl.startsWith('/uploads') ? fac.imageUrl : `/uploads${fac.imageUrl}`;
+        return `${baseUrl}${imagePath}`;
+      }
       if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
     }
     return '/logo.svg';
