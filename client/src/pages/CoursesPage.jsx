@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import BackButton from '../components/common/BackButton';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 if (!API_URL) {
@@ -149,12 +150,7 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">
       <div className="max-w-7xl w-full mx-auto flex-1">
-        <button
-          className="mb-6 text-[#20b2aa] font-semibold hover:underline flex items-center text-base"
-          onClick={() => navigate(`/${type}/${level}-papers`)}
-        >
-          ← Back to {level.charAt(0).toUpperCase() + level.slice(1)} Papers
-        </button>
+        <BackButton />
         {currentPaper && (
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
