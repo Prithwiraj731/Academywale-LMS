@@ -16,7 +16,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative z-10 w-full flex flex-col justify-center items-center overflow-hidden bg-transparent pt-8"
+      className="relative z-10 w-full flex flex-col justify-center items-center overflow-hidden bg-transparent pt-4 sm:pt-8"
       style={{ height: 'auto' }}
     >
       {/* Removed white overlay by deleting the gradient overlay div */}
@@ -41,20 +41,20 @@ export default function Hero() {
         {/* Left arrow */}
         <button
           onClick={() => setCurrentIndex((currentIndex - 1 + banners.length) % banners.length)}
-          className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 shadow-md z-30"
+          className="absolute top-1/2 left-1 sm:left-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-1 sm:p-2 shadow-md z-30"
           aria-label="Previous Banner"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         {/* Right arrow */}
         <button
           onClick={() => setCurrentIndex((currentIndex + 1) % banners.length)}
-          className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-2 shadow-md z-30"
+          className="absolute top-1/2 right-1 sm:right-2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full p-1 sm:p-2 shadow-md z-30"
           aria-label="Next Banner"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const partners = [
   { name: 'Partner 1', img: 'https://placehold.co/100x60?text=Partner+1' },
@@ -18,10 +19,12 @@ export default function Partners() {
         <div className="flex flex-nowrap md:flex-wrap gap-3 xs:gap-4 md:gap-6 overflow-x-auto md:overflow-x-visible pb-2 min-w-0">
           {partners.map((p) => (
             <div key={p.name} className="flex-shrink-0 w-32 xs:w-36 sm:w-40 md:w-1/4 lg:w-1/5 bg-white rounded-lg shadow-md p-3 xs:p-4 flex flex-col items-center">
-              <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-2 xs:mb-3">
+              <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-1 xs:mb-2">
                 <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain" />
               </div>
-              <div className="text-center text-xs xs:text-sm sm:text-base font-medium text-gray-800">{p.name}</div>
+              <span className="text-center text-xs xs:text-sm sm:text-base font-semibold text-gray-700 text-center whitespace-nowrap mt-1">
+                  {p.name}
+                </span>
             </div>
           ))}
         </div>

@@ -26,7 +26,7 @@ export default function Reviews() {
     <section className="py-8 xs:py-10 sm:py-12 bg-gradient-to-r from-[#e0f7f4] via-white to-[#e0f7f4]">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4 xs:mb-6">
-          <h2 className="text-xl xs:text-2xl md:text-3xl font-bold text-[#17817a] font-pacifico">See What Teachers & Students Say</h2>
+          <h2 className="text-xl xs:text-2xl md:text-3xl lg:text-4xl font-bold text-[#17817a] font-pacifico">See What Teachers & Students Say</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4 sm:gap-8">
           {testimonials.length === 0 ? (
