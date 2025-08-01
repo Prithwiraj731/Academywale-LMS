@@ -1,67 +1,71 @@
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 
-export default function CAInterPapers() {
-  const navigate = useNavigate();
+const group1 = [
+  { id: 5, title: 'Advanced Accounting' },
+  { id: 6, title: 'Corporate and Other Laws' },
+  { id: 7, title: 'Taxation (Income-tax Law and Goods and Services Tax)' },
+];
 
+const group2 = [
+  { id: 8, title: 'Cost and Management Accounting' },
+  { id: 9, title: 'Auditing and Ethics' },
+  { id: 10, title: 'Financial Management and Strategic Management' },
+];
+
+const CAInterPapers = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center justify-center">
-      <button
-        className="mb-6 text-[#20b2aa] font-semibold hover:underline flex items-center text-base"
-        onClick={() => navigate('/')}
-      >
-        ← Back to Home
-      </button>
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 tracking-tight text-center drop-shadow-lg">
-        CA Inter Papers
-      </h2>
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 1</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-5')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 5: Advanced Accounting
-            </button>
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-6')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 6: Corporate and Other Laws
-            </button>
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-7')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 7: Taxation (Income-tax Law and Goods and Services Tax)
-            </button>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-center mb-8">CA Inter Papers</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Group I</h2>
+            <div className="space-y-4">
+              {group1.map(paper => (
+                <Link
+                  key={paper.id}
+                  to={`/courses/ca/inter/paper-${paper.id}`}
+                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
+                >
+                  <h3 className="text-xl font-semibold mb-2">Paper {paper.id}</h3>
+                  <p className="text-gray-700">{paper.title}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Group II</h2>
+            <div className="space-y-4">
+              {group2.map(paper => (
+                <Link
+                  key={paper.id}
+                  to={`/courses/ca/inter/paper-${paper.id}`}
+                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
+                >
+                  <h3 className="text-xl font-semibold mb-2">Paper {paper.id}</h3>
+                  <p className="text-gray-700">{paper.title}</p>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 2</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-8')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 8: Cost and Management Accounting
-            </button>
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-9')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 9: Auditing and Ethics
-            </button>
-            <button
-              onClick={() => navigate('/courses/ca/inter/paper-10')}
-              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-            >
-              Paper 10: Financial Management and Strategic Management
-            </button>
+        <div className="text-center mt-8">
+          <Link
+            to="/courses/ca/inter/combo"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-300"
+          >
+            Combo Papers
+          </Link>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
-}
+};
+
+export default CAInterPapers;

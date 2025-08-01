@@ -79,13 +79,13 @@ export default function Home() {
             {/* --- Foundation Row --- */}
             <button
               onClick={() => navigate('/ca/foundation-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Foundation
             </button>
             <button
               onClick={() => navigate('/cma/foundation-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Foundation
             </button>
@@ -93,13 +93,13 @@ export default function Home() {
             {/* --- Inter Row --- */}
             <button
               onClick={() => navigate('/ca/inter-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Inter
             </button>
             <button
               onClick={() => navigate('/cma/inter-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Inter
             </button>
@@ -107,13 +107,13 @@ export default function Home() {
             {/* --- Final Row --- */}
             <button
               onClick={() => navigate('/ca/final-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Final
             </button>
             <button
               onClick={() => navigate('/cma/final-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-4 focus:ring-teal-400"
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-blue-500 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400"
             >
               Final
             </button>
