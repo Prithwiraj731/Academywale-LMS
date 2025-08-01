@@ -1,7 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Particles from '../common/Particles';
 
 export default function Footer() {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    city: '',
+  });
+  const [status, setStatus] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus(null);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: 'support@academywale.com', // Using support email as no email input field
+          subject: 'Request a Call Back',
+          message: `Phone Number: ${formData.phoneNumber}\nCity: ${formData.city}`
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus({ success: true, message: data.message || 'Message sent successfully.' });
+        setFormData({ fullName: '', phoneNumber: '', city: '' });
+      } else {
+        setStatus({ success: false, message: data.message || 'Failed to send message.' });
+      }
+    } catch (error) {
+      setStatus({ success: false, message: 'An error occurred. Please try again later.' });
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white relative overflow-hidden">
       <Particles />
@@ -71,26 +116,32 @@ export default function Footer() {
             <p className="text-gray-300 mb-4 text-sm sm:text-base">
               Simply fill out the form to request a callback from one of our team members.
             </p>
-            <form className="space-y-3" action="mailto:Support@academywale.com" method="POST" encType="text/plain">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <input 
                 type="text" 
-                name="Full Name" 
+                name="fullName" 
                 placeholder="Full Name" 
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                value={formData.fullName}
+                onChange={handleChange}
                 required
               />
               <input 
                 type="text" 
-                name="Phone Number" 
+                name="phoneNumber" 
                 placeholder="Phone Number" 
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                value={formData.phoneNumber}
+                onChange={handleChange}
                 required
               />
               <input 
                 type="text" 
-                name="City" 
+                name="city" 
                 placeholder="City" 
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                value={formData.city}
+                onChange={handleChange}
                 required
               />
               <button 
@@ -99,6 +150,11 @@ export default function Footer() {
               >
                 Request a Call Back
               </button>
+              {status && (
+                <p className={`mt-3 text-center ${status.success ? 'text-green-600' : 'text-red-600'}`}>
+                  {status.message}
+                </p>
+              )}
             </form>
           </div>
         </div>

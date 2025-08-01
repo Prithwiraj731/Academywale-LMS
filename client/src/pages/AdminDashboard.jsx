@@ -563,12 +563,20 @@ export default function AdminDashboard() {
   };
   // Handle faculty edit change
   const handleEditFacultyChange = e => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     if (name === 'image') {
       setEditFacultyImage(files[0]);
       setEditFacultyImagePreview(URL.createObjectURL(files[0]));
     } else if (name === 'teaches') {
-      setEditFacultyData(f => ({ ...f, teaches: [value] }));
+      setEditFacultyData(f => {
+        let teaches = f.teaches || [];
+        if (checked) {
+          teaches = [...teaches, value];
+        } else {
+          teaches = teaches.filter(t => t !== value);
+        }
+        return { ...f, teaches };
+      });
     } else {
       setEditFacultyData(f => ({ ...f, [name]: value }));
     }
@@ -1029,11 +1037,20 @@ export default function AdminDashboard() {
               <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="First Name" className="rounded border px-3 py-2" required />
               <input name="lastName" value={editFacultyData.lastName || ''} onChange={handleEditFacultyChange} placeholder="Last Name" className="rounded border px-3 py-2" />
               <textarea name="bio" value={editFacultyData.bio || ''} onChange={handleEditFacultyChange} placeholder="Bio" className="rounded border px-3 py-2" />
-              <select name="teaches" value={editFacultyData.teaches && editFacultyData.teaches[0] || ''} onChange={handleEditFacultyChange} className="rounded border px-3 py-2">
-                <option value="">Teaches</option>
-                <option value="CA">CA</option>
-                <option value="CMA">CMA</option>
-              </select>
+              <div className="flex gap-4 items-center">
+                {TEACHES_OPTIONS.map(opt => (
+                  <label key={opt} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="teaches"
+                      value={opt}
+                      checked={editFacultyData.teaches && editFacultyData.teaches.includes(opt)}
+                      onChange={handleEditFacultyChange}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
               <input name="image" type="file" accept="image/*" onChange={handleEditFacultyChange} className="rounded border px-3 py-2" />
               {editFacultyImagePreview && <img src={editFacultyImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />}
               {editFacultyError && <div className="text-red-600 text-center font-semibold">{editFacultyError}</div>}
@@ -1256,4 +1273,4 @@ export default function AdminDashboard() {
       </Modal>
     </div>
   );
-} 
+}

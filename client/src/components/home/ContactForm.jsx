@@ -14,18 +14,37 @@ export default function ContactForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const [status, setStatus] = React.useState(null);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatus(null);
 
-    // Construct mailto URL with encoded subject and body
-    const subject = encodeURIComponent('Request a Call Back');
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\nPhone Number: ${formData.phone}\nCity: ${formData.city}`
-    );
-    const mailtoUrl = `mailto:support@academywale.com?subject=${subject}&body=${body}`;
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: 'support@academywale.com', // Since original form does not collect email, use support email or adjust accordingly
+          subject: 'Request a Call Back',
+          message: `Phone Number: ${formData.phone}\nCity: ${formData.city}`
+        })
+      });
 
-    // Redirect to mailto URL to open user's email client (Gmail)
-    window.location.href = mailtoUrl;
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus({ success: true, message: data.message || 'Message sent successfully.' });
+        setFormData({ name: '', phone: '', city: '' });
+      } else {
+        setStatus({ success: false, message: data.message || 'Failed to send message.' });
+      }
+    } catch (error) {
+      setStatus({ success: false, message: 'An error occurred. Please try again later.' });
+    }
   };
 
   return (
@@ -66,6 +85,11 @@ export default function ContactForm() {
           >
             Request a Call Back
           </button>
+          {status && (
+            <p className={`mt-3 text-center ${status.success ? 'text-green-600' : 'text-red-600'}`}>
+              {status.message}
+            </p>
+          )}
         </form>
       </div>
     </section>

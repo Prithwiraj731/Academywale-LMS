@@ -6,7 +6,7 @@ import Numbers from '../components/home/Numbers';
 import SearchBy from '../components/home/SearchBy';
 import Partners from '../components/home/Partners';
 import Reviews from '../components/home/Reviews';
-import ContactForm from '../components/home/ContactForm';
+import WhatsAppButton from '../components/home/WhatsAppButton';
 import Footer from '../components/layout/Footer';
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
@@ -188,7 +188,7 @@ export default function Home() {
       {/* <Partners /> */}
       <Numbers />
       <Reviews />
-      <ContactForm />
+      <WhatsAppButton />
       <Footer />
     </div>
   );
