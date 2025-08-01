@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PaperDetails from '../components/common/PaperDetails';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 if (!API_URL) {
@@ -35,7 +34,32 @@ const papersData = {
     ],
   },
   cma: {
-    // ...CMA papers data
+    foundation: [
+      { id: 1, title: 'Fundamentals of Business Laws and Business Communication' },
+      { id: 2, title: 'Fundamentals of Financial and Cost Accounting' },
+      { id: 3, title: 'Fundamentals of Business Mathematics and Statistics' },
+      { id: 4, title: 'Fundamentals of Business Economics and Management' },
+    ],
+    inter: [
+      { id: 5, title: 'Business Laws & Ethics' },
+      { id: 6, title: 'Financial Accounting' },
+      { id: 7, title: 'Direct and Indirect Taxation' },
+      { id: 8, title: 'Cost Accounting' },
+      { id: 9, title: 'Operations Management & Strategic Management' },
+      { id: 10, title: 'Corporate Accounting & Auditing' },
+      { id: 11, title: 'Financial Management & Business Data Analytics' },
+      { id: 12, title: 'Management Accounting' },
+    ],
+    final: [
+      { id: 13, title: 'Corporate & Economic Laws' },
+      { id: 14, title: 'Strategic Financial Management' },
+      { id: 15, title: 'Direct Tax Laws and International Taxation' },
+      { id: 16, title: 'Strategic Cost Management' },
+      { id: 17, title: 'Cost & Management Audit' },
+      { id: 18, title: 'Corporate Financial Reporting' },
+      { id: 19, title: 'Indirect Tax Laws & Practice' },
+      { id: 20, title: 'Strategic Performance Management and Business Valuation' },
+    ],
   },
 };
 
@@ -103,6 +127,11 @@ export default function CoursesPage() {
     if (type === 'ca' || type === 'cma') fetchCourses();
   }, [type, level, paper]);
 
+  const handlePaperChange = (e) => {
+    const newPaperId = e.target.value;
+    navigate(`/courses/${type}/${level}/paper-${newPaperId}`);
+  };
+
   const filteredCourses = subjectFilter === 'all' ? courses : courses.filter(c => c.subject && c.subject.toLowerCase() === subjectFilter.toLowerCase());
   const subjects = Array.from(new Set(courses.map(c => c.subject).filter(Boolean)));
 
@@ -117,36 +146,35 @@ export default function CoursesPage() {
     return '/logo.svg';
   };
 
-  if (currentPaper) {
-    return (
-      <PaperDetails
-        paper={currentPaper}
-        onBack={() => navigate(`/ca/${level}-papers`)}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">
       <div className="max-w-7xl w-full mx-auto flex-1">
         <button
           className="mb-6 text-[#20b2aa] font-semibold hover:underline flex items-center text-base"
-          onClick={() => navigate('/')}
+          onClick={() => navigate(`/${type}/${level}-papers`)}
         >
-          ← Back to Home
+          ← Back to {level.charAt(0).toUpperCase() + level.slice(1)} Papers
         </button>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight text-center drop-shadow-lg">
-          {level ? `${type.toUpperCase()} ${level.charAt(0).toUpperCase() + level.slice(1)} Courses` : `${type.toUpperCase()} Courses`}
-        </h2>
+        {currentPaper && (
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
+              Paper - {currentPaper.id}
+            </h2>
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-lg">
+              {currentPaper.title}
+            </h3>
+          </div>
+        )}
         <div className="mb-6 flex justify-center">
           <select
-            value={subjectFilter}
-            onChange={e => setSubjectFilter(e.target.value)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={currentPaper?.id}
+            onChange={handlePaperChange}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
           >
-            <option value="all">All Subjects</option>
-            {subjects.map(subj => (
-              <option key={subj} value={subj}>{subj}</option>
+            {papersData[type]?.[level]?.map(p => (
+              <option key={p.id} value={p.id}>
+                Paper - {p.id}: {p.title}
+              </option>
             ))}
           </select>
         </div>
@@ -154,7 +182,7 @@ export default function CoursesPage() {
         {error && <div className="text-red-600 text-center">{error}</div>}
         {!loading && !error && filteredCourses.length === 0 && (
           <div className="text-center text-gray-400 py-12">
-            No courses found for {level ? `${type.toUpperCase()} ${level.charAt(0).toUpperCase() + level.slice(1)}` : type.toUpperCase()}.
+            No courses found for this paper.
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">

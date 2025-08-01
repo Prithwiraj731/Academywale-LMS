@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
@@ -32,10 +31,10 @@ const CAFinalPapers = () => {
                 <Link
                   key={paper.id}
                   to={`/courses/ca/final/paper-${paper.id}`}
-                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
+                  className="bg-teal-600 text-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
                 >
-                  <h3 className="text-xl font-semibold mb-2">Paper {paper.id}</h3>
-                  <p className="text-gray-700">{paper.title}</p>
+                  <h3 className="text-xl font-semibold mb-2">Paper - {paper.id}</h3>
+                  <p className="text-gray-100">{paper.title}</p>
                 </Link>
               ))}
             </div>
@@ -47,10 +46,10 @@ const CAFinalPapers = () => {
                 <Link
                   key={paper.id}
                   to={`/courses/ca/final/paper-${paper.id}`}
-                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
+                  className="bg-teal-600 text-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 block"
                 >
-                  <h3 className="text-xl font-semibold mb-2">Paper {paper.id}</h3>
-                  <p className="text-gray-700">{paper.title}</p>
+                  <h3 className="text-xl font-semibold mb-2">Paper - {paper.id}</h3>
+                  <p className="text-gray-100">{paper.title}</p>
                 </Link>
               ))}
             </div>
@@ -59,7 +58,7 @@ const CAFinalPapers = () => {
         <div className="text-center mt-8">
           <Link
             to="/courses/ca/final/combo"
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-300"
+            className="bg-teal-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-300 text-lg"
           >
             Combo Papers
           </Link>

@@ -48,7 +48,7 @@ export default function Home() {
   const topFaculties = faculties.slice(0, 9);
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-white overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">
       {/* Removed the first Particles component to restrict particles to dark background section only */}
       <Navbar />
       <Hero />
