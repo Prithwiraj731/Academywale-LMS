@@ -10,6 +10,18 @@ export default function Navbar() {
   const { user, isLoaded, isSignedIn } = useUser();
   const { openSignIn, signOut } = useClerk();
   const navigate = useNavigate();
+  
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.profile-menu-container')) {
+        setProfileMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Live faculty list
   const [faculties, setFaculties] = useState([]);
@@ -29,7 +41,7 @@ export default function Navbar() {
     <div>
       <>
       {/* Top contact bar */}
-      <div className="bg-gray-900 text-white text-sm sm:text-base m-0 p-0 mt-0 sticky top-0 z-50" style={{ marginTop: 0, paddingTop: 0, top: 0 }}>
+      <div className="bg-gray-900 text-white text-sm sm:text-base m-0 p-0 mt-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-5 py-0 flex flex-col sm:flex-row justify-between items-center sm:items-center sm:justify-between">
           <div className="flex items-center space-x-6 mb-0 sm:mb-0">
             <div className="flex items-center space-x-3">
@@ -145,44 +157,51 @@ export default function Navbar() {
 
             {/* Account/Profile Button */}
             <div className="flex items-center space-x-4 sm:space-x-6 relative">
-            <div className="flex items-center">
-              {!isSignedIn ? (
-                <button
-                  onClick={() => openSignIn()}
-                  className="px-5 sm:px-10 py-2 sm:py-3 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-base sm:text-xl"
-                >
-                  Account
-                </button>
-              ) : (
-                <div className="relative">
+              <div className="flex items-center gap-3">
+                {!isSignedIn ? (
                   <button
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-400 hover:shadow-lg transition focus:outline-none"
-                    onClick={() => setProfileMenu((v) => !v)}
+                    onClick={() => openSignIn()}
+                    className="px-5 sm:px-10 py-2 sm:py-3 bg-[#20b2aa] text-white font-bold rounded-2xl shadow-lg hover:bg-[#17817a] transition-all text-base sm:text-xl"
                   >
-                    <span className="text-blue-700 font-bold text-base sm:text-xl uppercase">
-                      {user.name ? user.name[0] : 'U'}
-                    </span>
+                    Account
                   </button>
-                  {profileMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-3 z-50">
-                      <Link
-                        to="/dashboard"
-                        className="block px-5 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                        onClick={() => setProfileMenu(false)}
-                      >
-                        Student Dashboard
-                      </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#20b2aa] text-white font-bold rounded-xl shadow-lg hover:bg-[#17817a] transition-all text-sm sm:text-base flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      Dashboard
+                    </Link>
+                    <div className="relative profile-menu-container">
                       <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-5 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-400 hover:shadow-lg transition focus:outline-none"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileMenu((v) => !v);
+                        }}
                       >
-                        Logout
+                        <span className="text-blue-700 font-bold text-base sm:text-xl uppercase">
+                          {user.firstName?.[0] || user.name?.[0] || 'U'}
+                        </span>
                       </button>
+                      {profileMenu && (
+                        <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-3 z-50">
+                          <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-5 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
               {/* Mobile menu button */}
               <button
                 className="lg:hidden p-3 rounded-md text-gray-700 hover:text-primary"
