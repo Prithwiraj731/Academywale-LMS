@@ -64,6 +64,13 @@ function App() {
         <Route path="/courses/:type/:level" element={<CoursesPage />} />
         <Route path="/courses/:type/:level/:paper" element={<CoursesPage />} />
         <Route path="/institutes" element={<InstitutesPage />} />
+        <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />
+        <Route path="/ca/inter-papers" element={<CAInterPapers />} />
+        <Route path="/ca/final-papers" element={<CAFinalPapers />} />
+        <Route path="/cma/foundation-papers" element={<CMAFoundationPapers />} />
+        <Route path="/cma/inter-papers" element={<CMAInterPapers />} />
+        <Route path="/cma/final-papers" element={<CMAFinalPapers />} />
+        <Route path="/institutes" element={<InstitutesPage />} />
         <Route path="/institutes/:slug" element={<InstituteDetailPage />} />
       </Routes>
     </>

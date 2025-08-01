@@ -74,87 +74,49 @@ export default function Home() {
             <h3 className="text-2xl font-bold text-center">CMA Courses</h3>
           </div>
 
-          {/* Course Levels */}
-          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full">
-            {/* CA Column */}
-            <div className="flex flex-col gap-y-6">
-              {/* CA Foundation */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Foundation</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/ca/foundation/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/ca/foundation/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/ca/foundation/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/ca/foundation/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                </div>
-              </div>
-              {/* CA Inter */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Inter</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/ca/inter/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/ca/inter/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/ca/inter/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/ca/inter/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                  <button onClick={() => navigate('/courses/ca/inter/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
-                  <button onClick={() => navigate('/courses/ca/inter/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
-                </div>
-              </div>
-              {/* CA Final */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Final</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/ca/final/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/ca/final/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/ca/final/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/ca/final/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                  <button onClick={() => navigate('/courses/ca/final/paper-5')} className="text-sm px-3 py-2 rounded-full bg-.teal-600 text-white font-bold shadow-lg">Paper 5</button>
-                  <button onClick={() => navigate('/courses/ca/final/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
-                </div>
-              </div>
-            </div>
+          {/* Button Grid */}
+          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-6 w-full">
+            {/* --- Foundation Row --- */}
+            <button
+              onClick={() => navigate('/ca/foundation-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+            >
+              Foundation
+            </button>
+            <button
+              onClick={() => navigate('/cma/foundation-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+            >
+              Foundation
+            </button>
 
-            {/* CMA Column */}
-            <div className="flex flex-col gap-y-6">
-              {/* CMA Foundation */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Foundation</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/cma/foundation/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/cma/foundation/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/cma/foundation/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/cma/foundation/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                </div>
-              </div>
-              {/* CMA Inter */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Inter</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/cma/inter/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-7')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 7</button>
-                  <button onClick={() => navigate('/courses/cma/inter/paper-8')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 8</button>
-                </div>
-              </div>
-              {/* CMA Final */}
-              <div>
-                <h4 className="text-xl font-semibold mb-3 text-center">Final</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => navigate('/courses/cma/final/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-7')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 7</button>
-                  <button onClick={() => navigate('/courses/cma/final/paper-8')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 8</button>
-                </div>
-              </div>
-            </div>
+            {/* --- Inter Row --- */}
+            <button
+              onClick={() => navigate('/ca/inter-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+            >
+              Inter
+            </button>
+            <button
+              onClick={() => navigate('/cma/inter-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+            >
+              Inter
+            </button>
+
+            {/* --- Final Row --- */}
+            <button
+              onClick={() => navigate('/ca/final-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+            >
+              Final
+            </button>
+            <button
+              onClick={() => navigate('/cma/final-papers')}
+              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-4 focus:ring-teal-400"
+            >
+              Final
+            </button>
           </div>
 
           <div className="mt-8 text-center text-base xs:text-lg text-gray-300 font-semibold tracking-wide drop-shadow-lg px-4">
