@@ -316,6 +316,15 @@ export default function Navbar() {
                 <Link to="/contact" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   Contact
                 </Link>
+                {isSignedIn && (
+                  <Link
+                    to="/dashboard"
+                    className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
                 {!isSignedIn && (
                   <button
                     onClick={() => {
