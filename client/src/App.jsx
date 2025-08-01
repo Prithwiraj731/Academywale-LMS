@@ -14,6 +14,12 @@ import PaymentPage from './pages/PaymentPage';
 import CoursesPage from './pages/CoursesPage';
 import InstitutesPage from './pages/InstitutesPage';
 import InstituteDetailPage from './pages/InstituteDetailPage.jsx';
+import CAFoundationPapers from './pages/CAFoundationPapers.jsx';
+import CAInterPapers from './pages/CAInterPapers.jsx';
+import CAFinalPapers from './pages/CAFinalPapers.jsx';
+import CMAFoundationPapers from './pages/CMAFoundationPapers.jsx';
+import CMAInterPapers from './pages/CMAInterPapers.jsx';
+import CMAFinalPapers from './pages/CMAFinalPapers.jsx';
 
 import { SignedIn, SignedOut, SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
 
