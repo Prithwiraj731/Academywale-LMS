@@ -44,8 +44,8 @@ export default function Home() {
     return '/logo.svg';
   };
 
-  // Only show first 9 faculties on homepage
-  const topFaculties = faculties.slice(0, 9);
+  // Only show first 10 faculties on homepage
+  const topFaculties = faculties.slice(0, 10);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">
@@ -79,13 +79,13 @@ export default function Home() {
             {/* --- Foundation Row --- */}
             <button
               onClick={() => navigate('/ca/foundation-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Foundation
             </button>
             <button
               onClick={() => navigate('/cma/foundation-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Foundation
             </button>
@@ -93,13 +93,13 @@ export default function Home() {
             {/* --- Inter Row --- */}
             <button
               onClick={() => navigate('/ca/inter-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Inter
             </button>
             <button
               onClick={() => navigate('/cma/inter-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Inter
             </button>
@@ -107,13 +107,13 @@ export default function Home() {
             {/* --- Final Row --- */}
             <button
               onClick={() => navigate('/ca/final-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Final
             </button>
             <button
               onClick={() => navigate('/cma/final-papers')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="text-sm xs:text-base sm:text-lg px-3 py-2 sm:px-4 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               Final
             </button>
@@ -164,7 +164,7 @@ export default function Home() {
             </div>
           )}
           {/* Other Faculties Button */}
-          {faculties.length > 9 && (
+          {faculties.length > 10 && (
             <div className="flex justify-center mt-8">
               <button
                 onClick={() => navigate('/faculties')}

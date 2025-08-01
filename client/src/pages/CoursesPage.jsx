@@ -165,7 +165,7 @@ export default function CoursesPage() {
           <select
             value={currentPaper?.id}
             onChange={handlePaperChange}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-400 w-full sm:w-auto"
           >
             {papersData[type]?.[level]?.map(p => (
               <option key={p.id} value={p.id}>

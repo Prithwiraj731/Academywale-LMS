@@ -32,11 +32,11 @@ export default function Reviews() {
           {testimonials.length === 0 ? (
             <div className="text-gray-400 text-center col-span-2">No testimonials yet.</div>
           ) : testimonials.map((rev) => (
-            <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-6 gap-4 xs:gap-6 sm:gap-8 border border-yellow-200" style={{ fontFamily: "'Indie Flower', cursive, 'Comic Sans MS', sans-serif" }}>
-              {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#d4af37]" />}
+            <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-4 xs:p-5 gap-3 xs:gap-4 sm:gap-8 border border-yellow-200">
+              {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-12 h-12 xs:w-14 xs:h-14 rounded-full object-cover border-2 border-[#d4af37]" />}
               <div>
-                <div className="font-semibold text-gray-800 text-sm xs:text-base sm:text-lg">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>
-                <div className="text-gray-700 text-sm xs:text-base sm:text-lg italic mt-1">{rev.text}</div>
+                <div className="font-semibold text-gray-800 text-sm xs:text-base">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>
+                <div className="text-gray-700 text-sm xs:text-base mt-1">{rev.text}</div>
               </div>
             </div>
           ))}
