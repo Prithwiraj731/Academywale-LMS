@@ -31,14 +31,7 @@ function App() {
   return (
     <>
       <LoadingOverlay show={loading} />
-      <header className="p-4 flex justify-end space-x-4 bg-gray-100">
-        <SignedOut>
-          {/* Removed SignIn component to prevent sign-in box showing by default */}
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </header>
+      {/* Header removed to prevent spacing issues */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
