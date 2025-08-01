@@ -16,15 +16,30 @@ export default function CMAFoundationPapers() {
         CMA Foundation Papers
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md">
-        {[1, 2, 3, 4].map((paperNum) => (
-          <button
-            key={paperNum}
-            onClick={() => navigate(`/courses/cma/foundation/paper-${paperNum}`)}
-            className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-          >
-            Paper {paperNum}
-          </button>
-        ))}
+        <button
+          onClick={() => navigate('/courses/cma/foundation/paper-1')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 1: Fundamentals of Business Laws and Business Communication
+        </button>
+        <button
+          onClick={() => navigate('/courses/cma/foundation/paper-2')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 2: Fundamentals of Financial and Cost Accounting
+        </button>
+        <button
+          onClick={() => navigate('/courses/cma/foundation/paper-3')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 3: Fundamentals of Business Mathematics and Statistics
+        </button>
+        <button
+          onClick={() => navigate('/courses/cma/foundation/paper-4')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 4: Fundamentals of Business Economics and Management
+        </button>
       </div>
     </div>
   );

@@ -16,15 +16,30 @@ export default function CAFoundationPapers() {
         CA Foundation Papers
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md">
-        {[1, 2, 3, 4].map((paperNum) => (
-          <button
-            key={paperNum}
-            onClick={() => navigate(`/courses/ca/foundation/paper-${paperNum}`)}
-            className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-          >
-            Paper {paperNum}
-          </button>
-        ))}
+        <button
+          onClick={() => navigate('/courses/ca/foundation/paper-1')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 1: Principles and Practice of Accounting
+        </button>
+        <button
+          onClick={() => navigate('/courses/ca/foundation/paper-2')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 2: Business Laws and Business Correspondence and Reporting
+        </button>
+        <button
+          onClick={() => navigate('/courses/ca/foundation/paper-3')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 3: Business Mathematics, Logical Reasoning & Statistics
+        </button>
+        <button
+          onClick={() => navigate('/courses/ca/foundation/paper-4')}
+          className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+        >
+          Paper 4: Business Economics & Business and Commercial Knowledge
+        </button>
         <button
           onClick={() => navigate('/courses/ca/foundation/combo')}
           className="bg-purple-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-purple-700 transition-all text-lg col-span-full"

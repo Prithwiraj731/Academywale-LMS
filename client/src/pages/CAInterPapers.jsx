@@ -19,30 +19,47 @@ export default function CAInterPapers() {
         <div>
           <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 1</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[1, 2, 3].map((paperNum) => (
-              <button
-                key={paperNum}
-                onClick={() => navigate(`/courses/ca/inter/paper-${paperNum}`)}
-                className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-              >
-                Paper {paperNum}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-5')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 5: Advanced Accounting
+            </button>
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-6')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 6: Corporate and Other Laws
+            </button>
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-7')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 7: Taxation (Income-tax Law and Goods and Services Tax)
+            </button>
           </div>
         </div>
         <div>
           <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 2</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[4, 5, 6].map((paperNum) => (
-              <button
-                key={paperNum}
-                onClick={() => navigate(`/courses/ca/inter/paper-${paperNum}`)}
-                className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-              >
-                Paper {paperNum}
-              </button>
-            ))}
-          </div>
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-8')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 8: Cost and Management Accounting
+            </button>
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-9')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 9: Auditing and Ethics
+            </button>
+            <button
+              onClick={() => navigate('/courses/ca/inter/paper-10')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 10: Financial Management and Strategic Management
+            </button>
         </div>
       </div>
     </div>

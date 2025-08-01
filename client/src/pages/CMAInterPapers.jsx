@@ -19,29 +19,59 @@ export default function CMAInterPapers() {
         <div>
           <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 1</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map((paperNum) => (
-              <button
-                key={paperNum}
-                onClick={() => navigate(`/courses/cma/inter/paper-${paperNum}`)}
-                className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-              >
-                Paper {paperNum}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-5')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 5: Financial Accounting
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-6')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 6: Laws and Ethics
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-7')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 7: Direct Taxation
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-8')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 8: Cost Accounting
+            </button>
           </div>
         </div>
         <div>
           <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">Group 2</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[5, 6, 7, 8].map((paperNum) => (
-              <button
-                key={paperNum}
-                onClick={() => navigate(`/courses/cma/inter/paper-${paperNum}`)}
-                className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
-              >
-                Paper {paperNum}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-9')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 9: Operations Management & Strategic Management
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-10')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 10: Corporate Accounting and Auditing
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-11')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 11: Indirect Taxation
+            </button>
+            <button
+              onClick={() => navigate('/courses/cma/inter/paper-12')}
+              className="bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition-all text-lg"
+            >
+              Paper 12: Company Accounts and Audit
+            </button>
           </div>
         </div>
       </div>
