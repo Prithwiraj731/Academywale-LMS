@@ -11,11 +11,16 @@ export default function Reviews() {
   }, []);
  const getImageUrl = (url) => {
     if (!url) return '';
+    console.log('Original image URL:', url);
     // If url already contains /uploads/, avoid duplicating
     if (url.startsWith('/uploads/')) {
-      return `${API_URL}${url}`;
+      const fullUrl = `${API_URL}${url}`;
+      console.log('Constructed full image URL:', fullUrl);
+      return fullUrl;
     }
-    return `${API_URL}/uploads/${url}`;
+    const fullUrl = `${API_URL}/uploads/${url}`;
+    console.log('Constructed full image URL:', fullUrl);
+    return fullUrl;
   };
   return (
     <section className="py-8 xs:py-10 sm:py-12 bg-gradient-to-r from-[#e0f7f4] via-white to-[#e0f7f4]">
@@ -27,7 +32,7 @@ export default function Reviews() {
           {testimonials.length === 0 ? (
             <div className="text-gray-400 text-center col-span-2">No testimonials yet.</div>
           ) : testimonials.map((rev) => (
-            <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-6 gap-4 xs:gap-6 sm:gap-8 border border-yellow-200" style={{ fontFamily: "'Indie Flower', cursive" }}>
+            <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-6 gap-4 xs:gap-6 sm:gap-8 border border-yellow-200" style={{ fontFamily: "'Indie Flower', cursive, 'Comic Sans MS', sans-serif" }}>
               {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#d4af37]" />}
               <div>
                 <div className="font-semibold text-gray-800 text-sm xs:text-base sm:text-lg">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>

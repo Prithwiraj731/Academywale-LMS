@@ -67,56 +67,94 @@ export default function Home() {
           disableRotation={false}
           className="absolute top-0 left-0 w-full h-full z-0"
         />
-        <div className="relative z-10 flex flex-col items-center w-full max-w-2xl mx-auto px-4 pt-6 pb-8">
+        <div className="relative z-10 flex flex-col items-center w-full max-w-4xl mx-auto px-4 pt-6 pb-8">
           {/* Titles */}
           <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full mb-6">
-            <h3 className="text-xl font-bold text-center">CA Courses</h3>
-            <h3 className="text-xl font-bold text-center">CMA Courses</h3>
+            <h3 className="text-2xl font-bold text-center">CA Courses</h3>
+            <h3 className="text-2xl font-bold text-center">CMA Courses</h3>
           </div>
 
-          {/* Button Grid */}
-          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-6 w-full">
-            {/* --- Foundation Row --- */}
-            <button
-              onClick={() => navigate('/courses/ca/foundation')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Foundation
-            </button>
-            <button
-              onClick={() => navigate('/courses/cma/foundation')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Foundation
-            </button>
+          {/* Course Levels */}
+          <div className="grid grid-cols-2 gap-x-4 sm:gap-x-8 w-full">
+            {/* CA Column */}
+            <div className="flex flex-col gap-y-6">
+              {/* CA Foundation */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Foundation</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/ca/foundation/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/ca/foundation/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/ca/foundation/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/ca/foundation/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                </div>
+              </div>
+              {/* CA Inter */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Inter</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/ca/inter/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/ca/inter/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/ca/inter/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/ca/inter/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                  <button onClick={() => navigate('/courses/ca/inter/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
+                  <button onClick={() => navigate('/courses/ca/inter/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
+                </div>
+              </div>
+              {/* CA Final */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Final</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/ca/final/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/ca/final/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/ca/final/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/ca/final/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                  <button onClick={() => navigate('/courses/ca/final/paper-5')} className="text-sm px-3 py-2 rounded-full bg-.teal-600 text-white font-bold shadow-lg">Paper 5</button>
+                  <button onClick={() => navigate('/courses/ca/final/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
+                </div>
+              </div>
+            </div>
 
-            {/* --- Inter Row --- */}
-            <button
-              onClick={() => navigate('/courses/ca/inter')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Inter
-            </button>
-            <button
-              onClick={() => navigate('/courses/cma/inter')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Inter
-            </button>
-
-            {/* --- Final Row --- */}
-            <button
-              onClick={() => navigate('/courses/ca/final')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Final
-            </button>
-            <button
-              onClick={() => navigate('/courses/cma/final')}
-              className="text-base xs:text-lg px-4 py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400"
-            >
-              Final
-            </button>
+            {/* CMA Column */}
+            <div className="flex flex-col gap-y-6">
+              {/* CMA Foundation */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Foundation</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/cma/foundation/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/cma/foundation/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/cma/foundation/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/cma/foundation/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                </div>
+              </div>
+              {/* CMA Inter */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Inter</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/cma/inter/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-7')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 7</button>
+                  <button onClick={() => navigate('/courses/cma/inter/paper-8')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 8</button>
+                </div>
+              </div>
+              {/* CMA Final */}
+              <div>
+                <h4 className="text-xl font-semibold mb-3 text-center">Final</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => navigate('/courses/cma/final/paper-1')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 1</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-2')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 2</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-3')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 3</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-4')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 4</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-5')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 5</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-6')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 6</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-7')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 7</button>
+                  <button onClick={() => navigate('/courses/cma/final/paper-8')} className="text-sm px-3 py-2 rounded-full bg-teal-600 text-white font-bold shadow-lg">Paper 8</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-8 text-center text-base xs:text-lg text-gray-300 font-semibold tracking-wide drop-shadow-lg px-4">
@@ -145,7 +183,7 @@ export default function Home() {
                     href={`/faculties/${fac.slug}`}
                     containerClassName="w-full h-full min-w-[140px] xs:min-w-[160px] sm:min-w-[200px] max-w-[160px] xs:max-w-[180px] sm:max-w-[240px] min-h-[180px] xs:min-h-[200px] sm:min-h-[300px] max-h-[200px] xs:max-h-[220px] sm:max-h-[320px] mx-auto"
                   >
-                    <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-2 xs:p-3 sm:p-6 cursor-pointer hover:scale-105 w-full h-full">
+                    <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 xs:p-5 sm:p-8 cursor-pointer hover:scale-105 w-full h-full">
                       <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-28 sm:h-28 mb-2 xs:mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
                         <img
                           src={getFacultyImage(fac)}
