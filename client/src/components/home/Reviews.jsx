@@ -36,7 +36,7 @@ export default function Reviews() {
               {rev.imageUrl && <img src={getImageUrl(rev.imageUrl)} alt={rev.name} className="w-12 h-12 xs:w-14 xs:h-14 rounded-full object-cover border-2 border-[#d4af37]" />}
               <div>
                 <div className="font-semibold text-gray-800 text-sm xs:text-base">{rev.name} <span className="text-xs text-gray-500">({rev.role})</span></div>
-                <div className="text-gray-700 text-sm xs:text-base mt-1">{rev.text}</div>
+                <div className="text-gray-700 text-sm xs:text-base mt-1 font-comic-neue">{rev.text}</div>
               </div>
             </div>
           ))}
