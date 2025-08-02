@@ -51,7 +51,7 @@
   max-width: 1200px;
   margin: 0 auto;
   z-index: 1;
-  min-height: 240px;
+  min-height: 200px;
   gap: 2.5rem;
 }
 .timeline-line-premium {
