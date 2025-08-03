@@ -14,11 +14,11 @@ export default function Reviews() {
     console.log('Original image URL:', url);
     // If url already contains /uploads/, avoid duplicating
     if (url.startsWith('/uploads/')) {
-      const fullUrl = `${API_URL}${url}`;
+      const fullUrl = `${API_URL}${encodeURIComponent(url)}`;
       console.log('Constructed full image URL:', fullUrl);
       return fullUrl;
     }
-    const fullUrl = `${API_URL}/uploads/${url}`;
+    const fullUrl = `${API_URL}/uploads/${encodeURIComponent(url)}`;
     console.log('Constructed full image URL:', fullUrl);
     return fullUrl;
   };
