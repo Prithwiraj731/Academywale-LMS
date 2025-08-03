@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
+import papersData from '../data/papersData';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 if (!API_URL) {
   console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
 }
 
-export default function CoursesPage() {
-  const { type, level } = useParams();
+const CMAFinalPaperDetailPage = () => {
+  const { paperSlug } = useParams();
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState('all');
+
+  const currentPaper = papersData.cma.final.find(p => `paper-${p.id}` === paperSlug);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -41,15 +43,10 @@ export default function CoursesPage() {
           });
 
           const filtered = allCourses.filter(course => {
-            if (!course.courseType) return false;
-            const courseTypeLower = course.courseType.toLowerCase();
-            const typeLower = type.toLowerCase();
-            if (level) {
-              const levelLower = level.toLowerCase();
-              return courseTypeLower.includes(typeLower) && courseTypeLower.includes(levelLower);
-            } else {
-              return courseTypeLower.includes(typeLower);
-            }
+            return course.courseType && 
+                   course.courseType.toLowerCase().includes('cma') && 
+                   course.courseType.toLowerCase().includes('final') &&
+                   course.paperId === currentPaper?.id;
           });
 
           setCourses(filtered);
@@ -61,11 +58,8 @@ export default function CoursesPage() {
       }
       setLoading(false);
     }
-    if (type === 'ca' || type === 'cma') fetchCourses();
-  }, [type, level]);
-
-  const filteredCourses = subjectFilter === 'all' ? courses : courses.filter(c => c.subject && c.subject.toLowerCase() === subjectFilter.toLowerCase());
-  const subjects = Array.from(new Set(courses.map(c => c.subject).filter(Boolean)));
+    if (currentPaper) fetchCourses();
+  }, [paperSlug, currentPaper]);
 
   const getPosterUrl = (course) => {
     if (course.posterUrl) {
@@ -82,15 +76,28 @@ export default function CoursesPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">
       <div className="max-w-7xl w-full mx-auto flex-1">
         <BackButton />
+        {currentPaper ? (
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
+              CMA Final Paper - {currentPaper.id}
+            </h2>
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-lg">
+              {currentPaper.title}
+            </h3>
+          </div>
+        ) : (
+          <div className="text-center text-red-600">Paper not found.</div>
+        )}
+
         {loading && <div className="text-[#20b2aa] text-center">Loading courses...</div>}
         {error && <div className="text-red-600 text-center">{error}</div>}
-        {!loading && !error && filteredCourses.length === 0 && (
+        {!loading && !error && courses.length === 0 && (
           <div className="text-center text-gray-400 py-12">
             No courses found for this paper.
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {filteredCourses.map((course, idx) => (
+          {courses.map((course, idx) => (
             <div key={idx} className="bg-white/95 rounded-3xl shadow-2xl p-4 flex flex-col items-center border border-[#20b2aa]">
               <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-4">
                 <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
@@ -109,7 +116,7 @@ export default function CoursesPage() {
                 <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
               </div>
               <button
-                onClick={() => navigate(`/payment/${encodeURIComponent(type)}/${course._id}`)}
+                onClick={() => navigate(`/payment/${encodeURIComponent(course.courseType)}/${course._id}`)}
                 className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
               >
                 Buy Now
@@ -120,4 +127,6 @@ export default function CoursesPage() {
       </div>
     </div>
   );
-}
+};
+
+export default CMAFinalPaperDetailPage;

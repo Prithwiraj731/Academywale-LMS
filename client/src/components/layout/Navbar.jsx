@@ -155,7 +155,7 @@ export default function Navbar() {
               <Link to="/contact" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Contact</Link>
               {isSignedIn && (
                 <Link
-                  to="/dashboard"
+                  to="/student-dashboard"
                   className="px-6 py-3 bg-[#20b2aa] text-white font-bold rounded-xl shadow-lg hover:bg-[#17817a] transition-all text-lg"
                 >
                   Dashboard
@@ -175,7 +175,7 @@ export default function Navbar() {
               ) : (
                 <div className="relative profile-menu-container flex items-center gap-2">
                   <Link
-                    to="/dashboard"
+                    to="/student-dashboard"
                     className="flex items-center px-3 py-1.5 text-sm bg-[#20b2aa] text-white font-bold rounded-lg shadow-md hover:bg-[#17817a] transition-all sm:flex lg:hidden"
                   >
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -249,27 +249,9 @@ export default function Navbar() {
                   </button>
                   {isCaDropdownOpen && (
                     <div className="pl-4">
-                      <Link 
-                        to="/courses/ca/foundation" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        CA Foundation
-                      </Link>
-                      <Link 
-                        to="/courses/ca/inter" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        CA Inter
-                      </Link>
-                      <Link 
-                        to="/courses/ca/final" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        CA Final
-                      </Link>
+                      <Link to="/courses/ca/foundation" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Foundation</Link>
+                      <Link to="/courses/ca/inter" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Inter</Link>
+                      <Link to="/courses/ca/final" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Final</Link>
                     </div>
                   )}
                 </div>
@@ -290,20 +272,20 @@ export default function Navbar() {
                   {isCmaDropdownOpen && (
                     <div className="pl-4">
                       <Link 
-                        to="/courses/cma/foundation" 
+                        to="/cma/foundation-papers" 
                         className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Foundation
                       </Link>
                       <Link 
-                        to="/courses/cma/inter" 
+                        to="/cma/inter-papers" 
                         className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Inter</Link>
                       <Link 
-                        to="/courses/cma/final" 
+                        to="/cma/final-papers" 
                         className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
                         onClick={() => setIsMenuOpen(false)}
                       >

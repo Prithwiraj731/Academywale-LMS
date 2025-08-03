@@ -28,6 +28,14 @@ import CMAFoundationPapers from './pages/CMAFoundationPapers';
 import CMAInterPapers from './pages/CMAInterPapers';
 import CMAFinalPapers from './pages/CMAFinalPapers';
 
+// Import new paper detail pages
+import CAFoundationPaperDetailPage from './pages/CAFoundationPaperDetailPage';
+import CAInterPaperDetailPage from './pages/CAInterPaperDetailPage';
+import CAFinalPaperDetailPage from './pages/CAFinalPaperDetailPage';
+import CMAFoundationPaperDetailPage from './pages/CMAFoundationPaperDetailPage';
+import CMAInterPaperDetailPage from './pages/CMAInterPaperDetailPage';
+import CMAFinalPaperDetailPage from './pages/CMAFinalPaperDetailPage';
+
 const App = () => {
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
 
@@ -65,12 +73,12 @@ const App = () => {
         <Route path="/cma/final-papers" element={<CMAFinalPapers />} />
 
         {/* Specific paper detail pages */}
-        <Route path="/courses/ca/foundation/:paperSlug" element={<CAFoundationPapers />} />
-        <Route path="/courses/ca/inter/:paperSlug" element={<CAInterPapers />} />
-        <Route path="/courses/ca/final/:paperSlug" element={<CAFinalPapers />} />
-        <Route path="/courses/cma/foundation/:paperSlug" element={<CMAFoundationPapers />} />
-        <Route path="/courses/cma/inter/:paperSlug" element={<CMAInterPapers />} />
-        <Route path="/courses/cma/final/:paperSlug" element={<CMAFinalPapers />} />
+        <Route path="/courses/ca/foundation/:paperSlug" element={<CAFoundationPaperDetailPage />} />
+        <Route path="/courses/ca/inter/:paperSlug" element={<CAInterPaperDetailPage />} />
+        <Route path="/courses/ca/final/:paperSlug" element={<CAFinalPaperDetailPage />} />
+        <Route path="/courses/cma/foundation/:paperSlug" element={<CMAFoundationPaperDetailPage />} />
+        <Route path="/courses/cma/inter/:paperSlug" element={<CMAInterPaperDetailPage />} />
+        <Route path="/courses/cma/final/:paperSlug" element={<CMAFinalPaperDetailPage />} />
 
         {/* This is the route for the Cloudinary example you provided */}
         <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
