@@ -41,7 +41,7 @@
   overflow: visible;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  background-color: #00152d;
+  background-color: #e0e7ef;
 }
 .timeline-container-premium {
   position: relative;
@@ -53,6 +53,7 @@
   z-index: 1;
   gap: 2rem; /* Consistent spacing */
   flex-wrap: wrap; /* Allow items to wrap to the next line */
+  min-height: 200px; /* Ensure enough height for content */
 }
 .timeline-line-premium {
   position: absolute;
