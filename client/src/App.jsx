@@ -55,12 +55,12 @@ const App = () => {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/ca-foundation-papers" element={<CAFoundationPapers />} />
-        <Route path="/ca-inter-papers" element={<CAInterPapers />} />
-        <Route path="/ca-final-papers" element={<CAFinalPapers />} />
-        <Route path="/cma-foundation-papers" element={<CMAFoundationPapers />} />
-        <Route path="/cma-inter-papers" element={<CMAInterPapers />} />
-        <Route path="/cma-final-papers" element={<CMAFinalPapers />} />
+        <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />
+        <Route path="/ca/inter-papers" element={<CAInterPapers />} />
+        <Route path="/ca/final-papers" element={<CAFinalPapers />} />
+        <Route path="/cma/foundation-papers" element={<CMAFoundationPapers />} />
+        <Route path="/cma/inter-papers" element={<CMAInterPapers />} />
+        <Route path="/cma/final-papers" element={<CMAFinalPapers />} />
 
         {/* This is the route for the Cloudinary example you provided */}
         <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
