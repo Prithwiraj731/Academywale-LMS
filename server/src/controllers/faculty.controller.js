@@ -4,24 +4,37 @@ const Faculty = require('../model/Faculty.model');
 // Create a new faculty
 exports.createFaculty = async (req, res) => {
   try {
-    const { name, subject, experience, bio } = req.body;
-    // Save the public_id from Cloudinary (req.file.filename)
-    const image = req.file ? req.file.filename : null;
+    const { firstName, lastName, bio, teaches } = req.body;
+    const imageUrl = req.file ? req.file.path : '';
+    const public_id = req.file ? req.file.filename : '';
 
-    if (!image) {
+    if (!imageUrl) {
         return res.status(400).json({ message: 'Image is required.' });
     }
 
+    // Parse teaches from JSON string
+    let parsedTeaches = [];
+    try {
+      parsedTeaches = JSON.parse(teaches);
+    } catch (e) {
+      return res.status(400).json({ message: 'Invalid teaches format.' });
+    }
+
+    // Generate slug
+    const slug = `${firstName.toLowerCase().replace(/ /g, '-')}-${lastName ? lastName.toLowerCase().replace(/ /g, '-') : ''}`.replace(/--/g, '-').replace(/^-|-$/g, '');
+
     const newFaculty = new Faculty({
-      name,
-      subject,
-      experience,
+      firstName,
+      lastName,
       bio,
-      image, // Storing public_id
+      teaches: parsedTeaches,
+      imageUrl,
+      public_id, // Store public_id for potential deletion later
+      slug,
     });
 
     await newFaculty.save();
-    res.status(201).json(newFaculty);
+    res.status(201).json({ success: true, faculty: newFaculty });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -38,9 +51,10 @@ exports.getAllFaculties = async (req, res) => {
 };
 
 // Get a single faculty by ID
-exports.getFacultyById = async (req, res) => {
+exports.getFacultyBySlug = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id);
+    const { slug } = req.params;
+    const faculty = await Faculty.findOne({ slug });
     if (!faculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
@@ -53,16 +67,28 @@ exports.getFacultyById = async (req, res) => {
 // Update a faculty
 exports.updateFaculty = async (req, res) => {
   try {
-    const { name, subject, experience, bio } = req.body;
-    const updateData = { name, subject, experience, bio };
+    const { firstName, lastName, bio, teaches } = req.body;
+    const { slug } = req.params; // Get slug from params
 
-    // If a new file is uploaded, update the image public_id
-    if (req.file) {
-      updateData.image = req.file.filename;
+    const updateData = { firstName, lastName, bio };
+
+    // Parse teaches from JSON string if it exists
+    if (teaches) {
+      try {
+        updateData.teaches = JSON.parse(teaches);
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid teaches format.' });
+      }
     }
 
-    const updatedFaculty = await Faculty.findByIdAndUpdate(
-      req.params.id,
+    // If a new file is uploaded, update the image public_id and imageUrl
+    if (req.file) {
+      updateData.imageUrl = req.file.path;
+      updateData.public_id = req.file.filename;
+    }
+
+    const updatedFaculty = await Faculty.findOneAndUpdate(
+      { slug: slug }, // Find by slug
       updateData,
       { new: true }
     );
@@ -71,7 +97,7 @@ exports.updateFaculty = async (req, res) => {
       return res.status(404).json({ message: 'Faculty not found' });
     }
 
-    res.status(200).json(updatedFaculty);
+    res.status(200).json({ success: true, faculty: updatedFaculty });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -80,14 +106,12 @@ exports.updateFaculty = async (req, res) => {
 // Delete a faculty
 exports.deleteFaculty = async (req, res) => {
   try {
-    // Note: This just deletes the DB record.
-    // For a complete solution, you might want to delete the image from Cloudinary as well.
-    // This requires using the Cloudinary Admin API.
-    const deletedFaculty = await Faculty.findByIdAndDelete(req.params.id);
+    const { slug } = req.params;
+    const deletedFaculty = await Faculty.findOneAndDelete({ slug });
     if (!deletedFaculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
-    res.status(200).json({ message: 'Faculty deleted successfully' });
+    res.status(200).json({ success: true, message: 'Faculty deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

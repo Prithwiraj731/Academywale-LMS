@@ -593,7 +593,11 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       Object.entries(editFacultyData).forEach(([k, v]) => {
-        if (k !== 'image' && k !== 'slug') formData.append(k, v);
+        if (k === 'teaches') {
+          formData.append(k, JSON.stringify(v));
+        } else if (k !== 'image' && k !== 'slug') {
+          formData.append(k, v);
+        }
       });
       if (editFacultyImage) formData.append('image', editFacultyImage);
       const res = await fetch(`${API_URL}/api/admin/faculty/${editFacultySlug}`, {
