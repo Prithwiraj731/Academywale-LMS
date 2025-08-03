@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
@@ -38,7 +39,6 @@ const App = () => {
     .resize(auto().gravity(autoGravity()).width(500).height(500));
 
   return (
-    <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -64,7 +64,6 @@ const App = () => {
         {/* This is the route for the Cloudinary example you provided */}
         <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
       </Routes>
-    </Router>
   );
 };
 
