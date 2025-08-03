@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Cloudinary } from '@cloudinary/url-gen';
@@ -18,6 +17,7 @@ import InstituteDetailPage from './pages/InstituteDetailPage';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
+import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentPage from './pages/PaymentPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -51,6 +51,7 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
