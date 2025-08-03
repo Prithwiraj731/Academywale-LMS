@@ -1,6 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'react-modal';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { AdvancedImage } from '@cloudinary/react';
+import { auto } from '@cloudinary/url-gen/actions/resize';
+import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -702,14 +707,14 @@ export default function AdminDashboard() {
 
   // Testimonial state
   const [testimonials, setTestimonials] = useState([]);
-  const [testimonialAdd, setTestimonialAdd] = useState({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
+  const [testimonialAdd, setTestimonialAdd] = useState({ name: '', role: 'teacher', text: '', image: null });
   const [testimonialStatus, setTestimonialStatus] = useState('');
   const [testimonialError, setTestimonialError] = useState('');
   const [editTestimonialModalOpen, setEditTestimonialModalOpen] = useState(false);
   const [editTestimonialData, setEditTestimonialData] = useState({});
-  const [editTestimonialImagePreview, setEditTestimonialImagePreview] = useState(null);
   const [editTestimonialError, setEditTestimonialError] = useState('');
   const [editTestimonialLoading, setEditTestimonialLoading] = useState(false);
+  const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
 
   // Fetch testimonials
   useEffect(() => {
@@ -722,7 +727,7 @@ export default function AdminDashboard() {
     const { name, value, files } = e.target;
     if (name === 'image') {
       const file = files[0];
-      setTestimonialAdd(f => ({ ...f, image: file, imagePreview: file ? URL.createObjectURL(file) : null }));
+      setTestimonialAdd(f => ({ ...f, image: file }));
     } else {
       setTestimonialAdd(f => ({ ...f, [name]: value }));
     }
@@ -745,7 +750,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (res.ok && data.success) {
         setTestimonialStatus('Testimonial added!');
-        setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
+        setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null });
         setTimeout(() => setTestimonialStatus(''), 2000);
         fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
@@ -757,7 +762,6 @@ export default function AdminDashboard() {
   };
   const openEditTestimonialModal = (t) => {
     setEditTestimonialData(t);
-    setEditTestimonialImagePreview(t.imageUrl || null);
     setEditTestimonialModalOpen(true);
     setEditTestimonialError('');
   };
@@ -766,7 +770,6 @@ export default function AdminDashboard() {
     if (name === 'image') {
       const file = files[0];
       setEditTestimonialData(f => ({ ...f, image: file }));
-      setEditTestimonialImagePreview(file ? URL.createObjectURL(file) : null);
     } else {
       setEditTestimonialData(f => ({ ...f, [name]: value }));
     }
@@ -1108,8 +1111,8 @@ export default function AdminDashboard() {
               </select>
               <textarea name="text" value={testimonialAdd.text} onChange={handleTestimonialAddChange} placeholder="What they say..." className="rounded-lg border border-gray-300 px-4 py-2 text-base" required />
               <input name="image" type="file" accept="image/*" onChange={handleTestimonialAddChange} className="rounded-lg border border-gray-300 px-3 py-2 text-base" />
-              {testimonialAdd.imagePreview && (
-                <img src={testimonialAdd.imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />
+              {testimonialAdd.image && (
+                <AdvancedImage cldImg={cld.image(testimonialAdd.image)} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />
               )}
               <button type="submit" className="bg-green-500 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-600 transition-all text-lg flex items-center justify-center gap-2">Add Testimonial</button>
               {testimonialStatus && <div className="text-green-600 text-center font-semibold">{testimonialStatus}</div>}
@@ -1120,7 +1123,7 @@ export default function AdminDashboard() {
               {testimonials.map(t => (
                 <div key={t._id} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-green-100">
                   <div className="flex items-center gap-4">
-                    {t.imageUrl && <img src={`${API_URL}${encodeURIComponent(t.imageUrl)}`} alt={t.name} className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />}
+                    {t.image && <AdvancedImage cldImg={cld.image(t.image)} alt={t.name} className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />}
                     <div>
                       <div className="font-bold text-green-700">{t.name} <span className="text-xs text-gray-500">({t.role})</span></div>
                       <div className="text-gray-700 text-sm">{t.text}</div>
@@ -1149,7 +1152,7 @@ export default function AdminDashboard() {
                 </select>
                 <textarea name="text" value={editTestimonialData.text || ''} onChange={handleEditTestimonialChange} placeholder="What they say..." className="rounded border px-3 py-2" required />
                 <input name="image" type="file" accept="image/*" onChange={handleEditTestimonialChange} className="rounded border px-3 py-2" />
-                {editTestimonialImagePreview && <img src={editTestimonialImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />}
+                {editTestimonialData.image && <AdvancedImage cldImg={cld.image(editTestimonialData.image)} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />}
                 {editTestimonialError && <div className="text-red-600 text-center font-semibold">{editTestimonialError}</div>}
                 <div className="flex gap-2 mt-2">
                   <button type="button" onClick={() => setEditTestimonialModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold">Cancel</button>

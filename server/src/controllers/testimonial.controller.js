@@ -1,64 +1,92 @@
+
 const Testimonial = require('../model/Testimonial.model');
-const path = require('path');
-const fs = require('fs');
+
+// Create a new testimonial
+exports.createTestimonial = async (req, res) => {
+  try {
+    const { name, course, message } = req.body;
+    // Save the public_id from Cloudinary (req.file.filename)
+    const image = req.file ? req.file.filename : null;
+
+    if (!image) {
+        return res.status(400).json({ message: 'Image is required.' });
+    }
+
+    const newTestimonial = new Testimonial({
+      name,
+      course,
+      message,
+      image, // Storing public_id
+    });
+
+    await newTestimonial.save();
+    res.status(201).json(newTestimonial);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Get all testimonials
-exports.getAll = async (req, res) => {
+exports.getAllTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find().sort({ createdAt: -1 });
-    res.json({ success: true, testimonials });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    const testimonials = await Testimonial.find();
+    res.status(200).json(testimonials);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Add testimonial
-exports.add = async (req, res) => {
+// Get a single testimonial by ID
+exports.getTestimonialById = async (req, res) => {
   try {
-    let imageUrl = '';
+    const testimonial = await Testimonial.findById(req.params.id);
+    if (!testimonial) {
+      return res.status(404).json({ message: 'Testimonial not found' });
+    }
+    res.status(200).json(testimonial);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update a testimonial
+exports.updateTestimonial = async (req, res) => {
+  try {
+    const { name, course, message } = req.body;
+    const updateData = { name, course, message };
+
+    // If a new file is uploaded, update the image public_id
     if (req.file) {
-      imageUrl = '/uploads/' + req.file.filename;
+      updateData.image = req.file.filename;
     }
-    const { name, role, text } = req.body;
-    if (!name || !role || !text) return res.status(400).json({ success: false, error: 'All fields required' });
-    const testimonial = new Testimonial({ name, role, text, imageUrl });
-    await testimonial.save();
-    res.json({ success: true, testimonial });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
+
+    const updatedTestimonial = await Testimonial.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedTestimonial) {
+      return res.status(404).json({ message: 'Testimonial not found' });
+    }
+
+    res.status(200).json(updatedTestimonial);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update testimonial
-exports.update = async (req, res) => {
+// Delete a testimonial
+exports.deleteTestimonial = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, role, text } = req.body;
-    let update = { name, role, text };
-    if (req.file) {
-      update.imageUrl = '/uploads/' + req.file.filename;
+    // Note: This just deletes the DB record.
+    // For a complete solution, you might want to delete the image from Cloudinary as well.
+    const deletedTestimonial = await Testimonial.findByIdAndDelete(req.params.id);
+    if (!deletedTestimonial) {
+      return res.status(404).json({ message: 'Testimonial not found' });
     }
-    const testimonial = await Testimonial.findByIdAndUpdate(id, update, { new: true });
-    if (!testimonial) return res.status(404).json({ success: false, error: 'Not found' });
-    res.json({ success: true, testimonial });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(200).json({ message: 'Testimonial deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
-
-// Delete testimonial
-exports.delete = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const testimonial = await Testimonial.findByIdAndDelete(id);
-    if (!testimonial) return res.status(404).json({ success: false, error: 'Not found' });
-    // Optionally delete image file
-    if (testimonial.imageUrl) {
-      const imgPath = path.join(__dirname, '../../', testimonial.imageUrl);
-      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
-    }
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-}; 

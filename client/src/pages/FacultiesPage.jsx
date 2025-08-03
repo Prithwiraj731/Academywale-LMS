@@ -4,30 +4,26 @@ import Particles from '../components/common/Particles';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { PinContainer } from '../components/ui/3d-pin';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { AdvancedImage } from '@cloudinary/react';
+import { auto } from '@cloudinary/url-gen/actions/resize';
+import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 
 export default function FacultiesPage() {
   const [faculties, setFaculties] = useState([]);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  // Initialize Cloudinary
+  const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
+
   useEffect(() => {
     fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
-  }, []);
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  // Helper to get image
-  const getFacultyImage = fac => {
-    if (fac.imageUrl && fac.imageUrl !== '/logo.svg') {
-      if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
-      if (fac.imageUrl.startsWith('/uploads')) return `${API_URL}${fac.imageUrl}`;
-      if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
-    }
-    return '/logo.svg';
-  };
+  }, [API_URL]);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 overflow-x-hidden">
-      {/* Animated Background */}
       <Particles
         particleColors={['#ffffff', '#00eaff', '#ffd600']}
         particleCount={180}
@@ -38,7 +34,6 @@ export default function FacultiesPage() {
         alphaParticles={false}
         disableRotation={false}
       />
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <Navbar />
         <section className="flex-1 py-6 sm:py-8 px-2 sm:px-4">
@@ -50,6 +45,13 @@ export default function FacultiesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {faculties.map(fac => {
                 const name = fac.firstName + (fac.lastName ? ' ' + fac.lastName : '');
+                // Create a Cloudinary image instance
+                const img = cld
+                  .image(fac.image) // Use the public_id from the database
+                  .format('auto')
+                  .quality('auto')
+                  .resize(auto().gravity(autoGravity()).width(200).height(200));
+
                 return (
                   <PinContainer
                     key={fac.slug}
@@ -61,12 +63,7 @@ export default function FacultiesPage() {
                       className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 sm:p-6 cursor-pointer hover:scale-105 w-full h-full"
                     >
                       <div className="w-20 h-20 sm:w-28 sm:h-28 mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-[#20b2aa] bg-gradient-to-br from-[#e0f7f4] to-[#e0f7f4] flex items-center justify-center group-hover:border-[#17817a] transition-colors duration-300">
-                        <img
-                          src={getFacultyImage(fac)}
-                          alt={name}
-                          className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
-                          style={{ background: '#fff' }}
-                        />
+                        <AdvancedImage cldImg={img} className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300" style={{ background: '#fff' }}/>
                       </div>
                       <div className="text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300">
                         {name.replace(/_/g, ' ')}
@@ -83,4 +80,4 @@ export default function FacultiesPage() {
       </div>
     </div>
   );
-} 
+}
