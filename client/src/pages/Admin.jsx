@@ -14,7 +14,7 @@ export default function Admin() {
     e.preventDefault();
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       localStorage.setItem('isAdmin', 'true');
-      navigate('/admin/dashboard');
+      navigate('/admin-dashboard');
     } else {
       setError('Invalid credentials.');
     }
