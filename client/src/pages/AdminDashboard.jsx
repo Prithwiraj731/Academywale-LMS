@@ -1011,7 +1011,7 @@ export default function AdminDashboard() {
             {faculties.map(fac => (
               <div key={fac.slug} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-blue-100">
                 <div className="flex items-center gap-4">
-                  {fac.imageUrl && <img src={fac.imageUrl} alt={fac.firstName} className="w-16 h-16 object-cover rounded-xl border-2 border-blue-200" />}
+                  {fac.imageUrl && <img src={`${API_URL}${fac.imageUrl}`} alt={fac.firstName} className="w-16 h-16 object-cover rounded-xl border-2 border-blue-200" />}
                   <div>
                     <div className="font-bold text-blue-700">{fac.firstName} {fac.lastName}</div>
                     <div className="text-xs text-gray-500">{fac.bio}</div>
@@ -1120,7 +1120,7 @@ export default function AdminDashboard() {
               {testimonials.map(t => (
                 <div key={t._id} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-green-100">
                   <div className="flex items-center gap-4">
-                    {t.imageUrl && <img src={t.imageUrl} alt={t.name} className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />}
+                    {t.imageUrl && <img src={`${API_URL}${t.imageUrl}`} alt={t.name} className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />}
                     <div>
                       <div className="font-bold text-green-700">{t.name} <span className="text-xs text-gray-500">({t.role})</span></div>
                       <div className="text-gray-700 text-sm">{t.text}</div>

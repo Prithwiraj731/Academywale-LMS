@@ -207,7 +207,7 @@ const testimonialRoutes = require('./src/routes/testimonial.routes');
 app.use('/api/testimonials', testimonialRoutes);
 
 // Serve static files from /uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 
 // Serve static files from /static
 app.use('/static', express.static(path.join(__dirname, 'static')));
