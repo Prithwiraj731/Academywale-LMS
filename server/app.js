@@ -174,6 +174,12 @@ app.use('/api/auth', authRoutes);
 const facultyRoutes = require('./src/routes/faculty.routes');
 app.use(facultyRoutes);
 
+const courseRoutes = require('./src/routes/course.routes');
+app.use(courseRoutes);
+
+const instituteRoutes = require('./src/routes/institute.routes');
+app.use(instituteRoutes);
+
 const contactRoutes = require('./src/routes/contact.routes');
 app.use('/api/contact', contactRoutes);
 

@@ -8,6 +8,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+import { getFacultyImageUrl, getFacultyCloudinaryId } from '../utils/imageUtils';
 
 export default function FacultiesPage() {
   const [faculties, setFaculties] = useState([]);
@@ -45,12 +46,8 @@ export default function FacultiesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {faculties.map(fac => {
                 const name = fac.firstName + (fac.lastName ? ' ' + fac.lastName : '');
-                // Create a Cloudinary image instance
-                const img = cld
-                  .image(fac.image) // Use the public_id from the database
-                  .format('auto')
-                  .quality('auto')
-                  .resize(auto().gravity(autoGravity()).width(200).height(200));
+                const cloudinaryId = getFacultyCloudinaryId(fac);
+                const fallbackImageUrl = getFacultyImageUrl(fac);
 
                 return (
                   <PinContainer
@@ -63,7 +60,32 @@ export default function FacultiesPage() {
                       className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 sm:p-6 cursor-pointer hover:scale-105 w-full h-full"
                     >
                       <div className="w-20 h-20 sm:w-28 sm:h-28 mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-[#20b2aa] bg-gradient-to-br from-[#e0f7f4] to-[#e0f7f4] flex items-center justify-center group-hover:border-[#17817a] transition-colors duration-300">
-                        <AdvancedImage cldImg={img} className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300" style={{ background: '#fff' }}/>
+                        {cloudinaryId ? (
+                          <AdvancedImage 
+                            cldImg={cld
+                              .image(cloudinaryId)
+                              .format('auto')
+                              .quality('auto')
+                              .resize(auto().gravity(autoGravity()).width(200).height(200))
+                            } 
+                            className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300" 
+                            style={{ background: '#fff' }}
+                            onError={(e) => {
+                              // Fallback to regular img tag if Cloudinary fails
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'block';
+                            }}
+                          />
+                        ) : null}
+                        <img 
+                          src={fallbackImageUrl} 
+                          alt={name}
+                          className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
+                          style={{ 
+                            background: '#fff',
+                            display: cloudinaryId ? 'none' : 'block'
+                          }}
+                        />
                       </div>
                       <div className="text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300">
                         {name.replace(/_/g, ' ')}

@@ -750,19 +750,19 @@ export default function AdminDashboard() {
     }
     const formData = new FormData();
     formData.append('name', testimonialAdd.name.trim());
-    formData.append('role', testimonialAdd.role);
-    formData.append('text', testimonialAdd.text.trim());
+    formData.append('course', testimonialAdd.role); // Changed from 'role' to 'course' to match controller
+    formData.append('message', testimonialAdd.text.trim()); // Changed from 'text' to 'message' to match controller
     if (testimonialAdd.image) formData.append('image', testimonialAdd.image);
     try {
       const res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.testimonial) { // Changed from data.success to data.testimonial
         setTestimonialStatus('Testimonial added!');
         setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
         setTimeout(() => setTestimonialStatus(''), 2000);
         fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
-        setTestimonialError(data.error || 'Failed to add testimonial');
+        setTestimonialError(data.message || 'Failed to add testimonial'); // Changed from data.error to data.message
       }
     } catch {
       setTestimonialError('Server error');

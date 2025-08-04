@@ -29,6 +29,7 @@ exports.createFaculty = async (req, res) => {
       bio,
       teaches: parsedTeaches,
       imageUrl,
+      image: public_id, // Store public_id for Cloudinary
       public_id, // Store public_id for potential deletion later
       slug,
     });
@@ -84,6 +85,7 @@ exports.updateFaculty = async (req, res) => {
     // If a new file is uploaded, update the image public_id and imageUrl
     if (req.file) {
       updateData.imageUrl = req.file.path;
+      updateData.image = req.file.filename; // Store public_id for Cloudinary
       updateData.public_id = req.file.filename;
     }
 

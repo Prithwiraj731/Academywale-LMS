@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
+import { getCourseImageUrl } from '../utils/imageUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 if (!API_URL) {
@@ -68,14 +69,7 @@ export default function CoursesPage() {
   const subjects = Array.from(new Set(courses.map(c => c.subject).filter(Boolean)));
 
   const getPosterUrl = (course) => {
-    if (course.posterUrl) {
-      if (course.posterUrl.startsWith('http')) return course.posterUrl;
-      if (course.posterUrl.startsWith('/uploads')) {
-        const fullUrl = `${API_URL}${course.posterUrl}`;
-        return fullUrl;
-      }
-    }
-    return '/logo.svg';
+    return getCourseImageUrl(course);
   };
 
   return (

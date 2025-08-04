@@ -29,7 +29,9 @@ const FacultySchema = new mongoose.Schema({
   lastName: { type: String },
   bio: { type: String, default: '' }, // NEW: faculty bio
   teaches: [{ type: String, enum: ['CA', 'CMA'] }], // NEW: what they teach
-  imageUrl: { type: String, default: '' }, // NEW: faculty image path
+  imageUrl: { type: String, default: '' }, // NEW: faculty image URL
+  image: { type: String, default: '' }, // NEW: Cloudinary public_id
+  public_id: { type: String, default: '' }, // NEW: Cloudinary public_id (alternative field name)
   slug: { type: String, required: true, unique: true, index: true }, // NEW: unique slug for lookup
   courses: [CourseSchema],
 }, { timestamps: true });

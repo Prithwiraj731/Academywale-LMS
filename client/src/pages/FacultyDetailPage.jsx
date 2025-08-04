@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CoursePurchase from '../components/common/CoursePurchase';
 import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
+import { getFacultyImageUrl, getCourseImageUrl } from '../utils/imageUtils';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -121,20 +122,11 @@ export default function FacultyDetailPage() {
   };
 
   const getFacultyImage = (fac) => {
-    if (fac.imageUrl && fac.imageUrl !== '/logo.svg') {
-      if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
-      if (fac.imageUrl.startsWith('/uploads')) return `${API_URL}${fac.imageUrl}`;
-      if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
-    }
-    return '/logo.svg';
+    return getFacultyImageUrl(fac);
   };
 
   const getPosterUrl = (course) => {
-    if (course.posterUrl) {
-      if (course.posterUrl.startsWith('http')) return course.posterUrl;
-      if (course.posterUrl.startsWith('/uploads')) return `${API_URL}${course.posterUrl}`;
-    }
-    return '/logo.svg';
+    return getCourseImageUrl(course);
   };
 
   const filterCourses = (filter) => {

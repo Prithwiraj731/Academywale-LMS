@@ -5,8 +5,9 @@ const Testimonial = require('../model/Testimonial.model');
 exports.createTestimonial = async (req, res) => {
   try {
     const { name, course, message } = req.body;
-    // Save the public_id from Cloudinary (req.file.filename)
-    const image = req.file ? req.file.filename : null;
+    // Save both the public_id and full URL from Cloudinary
+    const image = req.file ? req.file.filename : null; // public_id
+    const imageUrl = req.file ? req.file.path : ''; // full URL
 
     if (!image) {
         return res.status(400).json({ message: 'Image is required.' });
@@ -17,10 +18,11 @@ exports.createTestimonial = async (req, res) => {
       course,
       message,
       image, // Storing public_id
+      imageUrl, // Storing full URL
     });
 
     await newTestimonial.save();
-    res.status(201).json(newTestimonial);
+    res.status(201).json({ testimonial: newTestimonial });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -30,7 +32,7 @@ exports.createTestimonial = async (req, res) => {
 exports.getAllTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find();
-    res.status(200).json(testimonials);
+    res.status(200).json({ testimonials });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -55,9 +57,10 @@ exports.updateTestimonial = async (req, res) => {
     const { name, course, message } = req.body;
     const updateData = { name, course, message };
 
-    // If a new file is uploaded, update the image public_id
+    // If a new file is uploaded, update both the image public_id and URL
     if (req.file) {
-      updateData.image = req.file.filename;
+      updateData.image = req.file.filename; // public_id
+      updateData.imageUrl = req.file.path; // full URL
     }
 
     const updatedTestimonial = await Testimonial.findByIdAndUpdate(
@@ -70,7 +73,7 @@ exports.updateTestimonial = async (req, res) => {
       return res.status(404).json({ message: 'Testimonial not found' });
     }
 
-    res.status(200).json(updatedTestimonial);
+    res.status(200).json({ testimonial: updatedTestimonial });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
