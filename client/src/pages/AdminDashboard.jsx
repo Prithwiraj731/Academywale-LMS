@@ -158,7 +158,9 @@ export default function AdminDashboard() {
     formData.append('firstName', facultyAdd.firstName.trim());
     formData.append('lastName', '');
     formData.append('bio', facultyAdd.bio.trim());
-    formData.append('teaches', JSON.stringify(facultyAdd.teaches));
+    facultyAdd.teaches.forEach(teach => {
+      formData.append('teaches[]', teach);
+    });
     formData.append('image', facultyAdd.image);
     try {
       const res = await fetch(`${API_URL}/api/admin/faculty`, {
@@ -594,7 +596,9 @@ export default function AdminDashboard() {
       const formData = new FormData();
       Object.entries(editFacultyData).forEach(([k, v]) => {
         if (k === 'teaches') {
-          formData.append(k, JSON.stringify(v));
+          v.forEach(teach => {
+            formData.append('teaches[]', teach);
+          });
         } else if (k !== 'image' && k !== 'slug') {
           formData.append(k, v);
         }
