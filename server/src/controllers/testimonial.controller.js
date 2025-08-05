@@ -4,26 +4,35 @@ const Testimonial = require('../model/Testimonial.model');
 // Create a new testimonial
 exports.createTestimonial = async (req, res) => {
   try {
-    const { name, course, message } = req.body;
+    console.log('Testimonial request body:', req.body);
+    console.log('Testimonial file:', req.file);
+    
+    // Handle both old and new field names for backward compatibility
+    const name = req.body.name;
+    const course = req.body.course || req.body.role; // Accept both course and role
+    const message = req.body.message || req.body.text; // Accept both message and text
+    
     // Save both the public_id and full URL from Cloudinary
     const image = req.file ? req.file.filename : null; // public_id
     const imageUrl = req.file ? req.file.path : ''; // full URL
 
-    if (!image) {
-        return res.status(400).json({ message: 'Image is required.' });
+    // Validate required fields
+    if (!name || !message) {
+      return res.status(400).json({ message: 'Name and message are required.' });
     }
 
     const newTestimonial = new Testimonial({
       name,
       course,
       message,
-      image, // Storing public_id
-      imageUrl, // Storing full URL
+      image, // Storing public_id (can be null)
+      imageUrl, // Storing full URL (can be empty)
     });
 
     await newTestimonial.save();
     res.status(201).json({ testimonial: newTestimonial });
   } catch (error) {
+    console.error('Testimonial creation error:', error);
     res.status(500).json({ message: error.message });
   }
 };

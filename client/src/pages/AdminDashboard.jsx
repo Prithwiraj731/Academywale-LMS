@@ -751,23 +751,26 @@ export default function AdminDashboard() {
     }
     const formData = new FormData();
     formData.append('name', testimonialAdd.name.trim());
-    formData.append('course', testimonialAdd.role); // Changed from 'role' to 'course' to match controller
-    formData.append('message', testimonialAdd.text.trim()); // Changed from 'text' to 'message' to match controller
+    formData.append('course', testimonialAdd.role); // Use role as course
+    formData.append('message', testimonialAdd.text.trim()); // Use text as message
     if (testimonialAdd.image) formData.append('image', testimonialAdd.image);
     try {
       const res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
       const data = await res.json();
-      if (res.ok && data.testimonial) { // Changed from data.success to data.testimonial
+      if (res.ok && data.testimonial) {
         setTestimonialStatus('Testimonial added!');
         setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
         setTimeout(() => setTestimonialStatus(''), 2000);
+        // Refresh testimonials list
         fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
-        setTestimonialError(data.message || 'Failed to add testimonial'); // Changed from data.error to data.message
+        setTestimonialError(data.message || 'Failed to add testimonial');
       }
-    } catch {
+    } catch (error) {
+      console.error('Testimonial submission error:', error);
       setTestimonialError('Server error');
     }
+  };
   };
   const openEditTestimonialModal = (t) => {
     setEditTestimonialData(t);
@@ -1122,6 +1125,7 @@ export default function AdminDashboard() {
               </select>
               <textarea name="text" value={testimonialAdd.text} onChange={handleTestimonialAddChange} placeholder="What they say..." className="rounded-lg border border-gray-300 px-4 py-2 text-base" required />
               <input name="image" type="file" accept="image/*" onChange={handleTestimonialAddChange} className="rounded-lg border border-gray-300 px-3 py-2 text-base" />
+              <small className="text-gray-500">Image is optional</small>
               {testimonialAdd.imagePreview && (
                 <img src={testimonialAdd.imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />
               )}
