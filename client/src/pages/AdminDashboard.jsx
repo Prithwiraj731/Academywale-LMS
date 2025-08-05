@@ -221,7 +221,7 @@ export default function AdminDashboard() {
       setDeleteAllStatus('Deleting all faculty...');
       console.log('🗑️ Starting delete all faculty operation');
       
-      const res = await fetch(`${API_URL}/api/admin/faculty/delete-all`, {
+      const res = await fetch(`${API_URL}/emergency-delete-faculty`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

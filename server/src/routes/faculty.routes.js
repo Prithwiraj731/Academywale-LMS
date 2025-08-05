@@ -53,7 +53,4 @@ router.get('/api/faculties/:slug', facultyController.getFacultyBySlug);
 router.put('/api/admin/faculty/:slug', upload.single('image'), facultyController.updateFaculty);
 router.delete('/api/admin/faculty/:slug', facultyController.deleteFaculty);
 
-// Delete all faculty route
-router.delete('/api/admin/faculty/delete-all', facultyController.deleteAllFaculty);
-
 module.exports = router;

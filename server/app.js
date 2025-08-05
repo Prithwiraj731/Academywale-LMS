@@ -159,6 +159,25 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// EMERGENCY ADMIN ROUTES (before auth)
+const facultyController = require('./src/controllers/faculty.controller');
+app.delete('/api/admin/faculty/delete-all', (req, res) => {
+  console.log('🚨 EMERGENCY DELETE-ALL ROUTE HIT (before auth)');
+  facultyController.deleteAllFaculty(req, res);
+});
+
+// Simple test route
+app.get('/test-delete', (req, res) => {
+  console.log('🧪 TEST ROUTE HIT');
+  res.json({ message: 'Test route working', timestamp: new Date() });
+});
+
+// Emergency delete route with different pattern
+app.delete('/emergency-delete-faculty', (req, res) => {
+  console.log('🚨 EMERGENCY DELETE FACULTY ROUTE HIT');
+  facultyController.deleteAllFaculty(req, res);
+});
+
 // =====================================================================
 // CLERK MIDDLEWARE
 // Place this after body parsers and before your routes.
