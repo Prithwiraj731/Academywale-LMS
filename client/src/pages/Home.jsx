@@ -13,6 +13,7 @@ import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
+import FacultyImage from '../components/ui/FacultyImage';
 import InstitutesPage from './InstitutesPage';
 
 // import banner3 from '../assets/banner3.png';
@@ -28,21 +29,6 @@ export default function Home() {
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
   }, []);
-
-  // Helper to get image
-  const getFacultyImage = fac => {
-    if (fac.imageUrl && fac.imageUrl !== '/logo.svg') {
-      if (fac.imageUrl.startsWith('http')) return fac.imageUrl;
-      if (fac.imageUrl.startsWith('/uploads')) {
-        // Ensure no duplicated /uploads in URL
-        const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-        const imagePath = fac.imageUrl.startsWith('/uploads') ? fac.imageUrl : `/uploads${fac.imageUrl}`;
-        return `${baseUrl}${imagePath}`;
-      }
-      if (fac.imageUrl.startsWith('/static')) return fac.imageUrl;
-    }
-    return '/logo.svg';
-  };
 
   // Only show first 10 faculties on homepage
   const topFaculties = faculties.slice(0, 10);
@@ -147,12 +133,11 @@ export default function Home() {
                   >
                     <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 xs:p-5 sm:p-8 cursor-pointer hover:scale-105 w-full h-full">
                       <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-28 sm:h-28 mb-2 xs:mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
-                        <img
-                          src={getFacultyImage(fac)}
+                        <FacultyImage
+                          faculty={fac}
                           alt={name}
-                          className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300"
-                          style={{ background: '#fff' }}
-                          />
+                          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
+                        />
                       </div>
                       <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
                         {name.replace(/_/g, ' ')}

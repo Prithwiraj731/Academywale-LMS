@@ -45,10 +45,11 @@ export const getFacultyImageUrl = (faculty) => {
     return faculty.imageUrl;
   }
 
-  // Priority 5: For legacy /uploads paths, fallback to placeholder
+  // Priority 5: For legacy /uploads paths, try to access via API_URL first
   if (faculty.imageUrl && faculty.imageUrl.startsWith('/uploads')) {
-    console.log('⚠️ Legacy /uploads path detected, using fallback:', faculty.imageUrl);
-    return '/logo.svg'; // Fallback for missing local files
+    console.log('⚠️ Legacy /uploads path detected:', faculty.imageUrl);
+    console.log('🔄 Attempting to load from server:', `${API_URL}${faculty.imageUrl}`);
+    return `${API_URL}${faculty.imageUrl}`;
   }
 
   // Priority 6: If imageUrl exists and starts with /static, use it directly
@@ -57,9 +58,9 @@ export const getFacultyImageUrl = (faculty) => {
     return faculty.imageUrl;
   }
 
-  // Final fallback
-  console.log('❌ No valid image found, using fallback logo');
-  return '/logo.svg';
+  // Final fallback - use a proper placeholder instead of logo
+  console.log('❌ No valid image found, using default placeholder');
+  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSIzMCIgZmlsbD0iIzlDQTNBRiIvPgo8cGF0aCBkPSJNNjAgMTcwQzYwIDEzNy45MDkgODcuOTA5IDExMCAxMjAgMTEwQzE1Mi4wOTEgMTEwIDE4MCA5OS45MDkgMTgwIDEzMEwxODAgMTcwSDYwWiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
 };
 
 /**

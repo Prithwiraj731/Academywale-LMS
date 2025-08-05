@@ -5,6 +5,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+import FacultyImage from '../components/ui/FacultyImage';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -1130,7 +1131,11 @@ export default function AdminDashboard() {
             {faculties.map(fac => (
               <div key={fac.slug} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-blue-100">
                 <div className="flex items-center gap-4">
-                  {fac.imageUrl && <img src={`${API_URL}${encodeURIComponent(fac.imageUrl)}`} alt={fac.firstName} className="w-16 h-16 object-cover rounded-xl border-2 border-blue-200" />}
+                  <FacultyImage
+                    faculty={fac}
+                    alt={fac.firstName}
+                    className="w-16 h-16 object-cover rounded-xl border-2 border-blue-200"
+                  />
                   <div>
                     <div className="font-bold text-blue-700">{fac.firstName} {fac.lastName}</div>
                     <div className="text-xs text-gray-500">{fac.bio}</div>

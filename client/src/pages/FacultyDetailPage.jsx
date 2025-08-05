@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CoursePurchase from '../components/common/CoursePurchase';
 import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
-import { getFacultyImageUrl, getCourseImageUrl } from '../utils/imageUtils';
+import { getCourseImageUrl } from '../utils/imageUtils';
+import FacultyImage from '../components/ui/FacultyImage';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -121,10 +122,6 @@ export default function FacultyDetailPage() {
     return DURATIONS;
   };
 
-  const getFacultyImage = (fac) => {
-    return getFacultyImageUrl(fac);
-  };
-
   const getPosterUrl = (course) => {
     return getCourseImageUrl(course);
   };
@@ -163,11 +160,12 @@ export default function FacultyDetailPage() {
         {/* Faculty Info Section */}
         <div className="w-full flex flex-col md:flex-row items-center gap-8 bg-white/90 rounded-3xl shadow-2xl p-8 border border-gray-100 mb-10">
           <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-blue-200 bg-gray-100 flex-shrink-0 flex items-center justify-center">
-            {getFacultyImage(facultyInfo) ? (
-              <img src={getFacultyImage(facultyInfo)} alt={displayFacultyName} className="object-cover w-full h-full" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
-            )}
+            <FacultyImage
+              faculty={facultyInfo}
+              alt={displayFacultyName}
+              className="object-cover w-full h-full"
+              showPlaceholder={true}
+            />
           </div>
           <div className="flex-1 flex flex-col justify-center h-full">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">{displayFacultyName}</h2>
