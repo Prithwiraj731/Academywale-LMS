@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
+const { storage } = require('../config/cloudinary-fresh.config');
 const upload = multer({ storage });
 const facultyController = require('../controllers/faculty.controller');
 
 // Test endpoint to verify routes are working
 router.get('/api/admin/faculty/test', (req, res) => {
-    res.json({ message: 'Faculty routes are working!', timestamp: new Date() });
+    res.json({ 
+        message: 'Faculty routes are working with FRESH Cloudinary config!', 
+        timestamp: new Date(),
+        cloudinaryConfigured: true,
+        storageType: 'CloudinaryStorage'
+    });
 });
 
 // Simple POST test without file upload
@@ -19,13 +24,25 @@ router.post('/api/admin/faculty/test-simple', (req, res) => {
 
 // Test multer without Cloudinary
 router.post('/api/admin/faculty/test-multer', upload.single('image'), (req, res) => {
-    console.log('📝 Multer test endpoint hit');
+    console.log('📝 FRESH CONFIG - Multer test endpoint hit');
     console.log('Body:', req.body);
     console.log('File:', req.file ? 'File received' : 'No file');
     if (req.file) {
-        console.log('File details:', JSON.stringify(req.file, null, 2));
+        console.log('🔥 FRESH CONFIG - File details:', JSON.stringify(req.file, null, 2));
+        console.log('🔥 Path (should be Cloudinary URL):', req.file.path);
+        console.log('🔥 Filename (should be public_id):', req.file.filename);
     }
-    res.json({ message: 'Multer test successful', body: req.body, file: req.file ? 'File received' : 'No file' });
+    res.json({ 
+        message: 'FRESH CONFIG - Multer test successful', 
+        body: req.body, 
+        file: req.file ? {
+            path: req.file.path,
+            filename: req.file.filename,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        } : 'No file',
+        configType: 'FRESH_CLOUDINARY'
+    });
 });
 
 router.post('/api/admin/faculty', upload.single('image'), facultyController.createFaculty);
