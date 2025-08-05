@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password, role = 'user') => {
+  const signup = async (name, email, password, mobile, role = 'user') => {
     try {
       const response = await fetch(`${API_URL}/api/auth/signup`, {
         method: 'POST',
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password, mobile, role }),
       });
 
       const data = await response.json();

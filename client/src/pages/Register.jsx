@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', mobile: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function Register() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
-    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
+    if (!form.name || !form.email || !form.password || !form.confirmPassword || !form.mobile) {
       setError('All fields are required.');
       return;
     }
@@ -26,7 +26,7 @@ export default function Register() {
     }
     setLoading(true);
     
-    const result = await signup(form.name, form.email, form.password);
+    const result = await signup(form.name, form.email, form.password, form.mobile);
     
     if (result.success) {
       // Check if user is admin
@@ -50,6 +50,7 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="text" name="name" placeholder="Full Name" value={form.name} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#20b2aa]" />
           <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#20b2aa]" />
+          <input type="tel" name="mobile" placeholder="Mobile Number" value={form.mobile} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#20b2aa]" />
           <div className="relative">
             <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={form.password} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#20b2aa]" />
             <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">{showPassword ? 'Hide' : 'Show'}</button>

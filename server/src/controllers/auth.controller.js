@@ -43,9 +43,18 @@ const createSendToken = (user, statusCode, res) => {
 // @access  Public
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    console.log('📥 Request body received:', req.body);
+    const { name, email, password, mobile, role } = req.body;
 
-    console.log('🔐 New user signup attempt:', { name, email, role });
+    console.log('🔐 New user signup attempt:', { name, email, mobile, role });
+
+    // Validate required fields
+    if (!name || !email || !password || !mobile) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields (name, email, password, mobile) are required'
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -61,6 +70,7 @@ exports.signup = async (req, res) => {
       name,
       email,
       password,
+      mobile,
       role: role || 'user'
     });
 
