@@ -4,7 +4,7 @@ const Faculty = require('../model/Faculty.model');
 // Create a new faculty
 exports.createFaculty = async (req, res) => {
   try {
-    const { firstName, lastName, bio, teaches } = req.body;
+    const { firstName, lastName, bio } = req.body;
     const imageUrl = req.file ? req.file.path : '';
     const public_id = req.file ? req.file.filename : '';
 
@@ -12,12 +12,16 @@ exports.createFaculty = async (req, res) => {
         return res.status(400).json({ message: 'Image is required.' });
     }
 
-    // Parse teaches from JSON string
+    // Handle teaches array - it comes as req.body['teaches[]'] from FormData
     let parsedTeaches = [];
-    try {
-      parsedTeaches = JSON.parse(teaches);
-    } catch (e) {
-      return res.status(400).json({ message: 'Invalid teaches format.' });
+    if (req.body['teaches[]']) {
+      // If single value, convert to array
+      if (typeof req.body['teaches[]'] === 'string') {
+        parsedTeaches = [req.body['teaches[]']];
+      } else {
+        // If already array, use as is
+        parsedTeaches = req.body['teaches[]'];
+      }
     }
 
     // Generate slug
@@ -68,17 +72,19 @@ exports.getFacultyBySlug = async (req, res) => {
 // Update a faculty
 exports.updateFaculty = async (req, res) => {
   try {
-    const { firstName, lastName, bio, teaches } = req.body;
+    const { firstName, lastName, bio } = req.body;
     const { slug } = req.params; // Get slug from params
 
     const updateData = { firstName, lastName, bio };
 
-    // Parse teaches from JSON string if it exists
-    if (teaches) {
-      try {
-        updateData.teaches = JSON.parse(teaches);
-      } catch (e) {
-        return res.status(400).json({ message: 'Invalid teaches format.' });
+    // Handle teaches array - it comes as req.body['teaches[]'] from FormData
+    if (req.body['teaches[]']) {
+      // If single value, convert to array
+      if (typeof req.body['teaches[]'] === 'string') {
+        updateData.teaches = [req.body['teaches[]']];
+      } else {
+        // If already array, use as is
+        updateData.teaches = req.body['teaches[]'];
       }
     }
 
