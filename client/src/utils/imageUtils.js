@@ -7,36 +7,58 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
  * Handles both Cloudinary URLs and local/static images
  */
 export const getFacultyImageUrl = (faculty) => {
-  if (!faculty) return '/logo.svg';
-
-  // Priority 1: If we have a public_id, construct Cloudinary URL
-  if (faculty.public_id && faculty.public_id.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${faculty.public_id}`;
+  console.log('🖼️ Getting faculty image URL for:', faculty?.firstName);
+  console.log('📊 Faculty data:', {
+    imageUrl: faculty?.imageUrl,
+    image: faculty?.image,
+    public_id: faculty?.public_id
+  });
+  
+  if (!faculty) {
+    console.log('❌ No faculty data provided');
+    return '/logo.svg';
   }
 
-  // Priority 2: If we have an 'image' field with content, use it for Cloudinary
-  if (faculty.image && faculty.image.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${faculty.image}`;
-  }
-
-  // Priority 3: If imageUrl exists and is a full URL (starts with http), use it directly
-  if (faculty.imageUrl && faculty.imageUrl.startsWith('http')) {
+  // Priority 1: If imageUrl is already a Cloudinary URL, use it directly
+  if (faculty.imageUrl && faculty.imageUrl.startsWith('https://res.cloudinary.com/')) {
+    console.log('✅ Using direct Cloudinary URL from imageUrl:', faculty.imageUrl);
     return faculty.imageUrl;
   }
 
-  // Priority 4: For legacy /uploads paths, try to serve from API but with fallback
+  // Priority 2: If we have a public_id, construct Cloudinary URL
+  if (faculty.public_id && faculty.public_id.trim() !== '') {
+    const cloudinaryUrl = `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${faculty.public_id}`;
+    console.log('✅ Constructed Cloudinary URL from public_id:', cloudinaryUrl);
+    return cloudinaryUrl;
+  }
+
+  // Priority 3: If we have an 'image' field with content, use it for Cloudinary
+  if (faculty.image && faculty.image.trim() !== '') {
+    const cloudinaryUrl = `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${faculty.image}`;
+    console.log('✅ Constructed Cloudinary URL from image field:', cloudinaryUrl);
+    return cloudinaryUrl;
+  }
+
+  // Priority 4: If imageUrl exists and is a full URL (starts with http), use it directly
+  if (faculty.imageUrl && faculty.imageUrl.startsWith('http')) {
+    console.log('✅ Using direct HTTP URL:', faculty.imageUrl);
+    return faculty.imageUrl;
+  }
+
+  // Priority 5: For legacy /uploads paths, fallback to placeholder
   if (faculty.imageUrl && faculty.imageUrl.startsWith('/uploads')) {
-    // Since uploads directory might be empty, we'll fallback to placeholder
-    // In future, these should be migrated to Cloudinary
+    console.log('⚠️ Legacy /uploads path detected, using fallback:', faculty.imageUrl);
     return '/logo.svg'; // Fallback for missing local files
   }
 
-  // Priority 5: If imageUrl exists and starts with /static, use it directly
+  // Priority 6: If imageUrl exists and starts with /static, use it directly
   if (faculty.imageUrl && faculty.imageUrl.startsWith('/static')) {
+    console.log('✅ Using static URL:', faculty.imageUrl);
     return faculty.imageUrl;
   }
 
   // Final fallback
+  console.log('❌ No valid image found, using fallback logo');
   return '/logo.svg';
 };
 

@@ -5,6 +5,17 @@ const Faculty = require('../model/Faculty.model');
 exports.createFaculty = async (req, res) => {
   try {
     console.log('📝 Faculty creation request received');
+    console.log('📤 Request body:', req.body);
+    console.log('📸 File received:', req.file ? 'Yes' : 'No');
+    
+    if (req.file) {
+      console.log('📂 File details:');
+      console.log('- originalname:', req.file.originalname);
+      console.log('- mimetype:', req.file.mimetype);
+      console.log('- size:', req.file.size);
+      console.log('- path (Cloudinary URL):', req.file.path);
+      console.log('- filename (public_id):', req.file.filename);
+    }
     
     const { firstName, lastName, bio, teaches } = req.body;
     
@@ -13,11 +24,12 @@ exports.createFaculty = async (req, res) => {
     const public_id = req.file ? req.file.filename : ''; 
 
     if (!imageUrl) {
-        console.log('❌ Image is missing');
+        console.log('❌ Image is missing - no file uploaded');
         return res.status(400).json({ message: 'Image is required.' });
     }
 
-    console.log('📸 Image uploaded successfully to:', imageUrl);
+    console.log('✅ Image uploaded successfully to Cloudinary:', imageUrl);
+    console.log('🔑 Public ID:', public_id);
 
     // Handle teaches array
     let parsedTeaches = [];
