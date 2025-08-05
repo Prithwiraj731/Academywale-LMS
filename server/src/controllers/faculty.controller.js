@@ -4,7 +4,9 @@ const Faculty = require('../model/Faculty.model');
 // Create a new faculty
 exports.createFaculty = async (req, res) => {
   try {
-    const { firstName, lastName, bio } = req.body;
+    console.log('Raw request body:', req.body);
+    
+    const { firstName, lastName, bio, teaches } = req.body;
     const imageUrl = req.file ? req.file.path : '';
     const public_id = req.file ? req.file.filename : '';
 
@@ -12,17 +14,29 @@ exports.createFaculty = async (req, res) => {
         return res.status(400).json({ message: 'Image is required.' });
     }
 
-    // Handle teaches array - it comes as req.body['teaches[]'] from FormData
+    // Handle teaches array
     let parsedTeaches = [];
-    if (req.body['teaches[]']) {
-      // If single value, convert to array
-      if (typeof req.body['teaches[]'] === 'string') {
-        parsedTeaches = [req.body['teaches[]']];
-      } else {
-        // If already array, use as is
-        parsedTeaches = req.body['teaches[]'];
+    
+    if (teaches) {
+      try {
+        // Try to parse as JSON first
+        parsedTeaches = JSON.parse(teaches);
+        console.log('Parsed teaches from JSON:', parsedTeaches);
+      } catch (e) {
+        console.log('Failed to parse teaches as JSON, treating as string/array');
+        // If JSON parsing fails, handle as string or array
+        if (typeof teaches === 'string') {
+          // If it's a string like "CMA,CA", split it
+          parsedTeaches = teaches.split(',').map(t => t.trim());
+        } else if (Array.isArray(teaches)) {
+          parsedTeaches = teaches;
+        } else {
+          parsedTeaches = [teaches]; // Single value
+        }
       }
     }
+    
+    console.log('Final parsed teaches:', parsedTeaches);
 
     // Generate slug
     const slug = `${firstName.toLowerCase().replace(/ /g, '-')}-${lastName ? lastName.toLowerCase().replace(/ /g, '-') : ''}`.replace(/--/g, '-').replace(/^-|-$/g, '');
@@ -41,6 +55,7 @@ exports.createFaculty = async (req, res) => {
     await newFaculty.save();
     res.status(201).json({ success: true, faculty: newFaculty });
   } catch (error) {
+    console.error('Faculty creation error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -72,19 +87,26 @@ exports.getFacultyBySlug = async (req, res) => {
 // Update a faculty
 exports.updateFaculty = async (req, res) => {
   try {
-    const { firstName, lastName, bio } = req.body;
+    const { firstName, lastName, bio, teaches } = req.body;
     const { slug } = req.params; // Get slug from params
 
     const updateData = { firstName, lastName, bio };
 
-    // Handle teaches array - it comes as req.body['teaches[]'] from FormData
-    if (req.body['teaches[]']) {
-      // If single value, convert to array
-      if (typeof req.body['teaches[]'] === 'string') {
-        updateData.teaches = [req.body['teaches[]']];
-      } else {
-        // If already array, use as is
-        updateData.teaches = req.body['teaches[]'];
+    // Handle teaches array
+    if (teaches) {
+      try {
+        // Try to parse as JSON first
+        updateData.teaches = JSON.parse(teaches);
+      } catch (e) {
+        // If JSON parsing fails, handle as string or array
+        if (typeof teaches === 'string') {
+          // If it's a string like "CMA,CA", split it
+          updateData.teaches = teaches.split(',').map(t => t.trim());
+        } else if (Array.isArray(teaches)) {
+          updateData.teaches = teaches;
+        } else {
+          updateData.teaches = [teaches]; // Single value
+        }
       }
     }
 

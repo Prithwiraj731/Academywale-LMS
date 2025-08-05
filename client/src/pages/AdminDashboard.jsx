@@ -158,9 +158,10 @@ export default function AdminDashboard() {
     formData.append('firstName', facultyAdd.firstName.trim());
     formData.append('lastName', '');
     formData.append('bio', facultyAdd.bio.trim());
-    facultyAdd.teaches.forEach(teach => {
-      formData.append('teaches[]', teach);
-    });
+    
+    // Send teaches as JSON string to avoid array handling issues
+    formData.append('teaches', JSON.stringify(facultyAdd.teaches));
+    
     formData.append('image', facultyAdd.image);
     try {
       const res = await fetch(`${API_URL}/api/admin/faculty`, {
