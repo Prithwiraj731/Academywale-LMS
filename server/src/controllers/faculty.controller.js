@@ -178,3 +178,32 @@ exports.deleteFaculty = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Delete all faculty
+exports.deleteAllFaculty = async (req, res) => {
+  try {
+    console.log('🗑️ Admin requested to delete all faculty');
+    
+    // Get count before deletion for logging
+    const facultyCount = await Faculty.countDocuments();
+    console.log(`📊 Total faculty to delete: ${facultyCount}`);
+    
+    // Delete all faculty from database
+    const result = await Faculty.deleteMany({});
+    
+    console.log(`✅ Successfully deleted ${result.deletedCount} faculty members`);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: `Successfully deleted ${result.deletedCount} faculty members`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('❌ Error deleting all faculty:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete faculty',
+      error: error.message 
+    });
+  }
+};

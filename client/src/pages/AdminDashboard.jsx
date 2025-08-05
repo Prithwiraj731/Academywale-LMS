@@ -44,6 +44,11 @@ export default function AdminDashboard() {
   const [facultyAddStatus, setFacultyAddStatus] = useState('');
   const [facultyAddError, setFacultyAddError] = useState('');
 
+  // Delete All Faculty State
+  const [deleteAllStatus, setDeleteAllStatus] = useState('');
+  const [deleteAllError, setDeleteAllError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // Faculty Bio Panel State (for updating existing faculty)
   const [facultyInfo, setFacultyInfo] = useState({
     firstName: '',
@@ -203,6 +208,41 @@ export default function AdminDashboard() {
     } catch (err) {
       setFacultyAddError('Server error');
       console.error('❌ Network/Server error:', err);
+    }
+  };
+
+  // Delete All Faculty Handler
+  const handleDeleteAllFaculty = async () => {
+    setDeleteAllStatus('');
+    setDeleteAllError('');
+    
+    try {
+      setDeleteAllStatus('Deleting all faculty...');
+      console.log('🗑️ Starting delete all faculty operation');
+      
+      const res = await fetch(`${API_URL}/api/admin/faculty/delete-all`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log('📥 Delete all response status:', res.status);
+      const data = await res.json();
+      console.log('📥 Delete all response data:', data);
+      
+      if (res.ok) {
+        setDeleteAllStatus(`Successfully deleted ${data.deletedCount} faculty members!`);
+        setShowDeleteConfirm(false);
+        setTimeout(() => setDeleteAllStatus(''), 3000);
+        console.log(`✅ Successfully deleted ${data.deletedCount} faculty members`);
+      } else {
+        setDeleteAllError(data.message || 'Failed to delete faculty');
+        console.log('❌ Delete all failed:', data);
+      }
+    } catch (err) {
+      setDeleteAllError('Server error occurred');
+      console.error('❌ Delete all network/server error:', err);
     }
   };
 
@@ -1048,6 +1088,43 @@ export default function AdminDashboard() {
             {facultyAddStatus && <div className="text-green-600 text-center font-semibold">{facultyAddStatus}</div>}
             {facultyAddError && <div className="text-red-600 text-center font-semibold">{facultyAddError}</div>}
           </form>
+          
+          {/* Delete All Faculty Section */}
+          <div className="mt-8 p-6 bg-red-50 rounded-xl border-2 border-red-200">
+            <h3 className="text-lg font-bold text-red-700 mb-3">⚠️ Danger Zone</h3>
+            <p className="text-sm text-red-600 mb-4">This action will permanently delete ALL faculty members from the database. This cannot be undone.</p>
+            
+            {!showDeleteConfirm ? (
+              <button 
+                onClick={() => setShowDeleteConfirm(true)}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
+              >
+                🗑️ Delete All Faculty
+              </button>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <p className="text-red-700 font-semibold">Are you absolutely sure? This will delete ALL faculty members!</p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleDeleteAllFaculty}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
+                  >
+                    ✅ Yes, Delete All
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
+                  >
+                    ❌ Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {deleteAllStatus && <div className="text-green-600 font-semibold mt-3">{deleteAllStatus}</div>}
+            {deleteAllError && <div className="text-red-600 font-semibold mt-3">{deleteAllError}</div>}
+          </div>
+
           <h3 className="text-xl font-bold text-purple-700 mt-8 mb-4">All Faculties</h3>
           <div className="grid grid-cols-1 gap-4">
             {faculties.map(fac => (
