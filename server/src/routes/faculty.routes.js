@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary-fresh.config');
+const { storage } = require('../config/cloudinary.config');
 const upload = multer({ storage });
 const facultyController = require('../controllers/faculty.controller');
 

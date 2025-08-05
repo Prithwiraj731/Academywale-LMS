@@ -28,6 +28,18 @@ exports.createFaculty = async (req, res) => {
         return res.status(400).json({ message: 'Image is required.' });
     }
 
+    // 🚨 CRITICAL CHECK: Ensure it's a Cloudinary URL
+    if (!imageUrl.includes('cloudinary.com')) {
+        console.log('🚨 CRITICAL ERROR: Image not uploaded to Cloudinary!');
+        console.log('🚨 Current imageUrl:', imageUrl);
+        console.log('🚨 This suggests multer is using local storage instead of Cloudinary');
+        return res.status(500).json({ 
+            error: 'Image upload failed - not using Cloudinary storage',
+            imageUrl: imageUrl,
+            message: 'Server configuration error'
+        });
+    }
+
     console.log('✅ Image uploaded successfully to Cloudinary:', imageUrl);
     console.log('🔑 Public ID:', public_id);
 
