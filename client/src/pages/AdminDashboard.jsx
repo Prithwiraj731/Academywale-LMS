@@ -818,7 +818,7 @@ export default function AdminDashboard() {
     } catch {}
   };
 
-  // Component JSX Return
+  // Render the AdminDashboard component
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center">
       {/* Animated Button Row */}
