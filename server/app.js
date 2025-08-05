@@ -212,6 +212,14 @@ const upload = multer({ storage: storage });
 const testimonialRoutes = require('./src/routes/testimonial.routes');
 app.use('/api/testimonials', testimonialRoutes);
 
+// Test routes for Cloudinary debugging
+const testRoutes = require('./src/routes/test.routes');
+app.use('/api/test', testRoutes);
+
+// Image migration routes for fixing missing images
+const imageMigrationRoutes = require('./src/routes/image-migration.routes');
+app.use('/api/migration', imageMigrationRoutes);
+
 // Serve static files from /uploads
 app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 

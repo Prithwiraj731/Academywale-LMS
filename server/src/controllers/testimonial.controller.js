@@ -5,7 +5,7 @@ const Testimonial = require('../model/Testimonial.model');
 exports.createTestimonial = async (req, res) => {
   try {
     console.log('Testimonial request body:', req.body);
-    console.log('Testimonial file:', req.file);
+    console.log('Testimonial file full object:', JSON.stringify(req.file, null, 2));
     
     // Handle both old and new field names for backward compatibility
     const name = req.body.name;
@@ -15,6 +15,14 @@ exports.createTestimonial = async (req, res) => {
     // Save both the public_id and full URL from Cloudinary
     const image = req.file ? req.file.filename : null; // public_id
     const imageUrl = req.file ? req.file.path : ''; // full URL
+
+    if (req.file && !imageUrl.startsWith('https://res.cloudinary.com/')) {
+      console.log('WARNING: testimonial imageUrl does not appear to be a proper Cloudinary URL');
+      console.log('Full file object:', req.file);
+    }
+
+    console.log('Testimonial Cloudinary imageUrl:', imageUrl);
+    console.log('Testimonial Cloudinary public_id:', image);
 
     // Validate required fields
     if (!name || !message) {

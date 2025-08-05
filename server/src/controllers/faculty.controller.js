@@ -5,13 +5,25 @@ const Faculty = require('../model/Faculty.model');
 exports.createFaculty = async (req, res) => {
   try {
     console.log('Raw request body:', req.body);
+    console.log('Uploaded file full object:', JSON.stringify(req.file, null, 2));
     
     const { firstName, lastName, bio, teaches } = req.body;
-    const imageUrl = req.file ? req.file.path : '';
-    const public_id = req.file ? req.file.filename : '';
+    
+    // Get the proper Cloudinary URL from the uploaded file
+    const imageUrl = req.file ? req.file.path : ''; // This should be the secure_url from Cloudinary
+    const public_id = req.file ? req.file.filename : ''; // This should be the public_id from Cloudinary
 
     if (!imageUrl) {
         return res.status(400).json({ message: 'Image is required.' });
+    }
+
+    console.log('Cloudinary imageUrl:', imageUrl);
+    console.log('Cloudinary public_id:', public_id);
+
+    // Verify the imageUrl is a proper Cloudinary URL
+    if (!imageUrl.startsWith('https://res.cloudinary.com/')) {
+      console.log('WARNING: imageUrl does not appear to be a proper Cloudinary URL');
+      console.log('Full file object:', req.file);
     }
 
     // Handle teaches array
@@ -46,8 +58,8 @@ exports.createFaculty = async (req, res) => {
       lastName,
       bio,
       teaches: parsedTeaches,
-      imageUrl,
-      image: public_id, // Store public_id for Cloudinary
+      imageUrl, // This should be the full Cloudinary secure_url
+      image: public_id, // Store public_id for Cloudinary transformations
       public_id, // Store public_id for potential deletion later
       slug,
     });

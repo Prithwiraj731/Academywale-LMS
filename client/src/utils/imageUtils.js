@@ -8,23 +8,35 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
  */
 export const getFacultyImageUrl = (faculty) => {
   if (!faculty) return '/logo.svg';
-  
-  // If imageUrl exists and is a full URL (starts with http), use it directly
+
+  // Priority 1: If we have a public_id, construct Cloudinary URL
+  if (faculty.public_id && faculty.public_id.trim() !== '') {
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${faculty.public_id}`;
+  }
+
+  // Priority 2: If we have an 'image' field with content, use it for Cloudinary
+  if (faculty.image && faculty.image.trim() !== '') {
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${faculty.image}`;
+  }
+
+  // Priority 3: If imageUrl exists and is a full URL (starts with http), use it directly
   if (faculty.imageUrl && faculty.imageUrl.startsWith('http')) {
     return faculty.imageUrl;
   }
-  
-  // If imageUrl exists and starts with /uploads, prepend API_URL
+
+  // Priority 4: For legacy /uploads paths, try to serve from API but with fallback
   if (faculty.imageUrl && faculty.imageUrl.startsWith('/uploads')) {
-    return `${API_URL}${faculty.imageUrl}`;
+    // Since uploads directory might be empty, we'll fallback to placeholder
+    // In future, these should be migrated to Cloudinary
+    return '/logo.svg'; // Fallback for missing local files
   }
-  
-  // If imageUrl exists and starts with /static, use it directly (served by server)
+
+  // Priority 5: If imageUrl exists and starts with /static, use it directly
   if (faculty.imageUrl && faculty.imageUrl.startsWith('/static')) {
     return faculty.imageUrl;
   }
-  
-  // Fallback to logo
+
+  // Final fallback
   return '/logo.svg';
 };
 
@@ -34,7 +46,7 @@ export const getFacultyImageUrl = (faculty) => {
  */
 export const getFacultyCloudinaryId = (faculty) => {
   if (!faculty) return null;
-  
+
   // Return the public_id stored in either 'image' or 'public_id' field
   return faculty.image || faculty.public_id || null;
 };
@@ -45,22 +57,22 @@ export const getFacultyCloudinaryId = (faculty) => {
  */
 export const getCourseImageUrl = (course) => {
   if (!course || !course.posterUrl) return '/logo.svg';
-  
+
   // If posterUrl is a full URL (starts with http), use it directly
   if (course.posterUrl.startsWith('http')) {
     return course.posterUrl;
   }
-  
+
   // If posterUrl starts with /uploads, prepend API_URL
   if (course.posterUrl.startsWith('/uploads')) {
     return `${API_URL}${course.posterUrl}`;
   }
-  
+
   // If posterUrl starts with /static, use it directly
   if (course.posterUrl.startsWith('/static')) {
     return course.posterUrl;
   }
-  
+
   // Fallback to logo
   return '/logo.svg';
 };
@@ -72,32 +84,40 @@ export const getCourseImageUrl = (course) => {
 export const getTestimonialImageUrl = (testimonial) => {
   if (!testimonial) return '/logo.svg';
   
-  // If imageUrl exists and is a full URL, use it directly
+  // Priority 1: If we have a public_id, construct Cloudinary URL
+  if (testimonial.public_id && testimonial.public_id.trim() !== '') {
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${testimonial.public_id}`;
+  }
+
+  // Priority 2: If we have an 'image' field with content, use it for Cloudinary
+  if (testimonial.image && testimonial.image.trim() !== '') {
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${testimonial.image}`;
+  }
+  
+  // Priority 3: If imageUrl exists and is a full URL, use it directly
   if (testimonial.imageUrl && testimonial.imageUrl.startsWith('http')) {
     return testimonial.imageUrl;
   }
   
-  // If imageUrl exists and starts with /uploads, prepend API_URL
+  // Priority 4: For legacy /uploads paths, fallback to placeholder since files are missing
   if (testimonial.imageUrl && testimonial.imageUrl.startsWith('/uploads')) {
-    return `${API_URL}${testimonial.imageUrl}`;
+    return '/logo.svg'; // Fallback for missing local files
   }
   
-  // If imageUrl exists and starts with /static, use it directly
+  // Priority 5: If imageUrl exists and starts with /static, use it directly
   if (testimonial.imageUrl && testimonial.imageUrl.startsWith('/static')) {
     return testimonial.imageUrl;
   }
   
-  // Fallback to logo
+  // Final fallback
   return '/logo.svg';
-};
-
-/**
+};/**
  * Get the Cloudinary public_id for testimonial images
  * Used for Cloudinary transformations
  */
 export const getTestimonialCloudinaryId = (testimonial) => {
   if (!testimonial) return null;
-  
+
   // Return the public_id stored in 'image' field
   return testimonial.image || null;
 };
@@ -108,22 +128,22 @@ export const getTestimonialCloudinaryId = (testimonial) => {
  */
 export const getInstituteImageUrl = (institute) => {
   if (!institute || !institute.imageUrl) return '/logo.svg';
-  
+
   // If imageUrl is a full URL (starts with http), use it directly
   if (institute.imageUrl.startsWith('http')) {
     return institute.imageUrl;
   }
-  
+
   // If imageUrl starts with /uploads, prepend API_URL
   if (institute.imageUrl.startsWith('/uploads')) {
     return `${API_URL}${institute.imageUrl}`;
   }
-  
+
   // If imageUrl starts with /static or /institutes, use it directly
   if (institute.imageUrl.startsWith('/static') || institute.imageUrl.startsWith('/institutes')) {
     return institute.imageUrl;
   }
-  
+
   // Fallback to logo
   return '/logo.svg';
 };
