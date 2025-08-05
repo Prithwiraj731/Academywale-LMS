@@ -139,20 +139,34 @@ export default function AdminDashboard() {
 
   const handleFacultyAddSubmit = async e => {
     e.preventDefault();
+    console.log('🚀 Faculty submission started');
+    console.log('Faculty data:', facultyAdd);
+    
     setFacultyAddStatus('');
     setFacultyAddError('');
+    
     if (!facultyAdd.firstName.trim()) {
       setFacultyAddError('Faculty name is required.');
+      console.log('❌ Faculty name is missing');
       return;
     }
     if (!facultyAdd.bio.trim()) {
       setFacultyAddError('Faculty bio is required.');
+      console.log('❌ Faculty bio is missing');
+      return;
+    }
+    if (!facultyAdd.teaches || facultyAdd.teaches.length === 0) {
+      setFacultyAddError('Faculty must teach at least one course.');
+      console.log('❌ Faculty teaches array is empty');
       return;
     }
     if (!facultyAdd.image) {
       setFacultyAddError('Faculty image is required.');
+      console.log('❌ Faculty image is missing');
       return;
     }
+    
+    console.log('✅ All validation passed, creating FormData');
     const formData = new FormData();
     // Send full name as firstName, leave lastName blank
     formData.append('firstName', facultyAdd.firstName.trim());
@@ -163,21 +177,32 @@ export default function AdminDashboard() {
     formData.append('teaches', JSON.stringify(facultyAdd.teaches));
     
     formData.append('image', facultyAdd.image);
+    
+    console.log('📤 Sending request to:', `${API_URL}/api/admin/faculty`);
+    
     try {
+      setFacultyAddStatus('Adding faculty...');
       const res = await fetch(`${API_URL}/api/admin/faculty`, {
         method: 'POST',
         body: formData
       });
+      
+      console.log('📥 Response status:', res.status);
       const data = await res.json();
+      console.log('📥 Response data:', data);
+      
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
         setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null });
         setTimeout(() => setFacultyAddStatus(''), 2000);
+        console.log('✅ Faculty added successfully');
       } else {
-        setFacultyAddError(data.error || 'Failed to add faculty');
+        setFacultyAddError(data.error || data.message || 'Failed to add faculty');
+        console.log('❌ Faculty addition failed:', data);
       }
     } catch (err) {
       setFacultyAddError('Server error');
+      console.error('❌ Network/Server error:', err);
     }
   };
 

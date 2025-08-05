@@ -126,15 +126,16 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const dbConnection = require('./src/config/db.config');
 const path = require('path');
+
+// Load .env variables FIRST before importing any modules that depend on env vars
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+const dbConnection = require('./src/config/db.config');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node'); // <-- Import Clerk middleware
 
 // --- Pre-register models to prevent population errors ---
 require('./src/model/User.model');
-
-// Load .env variables from the root project directory
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Initialize App
 const app = express();
@@ -211,14 +212,6 @@ const upload = multer({ storage: storage });
 
 const testimonialRoutes = require('./src/routes/testimonial.routes');
 app.use('/api/testimonials', testimonialRoutes);
-
-// Test routes for Cloudinary debugging
-const testRoutes = require('./src/routes/test.routes');
-app.use('/api/test', testRoutes);
-
-// Image migration routes for fixing missing images
-const imageMigrationRoutes = require('./src/routes/image-migration.routes');
-app.use('/api/migration', imageMigrationRoutes);
 
 // Serve static files from /uploads
 app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));

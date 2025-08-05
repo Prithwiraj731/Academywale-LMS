@@ -4,27 +4,20 @@ const Faculty = require('../model/Faculty.model');
 // Create a new faculty
 exports.createFaculty = async (req, res) => {
   try {
-    console.log('Raw request body:', req.body);
-    console.log('Uploaded file full object:', JSON.stringify(req.file, null, 2));
+    console.log('📝 Faculty creation request received');
     
     const { firstName, lastName, bio, teaches } = req.body;
     
     // Get the proper Cloudinary URL from the uploaded file
-    const imageUrl = req.file ? req.file.path : ''; // This should be the secure_url from Cloudinary
-    const public_id = req.file ? req.file.filename : ''; // This should be the public_id from Cloudinary
+    const imageUrl = req.file ? req.file.path : ''; 
+    const public_id = req.file ? req.file.filename : ''; 
 
     if (!imageUrl) {
+        console.log('❌ Image is missing');
         return res.status(400).json({ message: 'Image is required.' });
     }
 
-    console.log('Cloudinary imageUrl:', imageUrl);
-    console.log('Cloudinary public_id:', public_id);
-
-    // Verify the imageUrl is a proper Cloudinary URL
-    if (!imageUrl.startsWith('https://res.cloudinary.com/')) {
-      console.log('WARNING: imageUrl does not appear to be a proper Cloudinary URL');
-      console.log('Full file object:', req.file);
-    }
+    console.log('📸 Image uploaded successfully to:', imageUrl);
 
     // Handle teaches array
     let parsedTeaches = [];
@@ -64,10 +57,13 @@ exports.createFaculty = async (req, res) => {
       slug,
     });
 
+    console.log('💾 Saving faculty to database...');
     await newFaculty.save();
+    console.log('✅ Faculty saved successfully:', newFaculty._id);
+    
     res.status(201).json({ success: true, faculty: newFaculty });
   } catch (error) {
-    console.error('Faculty creation error:', error);
+    console.error('❌ Faculty creation error:', error);
     res.status(500).json({ message: error.message });
   }
 };
