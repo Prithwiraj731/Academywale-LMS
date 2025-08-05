@@ -131,6 +131,9 @@ const path = require('path');
 // Load .env variables FIRST before importing any modules that depend on env vars
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Delete CLOUDINARY_URL to avoid conflicts with individual credentials
+delete process.env.CLOUDINARY_URL;
+
 const dbConnection = require('./src/config/db.config');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node'); // <-- Import Clerk middleware
 

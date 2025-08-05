@@ -2,6 +2,9 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
+// Delete CLOUDINARY_URL to avoid conflicts
+delete process.env.CLOUDINARY_URL;
+
 // Configure Cloudinary with environment variables
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'drlqhsjgm',
