@@ -21,21 +21,21 @@ export default function Login() {
       return;
     }
     setLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-      login(data.user, data.token);
-      navigate('/');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    
+    const result = await login(form.email, form.password);
+    
+    if (result.success) {
+      // Check if user is admin
+      if (result.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } else {
+      setError(result.message);
     }
+    
+    setLoading(false);
   };
 
   return (

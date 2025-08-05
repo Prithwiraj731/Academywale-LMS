@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
-  const { user, isLoaded, isSignedIn } = useUser();
-  const { openSignIn, signOut } = useClerk();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   
   // Close menus when clicking outside
@@ -31,8 +30,8 @@ export default function Navbar() {
       .then(data => setFaculties(data.faculties || []));
   }, []);
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await logout();
     setProfileMenu(false);
     navigate('/');
   };
@@ -153,7 +152,7 @@ export default function Navbar() {
               </div>
               <Link to="/about" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">About</Link>
               <Link to="/contact" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Contact</Link>
-              {isSignedIn && (
+              {isAuthenticated && (
                 <Link
                   to="/student-dashboard"
                   className="px-6 py-3 bg-[#20b2aa] text-white font-bold rounded-xl shadow-lg hover:bg-[#17817a] transition-all text-lg"
@@ -165,12 +164,12 @@ export default function Navbar() {
 
             {/* Account/Profile Button */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {!isSignedIn ? (
+              {!isAuthenticated ? (
                 <button
-                  onClick={() => openSignIn()}
+                  onClick={() => navigate('/login')}
                   className="px-3 py-1.5 text-sm bg-[#20b2aa] text-white font-bold rounded-lg shadow-md hover:bg-[#17817a] transition-all sm:px-6 sm:py-2.5 sm:text-base sm:rounded-xl"
                 >
-                  Account
+                  Login
                 </button>
               ) : (
                 <div className="relative profile-menu-container flex items-center gap-2">
@@ -306,7 +305,7 @@ export default function Navbar() {
                 <Link to="/contact" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
                   Contact
                 </Link>
-                {isSignedIn && (
+                {isAuthenticated && (
                   <Link
                     to="/dashboard"
                     className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
@@ -315,15 +314,15 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 )}
-                {!isSignedIn && (
+                {!isAuthenticated && (
                   <button
                     onClick={() => {
-                      openSignIn();
+                      navigate('/login');
                       setIsMenuOpen(false);
                     }}
                     className="w-full text-left mt-2 py-2 px-4 bg-[#20b2aa] text-white font-bold rounded-lg shadow-lg hover:bg-[#17817a] transition-all"
                   >
-                    Account
+                    Login
                   </button>
                 )}
               </div>

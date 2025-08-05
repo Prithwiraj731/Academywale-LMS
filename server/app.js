@@ -127,6 +127,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Load .env variables FIRST before importing any modules that depend on env vars
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -135,7 +136,6 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 delete process.env.CLOUDINARY_URL;
 
 const dbConnection = require('./src/config/db.config');
-const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node'); // <-- Import Clerk middleware
 
 // --- Pre-register models to prevent population errors ---
 require('./src/model/User.model');
@@ -158,6 +158,7 @@ app.use(cors({
 // Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // EMERGENCY ADMIN ROUTES (before auth)
 const facultyController = require('./src/controllers/faculty.controller');
@@ -179,10 +180,7 @@ app.delete('/emergency-delete-faculty', (req, res) => {
 });
 
 // =====================================================================
-// CLERK MIDDLEWARE
-// Place this after body parsers and before your routes.
-// This validates the token and attaches user data to `req.auth`.
-app.use(ClerkExpressWithAuth());
+// AUTHENTICATION NOW HANDLED BY JWT IN INDIVIDUAL ROUTES
 // =====================================================================
 
 // Test Route
@@ -207,10 +205,10 @@ const contactRoutes = require('./src/routes/contact.routes');
 app.use('/api/contact', contactRoutes);
 
 const purchaseRoutes = require('./src/routes/purchase.routes');
-const requireAuth = require('./src/middlewares/clerkAuth.middleware');
+const { protect } = require('./src/middlewares/auth.middleware');
 
-// Your custom middleware will now have access to `req.auth`
-app.use('/api/purchase', requireAuth, purchaseRoutes);
+// Protected routes now use JWT middleware
+app.use('/api/purchase', protect, purchaseRoutes);
 
 const couponRoutes = require('./src/routes/coupon.routes');
 app.use(couponRoutes);
