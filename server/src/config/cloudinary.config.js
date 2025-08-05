@@ -13,7 +13,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'academywale',
+    folder: 'academywale/permanent', // Use a specific permanent folder
+    resource_type: 'image', // Explicitly set as image resource
     format: async (req, file) => {
       // Allow multiple formats based on file type
       const validFormats = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
@@ -21,16 +22,21 @@ const storage = new CloudinaryStorage({
       return validFormats.includes(fileFormat) ? fileFormat : 'png';
     },
     public_id: (req, file) => {
-      // Create unique filename with timestamp
+      // Create unique filename with timestamp and random string
       const timestamp = Date.now();
-      const originalName = file.originalname.split('.')[0];
-      return `${originalName}_${timestamp}`;
+      const randomString = Math.random().toString(36).substring(2, 8);
+      const originalName = file.originalname.split('.')[0].replace(/[^a-zA-Z0-9]/g, '');
+      return `${originalName}_${timestamp}_${randomString}`;
     },
     transformation: [
-      { width: 800, height: 600, crop: "limit" },
+      { width: 1200, height: 1200, crop: "limit" }, // Increased size limits
       { quality: "auto:good" },
       { fetch_format: "auto" }
-    ]
+    ],
+    // Add these important options to ensure permanent storage
+    overwrite: false, // Don't overwrite existing files
+    unique_filename: true, // Ensure unique filenames
+    use_filename: false, // Don't use original filename
   },
 });
 
