@@ -121,14 +121,8 @@ export const AuthProvider = ({ children }) => {
       console.log('Signup response data:', data);
 
       if (response.ok) {
-        setUser(data.data.user);
-        setIsAuthenticated(true);
-        
-        // Store token in localStorage as backup
-        if (data.token) {
-          localStorage.setItem('token', data.token);
-        }
-        
+        // Don't automatically log in the user after signup
+        // Just return success with user data for confirmation
         return { success: true, user: data.data.user };
       } else {
         return { success: false, message: data.message };

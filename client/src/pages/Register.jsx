@@ -14,12 +14,13 @@ export default function Register() {
       const result = await signup(form.name, form.email, form.password, form.mobile);
       
       if (result.success) {
-        // Check if user is admin
-        if (result.user.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/student-dashboard');
-        }
+        // After successful signup, redirect to login page with success message
+        navigate('/login', { 
+          state: { 
+            signupSuccess: true, 
+            message: "Account created successfully! Please login with your credentials." 
+          }
+        });
       } else {
         setError(result.message || "Signup failed. Please try again.");
       }

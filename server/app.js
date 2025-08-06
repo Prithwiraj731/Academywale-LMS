@@ -90,7 +90,7 @@ app.post('/api/auth/signup', async (req, res) => {
     res.status(201).json({
       status: 'success',
       token,
-      data: { user: { name: newUser.name, email: newUser.email } }
+      data: { user: { name: newUser.name, email: newUser.email, role: newUser.role } }
     });
     
   } catch (error) {
@@ -127,7 +127,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(200).json({
       status: 'success',
       token,
-      data: { user: { name: user.name, email: user.email } }
+      data: { user: { name: user.name, email: user.email, role: user.role } }
     });
     
   } catch (error) {
@@ -166,7 +166,7 @@ app.get('/api/auth/me', async (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      data: { user: { name: user.name, email: user.email } }
+      data: { user: { name: user.name, email: user.email, role: user.role } }
     });
     
   } catch (error) {
