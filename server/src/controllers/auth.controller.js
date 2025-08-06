@@ -95,7 +95,7 @@ exports.signup = async (req, res) => {
       const value = error.keyValue[field];
       return res.status(400).json({
         status: 'error',
-        message: `${field} '${value}' is already taken. Please use a different ${field}.`
+        message: `An account with that ${field} already exists.`
       });
     }
     

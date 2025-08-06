@@ -65,9 +65,9 @@ userSchema.methods.correctPassword = async function(candidatePassword, userPassw
 };
 
 // Instance method to update last login
-userSchema.methods.updateLastLogin = function() {
+userSchema.methods.updateLastLogin = async function() {
   this.lastLoginAt = new Date();
-  return this.save({ validateBeforeSave: false });
+  await this.save({ validateBeforeSave: false });
 };
 
 module.exports = mongoose.model('User', userSchema); 
