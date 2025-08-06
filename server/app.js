@@ -4,54 +4,54 @@ const dotenv = require('dotenv');
 const dbConnection = require('./src/config/db.config');
 const path = require('path'); // <-- FIX: Import the built-in 'path' module
 
-// // --- FIX: Pre-register models to prevent population errors ---
-// // require('./src/model/Course.model');
+// --- FIX: Pre-register models to prevent population errors ---
+// require('./src/model/Course.model');
 require('./src/model/User.model');
-// // require('./src/model/Address.model');
+// require('./src/model/Address.model');
 
-// // Load .env variables from the root project directory
-// // FIX: Replace the old dotenv.config() with this line
-// dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Load .env variables from the root project directory
+// FIX: Replace the old dotenv.config() with this line
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// // Initialize App
-// const app = express();
+// Initialize App
+const app = express();
 
-// // Enable CORS for frontend (Vite runs on port 5173)
-// app.use(cors({
-//   origin: [
-//     'https://academywale.com',
-//     'https://www.academywale.com',
-//     'https://academywale-lms.vercel.app',
-//     'http://localhost:5173',
-//     'http://localhost:5174'
-//   ],
-//   credentials: true
-// }));
+// Enable CORS for frontend (Vite runs on port 5173)
+app.use(cors({
+  origin: [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
+  credentials: true
+}));
 
-// // Body Parsers
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
+// Body Parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// // Test Route
-// app.get('/', (req, res) => {
-//   res.send('Hello World!');
-// });
+// Test Route
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
-// // Routes
-// // const adminRoutes = require('./src/routes/admin.routes');
-// // app.use('/admin', adminRoutes);
+// Routes
+// const adminRoutes = require('./src/routes/admin.routes');
+// app.use('/admin', adminRoutes);
 
-// // const userRoutes = require('./src/routes/user.routes');
-// // app.use('/user', userRoutes);
+// const userRoutes = require('./src/routes/user.routes');
+// app.use('/user', userRoutes);
 
-// // const courseRoutes = require('./src/routes/course.routes');
-// // app.use('/course', courseRoutes);
+// const courseRoutes = require('./src/routes/course.routes');
+// app.use('/course', courseRoutes);
 
-// // const cartRoutes = require('./src/routes/cart.routes');
-// // app.use('/cart', cartRoutes);
+// const cartRoutes = require('./src/routes/cart.routes');
+// app.use('/cart', cartRoutes);
 
-// // const orderRoutes = require('./src/routes/order.routes');
-// // app.use('/order', orderRoutes);
+// const orderRoutes = require('./src/routes/order.routes');
+// app.use('/order', orderRoutes);
 
 const authRoutes = require('./src/routes/auth.routes');
 app.use('/api/auth', authRoutes);
