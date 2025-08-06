@@ -188,6 +188,20 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// Debug route to check deployment
+app.get('/api/debug', (req, res) => {
+  res.json({
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.1',
+    routes: [
+      '/api/auth/signup',
+      '/api/auth/login',
+      '/api/auth/test'
+    ]
+  });
+});
+
 // Routes (Your existing logic remains unchanged)
 const authRoutes = require('./src/routes/auth.routes');
 app.use('/api/auth', authRoutes);
