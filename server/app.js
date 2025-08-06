@@ -203,20 +203,27 @@ app.get('/api/debug', (req, res) => {
 });
 
 // Routes (Your existing logic remains unchanged)
+console.log('🔄 Loading routes...');
+
 const authRoutes = require('./src/routes/auth.routes');
 app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes loaded at /api/auth');
 
 const facultyRoutes = require('./src/routes/faculty.routes');
 app.use(facultyRoutes);
+console.log('✅ Faculty routes loaded');
 
 const courseRoutes = require('./src/routes/course.routes');
 app.use(courseRoutes);
+console.log('✅ Course routes loaded');
 
 const instituteRoutes = require('./src/routes/institute.routes');
 app.use(instituteRoutes);
+console.log('✅ Institute routes loaded');
 
 const contactRoutes = require('./src/routes/contact.routes');
 app.use('/api/contact', contactRoutes);
+console.log('✅ Contact routes loaded at /api/contact');
 
 const purchaseRoutes = require('./src/routes/purchase.routes');
 const { protect } = require('./src/middlewares/auth.middleware');

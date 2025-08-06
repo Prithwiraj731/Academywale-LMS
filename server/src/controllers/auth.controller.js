@@ -43,13 +43,15 @@ const createSendToken = (user, statusCode, res) => {
 // @access  Public
 exports.signup = async (req, res) => {
   try {
-    console.log('📥 Request body received:', req.body);
+    console.log('📥 Signup request received');
+    console.log('📥 Request body:', req.body);
     const { name, email, password, mobile, role } = req.body;
 
     console.log('🔐 New user signup attempt:', { name, email, mobile, role });
 
     // Validate required fields
     if (!name || !email || !password || !mobile) {
+      console.log('❌ Validation failed: Missing required fields');
       return res.status(400).json({
         status: 'error',
         message: 'All fields (name, email, password, mobile) are required'
@@ -57,14 +59,17 @@ exports.signup = async (req, res) => {
     }
 
     // Check if user already exists
+    console.log('🔍 Checking if user exists with email:', email);
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('❌ User already exists with email:', email);
       return res.status(400).json({
         status: 'error',
         message: 'User with this email already exists'
       });
     }
 
+    console.log('👤 Creating new user...');
     // Create new user
     const newUser = await User.create({
       name,
@@ -79,9 +84,21 @@ exports.signup = async (req, res) => {
     // Update last login
     await newUser.updateLastLogin();
 
+    console.log('🔑 Sending token response...');
     createSendToken(newUser, 201, res);
   } catch (error) {
     console.error('❌ Signup error:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      const value = error.keyValue[field];
+      return res.status(400).json({
+        status: 'error',
+        message: `${field} '${value}' is already taken. Please use a different ${field}.`
+      });
+    }
+    
     res.status(400).json({
       status: 'error',
       message: error.message || 'Error creating user'
