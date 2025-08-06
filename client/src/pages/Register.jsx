@@ -31,12 +31,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-8 px-4">
-      <SignupFormDemo onSignup={handleSignup} />
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
+      <SignupFormDemo onSignup={handleSignup} externalError={error} />
       <div className="mt-4 text-center text-sm">
         Already have an account? <Link to="/login" className="text-[#20b2aa] hover:underline">Login</Link>
       </div>

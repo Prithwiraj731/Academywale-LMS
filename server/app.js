@@ -8,7 +8,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173'],
+  origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
 app.use(express.json());

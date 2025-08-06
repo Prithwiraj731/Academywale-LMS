@@ -100,17 +100,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (name, email, password, mobile, role = 'user') => {
+    console.log('AuthContext signup called with:', { name, email, password: '[HIDDEN]', mobile, role });
+    console.log('API_URL:', API_URL);
+    
     try {
+      const requestBody = { name, email, password, mobile, role };
+      console.log('Sending signup request to:', `${API_URL}/api/auth/signup`);
+      
       const response = await fetch(`${API_URL}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, email, password, mobile, role }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('Signup response status:', response.status);
       const data = await response.json();
+      console.log('Signup response data:', data);
 
       if (response.ok) {
         setUser(data.data.user);

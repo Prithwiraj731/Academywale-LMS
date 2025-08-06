@@ -5,7 +5,7 @@ import { Input } from "../ui/input";
 import { cn } from "../../lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 
-export function SignupFormDemo({ onSignup }) {
+export function SignupFormDemo({ onSignup, externalError }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", mobile: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,18 +28,31 @@ export function SignupFormDemo({ onSignup }) {
     setLoading(true);
     setError("");
     
-    if (onSignup) {
-      // Use the parent component's signup handler with trimmed data
-      const trimmedForm = {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password.trim(),
-        mobile: form.mobile?.trim() || ""
-      };
-      await onSignup(trimmedForm);
+    try {
+      if (onSignup) {
+        // Use the parent component's signup handler with trimmed data
+        const trimmedForm = {
+          name: form.name.trim(),
+          email: form.email.trim(),
+          password: form.password.trim(),
+          mobile: form.mobile?.trim() || ""
+        };
+        
+        console.log('Submitting signup form:', trimmedForm);
+        
+        // Add timeout protection
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 30000)
+        );
+        
+        await Promise.race([onSignup(trimmedForm), timeoutPromise]);
+      }
+    } catch (error) {
+      console.error('Signup form error:', error);
+      setError(error.message || "An error occurred during signup. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -48,21 +61,51 @@ export function SignupFormDemo({ onSignup }) {
       <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
         <LabelInputContainer>
           <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" value={form.name} onChange={handleChange} required />
+          <Input 
+            id="name" 
+            name="name" 
+            autoComplete="name"
+            value={form.name} 
+            onChange={handleChange} 
+            required 
+          />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} required />
+          <Input 
+            id="email" 
+            name="email" 
+            type="email" 
+            autoComplete="email"
+            value={form.email} 
+            onChange={handleChange} 
+            required 
+          />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
+          <Input 
+            id="password" 
+            name="password" 
+            type="password" 
+            autoComplete="new-password"
+            value={form.password} 
+            onChange={handleChange} 
+            required 
+          />
         </LabelInputContainer>
         <LabelInputContainer>
           <Label htmlFor="mobile">Mobile (Optional)</Label>
-          <Input id="mobile" name="mobile" type="tel" value={form.mobile} onChange={handleChange} />
+          <Input 
+            id="mobile" 
+            name="mobile" 
+            type="tel" 
+            autoComplete="tel"
+            value={form.mobile} 
+            onChange={handleChange} 
+          />
         </LabelInputContainer>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        {(error || externalError) && <div className="text-red-500 text-sm">{error || externalError}</div>}
         <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
           {loading ? "Signing up..." : "Sign Up"}
         </button>
@@ -101,16 +144,21 @@ export function LoginFormDemo({ onLogin }) {
     setLoading(true);
     setError("");
     
-    if (onLogin) {
-      // Use the parent component's login handler with trimmed data
-      const trimmedForm = {
-        email: form.email.trim(),
-        password: form.password.trim()
-      };
-      await onLogin(trimmedForm);
+    try {
+      if (onLogin) {
+        // Use the parent component's login handler with trimmed data
+        const trimmedForm = {
+          email: form.email.trim(),
+          password: form.password.trim()
+        };
+        await onLogin(trimmedForm);
+      }
+    } catch (error) {
+      console.error('Login form error:', error);
+      setError("An error occurred during login. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -118,12 +166,28 @@ export function LoginFormDemo({ onLogin }) {
       <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">Login</h2>
       <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
         <LabelInputContainer>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} required />
+          <Label htmlFor="login-email">Email</Label>
+          <Input 
+            id="login-email" 
+            name="email" 
+            type="email" 
+            autoComplete="email"
+            value={form.email} 
+            onChange={handleChange} 
+            required 
+          />
         </LabelInputContainer>
         <LabelInputContainer>
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
+          <Label htmlFor="login-password">Password</Label>
+          <Input 
+            id="login-password" 
+            name="password" 
+            type="password" 
+            autoComplete="current-password"
+            value={form.password} 
+            onChange={handleChange} 
+            required 
+          />
         </LabelInputContainer>
         {error && <div className="text-red-500 text-sm">{error}</div>}
         <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
