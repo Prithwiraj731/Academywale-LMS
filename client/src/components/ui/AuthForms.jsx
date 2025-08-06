@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
