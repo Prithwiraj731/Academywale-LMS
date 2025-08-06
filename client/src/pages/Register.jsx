@@ -18,7 +18,7 @@ export default function Register() {
         if (result.user.role === 'admin') {
           navigate('/admin');
         } else {
-          navigate('/dashboard');
+          navigate('/student-dashboard');
         }
       } else {
         setError(result.message || "Signup failed. Please try again.");
