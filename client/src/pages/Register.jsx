@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SignupFormDemo } from "../components/ui/AuthForms";
@@ -6,25 +6,37 @@ import { SignupFormDemo } from "../components/ui/AuthForms";
 export default function Register() {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  const [error, setError] = useState("");
 
   const handleSignup = async (form) => {
-    const result = await signup(form.name, form.email, form.password, form.mobile);
-    
-    if (result.success) {
-      // Check if user is admin
-      if (result.user.role === 'admin') {
-        navigate('/admin');
+    setError("");
+    try {
+      const result = await signup(form.name, form.email, form.password, form.mobile);
+      
+      if (result.success) {
+        // Check if user is admin
+        if (result.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        setError(result.message || "Signup failed. Please try again.");
       }
-    } else {
-      alert(result.message);
+    } catch (error) {
+      console.error('Signup error:', error);
+      setError("An unexpected error occurred. Please try again.");
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-8 px-4">
       <SignupFormDemo onSignup={handleSignup} />
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
       <div className="mt-4 text-center text-sm">
         Already have an account? <Link to="/login" className="text-[#20b2aa] hover:underline">Login</Link>
       </div>

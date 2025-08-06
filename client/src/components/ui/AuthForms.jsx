@@ -5,39 +5,40 @@ import { Input } from "../ui/input";
 import { cn } from "../../lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-export function SignupFormDemo() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+export function SignupFormDemo({ onSignup }) {
+  const [form, setForm] = useState({ name: "", email: "", password: "", mobile: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error when user starts typing
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields (trim whitespace)
+    if (!form.name?.trim() || !form.email?.trim() || !form.password?.trim()) {
+      setError("Name, email, and password are required");
+      return;
+    }
+
     setLoading(true);
     setError("");
-    setSuccess("");
-    try {
-      const res = await fetch(`${API_URL}/api/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccess("Signup successful! Please login.");
-        setForm({ name: "", email: "", password: "" });
-      } else {
-        setError(data.message || "Signup failed");
-      }
-    } catch (err) {
-      setError("Network error");
+    
+    if (onSignup) {
+      // Use the parent component's signup handler with trimmed data
+      const trimmedForm = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password.trim(),
+        mobile: form.mobile?.trim() || ""
+      };
+      await onSignup(trimmedForm);
     }
+    
     setLoading(false);
   };
 
@@ -57,8 +58,11 @@ export function SignupFormDemo() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
         </LabelInputContainer>
+        <LabelInputContainer>
+          <Label htmlFor="mobile">Mobile (Optional)</Label>
+          <Input id="mobile" name="mobile" type="tel" value={form.mobile} onChange={handleChange} />
+        </LabelInputContainer>
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        {success && <div className="text-green-500 text-sm">{success}</div>}
         <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
           {loading ? "Signing up..." : "Sign Up"}
         </button>
@@ -74,38 +78,38 @@ export function SignupFormDemo() {
   );
 }
 
-export function LoginFormDemo() {
+export function LoginFormDemo({ onLogin }) {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error when user starts typing
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields (trim whitespace)
+    if (!form.email?.trim() || !form.password?.trim()) {
+      setError("Email and password are required");
+      return;
+    }
+
     setLoading(true);
     setError("");
-    setSuccess("");
-    try {
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccess("Login successful!");
-        // Save credentials/token as needed
-        localStorage.setItem("token", data.token);
-      } else {
-        setError(data.message || "Login failed");
-      }
-    } catch (err) {
-      setError("Network error");
+    
+    if (onLogin) {
+      // Use the parent component's login handler with trimmed data
+      const trimmedForm = {
+        email: form.email.trim(),
+        password: form.password.trim()
+      };
+      await onLogin(trimmedForm);
     }
+    
     setLoading(false);
   };
 
@@ -122,7 +126,6 @@ export function LoginFormDemo() {
           <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
         </LabelInputContainer>
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        {success && <div className="text-green-500 text-sm">{success}</div>}
         <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
