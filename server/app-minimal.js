@@ -99,4 +99,4 @@ app.listen(PORT, () => {
   console.log(`🌐 Health: http://localhost:${PORT}/health`);
   console.log(`🔐 Auth test: http://localhost:${PORT}/api/auth/test`);
   console.log(`📝 Signup: http://localhost:${PORT}/api/auth/signup`);
-});
+}); 
