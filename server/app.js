@@ -1,22 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const dbConnection = require('./src/config/db.config');
-const path = require('path'); // <-- FIX: Import the built-in 'path' module
+const path = require('path');
 
-// --- FIX: Pre-register models to prevent population errors ---
-// require('./src/model/Course.model');
-require('./src/model/User.model');
-// require('./src/model/Address.model');
-
-// Load .env variables from the root project directory
-// FIX: Replace the old dotenv.config() with this line
+// Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Pre-register models
+require('./src/model/User.model');
 
 // Initialize App
 const app = express();
 
-// Enable CORS for frontend (Vite runs on port 5173)
+// Enable CORS for frontend
 app.use(cors({
   origin: [
     'https://academywale.com',
@@ -34,25 +30,19 @@ app.use(express.urlencoded({ extended: true }));
 
 // Test Route
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello World! AcademyWale Backend is running!');
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Routes
-// const adminRoutes = require('./src/routes/admin.routes');
-// app.use('/admin', adminRoutes);
-
-// const userRoutes = require('./src/routes/user.routes');
-// app.use('/user', userRoutes);
-
-// const courseRoutes = require('./src/routes/course.routes');
-// app.use('/course', courseRoutes);
-
-// const cartRoutes = require('./src/routes/cart.routes');
-// app.use('/cart', cartRoutes);
-
-// const orderRoutes = require('./src/routes/order.routes');
-// app.use('/order', orderRoutes);
-
 const authRoutes = require('./src/routes/auth.routes');
 app.use('/api/auth', authRoutes);
 
@@ -64,45 +54,50 @@ app.use('/api/contact', contactRoutes);
 
 const purchaseRoutes = require('./src/routes/purchase.routes');
 const requireAuth = require('./src/middlewares/clerkAuth.middleware');
-
 app.use('/api/purchase', requireAuth, purchaseRoutes);
 
 const couponRoutes = require('./src/routes/coupon.routes');
 app.use(couponRoutes);
 
-const multer = require('multer');
-
-// Configure Multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'uploads')); // Store files in the uploads directory
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.originalname);
-    const filename = file.fieldname + '-' + uniqueSuffix + fileExtension;
-    cb(null, filename);
-  }
-});
-
-const upload = multer({ storage: storage });
-
 const testimonialRoutes = require('./src/routes/testimonial.routes');
 app.use('/api/testimonials', testimonialRoutes);
 
-// Serve static files from /uploads
+// Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Serve static files from /static
 app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Connect to DB and start server
-dbConnection().then(() => {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ 
+    status: 'error', 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    status: 'error', 
+    message: `Route ${req.originalUrl} not found` 
+  });
+});
+
+// Start server with better error handling
+const PORT = process.env.PORT || 5000;
+
+// Try to connect to database, but don't fail if it doesn't work
+const dbConnection = require('./src/config/db.config');
+dbConnection().then(() => {
+  console.log('✅ Database connected successfully');
 }).catch((err) => {
-  console.error('❌ Failed to connect to DB', err);
+  console.error('❌ Database connection failed:', err.message);
+  console.log('⚠️ Server will start without database connection');
+}).finally(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔐 Auth test: http://localhost:${PORT}/api/auth/test`);
+  });
 });
