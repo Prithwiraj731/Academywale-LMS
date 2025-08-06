@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  mobile: { type: String, required: true },
+  mobile: { type: String }, // mobile is now optional
   role: { type: String, default: 'user' },
   createdAt: { type: Date, default: Date.now }
 });
@@ -63,10 +63,10 @@ app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password, mobile } = req.body;
     
-    if (!name || !email || !password || !mobile) {
+    if (!name || !email || !password) { // mobile is no longer required
       return res.status(400).json({
         status: 'error',
-        message: 'All fields required'
+        message: 'Name, email, and password are required'
       });
     }
 
@@ -82,7 +82,7 @@ app.post('/api/auth/signup', async (req, res) => {
       name,
       email,
       password,
-      mobile
+      mobile // will be undefined if not provided
     });
 
     const token = jwt.sign({ id: newUser._id }, 'your-secret-key', { expiresIn: '90d' });
