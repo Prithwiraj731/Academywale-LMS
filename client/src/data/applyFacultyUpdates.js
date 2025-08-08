@@ -159,11 +159,9 @@ const providedFacultyData = [
     "Name": "CA Mayank Saraf",
     "Teaches": "CA & CMA",
     "Bio": [
-      "A standout Chartered Accountant and CFA professional with exceptional academic achievements (AIR 10 in CA Inter, AIR 47 in CA Final).",
-      "Brings practical exposure from roles at KPMG, Futures First, and VT Capital.",
-      "Teaches subjects like Strategic Management, Financial Management, and Law.",
-      "His pedagogy is interactive and exam-focused, combining conceptual clarity with real-world cases.",
-      "Has a reputation for strong doubt support and high pass rates."
+      "CA Mayank Saraf, a Chartered Accountant and CFA, secured AIR 10 in CA Intermediate and AIR 47 in CA Final, and is a gold medalist from St. Xavier’s College.",
+      " With professional experience at KPMG, Futures First, and VT Capital in equity research, he combines strong industry knowledge with teaching expertise.",
+      "He is a popular faculty for Strategic Management and Operations Management & Strategic Management (OMSM) for CA and CMA students, known for his structured, exam-oriented approach, bilingual teaching style, and use of concise notes, practice sets, and mnemonic aids to ensure conceptual clarity and practical understanding."
     ]
   },
   {
