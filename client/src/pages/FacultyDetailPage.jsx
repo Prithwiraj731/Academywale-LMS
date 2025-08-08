@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { getFacultyBySlug } from '../data/hardcodedFaculties';
+import { getFacultyDetails } from '../data/facultyUpdates';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -58,9 +59,12 @@ export default function FacultyDetailPage() {
       if (slug) {
         const faculty = getFacultyBySlug(slug);
         if (faculty) {
+          // Get admin-updated details if available
+          const adminUpdates = getFacultyDetails(faculty.id);
+          
           setFacultyInfo({
-            bio: `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
-            teaches: [faculty.specialization],
+            bio: adminUpdates?.bio || `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
+            teaches: adminUpdates?.teaches || [faculty.specialization],
             imageUrl: faculty.image,
             firstName: faculty.name,
             lastName: '',

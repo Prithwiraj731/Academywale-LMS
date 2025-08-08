@@ -206,3 +206,8 @@ export const getAllFaculties = () => hardcodedFaculties;
 export const getFacultyBySlug = (slug) => {
   return hardcodedFaculties.find(faculty => faculty.slug === slug);
 };
+
+// Get faculty by ID
+export const getFacultyById = (id) => {
+  return hardcodedFaculties.find(faculty => faculty.id === id);
+};

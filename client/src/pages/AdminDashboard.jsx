@@ -6,6 +6,13 @@ import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
+import { getAllFaculties } from '../data/hardcodedFaculties';
+import { 
+  getFacultyUpdates, 
+  updateFacultyDetails, 
+  getFacultyDetails, 
+  getAllFacultiesWithUpdates 
+} from '../data/facultyUpdates';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -59,6 +66,23 @@ export default function AdminDashboard() {
   });
   const [facultyInfoStatus, setFacultyInfoStatus] = useState('');
   const [facultyInfoError, setFacultyInfoError] = useState('');
+
+  // Hardcoded Faculty Management State
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [facultyUpdateData, setFacultyUpdateData] = useState({
+    bio: '',
+    teaches: []
+  });
+  const [facultyUpdateStatus, setFacultyUpdateStatus] = useState('');
+  const [facultyUpdateError, setFacultyUpdateError] = useState('');
+  const [hardcodedFaculties, setHardcodedFaculties] = useState([]);
+
+  // Load hardcoded faculties on component mount
+  useEffect(() => {
+    const faculties = getAllFaculties();
+    const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
+    setHardcodedFaculties(facultiesWithUpdates);
+  }, []);
 
   // Fetch faculty info when firstName changes (for update panel)
   useEffect(() => {
@@ -615,6 +639,73 @@ export default function AdminDashboard() {
   const [editFacultyImagePreview, setEditFacultyImagePreview] = useState(null);
   const [editFacultyLoading, setEditFacultyLoading] = useState(false);
   const [editFacultyError, setEditFacultyError] = useState('');
+
+  // Hardcoded Faculty Management Handlers
+  const handleSelectFaculty = (faculty) => {
+    setSelectedFaculty(faculty);
+    const existingDetails = getFacultyDetails(faculty.id);
+    setFacultyUpdateData({
+      bio: existingDetails?.bio || '',
+      teaches: existingDetails?.teaches || []
+    });
+    setFacultyUpdateStatus('');
+    setFacultyUpdateError('');
+  };
+
+  const handleFacultyUpdateChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === 'teaches') {
+      setFacultyUpdateData(prev => {
+        let teaches = prev.teaches || [];
+        if (checked) {
+          teaches = [...teaches, value];
+        } else {
+          teaches = teaches.filter(t => t !== value);
+        }
+        return { ...prev, teaches };
+      });
+    } else {
+      setFacultyUpdateData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleFacultyUpdateSubmit = (e) => {
+    e.preventDefault();
+    setFacultyUpdateStatus('');
+    setFacultyUpdateError('');
+
+    if (!selectedFaculty) {
+      setFacultyUpdateError('Please select a faculty member first.');
+      return;
+    }
+
+    if (!facultyUpdateData.bio.trim()) {
+      setFacultyUpdateError('Faculty bio is required.');
+      return;
+    }
+
+    if (!facultyUpdateData.teaches || facultyUpdateData.teaches.length === 0) {
+      setFacultyUpdateError('Faculty must teach at least one course.');
+      return;
+    }
+
+    const success = updateFacultyDetails(selectedFaculty.id, {
+      bio: facultyUpdateData.bio.trim(),
+      teaches: facultyUpdateData.teaches
+    });
+
+    if (success) {
+      setFacultyUpdateStatus('Faculty details updated successfully!');
+      // Refresh the hardcoded faculties list
+      const faculties = getAllFaculties();
+      const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
+      setHardcodedFaculties(facultiesWithUpdates);
+      
+      setTimeout(() => setFacultyUpdateStatus(''), 3000);
+    } else {
+      setFacultyUpdateError('Failed to update faculty details.');
+    }
+  };
 
   // Institute edit/delete modal state
   const [editInstituteModalOpen, setEditInstituteModalOpen] = useState(false);
@@ -1184,6 +1275,128 @@ export default function AdminDashboard() {
               </div>
             </form>
           </Modal>
+          
+          {/* Hardcoded Faculty Management Section */}
+          <div className="w-full max-w-5xl bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl shadow-2xl p-8 border border-purple-300 mt-8">
+            <h2 className="text-2xl font-bold text-purple-700 mb-6">📚 Manage Faculty Details</h2>
+            <p className="text-gray-600 mb-6">Update bio and teaching areas for faculty members. These details will be displayed on faculty profile pages.</p>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Faculty Selection */}
+              <div>
+                <h3 className="text-lg font-bold text-purple-600 mb-4">Select Faculty Member</h3>
+                <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2">
+                  {hardcodedFaculties.map(faculty => (
+                    <div 
+                      key={faculty.id} 
+                      onClick={() => handleSelectFaculty(faculty)}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${
+                        selectedFaculty?.id === faculty.id 
+                          ? 'border-purple-500 bg-purple-100 shadow-lg' 
+                          : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
+                      }`}
+                    >
+                      <img 
+                        src={faculty.image} 
+                        alt={faculty.name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-800">{faculty.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {faculty.bio ? '✅ Bio Added' : '⚠️ No Bio'} • 
+                          {faculty.teaches && faculty.teaches.length > 0 ? ` Teaches: ${faculty.teaches.join(', ')}` : ' No Teaching Areas'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Faculty Update Form */}
+              <div>
+                <h3 className="text-lg font-bold text-purple-600 mb-4">
+                  {selectedFaculty ? `Update ${selectedFaculty.name}` : 'Select a Faculty Member'}
+                </h3>
+                
+                {selectedFaculty ? (
+                  <form onSubmit={handleFacultyUpdateSubmit} className="space-y-4">
+                    {/* Selected Faculty Display */}
+                    <div className="p-4 bg-white rounded-xl border border-purple-200 flex items-center gap-4">
+                      <img 
+                        src={selectedFaculty.image} 
+                        alt={selectedFaculty.name}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-purple-300"
+                      />
+                      <div>
+                        <div className="font-bold text-purple-700">{selectedFaculty.name}</div>
+                        <div className="text-sm text-gray-500">Faculty Profile</div>
+                      </div>
+                    </div>
+
+                    {/* Bio Field */}
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-2">Faculty Bio</label>
+                      <textarea
+                        name="bio"
+                        value={facultyUpdateData.bio}
+                        onChange={handleFacultyUpdateChange}
+                        placeholder="Enter detailed bio about the faculty member's experience, qualifications, and expertise..."
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                        rows={5}
+                        required
+                      />
+                    </div>
+
+                    {/* Teaching Areas */}
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-3">Teaching Areas</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {TEACHES_OPTIONS.map(option => (
+                          <label key={option} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              name="teaches"
+                              value={option}
+                              checked={facultyUpdateData.teaches.includes(option)}
+                              onChange={handleFacultyUpdateChange}
+                              className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                            />
+                            <span className="font-medium">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all text-lg"
+                    >
+                      💾 Update Faculty Details
+                    </button>
+
+                    {/* Status Messages */}
+                    {facultyUpdateStatus && (
+                      <div className="text-green-600 text-center font-semibold bg-green-50 p-3 rounded-lg border border-green-200">
+                        ✅ {facultyUpdateStatus}
+                      </div>
+                    )}
+                    {facultyUpdateError && (
+                      <div className="text-red-600 text-center font-semibold bg-red-50 p-3 rounded-lg border border-red-200">
+                        ❌ {facultyUpdateError}
+                      </div>
+                    )}
+                  </form>
+                ) : (
+                  <div className="text-center text-gray-500 py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                    <div className="text-4xl mb-4">👆</div>
+                    <p className="font-medium">Click on a faculty member from the left to start editing their details</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
       {activePanel === 'institute' && (
