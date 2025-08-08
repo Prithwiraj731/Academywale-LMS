@@ -695,11 +695,17 @@ export default function AdminDashboard() {
     });
 
     if (success) {
-      setFacultyUpdateStatus('Faculty details updated successfully!');
+      setFacultyUpdateStatus(`Faculty details updated successfully for ${selectedFaculty.name}!`);
+      
       // Refresh the hardcoded faculties list
       const faculties = getAllFaculties();
       const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
       setHardcodedFaculties(facultiesWithUpdates);
+      
+      // Trigger a custom event to notify other components
+      window.dispatchEvent(new CustomEvent('facultyUpdated', { 
+        detail: { facultyId: selectedFaculty.id, updates: facultyUpdateData } 
+      }));
       
       setTimeout(() => setFacultyUpdateStatus(''), 3000);
     } else {

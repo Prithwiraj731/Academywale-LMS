@@ -77,6 +77,18 @@ export default function FacultyDetailPage() {
       }
     }
     loadFacultyInfo();
+
+    // Listen for faculty updates
+    const handleFacultyUpdate = (event) => {
+      const faculty = getFacultyBySlug(slug);
+      if (faculty && event.detail.facultyId === faculty.id) {
+        // Reload faculty info when this specific faculty is updated
+        loadFacultyInfo();
+      }
+    };
+
+    window.addEventListener('facultyUpdated', handleFacultyUpdate);
+    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
   }, [slug]);
 
   const checkPurchaseStatus = async (coursesList) => {

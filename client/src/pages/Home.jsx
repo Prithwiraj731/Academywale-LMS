@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Hero from '../components/home/Hero';
 import Categories from '../components/home/Categories';
@@ -13,16 +13,34 @@ import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
-import { getHomepageFaculties } from '../data/hardcodedFaculties';
+import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
+import { getAllFacultiesWithUpdates } from '../data/facultyUpdates';
 import InstitutesPage from './InstitutesPage';
 
 // import banner3 from '../assets/banner3.png';
 
 export default function Home() {
   const navigate = useNavigate();
+  const [topFaculties, setTopFaculties] = useState([]);
 
-  // Get 8 faculties for homepage display
-  const topFaculties = getHomepageFaculties();
+  // Load faculties with updates on component mount
+  useEffect(() => {
+    const baseFaculties = getHomepageFaculties();
+    const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
+    setTopFaculties(facultiesWithUpdates);
+  }, []);
+
+  // Listen for faculty updates
+  useEffect(() => {
+    const handleFacultyUpdate = () => {
+      const baseFaculties = getHomepageFaculties();
+      const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
+      setTopFaculties(facultiesWithUpdates);
+    };
+
+    window.addEventListener('facultyUpdated', handleFacultyUpdate);
+    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
+  }, []);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">

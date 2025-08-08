@@ -1,14 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Particles from '../components/common/Particles';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { PinContainer } from '../components/ui/3d-pin';
 import { getAllFaculties } from '../data/hardcodedFaculties';
+import { getAllFacultiesWithUpdates } from '../data/facultyUpdates';
 
 export default function FacultiesPage() {
-  // Get all faculties from hardcoded data
-  const faculties = getAllFaculties();
+  const [faculties, setFaculties] = useState([]);
+
+  // Load faculties with updates on component mount
+  useEffect(() => {
+    const baseFaculties = getAllFaculties();
+    const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
+    setFaculties(facultiesWithUpdates);
+  }, []);
+
+  // Listen for faculty updates
+  useEffect(() => {
+    const handleFacultyUpdate = () => {
+      const baseFaculties = getAllFaculties();
+      const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
+      setFaculties(facultiesWithUpdates);
+    };
+
+    window.addEventListener('facultyUpdated', handleFacultyUpdate);
+    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
+  }, []);
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 overflow-x-hidden">
