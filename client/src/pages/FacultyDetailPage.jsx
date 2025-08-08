@@ -58,11 +58,13 @@ export default function FacultyDetailPage() {
     function loadFacultyInfo() {
       if (slug) {
         const faculty = getFacultyBySlug(slug);
+        console.log('🔍 Loading faculty info for slug:', slug, 'Found faculty:', faculty);
         if (faculty) {
           // Get admin-updated details if available
           const adminUpdates = getFacultyDetails(faculty.id);
+          console.log('📝 Admin updates for faculty ID', faculty.id, ':', adminUpdates);
           
-          setFacultyInfo({
+          const facultyData = {
             bio: adminUpdates?.bio || `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
             teaches: adminUpdates?.teaches || [faculty.specialization],
             imageUrl: faculty.image,
@@ -70,7 +72,10 @@ export default function FacultyDetailPage() {
             lastName: '',
             slug: faculty.slug,
             image: faculty.image
-          });
+          };
+          
+          console.log('✅ Setting faculty info:', facultyData);
+          setFacultyInfo(facultyData);
         } else {
           setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
         }
@@ -80,8 +85,10 @@ export default function FacultyDetailPage() {
 
     // Listen for faculty updates
     const handleFacultyUpdate = (event) => {
+      console.log('🔔 Faculty update event received:', event.detail);
       const faculty = getFacultyBySlug(slug);
       if (faculty && event.detail.facultyId === faculty.id) {
+        console.log('🔄 Reloading faculty info for updated faculty');
         // Reload faculty info when this specific faculty is updated
         loadFacultyInfo();
       }

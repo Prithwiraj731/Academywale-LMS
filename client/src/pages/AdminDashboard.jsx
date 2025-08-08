@@ -80,7 +80,9 @@ export default function AdminDashboard() {
   // Load hardcoded faculties on component mount
   useEffect(() => {
     const faculties = getAllFaculties();
+    console.log('📚 Loading hardcoded faculties:', faculties);
     const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
+    console.log('📝 Faculties with updates:', facultiesWithUpdates);
     setHardcodedFaculties(facultiesWithUpdates);
   }, []);
 
@@ -642,8 +644,10 @@ export default function AdminDashboard() {
 
   // Hardcoded Faculty Management Handlers
   const handleSelectFaculty = (faculty) => {
+    console.log('👆 Selected faculty:', faculty);
     setSelectedFaculty(faculty);
     const existingDetails = getFacultyDetails(faculty.id);
+    console.log('📋 Existing details for faculty ID', faculty.id, ':', existingDetails);
     setFacultyUpdateData({
       bio: existingDetails?.bio || '',
       teaches: existingDetails?.teaches || []
@@ -703,6 +707,7 @@ export default function AdminDashboard() {
       setHardcodedFaculties(facultiesWithUpdates);
       
       // Trigger a custom event to notify other components
+      console.log('🔔 Dispatching facultyUpdated event for faculty ID:', selectedFaculty.id);
       window.dispatchEvent(new CustomEvent('facultyUpdated', { 
         detail: { facultyId: selectedFaculty.id, updates: facultyUpdateData } 
       }));

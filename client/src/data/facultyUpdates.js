@@ -27,13 +27,16 @@ export const saveFacultyUpdates = (updates) => {
 
 // Update a specific faculty member's details
 export const updateFacultyDetails = (facultyId, details) => {
+  console.log('🔄 Updating faculty details:', { facultyId, details });
   const updates = getFacultyUpdates();
   updates[facultyId] = {
     ...updates[facultyId],
     ...details,
     lastUpdated: new Date().toISOString()
   };
-  return saveFacultyUpdates(updates);
+  const success = saveFacultyUpdates(updates);
+  console.log('💾 Save result:', success, 'Updated data:', updates);
+  return success;
 };
 
 // Get a specific faculty member's updated details
@@ -45,10 +48,13 @@ export const getFacultyDetails = (facultyId) => {
 // Get all faculty with their updated details merged
 export const getAllFacultiesWithUpdates = (baseFaculties) => {
   const updates = getFacultyUpdates();
-  return baseFaculties.map(faculty => ({
+  console.log('🔍 Getting all faculties with updates:', { baseFaculties: baseFaculties.length, updates });
+  const result = baseFaculties.map(faculty => ({
     ...faculty,
     ...(updates[faculty.id] || {})
   }));
+  console.log('✅ Merged faculty data:', result);
+  return result;
 };
 
 // Clear all faculty updates
