@@ -133,11 +133,8 @@ export default function Home() {
                         {faculty.name.charAt(0)}
                       </div>
                     </div>
-                    <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300 mb-1">
+                    <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
                       {faculty.name}
-                    </div>
-                    <div className="text-xs text-gray-600 text-center">
-                      {faculty.specialization}
                     </div>
                   </div>
                 </PinContainer>

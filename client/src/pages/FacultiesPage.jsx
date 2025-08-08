@@ -53,11 +53,8 @@ export default function FacultiesPage() {
                           {faculty.name.charAt(0)}
                         </div>
                       </div>
-                      <div className="text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300 mb-1">
+                      <div className="text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300">
                         {faculty.name}
-                      </div>
-                      <div className="text-xs text-gray-600 text-center">
-                        {faculty.specialization}
                       </div>
                     </div>
                   </PinContainer>
