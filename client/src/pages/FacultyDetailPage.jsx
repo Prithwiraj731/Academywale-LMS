@@ -4,7 +4,7 @@ import CoursePurchase from '../components/common/CoursePurchase';
 import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
-import FacultyImage from '../components/ui/FacultyImage';
+import { getFacultyBySlug } from '../data/hardcodedFaculties';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -54,29 +54,25 @@ export default function FacultyDetailPage() {
   }, [slug, user]);
 
   useEffect(() => {
-    async function fetchFacultyInfo() {
+    function loadFacultyInfo() {
       if (slug) {
-        try {
-          const res = await fetch(`${API_URL}/api/faculty-info/${slug}`);
-          const data = await res.json();
-          if (res.ok && data.bio !== undefined) {
-            setFacultyInfo({
-              bio: data.bio || '',
-              teaches: data.teaches || [],
-              imageUrl: data.imageUrl || '',
-              firstName: data.firstName || '',
-              lastName: data.lastName || '',
-              slug: data.slug || ''
-            });
-          } else {
-            setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
-          }
-        } catch {
+        const faculty = getFacultyBySlug(slug);
+        if (faculty) {
+          setFacultyInfo({
+            bio: `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
+            teaches: [faculty.specialization],
+            imageUrl: faculty.image,
+            firstName: faculty.name,
+            lastName: '',
+            slug: faculty.slug,
+            image: faculty.image
+          });
+        } else {
           setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: '', lastName: '', slug: '' });
         }
       }
     }
-    fetchFacultyInfo();
+    loadFacultyInfo();
   }, [slug]);
 
   const checkPurchaseStatus = async (coursesList) => {
@@ -145,11 +141,11 @@ export default function FacultyDetailPage() {
   const getFilterButtons = () => {
     const filters = ['all'];
     const courseTypes = [...new Set(courses.map(c => c.courseType).filter(Boolean))];
-    
+
     courseTypes.forEach(type => {
       filters.push(type.toLowerCase());
     });
-    
+
     return filters;
   };
 
@@ -160,12 +156,18 @@ export default function FacultyDetailPage() {
         {/* Faculty Info Section */}
         <div className="w-full flex flex-col md:flex-row items-center gap-8 bg-white/90 rounded-3xl shadow-2xl p-8 border border-gray-100 mb-10">
           <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-blue-200 bg-gray-100 flex-shrink-0 flex items-center justify-center">
-            <FacultyImage
-              faculty={facultyInfo}
+            <img
+              src={facultyInfo.imageUrl || facultyInfo.image}
               alt={displayFacultyName}
               className="object-cover w-full h-full"
-              showPlaceholder={true}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
             />
+            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-4xl font-bold text-gray-700" style={{ display: 'none' }}>
+              {displayFacultyName.charAt(0)}
+            </div>
           </div>
           <div className="flex-1 flex flex-col justify-center h-full">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">{displayFacultyName}</h2>
@@ -181,7 +183,7 @@ export default function FacultyDetailPage() {
         {/* Courses Section */}
         <div className="mt-8">
           <h3 className="text-2xl font-bold text-purple-700 mb-6">Courses by {displayFacultyName}</h3>
-          
+
           {/* Filter Buttons */}
           {!loading && !error && courses.length > 0 && (
             <div className="mb-6">
@@ -190,11 +192,10 @@ export default function FacultyDetailPage() {
                   <button
                     key={filter}
                     onClick={() => filterCourses(filter)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                      selectedFilter === filter
+                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedFilter === filter
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
+                      }`}
                   >
                     {filter === 'all' ? 'All Courses' : filter.toUpperCase()}
                   </button>
@@ -202,7 +203,7 @@ export default function FacultyDetailPage() {
               </div>
             </div>
           )}
-          
+
           {loading && <div className="text-blue-500">Loading courses...</div>}
           {error && <div className="text-red-600">{error}</div>}
           {!loading && !error && filteredCourses.length === 0 && <div className="text-gray-500">No courses found for this faculty.</div>}

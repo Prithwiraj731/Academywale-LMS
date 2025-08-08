@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Navbar from '../components/layout/Navbar';
 import Hero from '../components/home/Hero';
 import Categories from '../components/home/Categories';
@@ -13,7 +13,7 @@ import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
-import FacultyImage from '../components/ui/FacultyImage';
+import { getHomepageFaculties } from '../data/hardcodedFaculties';
 import InstitutesPage from './InstitutesPage';
 
 // import banner3 from '../assets/banner3.png';
@@ -21,17 +21,8 @@ import InstitutesPage from './InstitutesPage';
 export default function Home() {
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  const [faculties, setFaculties] = useState([]);
-  useEffect(() => {
-    fetch(`${API_URL}/api/faculties`)
-      .then(res => res.json())
-      .then(data => setFaculties(data.faculties || []));
-  }, []);
-
-  // Only show first 10 faculties on homepage
-  const topFaculties = faculties.slice(0, 10);
+  // Get 8 faculties for homepage display
+  const topFaculties = getHomepageFaculties();
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">
@@ -118,47 +109,50 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 text-center mb-10 font-heading tracking-tight drop-shadow-lg">
             Meet Our <span className="text-[#000000]">Expert Faculties</span>
           </h2>
-          {topFaculties.length === 0 ? (
-            <div className="text-center text-gray-400 py-12">No faculties yet. Please check back soon!</div>
-          ) : (
-            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-6">
-              {topFaculties.map(fac => {
-                const name = fac.firstName + (fac.lastName ? ' ' + fac.lastName : '');
-                return (
-                  <PinContainer
-                    key={fac.slug}
-                    title={name.replace(/_/g, ' ')}
-                    href={`/faculties/${fac.slug}`}
-                    containerClassName="w-full h-full min-w-[140px] xs:min-w-[160px] sm:min-w-[200px] max-w-[160px] xs:max-w-[180px] sm:max-w-[240px] min-h-[180px] xs:min-h-[200px] sm:min-h-[300px] max-h-[200px] xs:max-h-[220px] sm:max-h-[320px] mx-auto"
-                  >
-                    <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 xs:p-5 sm:p-8 cursor-pointer hover:scale-105 w-full h-full">
-                      <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-28 sm:h-28 mb-2 xs:mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
-                        <FacultyImage
-                          faculty={fac}
-                          alt={name}
-                          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300">
-                        {name.replace(/_/g, ' ')}
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 md:gap-6">
+            {topFaculties.map(faculty => {
+              return (
+                <PinContainer
+                  key={faculty.id}
+                  title={faculty.name}
+                  href={`/faculties/${faculty.slug}`}
+                  containerClassName="w-full h-full min-w-[140px] xs:min-w-[160px] sm:min-w-[200px] max-w-[160px] xs:max-w-[180px] sm:max-w-[240px] min-h-[180px] xs:min-h-[200px] sm:min-h-[300px] max-h-[200px] xs:max-h-[220px] sm:max-h-[320px] mx-auto"
+                >
+                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 xs:p-5 sm:p-8 cursor-pointer hover:scale-105 w-full h-full">
+                    <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-28 sm:h-28 mb-2 xs:mb-3 sm:mb-4 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
+                      <img
+                        src={faculty.image}
+                        alt={faculty.name}
+                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-2xl font-bold text-gray-700" style={{ display: 'none' }}>
+                        {faculty.name.charAt(0)}
                       </div>
                     </div>
-                  </PinContainer>
-                );
-              })}
-            </div>
-          )}
-          {/* Other Faculties Button */}
-          {faculties.length > 10 && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => navigate('/faculties')}
-              className="px-8 py-3 bg-teal-600 text-white font-bold rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-teal-400 text-lg tracking-wide"
-              >
-                Browse All Faculty
-              </button>
-            </div>
-          )}
+                    <div className="text-xs xs:text-sm sm:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300 mb-1">
+                      {faculty.name}
+                    </div>
+                    <div className="text-xs text-gray-600 text-center">
+                      {faculty.specialization}
+                    </div>
+                  </div>
+                </PinContainer>
+              );
+            })}
+          </div>
+          {/* Browse All Faculty Button */}
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => navigate('/faculties')}
+              className="px-8 py-3 bg-teal-600 text-white font-bold rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-teal-400 text-lg tracking-wide hover:bg-teal-700 transition-colors duration-300"
+            >
+              Browse All Faculty
+            </button>
+          </div>
         </div>
       </section>
       <SearchBy />
