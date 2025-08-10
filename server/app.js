@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
 const app = express();
 
@@ -45,6 +46,31 @@ userSchema.methods.correctPassword = async function(candidatePassword, userPassw
 };
 
 const User = mongoose.model('User', userSchema);
+
+// Import and setup Course model for standalone courses
+const Course = require('./src/model/Course.model');
+const Institute = require('./src/model/Institute.model');
+
+// Setup Cloudinary for file uploads
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+cloudinary.config({
+  cloud_name: 'dwjfgvbgg',
+  api_key: '431532398896464',
+  api_secret: 'dPfpGKKlIxZhJXC_8aDt2hVk2nY'
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'academywale/courses',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 800, height: 600, crop: 'limit' }]
+  }
+});
+
+const upload = multer({ storage });
 
 // Routes
 app.get('/', (req, res) => {
@@ -176,6 +202,176 @@ app.get('/api/auth/me', async (req, res) => {
     });
   }
 });
+
+// ==================== INSTITUTES ROUTES ====================
+
+// Get all institutes
+app.get('/api/institutes', async (req, res) => {
+  try {
+    const institutes = await Institute.find();
+    res.status(200).json({ institutes });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ==================== STANDALONE COURSES ROUTES ====================
+
+// Get all standalone courses
+app.get('/api/courses/standalone', async (req, res) => {
+  try {
+    const courses = await Course.find({ 
+      isStandalone: true,
+      isActive: true 
+    }).sort({ createdAt: -1 });
+    
+    res.status(200).json({ courses });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all courses (both standalone and faculty-based)
+app.get('/api/courses/all', async (req, res) => {
+  try {
+    const courses = await Course.find({ 
+      isStandalone: true,
+      isActive: true 
+    }).sort({ createdAt: -1 });
+    
+    res.status(200).json({ courses });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create a new standalone course
+app.post('/api/admin/courses/standalone', upload.single('poster'), async (req, res) => {
+  try {
+    const {
+      title, subject, description, category, subcategory, paperId, paperName,
+      courseType, noOfLecture, books, videoLanguage, videoRunOn, timing,
+      doubtSolving, supportMail, supportCall, validityStartFrom,
+      facultySlug, facultyName, institute, modeAttemptPricing,
+      costPrice, sellingPrice
+    } = req.body;
+
+    const posterUrl = req.file ? req.file.path : '';
+    const posterPublicId = req.file ? req.file.filename : '';
+
+    if (!title || !subject) {
+      return res.status(400).json({ error: 'Title and subject are required' });
+    }
+
+    // Parse mode and attempt pricing if provided
+    let parsedModeAttemptPricing = [];
+    if (modeAttemptPricing) {
+      try {
+        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
+      }
+    }
+
+    const newCourse = new Course({
+      title,
+      subject,
+      description: description || '',
+      category: category || '',
+      subcategory: subcategory || '',
+      paperId: paperId || '',
+      paperName: paperName || '',
+      courseType: courseType || 'General Course',
+      noOfLecture: noOfLecture || '',
+      books: books || '',
+      videoLanguage: videoLanguage || 'Hindi',
+      videoRunOn: videoRunOn || '',
+      timing: timing || '',
+      doubtSolving: doubtSolving || '',
+      supportMail: supportMail || '',
+      supportCall: supportCall || '',
+      validityStartFrom: validityStartFrom || '',
+      facultySlug: facultySlug || '',
+      facultyName: facultyName || '',
+      institute: institute || '',
+      posterUrl,
+      posterPublicId,
+      modeAttemptPricing: parsedModeAttemptPricing,
+      costPrice: costPrice ? Number(costPrice) : 0,
+      sellingPrice: sellingPrice ? Number(sellingPrice) : 0,
+      isStandalone: true,
+      isActive: true
+    });
+
+    await newCourse.save();
+    
+    res.status(201).json({ 
+      success: true, 
+      message: 'Standalone course created successfully',
+      course: newCourse 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update a standalone course
+app.put('/api/admin/courses/standalone/:id', upload.single('poster'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = { ...req.body };
+    
+    if (req.file) {
+      updateData.posterUrl = req.file.path;
+      updateData.posterPublicId = req.file.filename;
+    }
+
+    // Parse mode and attempt pricing if provided
+    if (updateData.modeAttemptPricing) {
+      try {
+        updateData.modeAttemptPricing = JSON.parse(updateData.modeAttemptPricing);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
+      }
+    }
+
+    const course = await Course.findByIdAndUpdate(id, updateData, { new: true });
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Course updated successfully',
+      course 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a standalone course
+app.delete('/api/admin/courses/standalone/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const course = await Course.findByIdAndDelete(id);
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Course deleted successfully' 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== END STANDALONE COURSES ROUTES ====================
 
 // 404 handler
 app.use('*', (req, res) => {

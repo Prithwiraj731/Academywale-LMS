@@ -463,6 +463,8 @@ export default function AdminDashboard() {
 
   // New Course Management State
   const [courseForm, setCourseForm] = useState({
+    isStandalone: false, // New field for standalone courses
+    title: '', // Course title for standalone courses
     category: '', // CA or CMA
     subcategory: '', // Foundation, Inter, Final
     paperId: '', // Paper 1, Paper 2, etc.
@@ -479,6 +481,7 @@ export default function AdminDashboard() {
     supportMail: '',
     supportCall: '',
     timing: '',
+    validityStartFrom: '',
     poster: null,
     modeAttemptPricing: [
       {
@@ -671,11 +674,20 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
     
-    // Validation
-    if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
-        !courseForm.subject || !courseForm.facultySlug || !courseForm.poster) {
-      setError('Please fill all required fields');
-      return;
+    // Validation for standalone courses vs faculty courses
+    if (courseForm.isStandalone) {
+      // Standalone course validation
+      if (!courseForm.title || !courseForm.subject || !courseForm.poster) {
+        setError('Please fill all required fields (Title, Subject, and Poster are required for standalone courses)');
+        return;
+      }
+    } else {
+      // Faculty-based course validation
+      if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
+          !courseForm.subject || !courseForm.facultySlug || !courseForm.poster) {
+        setError('Please fill all required fields');
+        return;
+      }
     }
 
     if (courseForm.modeAttemptPricing.length === 0) {
@@ -701,7 +713,15 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
+      // Determine API endpoint based on course type
+      const apiEndpoint = courseForm.isStandalone 
+        ? `${API_URL}/api/admin/courses/standalone`
+        : `${API_URL}/api/admin/courses/new`;
+      
       // Basic course info
+      if (courseForm.isStandalone) {
+        formData.append('title', courseForm.title);
+      }
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
@@ -718,6 +738,7 @@ export default function AdminDashboard() {
       formData.append('supportMail', courseForm.supportMail);
       formData.append('supportCall', courseForm.supportCall);
       formData.append('timing', courseForm.timing);
+      formData.append('validityStartFrom', courseForm.validityStartFrom);
       formData.append('poster', courseForm.poster);
       
       // Course type for backwards compatibility
@@ -726,16 +747,18 @@ export default function AdminDashboard() {
       // Mode and attempt pricing
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
-      const res = await fetch(`${API_URL}/api/admin/courses/new`, {
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
       
       const data = await res.json();
       if (res.ok) {
-        setSuccess('Course added successfully!');
+        setSuccess(courseForm.isStandalone ? 'Standalone course added successfully!' : 'Course added successfully!');
         // Reset form
         setCourseForm({
+          isStandalone: false,
+          title: '',
           category: '',
           subcategory: '',
           paperId: '',
@@ -752,6 +775,7 @@ export default function AdminDashboard() {
           supportMail: '',
           supportCall: '',
           timing: '',
+          validityStartFrom: '',
           poster: null,
           modeAttemptPricing: [
             {
@@ -1356,24 +1380,85 @@ export default function AdminDashboard() {
           <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
           
           <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
-            {/* Step 1: Category Selection */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
-              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Category</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                  <select 
-                    name="category" 
-                    value={courseForm.category} 
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map(cat => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
-                    ))}
-                  </select>
+            {/* Course Type Toggle */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-4">Course Type</h3>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="courseType"
+                    checked={!courseForm.isStandalone}
+                    onChange={() => setCourseForm(prev => ({ ...prev, isStandalone: false }))}
+                    className="mr-2 text-blue-600"
+                  />
+                  <span className="text-gray-700">Faculty-based Course (with Category/Subcategory/Paper)</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="courseType"
+                    checked={courseForm.isStandalone}
+                    onChange={() => setCourseForm(prev => ({ ...prev, isStandalone: true }))}
+                    className="mr-2 text-green-600"
+                  />
+                  <span className="text-gray-700">Standalone Course (General Course)</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Course Title for Standalone Courses */}
+            {courseForm.isStandalone && (
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-200">
+                <h3 className="text-xl font-semibold text-yellow-800 mb-4">Course Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={courseForm.title}
+                      onChange={handleCourseFormChange}
+                      placeholder="e.g., Advanced Excel Training, Digital Marketing Course"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      required={courseForm.isStandalone}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                    <input
+                      type="text"
+                      name="subject"
+                      value={courseForm.subject}
+                      onChange={handleCourseFormChange}
+                      placeholder="e.g., Excel, Digital Marketing, Programming"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 1: Category Selection (Only for Faculty-based courses) */}
+            {!courseForm.isStandalone && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
+                <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Category</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select 
+                      name="category" 
+                      value={courseForm.category} 
+                      onChange={handleCourseFormChange}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      required={!courseForm.isStandalone}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      ))}
+                    </select>
                 </div>
                 
                 <div>
@@ -1411,31 +1496,35 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Step 2: Course Details */}
             <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
               <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject/Course Title *</label>
-                  <input 
-                    name="subject" 
-                    value={courseForm.subject} 
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. Direct Tax Combo"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required 
-                  />
-                </div>
+                {/* Subject field for faculty-based courses only (standalone already has it above) */}
+                {!courseForm.isStandalone && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject/Course Title *</label>
+                    <input 
+                      name="subject" 
+                      value={courseForm.subject} 
+                      onChange={handleCourseFormChange}
+                      placeholder="e.g. Direct Tax Combo"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                      required 
+                    />
+                  </div>
+                )}
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty {courseForm.isStandalone ? '(Optional)' : '*'}</label>
                   <select 
                     name="facultySlug" 
                     value={courseForm.facultySlug} 
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required
+                    required={!courseForm.isStandalone}
                   >
                     <option value="">Select Faculty</option>
                     {allFaculties.map(fac => (
@@ -1447,13 +1536,13 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute {courseForm.isStandalone ? '(Optional)' : '*'}</label>
                   <select 
                     name="institute" 
                     value={courseForm.institute} 
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required
+                    required={!courseForm.isStandalone}
                   >
                     <option value="">Select Institute</option>
                     {institutes.map(inst => (

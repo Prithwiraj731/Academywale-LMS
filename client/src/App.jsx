@@ -35,6 +35,7 @@ import CAFinalPaperDetailPage from './pages/CAFinalPaperDetailPage';
 import CMAFoundationPaperDetailPage from './pages/CMAFoundationPaperDetailPage';
 import CMAInterPaperDetailPage from './pages/CMAInterPaperDetailPage';
 import CMAFinalPaperDetailPage from './pages/CMAFinalPaperDetailPage';
+import AllCoursesPage from './pages/AllCoursesPage';
 
 const App = () => {
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
@@ -52,6 +53,7 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/all" element={<AllCoursesPage />} />
         <Route path="/faculties" element={<FacultiesPage />} />
         <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
         <Route path="/institutes" element={<InstitutesPage />} />
