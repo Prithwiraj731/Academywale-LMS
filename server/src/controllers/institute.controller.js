@@ -1,4 +1,5 @@
 const Institute = require('../model/Institute.model');
+const Faculty = require('../model/Faculty.model');
 
 // Get all institutes
 exports.getAllInstitutes = async (req, res) => {
@@ -10,7 +11,7 @@ exports.getAllInstitutes = async (req, res) => {
   }
 };
 
-// Get institute by name/slug
+// Get institute by name/slug with courses
 exports.getInstituteByName = async (req, res) => {
   try {
     const { name } = req.params;
@@ -21,8 +22,32 @@ exports.getInstituteByName = async (req, res) => {
     if (!institute) {
       return res.status(404).json({ message: 'Institute not found' });
     }
+
+    // Get all courses from faculties that are associated with this institute
+    const faculties = await Faculty.find({
+      'courses.institute': { $regex: new RegExp(institute.name, 'i') }
+    });
+
+    // Collect all courses that mention this institute
+    const courses = [];
+    faculties.forEach(faculty => {
+      faculty.courses.forEach(course => {
+        if (course.institute && course.institute.toLowerCase().includes(institute.name.toLowerCase())) {
+          courses.push({
+            ...course.toObject(),
+            facultySlug: faculty.slug,
+            facultyName: course.facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+          });
+        }
+      });
+    });
+
+    const instituteWithCourses = {
+      ...institute.toObject(),
+      courses
+    };
     
-    res.status(200).json(institute);
+    res.status(200).json({ institute: instituteWithCourses });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

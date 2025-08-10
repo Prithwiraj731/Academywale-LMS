@@ -273,16 +273,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Add state to store faculties
-  const [faculties, setFaculties] = useState([]);
-
-  // Fetch faculties on mount
-  useEffect(() => {
-    fetch(`${API_URL}/api/faculties`)
-      .then(res => res.json())
-      .then(data => setFaculties(data.faculties || []));
-  }, []);
-
   const [form, setForm] = useState({
     facultySlug: '',
     subject: '',
@@ -872,7 +862,7 @@ export default function AdminDashboard() {
 
   // Open edit modal
   const openEditModal = (facultySlug, idx) => {
-    const facultyExists = faculties.some(f => f.slug === facultySlug);
+    const facultyExists = allFaculties.some(f => f.slug === facultySlug);
     if (!facultyExists) {
       alert('Faculty not found. This course cannot be edited.');
       return;
@@ -1184,13 +1174,48 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
-  // Add state for institutes
+  // Add state for institutes and all faculties
   const [institutes, setInstitutes] = useState([]);
-  // Fetch institutes on mount
+  const [faculties, setFaculties] = useState([]);
+  const [allFaculties, setAllFaculties] = useState([]); // Combined hardcoded + database faculties
+  
+  // Fetch institutes and faculties on mount
   useEffect(() => {
+    // Fetch institutes
     fetch(`${API_URL}/api/institutes`)
       .then(res => res.json())
-      .then(data => setInstitutes(data.institutes || []));
+      .then(data => setInstitutes(data.institutes || []))
+      .catch(err => console.error('Error fetching institutes:', err));
+    
+    // Fetch database faculties
+    fetch(`${API_URL}/api/faculties`)
+      .then(res => res.json())
+      .then(data => {
+        const dbFaculties = data.faculties || [];
+        setFaculties(dbFaculties);
+        
+        // Combine hardcoded faculties with database faculties
+        const hardcoded = getAllFaculties();
+        const combinedFaculties = [
+          // Add hardcoded faculties first (convert to needed format)
+          ...hardcoded.map(faculty => ({
+            slug: faculty.slug,
+            firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
+            lastName: '',
+            isHardcoded: true,
+            fullName: faculty.name
+          })),
+          // Add database faculties
+          ...dbFaculties.map(faculty => ({
+            ...faculty,
+            isHardcoded: false,
+            fullName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+          }))
+        ];
+        
+        setAllFaculties(combinedFaculties);
+      })
+      .catch(err => console.error('Error fetching faculties:', err));
   }, []);
 
   // Testimonial state
@@ -1413,9 +1438,9 @@ export default function AdminDashboard() {
                     required
                   >
                     <option value="">Select Faculty</option>
-                    {faculties.map(fac => (
+                    {allFaculties.map(fac => (
                       <option key={fac.slug} value={fac.slug}>
-                        {fac.firstName + (fac.lastName ? ' ' + fac.lastName : '')}
+                        {fac.isHardcoded ? fac.fullName : (fac.firstName + (fac.lastName ? ' ' + fac.lastName : ''))}
                       </option>
                     ))}
                   </select>

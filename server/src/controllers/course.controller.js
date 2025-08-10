@@ -1,13 +1,50 @@
 const Faculty = require('../model/Faculty.model');
 const Institute = require('../model/Institute.model');
 
-// Get all courses by faculty slug
+// Import hardcoded faculties
+const hardcodedFaculties = [
+  { id: 1, name: "CA Ranjan Periwal", specialization: "Corporate & Allied Laws", slug: "ca-ranjan-periwal" },
+  { id: 2, name: "CA Satish Jalan", specialization: "Advanced Accounting & Audit", slug: "ca-satish-jalan" },
+  { id: 3, name: "CA Aaditya Jain", specialization: "Direct Tax & Corporate Law", slug: "ca-aaditya-jain" },
+  { id: 4, name: "CA Avinash Lala", specialization: "Audit & Assurance", slug: "ca-avinash-lala" },
+  { id: 5, name: "CA Bishnu Kedia", specialization: "Indirect Tax & GST", slug: "ca-bishnu-kedia" },
+  { id: 6, name: "CA Nitin Guru", specialization: "Information Technology & Strategic Management", slug: "ca-nitin-guru" },
+  { id: 7, name: "CA Shivangi Agarwal", specialization: "Financial Reporting & Analysis", slug: "ca-shivangi-agarwal" },
+  { id: 8, name: "CA Siddharth Agarwal", specialization: "Business Valuation & Risk Management", slug: "ca-siddharth-agarwal" },
+  { id: 9, name: "CA Yashvant Mangal", specialization: "International Taxation", slug: "ca-yashvant-mangal" },
+  { id: 10, name: "CA Amit Mahajan", specialization: "Cost Accounting & Management", slug: "ca-amit-mahajan" },
+  { id: 11, name: "CA Avinash Sancheti", specialization: "Strategic Financial Management", slug: "ca-avinash-sancheti" },
+  { id: 12, name: "CA Darshan Khare", specialization: "Costing & Operations Management", slug: "ca-darshan-khare" },
+  { id: 13, name: "CA Divya Agarwal", specialization: "Business Economics & Commercial Laws", slug: "ca-divya-agarwal" },
+  { id: 14, name: "CA Mayank Saraf", specialization: "Advanced Financial Management", slug: "ca-mayank-saraf" },
+  { id: 15, name: "CA Parveen Sharma", specialization: "Tax Planning & Corporate Restructuring", slug: "ca-parveen-sharma" },
+  { id: 16, name: "CA Raghav Goel", specialization: "Banking & Insurance", slug: "ca-raghav-goel" },
+  { id: 17, name: "CA Rishabh Jain", specialization: "Forensic Accounting & Investigation", slug: "ca-rishabh-jain" },
+  { id: 18, name: "CA Santosh Kumar", specialization: "Corporate Finance & Treasury", slug: "ca-santosh-kumar" },
+  { id: 19, name: "CA Shiris Vyas", specialization: "Financial Services & Capital Markets", slug: "ca-shiris-vyas" },
+  { id: 20, name: "CA Shubham Singhal", specialization: "Governance, Risk & Ethics", slug: "ca-shubham-singhal" },
+  { id: 21, name: "CA Vijay Sarda", specialization: "Enterprise Performance Management", slug: "ca-vijay-sarda" },
+  { id: 22, name: "CA Vishal Bhattad", specialization: "Strategic Cost Management", slug: "ca-vishal-bhattad" },
+  { id: 23, name: "CMA Sumit Rastogi", specialization: "Cost & Management Accounting", slug: "cma-sumit-rastogi" },
+  { id: 24, name: "CS Arjun Chhabra", specialization: "Company Secretarial Practice", slug: "cs-arjun-chhabra" },
+];
+
+// Get all courses by faculty slug (supports both database and hardcoded faculties)
 exports.getCoursesByFaculty = async (req, res) => {
   try {
     const { facultySlug } = req.params;
-    const faculty = await Faculty.findOne({ slug: facultySlug });
     
+    // First, try to find in database
+    let faculty = await Faculty.findOne({ slug: facultySlug });
+    
+    // If not found in database, check hardcoded faculties
     if (!faculty) {
+      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
+      if (hardcodedFaculty) {
+        // For hardcoded faculties, we need to create a database entry if courses are added
+        // For now, return empty courses array
+        return res.status(200).json({ courses: [] });
+      }
       return res.status(404).json({ error: 'Faculty not found' });
     }
     
@@ -17,7 +54,7 @@ exports.getCoursesByFaculty = async (req, res) => {
   }
 };
 
-// Add new structured course to faculty
+// Add new structured course to faculty (supports both database and hardcoded faculties)
 exports.addNewCourseToFaculty = async (req, res) => {
   try {
     const {
@@ -33,9 +70,26 @@ exports.addNewCourseToFaculty = async (req, res) => {
       return res.status(400).json({ error: 'Required fields are missing' });
     }
 
-    const faculty = await Faculty.findOne({ slug: facultySlug });
+    // First, try to find in database
+    let faculty = await Faculty.findOne({ slug: facultySlug });
+    
+    // If not found in database, check hardcoded faculties
     if (!faculty) {
-      return res.status(404).json({ error: 'Faculty not found' });
+      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
+      if (hardcodedFaculty) {
+        // Create a new faculty entry in database for hardcoded faculty
+        faculty = new Faculty({
+          firstName: hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, ''),
+          lastName: '',
+          slug: hardcodedFaculty.slug,
+          specialization: hardcodedFaculty.specialization,
+          bio: `Expert ${hardcodedFaculty.specialization} faculty with years of professional experience.`,
+          courses: []
+        });
+        await faculty.save();
+      } else {
+        return res.status(404).json({ error: 'Faculty not found' });
+      }
     }
 
     // Parse mode and attempt pricing
@@ -46,8 +100,10 @@ exports.addNewCourseToFaculty = async (req, res) => {
       return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
     }
 
+    const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
+    
     const newCourse = {
-      facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+      facultyName,
       subject,
       noOfLecture,
       books,
