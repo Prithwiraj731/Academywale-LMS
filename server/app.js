@@ -215,6 +215,134 @@ app.get('/api/institutes', async (req, res) => {
   }
 });
 
+// Bulk insert institutes with images (for initial setup)
+app.post('/api/admin/institutes/bulk-insert', async (req, res) => {
+  try {
+    const institutesData = [
+      {
+        name: "Aaditya Jain Classes",
+        imageUrl: "/institutes/aaditya_jain_classes.png",
+        image: "aaditya_jain_classes",
+        public_id: "aaditya_jain_classes"
+      },
+      {
+        name: "Arjun Chhabra Tutorial", 
+        imageUrl: "/institutes/arjun_chhabra_tutorial.png",
+        image: "arjun_chhabra_tutorial",
+        public_id: "arjun_chhabra_tutorial"
+      },
+      {
+        name: "Avinash Lala Classes",
+        imageUrl: "/institutes/avinash_lala_classes.jpg", 
+        image: "avinash_lala_classes",
+        public_id: "avinash_lala_classes"
+      },
+      {
+        name: "BB Virtuals",
+        imageUrl: "/institutes/bb_virtuals.png",
+        image: "bb_virtuals", 
+        public_id: "bb_virtuals"
+      },
+      {
+        name: "Bishnu Kedia Classes",
+        imageUrl: "/institutes/bishnu_kedia_classes.png",
+        image: "bishnu_kedia_classes",
+        public_id: "bishnu_kedia_classes"
+      },
+      {
+        name: "CA Buddy",
+        imageUrl: "/institutes/ca_buddy.png",
+        image: "ca_buddy",
+        public_id: "ca_buddy"
+      },
+      {
+        name: "CA Praveen Jindal",
+        imageUrl: "/institutes/ca_praveen_jindal.png", 
+        image: "ca_praveen_jindal",
+        public_id: "ca_praveen_jindal"
+      },
+      {
+        name: "COC Education",
+        imageUrl: "/institutes/coc_education.png",
+        image: "coc_education",
+        public_id: "coc_education"
+      },
+      {
+        name: "Ekatvam",
+        imageUrl: "/institutes/ekatvam.png",
+        image: "ekatvam",
+        public_id: "ekatvam"
+      },
+      {
+        name: "Gopal Bhoot Classes",
+        imageUrl: "/institutes/gopal_bhoot_classes.gif",
+        image: "gopal_bhoot_classes",
+        public_id: "gopal_bhoot_classes"
+      },
+      {
+        name: "Harshad Jaju Classes",
+        imageUrl: "/institutes/harshad_jaju_classes.png",
+        image: "harshad_jaju_classes", 
+        public_id: "harshad_jaju_classes"
+      },
+      {
+        name: "Navin Classes",
+        imageUrl: "/institutes/navin_classes.jpg",
+        image: "navin_classes",
+        public_id: "navin_classes"
+      },
+      {
+        name: "Nitin Guru Classes", 
+        imageUrl: "/institutes/nitin_guru_classes.png",
+        image: "nitin_guru_classes",
+        public_id: "nitin_guru_classes"
+      },
+      {
+        name: "Ranjan Periwal Classes",
+        imageUrl: "/institutes/ranjan_periwal_classes.jpg",
+        image: "ranjan_periwal_classes",
+        public_id: "ranjan_periwal_classes"
+      },
+      {
+        name: "Shivangi Agarwal",
+        imageUrl: "/institutes/shivangi_agarwal.png",
+        image: "shivangi_agarwal",
+        public_id: "shivangi_agarwal"
+      },
+      {
+        name: "Siddharth Agarrwal Classes", 
+        imageUrl: "/institutes/siddharth_agarrwal_classes.jpg",
+        image: "siddharth_agarrwal_classes",
+        public_id: "siddharth_agarrwal_classes"
+      },
+      {
+        name: "SJC Institute",
+        imageUrl: "/institutes/sjc_institute.jpg",
+        image: "sjc_institute",
+        public_id: "sjc_institute"
+      },
+      {
+        name: "Yashwant Mangal Classes",
+        imageUrl: "/institutes/yashwant_mangal_classes.avif",
+        image: "yashwant_mangal_classes",
+        public_id: "yashwant_mangal_classes"
+      }
+    ];
+
+    // Clear existing institutes and insert new ones
+    await Institute.deleteMany({});
+    const insertedInstitutes = await Institute.insertMany(institutesData);
+    
+    res.status(201).json({ 
+      success: true, 
+      message: `${insertedInstitutes.length} institutes inserted successfully`,
+      institutes: insertedInstitutes 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== STANDALONE COURSES ROUTES ====================
 
 // Get all standalone courses

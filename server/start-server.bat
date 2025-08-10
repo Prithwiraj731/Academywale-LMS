@@ -1,5 +1,5 @@
 @echo off
 echo Starting AcademyWale Server...
-cd /d "d:\AcademyWale\server"
-node start.js
+cd /d "e:\AcademyWale\server"
+node app.js
 pause
