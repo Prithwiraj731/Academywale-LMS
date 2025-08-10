@@ -471,6 +471,318 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
+  // New Course Management State
+  const [courseForm, setCourseForm] = useState({
+    category: '', // CA or CMA
+    subcategory: '', // Foundation, Inter, Final
+    paperId: '', // Paper 1, Paper 2, etc.
+    paperName: '',
+    subject: '',
+    facultySlug: '',
+    institute: '',
+    description: '',
+    noOfLecture: '',
+    books: '',
+    videoLanguage: '',
+    videoRunOn: '',
+    doubtSolving: '',
+    supportMail: '',
+    supportCall: '',
+    timing: '',
+    poster: null,
+    modeAttemptPricing: [
+      {
+        mode: 'Live at Home With Hard Copy',
+        attempts: [
+          { attempt: '1.5 Views & 12 Months Validity', costPrice: 15999, sellingPrice: 13999 }
+        ]
+      }
+    ]
+  });
+
+  const [posterPreviewNew, setPosterPreviewNew] = useState(null);
+
+  // Categories and subcategories
+  const categories = [
+    { value: 'CA', label: 'CA' },
+    { value: 'CMA', label: 'CMA' }
+  ];
+
+  const subcategories = [
+    { value: 'Foundation', label: 'Foundation' },
+    { value: 'Inter', label: 'Inter' },
+    { value: 'Final', label: 'Final' }
+  ];
+
+  // Papers based on category and subcategory
+  const getPapers = (category, subcategory) => {
+    if (category === 'CA') {
+      if (subcategory === 'Foundation') {
+        return [
+          { id: 1, name: 'Principles and Practice of Accounting' },
+          { id: 2, name: 'Business Laws and Business Correspondence and Reporting' },
+          { id: 3, name: 'Business Mathematics, Logical Reasoning & Statistics' },
+          { id: 4, name: 'Business Economics & Business and Commercial Knowledge' }
+        ];
+      } else if (subcategory === 'Inter') {
+        return [
+          { id: 1, name: 'Accounting' },
+          { id: 2, name: 'Corporate and Other Laws' },
+          { id: 3, name: 'Cost and Management Accounting' },
+          { id: 4, name: 'Taxation' },
+          { id: 5, name: 'Advanced Accounting' },
+          { id: 6, name: 'Auditing and Assurance' },
+          { id: 7, name: 'Enterprise Information Systems & Strategic Management' },
+          { id: 8, name: 'Financial Management & Economics for Finance' }
+        ];
+      } else if (subcategory === 'Final') {
+        return [
+          { id: 1, name: 'Financial Reporting' },
+          { id: 2, name: 'Strategic Financial Management' },
+          { id: 3, name: 'Advanced Auditing and Professional Ethics' },
+          { id: 4, name: 'Corporate and Economic Laws' },
+          { id: 5, name: 'Strategic Cost Management and Performance Evaluation' },
+          { id: 6, name: 'Elective Paper (One out of Four)' },
+          { id: 7, name: 'Direct Tax Laws' },
+          { id: 8, name: 'Indirect Tax Laws' }
+        ];
+      }
+    } else if (category === 'CMA') {
+      if (subcategory === 'Foundation') {
+        return [
+          { id: 1, name: 'Fundamentals of Economics and Management' },
+          { id: 2, name: 'Fundamentals of Accounting' },
+          { id: 3, name: 'Fundamentals of Laws and Ethics' },
+          { id: 4, name: 'Fundamentals of Business Mathematics and Statistics' }
+        ];
+      } else if (subcategory === 'Inter') {
+        return [
+          { id: 1, name: 'Financial Accounting' },
+          { id: 2, name: 'Laws & Ethics' },
+          { id: 3, name: 'Direct Taxation' },
+          { id: 4, name: 'Cost Accounting' },
+          { id: 5, name: 'Financial Management' },
+          { id: 6, name: 'Indirect Taxation' },
+          { id: 7, name: 'Company Accounts & Audit' },
+          { id: 8, name: 'Cost & Management Accounting and Financial Management' }
+        ];
+      } else if (subcategory === 'Final') {
+        return [
+          { id: 1, name: 'Financial Reporting' },
+          { id: 2, name: 'Strategic Financial Management' },
+          { id: 3, name: 'Strategic Cost Management' },
+          { id: 4, name: 'Corporate Laws & Compliance' },
+          { id: 5, name: 'Strategic Performance Management' },
+          { id: 6, name: 'Tax Management & Practice' }
+        ];
+      }
+    }
+    return [];
+  };
+
+  // New Course Form Handlers
+  const handleCourseFormChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'poster') {
+      const file = files[0];
+      setCourseForm(prev => ({ ...prev, poster: file }));
+      setPosterPreviewNew(file ? URL.createObjectURL(file) : null);
+    } else {
+      setCourseForm(prev => ({ ...prev, [name]: value }));
+      
+      // Auto-fill paper name when paper ID is selected
+      if (name === 'paperId') {
+        const papers = getPapers(courseForm.category, courseForm.subcategory);
+        const selectedPaper = papers.find(p => p.id === parseInt(value));
+        if (selectedPaper) {
+          setCourseForm(prev => ({ ...prev, paperName: selectedPaper.name }));
+        }
+      }
+    }
+  };
+
+  const addModeAttemptPricing = () => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: [
+        ...prev.modeAttemptPricing,
+        {
+          mode: '',
+          attempts: [
+            { attempt: '', costPrice: 0, sellingPrice: 0 }
+          ]
+        }
+      ]
+    }));
+  };
+
+  const removeModeAttemptPricing = (modeIndex) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: prev.modeAttemptPricing.filter((_, index) => index !== modeIndex)
+    }));
+  };
+
+  const updateModeAttemptPricing = (modeIndex, field, value) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
+        index === modeIndex ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const addAttemptToPricing = (modeIndex) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
+        index === modeIndex 
+          ? { 
+              ...item, 
+              attempts: [...item.attempts, { attempt: '', costPrice: 0, sellingPrice: 0 }] 
+            } 
+          : item
+      )
+    }));
+  };
+
+  const removeAttemptFromPricing = (modeIndex, attemptIndex) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
+        index === modeIndex 
+          ? { 
+              ...item, 
+              attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex) 
+            } 
+          : item
+      )
+    }));
+  };
+
+  const updateAttemptPricing = (modeIndex, attemptIndex, field, value) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
+        index === modeIndex 
+          ? { 
+              ...item, 
+              attempts: item.attempts.map((attempt, aIndex) => 
+                aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
+              ) 
+            } 
+          : item
+      )
+    }));
+  };
+
+  const handleNewCourseSubmit = async (e) => {
+    e.preventDefault();
+    setSuccess('');
+    setError('');
+    
+    // Validation
+    if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
+        !courseForm.subject || !courseForm.facultySlug || !courseForm.poster) {
+      setError('Please fill all required fields');
+      return;
+    }
+
+    if (courseForm.modeAttemptPricing.length === 0) {
+      setError('Please add at least one mode with pricing');
+      return;
+    }
+
+    // Validate each mode has attempts with pricing
+    for (const modeData of courseForm.modeAttemptPricing) {
+      if (!modeData.mode || modeData.attempts.length === 0) {
+        setError('Each mode must have a name and at least one attempt with pricing');
+        return;
+      }
+      for (const attempt of modeData.attempts) {
+        if (!attempt.attempt || !attempt.costPrice || !attempt.sellingPrice) {
+          setError('All attempts must have complete pricing information');
+          return;
+        }
+      }
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      
+      // Basic course info
+      formData.append('category', courseForm.category);
+      formData.append('subcategory', courseForm.subcategory);
+      formData.append('paperId', courseForm.paperId);
+      formData.append('paperName', courseForm.paperName);
+      formData.append('subject', courseForm.subject);
+      formData.append('facultySlug', courseForm.facultySlug);
+      formData.append('institute', courseForm.institute);
+      formData.append('description', courseForm.description);
+      formData.append('noOfLecture', courseForm.noOfLecture);
+      formData.append('books', courseForm.books);
+      formData.append('videoLanguage', courseForm.videoLanguage);
+      formData.append('videoRunOn', courseForm.videoRunOn);
+      formData.append('doubtSolving', courseForm.doubtSolving);
+      formData.append('supportMail', courseForm.supportMail);
+      formData.append('supportCall', courseForm.supportCall);
+      formData.append('timing', courseForm.timing);
+      formData.append('poster', courseForm.poster);
+      
+      // Course type for backwards compatibility
+      formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
+      
+      // Mode and attempt pricing
+      formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
+
+      const res = await fetch(`${API_URL}/api/admin/courses/new`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess('Course added successfully!');
+        // Reset form
+        setCourseForm({
+          category: '',
+          subcategory: '',
+          paperId: '',
+          paperName: '',
+          subject: '',
+          facultySlug: '',
+          institute: '',
+          description: '',
+          noOfLecture: '',
+          books: '',
+          videoLanguage: '',
+          videoRunOn: '',
+          doubtSolving: '',
+          supportMail: '',
+          supportCall: '',
+          timing: '',
+          poster: null,
+          modeAttemptPricing: [
+            {
+              mode: 'Live at Home With Hard Copy',
+              attempts: [
+                { attempt: '1.5 Views & 12 Months Validity', costPrice: 15999, sellingPrice: 13999 }
+              ]
+            }
+          ]
+        });
+        setPosterPreviewNew(null);
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.error || 'Failed to add course');
+      }
+    } catch (err) {
+      setError('Server error: ' + err.message);
+    }
+    setLoading(false);
+  };
+
   // Course Form: allow text input for modes and durations
   const [modesText, setModesText] = useState('Recorded,Live,Pendrive');
   const [durationsText, setDurationsText] = useState('AUG 25,JUL 26,SEP 25');
@@ -1015,119 +1327,358 @@ export default function AdminDashboard() {
       </div>
       {/* Panel Switcher */}
       {activePanel === 'course' && (
-        <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-blue-100 mb-8">
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">Add New Course</h2>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" encType="multipart/form-data" autoComplete="off">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Faculty Dropdown */}
-              <select name="facultySlug" value={form.facultySlug || ''} onChange={handleChange} required className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <option value="">Select Faculty</option>
-                {faculties.map(fac => (
-                  <option key={fac.slug} value={fac.slug}>{fac.firstName + (fac.lastName ? ' ' + fac.lastName : '')}</option>
-                ))}
-              </select>
-              <input name="subject" value={form.subject} onChange={handleChange} placeholder="Subject (e.g. Direct Tax)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" required />
-              <input name="noOfLecture" value={form.noOfLecture} onChange={handleChange} placeholder="No Of Lecture (e.g. DT 65)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" required />
-              {/* Modes text input with preview dropdown */}
-              <div className="flex flex-col gap-2 mb-2">
-                <label className="font-semibold text-gray-700">Modes (comma-separated, shown as dropdown to users)</label>
-                <input 
-                  type="text" 
-                  value={modesText} 
-                  onChange={e => setModesText(e.target.value)} 
-                  placeholder="e.g. Recorded,Live,Pendrive" 
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <select className="rounded-lg border border-blue-200 px-4 py-2 text-base bg-blue-50 mt-1" disabled>
-                  {modesText.split(',').map((m, i) => m.trim() && <option key={i}>{m.trim()}</option>)}
-                </select>
+        <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-8 border border-blue-100 mb-8">
+          <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
+          
+          <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
+            {/* Step 1: Category Selection */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
+              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Category</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <select 
+                    name="category" 
+                    value={courseForm.category} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
+                  <select 
+                    name="subcategory" 
+                    value={courseForm.subcategory} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                    disabled={!courseForm.category}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.value} value={sub.value}>{sub.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
+                  <select 
+                    name="paperId" 
+                    value={courseForm.paperId} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                    disabled={!courseForm.category || !courseForm.subcategory}
+                  >
+                    <option value="">Select Paper</option>
+                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
+                      <option key={paper.id} value={paper.id}>Paper {paper.id} - {paper.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              {/* Durations text input with preview dropdown */}
-              <div className="flex flex-col gap-2 mb-2">
-                <label className="font-semibold text-gray-700">Attempts (comma-separated, shown as dropdown to users)</label>
-                <input 
-                  type="text" 
-                  value={durationsText} 
-                  onChange={e => setDurationsText(e.target.value)} 
-                  placeholder="e.g. AUG 25,JUL 26,SEP 25" 
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <select className="rounded-lg border border-blue-200 px-4 py-2 text-base bg-blue-50 mt-1" disabled>
-                  {durationsText.split(',').map((d, i) => d.trim() && <option key={i}>{d.trim()}</option>)}
-                </select>
+            </div>
+
+            {/* Step 2: Course Details */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject/Course Title *</label>
+                  <input 
+                    name="subject" 
+                    value={courseForm.subject} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. Direct Tax Combo"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty *</label>
+                  <select 
+                    name="facultySlug" 
+                    value={courseForm.facultySlug} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
+                  >
+                    <option value="">Select Faculty</option>
+                    {faculties.map(fac => (
+                      <option key={fac.slug} value={fac.slug}>
+                        {fac.firstName + (fac.lastName ? ' ' + fac.lastName : '')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute *</label>
+                  <select 
+                    name="institute" 
+                    value={courseForm.institute} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
+                  >
+                    <option value="">Select Institute</option>
+                    {institutes.map(inst => (
+                      <option key={inst.name} value={inst.name}>{inst.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Number of Lectures</label>
+                  <input 
+                    name="noOfLecture" 
+                    value={courseForm.noOfLecture} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. 65 Lectures"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Books</label>
+                  <input 
+                    name="books" 
+                    value={courseForm.books} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. Main Book, Practice Manual"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Language</label>
+                  <input 
+                    name="videoLanguage" 
+                    value={courseForm.videoLanguage} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. Hindi + English Mix"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Run On</label>
+                  <input 
+                    name="videoRunOn" 
+                    value={courseForm.videoRunOn} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. Windows Laptop, Android Mobile"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Doubt Solving</label>
+                  <input 
+                    name="doubtSolving" 
+                    value={courseForm.doubtSolving} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. WhatsApp / Telegram"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Support Mail</label>
+                  <input 
+                    name="supportMail" 
+                    value={courseForm.supportMail} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. support@academywale.com"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Support Call</label>
+                  <input 
+                    name="supportCall" 
+                    value={courseForm.supportCall} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. 8910416751"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Timing</label>
+                  <input 
+                    name="timing" 
+                    value={courseForm.timing} 
+                    onChange={handleCourseFormChange}
+                    placeholder="e.g. 120 Hours"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    name="description" 
+                    value={courseForm.description} 
+                    onChange={handleCourseFormChange}
+                    placeholder="Course description"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
+                  <div className="flex gap-4 items-center">
+                    <input 
+                      name="poster" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleCourseFormChange}
+                      className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                      required 
+                    />
+                    {posterPreviewNew && (
+                      <img src={posterPreviewNew} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200" />
+                    )}
+                  </div>
+                </div>
               </div>
-              {/* Validity text input with preview dropdown */}
-              <div className="flex flex-col gap-2 mb-2">
-                <label className="font-semibold text-gray-700">Validity (comma-separated, shown as dropdown to users)</label>
-                <input 
-                  type="text" 
-                  name="validityStartFrom"
-                  value={form.validityStartFrom} 
-                  onChange={handleChange} 
-                  placeholder="e.g. 6 Months,12 Months,18 Months" 
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <select className="rounded-lg border border-blue-200 px-4 py-2 text-base bg-blue-50 mt-1" disabled>
-                  {form.validityStartFrom.split(',').map((v, i) => v.trim() && <option key={i}>{v.trim()}</option>)}
-                </select>
-              </div>
-              {/* Books text input with preview dropdown */}
-              <div className="flex flex-col gap-2 mb-2">
-                <label className="font-semibold text-gray-700">Books (comma-separated, shown as dropdown to users)</label>
-                <input 
-                  type="text" 
-                  name="books"
-                  value={form.books} 
-                  onChange={handleChange} 
-                  placeholder="e.g. Main Book,Workbook,Color Notes" 
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                <select className="rounded-lg border border-blue-200 px-4 py-2 text-base bg-blue-50 mt-1" disabled>
-                  {form.books.split(',').map((b, i) => b.trim() && <option key={i}>{b.trim()}</option>)}
-                </select>
-              </div>
-              <input name="videoLanguage" value={form.videoLanguage} onChange={handleChange} placeholder="Video Language (e.g. Hindi & English Mix)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              <input name="videoRunOn" value={form.videoRunOn} onChange={handleChange} placeholder="Video Run On (e.g. Windows Laptop / Android Mobile)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              <input name="doubtSolving" value={form.doubtSolving} onChange={handleChange} placeholder="Doubt Solving (e.g. WhatsApp)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              <input name="supportMail" value={form.supportMail} onChange={handleChange} placeholder="Support Mail (e.g. contact@facultywala.com)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              <input name="supportCall" value={form.supportCall} onChange={handleChange} placeholder="Support Call (e.g. 8910416751)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-              <input name="costPrice" value={form.costPrice} onChange={handleChange} placeholder="Cost Price (e.g. 8250)" type="number" min="0" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-              <input name="sellingPrice" value={form.sellingPrice} onChange={handleChange} placeholder="Selling Price (e.g. 6999)" type="number" min="0" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-              <select name="courseType" value={form.courseType} onChange={handleChange} className="rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option value="">Select Course Type</option>
-                <option value="CA Foundation">CA Foundation</option>
-                <option value="CMA Foundation">CMA Foundation</option>
-                <option value="CA Inter">CA Inter</option>
-                <option value="CMA Inter">CMA Inter</option>
-                <option value="CA Final">CA Final</option>
-                <option value="CMA Final">CMA Final</option>
-              </select>
-              <label className="font-semibold text-gray-700">Institute</label>
-              <select
-                name="institute"
-                value={form.institute || ''}
-                onChange={handleChange}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required
+            </div>
+
+            {/* Step 3: Mode & Attempt Pricing */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+              <h3 className="text-xl font-semibold text-purple-800 mb-4">Step 3: Mode & Attempt Pricing</h3>
+              
+              {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
+                <div key={modeIndex} className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-lg font-semibold text-purple-700">Mode {modeIndex + 1}</h4>
+                    {courseForm.modeAttemptPricing.length > 1 && (
+                      <button 
+                        type="button"
+                        onClick={() => removeModeAttemptPricing(modeIndex)}
+                        className="text-red-600 hover:text-red-800 font-semibold"
+                      >
+                        Remove Mode
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Mode Name *</label>
+                    <input 
+                      value={modeData.mode} 
+                      onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value)}
+                      placeholder="e.g. Live at Home With Hard Copy"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing:</h5>
+                    {modeData.attempts.map((attempt, attemptIndex) => (
+                      <div key={attemptIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-purple-50 rounded-lg">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Attempt *</label>
+                          <input 
+                            value={attempt.attempt} 
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value)}
+                            placeholder="e.g. 1.5 Views & 12 Months"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Cost Price *</label>
+                          <input 
+                            type="number"
+                            value={attempt.costPrice} 
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0)}
+                            placeholder="15999"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Selling Price *</label>
+                          <input 
+                            type="number"
+                            value={attempt.sellingPrice} 
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0)}
+                            placeholder="13999"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            required
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          {modeData.attempts.length > 1 && (
+                            <button 
+                              type="button"
+                              onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex)}
+                              className="text-red-600 hover:text-red-800 text-sm font-semibold"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <button 
+                      type="button"
+                      onClick={() => addAttemptToPricing(modeIndex)}
+                      className="text-purple-600 hover:text-purple-800 text-sm font-semibold"
+                    >
+                      + Add Another Attempt
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              <button 
+                type="button"
+                onClick={addModeAttemptPricing}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
               >
-                <option value="">Select Institute</option>
-                {institutes.map(inst => (
-                  <option key={inst.name} value={inst.name}>{inst.name}</option>
-                ))}
-              </select>
+                + Add Another Mode
+              </button>
             </div>
-            <textarea name="description" value={form.description} onChange={handleChange} placeholder="Course Description" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-400" rows={3} />
-            <input name="timing" value={form.timing} onChange={handleChange} placeholder="Timing (e.g. 120 Hours)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400" />
-            <div className="flex gap-4 items-center">
-              <input name="poster" type="file" accept="image/*" onChange={handleChange} className="rounded-lg border border-gray-300 px-3 py-2 text-base" required title="Upload a course poster image" />
-              {posterPreview && <img src={posterPreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200" />}
+
+            {/* Submit Button */}
+            <div className="text-center">
+              <button 
+                type="submit" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all text-lg flex items-center justify-center gap-3 mx-auto"
+                disabled={loading}
+              >
+                {loading && <span className="loader border-2 border-t-2 border-blue-300 border-t-transparent rounded-full w-5 h-5 animate-spin"></span>}
+                {loading ? 'Adding Course...' : 'Add Course'}
+              </button>
             </div>
-            <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg flex items-center justify-center gap-2" disabled={loading}>
-              {loading && <span className="loader border-2 border-t-2 border-blue-500 border-t-transparent rounded-full w-5 h-5 animate-spin"></span>}
-              {loading ? 'Saving...' : 'Add Course'}
-            </button>
-            {success && <div className="text-green-600 text-center font-semibold">{success}</div>}
-            {error && <div className="text-red-600 text-center font-semibold">{error}</div>}
+
+            {/* Status Messages */}
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-center font-semibold">
+                {success}
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-center font-semibold">
+                {error}
+              </div>
+            )}
           </form>
         </div>
       )}

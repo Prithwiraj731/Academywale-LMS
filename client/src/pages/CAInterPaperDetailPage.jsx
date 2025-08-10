@@ -4,9 +4,6 @@ import BackButton from '../components/common/BackButton';
 import papersData from '../data/papersData';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-if (!API_URL) {
-  console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
-}
 
 const CAInterPaperDetailPage = () => {
   const { paperSlug } = useParams();
@@ -14,7 +11,11 @@ const CAInterPaperDetailPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedMode, setSelectedMode] = useState('');
+  const [selectedAttempt, setSelectedAttempt] = useState('');
 
+  const paperId = paperSlug?.replace('paper-', '');
   const currentPaper = papersData.ca.inter.find(p => `paper-${p.id}` === paperSlug);
 
   useEffect(() => {
@@ -22,60 +23,65 @@ const CAInterPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        const [facRes, instRes] = await Promise.all([
-          fetch(`${API_URL}/api/faculties`),
-          fetch(`${API_URL}/api/institutes`)
-        ]);
-        const facData = await facRes.json();
-        const instData = await instRes.json();
+        const res = await fetch(`${API_URL}/api/courses/CA/inter/${paperId}`);
+        const data = await res.json();
 
-        if (facRes.ok && Array.isArray(facData.faculties) && instRes.ok && Array.isArray(instData.institutes)) {
-          let allCourses = [];
-          facData.faculties.forEach(fac => {
-            (fac.courses || []).forEach(course => {
-              allCourses.push({ ...course, facultyName: fac.firstName + (fac.lastName ? ' ' + fac.lastName : '') });
-            });
-          });
-          instData.institutes.forEach(inst => {
-            (inst.courses || []).forEach(course => {
-              allCourses.push({ ...course, facultyName: '' });
-            });
-          });
-
-          const filtered = allCourses.filter(course => {
-            return course.courseType && 
-                   course.courseType.toLowerCase().includes('ca') && 
-                   course.courseType.toLowerCase().includes('inter') &&
-                   course.paperId === currentPaper?.id;
-          });
-
-          setCourses(filtered);
+        if (res.ok) {
+          setCourses(data.courses || []);
         } else {
-          setError('Could not fetch courses');
+          setError(data.error || 'Could not fetch courses');
         }
       } catch (err) {
         setError('Server error');
       }
       setLoading(false);
     }
-    if (currentPaper) fetchCourses();
-  }, [paperSlug, currentPaper]);
+    
+    if (paperId) {
+      fetchCourses();
+    }
+  }, [paperId]);
 
   const getPosterUrl = (course) => {
     if (course.posterUrl) {
       if (course.posterUrl.startsWith('http')) return course.posterUrl;
       if (course.posterUrl.startsWith('/uploads')) {
-        const fullUrl = `${API_URL}${course.posterUrl}`;
-        return fullUrl;
+        return `${API_URL}${course.posterUrl}`;
       }
     }
     return '/logo.svg';
+  };
+
+  const handleCourseClick = (course) => {
+    setSelectedCourse(course);
+    setSelectedMode('');
+    setSelectedAttempt('');
+  };
+
+  const handleModeChange = (mode) => {
+    setSelectedMode(mode);
+    setSelectedAttempt('');
+  };
+
+  const getSelectedPricing = () => {
+    if (!selectedCourse || !selectedMode || !selectedAttempt) return null;
+    
+    const modeData = selectedCourse.modeAttemptPricing?.find(m => m.mode === selectedMode);
+    if (!modeData) return null;
+    
+    return modeData.attempts.find(a => a.attempt === selectedAttempt);
+  };
+
+  const calculateDiscount = (costPrice, sellingPrice) => {
+    if (!costPrice || !sellingPrice) return 0;
+    return Math.round(((costPrice - sellingPrice) / costPrice) * 100);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">
       <div className="max-w-7xl w-full mx-auto flex-1">
         <BackButton />
+        
         {currentPaper ? (
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
@@ -91,39 +97,234 @@ const CAInterPaperDetailPage = () => {
 
         {loading && <div className="text-[#20b2aa] text-center">Loading courses...</div>}
         {error && <div className="text-red-600 text-center">{error}</div>}
+        
         {!loading && !error && courses.length === 0 && (
           <div className="text-center text-gray-400 py-12">
             No courses found for this paper.
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+
+        {/* Course List */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {courses.map((course, idx) => (
-            <div key={idx} className="bg-white/95 rounded-3xl shadow-2xl p-4 flex flex-col items-center border border-[#20b2aa]">
-              <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-4">
-                <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
+            <div
+              key={idx}
+              onClick={() => handleCourseClick(course)}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+            >
+              <div className="relative">
+                <img
+                  src={getPosterUrl(course)}
+                  alt={course.subject}
+                  className="w-full h-48 object-cover"
+                  onError={(e) => {
+                    e.target.src = '/logo.svg';
+                  }}
+                />
+                <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
+                  {course.courseType || 'CA Inter'}
+                </div>
               </div>
-              <div className="text-lg font-bold text-[#17817a] mb-1 text-center">{course.subject}</div>
-              <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
-              <div className="flex flex-col gap-1 text-xs text-gray-500 mb-2 text-center">
-                <div>Lectures: {course.noOfLecture}</div>
-                <div>Books: {course.books}</div>
-                <div>Language: {course.videoLanguage}</div>
-                <div>Validity: {course.validityStartFrom}</div>
-                <div>Mode: {course.mode}</div>
+              
+              <div className="p-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                  {course.subject}
+                </h3>
+                
+                {course.facultyName && (
+                  <p className="text-sm text-gray-600 mb-2">
+                    by {course.facultyName}
+                  </p>
+                )}
+                
+                {course.noOfLecture && (
+                  <p className="text-sm text-gray-500 mb-2">
+                    {course.noOfLecture}
+                  </p>
+                )}
+                
+                {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-sm text-gray-500">Starting from:</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-teal-600">
+                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.sellingPrice)))}
+                      </span>
+                      <span className="text-sm text-gray-400 line-through">
+                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.costPrice)))}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <button className="w-full mt-3 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors">
+                  View Details
+                </button>
               </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
-              </div>
-              <button
-                onClick={() => navigate(`/payment/${encodeURIComponent(course.courseType)}/${course._id}`)}
-                className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
-              >
-                Buy Now
-              </button>
             </div>
           ))}
         </div>
+
+        {/* Course Detail Modal */}
+        {selectedCourse && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-screen overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      {selectedCourse.subject}
+                    </h2>
+                    {selectedCourse.facultyName && (
+                      <p className="text-lg text-gray-600 mb-2">
+                        by {selectedCourse.facultyName}
+                      </p>
+                    )}
+                    <div className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium inline-block">
+                      {currentPaper?.title}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCourse(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <img
+                      src={getPosterUrl(selectedCourse)}
+                      alt={selectedCourse.subject}
+                      className="w-full h-64 object-cover rounded-xl"
+                      onError={(e) => {
+                        e.target.src = '/logo.svg';
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Select Mode & Attempt</h3>
+                    
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mode:</label>
+                      <select
+                        value={selectedMode}
+                        onChange={(e) => handleModeChange(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
+                      >
+                        <option value="">Select Mode</option>
+                        {selectedCourse.modeAttemptPricing?.map((modeData, idx) => (
+                          <option key={idx} value={modeData.mode}>
+                            {modeData.mode}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedMode && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Views & Validity:</label>
+                        <select
+                          value={selectedAttempt}
+                          onChange={(e) => setSelectedAttempt(e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        >
+                          <option value="">Select Views & Validity</option>
+                          {selectedCourse.modeAttemptPricing
+                            ?.find(m => m.mode === selectedMode)
+                            ?.attempts?.map((attempt, idx) => (
+                              <option key={idx} value={attempt.attempt}>
+                                {attempt.attempt}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {getSelectedPricing() && (
+                      <div className="bg-teal-50 p-4 rounded-xl mb-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl font-bold text-teal-600">
+                            ₹{getSelectedPricing().sellingPrice}
+                          </span>
+                          <span className="text-lg text-gray-400 line-through">
+                            ₹{getSelectedPricing().costPrice}
+                          </span>
+                        </div>
+                        <div className="text-sm text-teal-700">
+                          {calculateDiscount(getSelectedPricing().costPrice, getSelectedPricing().sellingPrice)}% off
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedMode && selectedAttempt && (
+                      <button className="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-lg">
+                        Login To Proceed
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-8 border-t pt-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Information</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {selectedCourse.noOfLecture && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">No. of Lectures & Duration</h4>
+                        <p className="text-gray-600">{selectedCourse.noOfLecture}</p>
+                      </div>
+                    )}
+                    
+                    {selectedCourse.books && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">Books</h4>
+                        <p className="text-gray-600">{selectedCourse.books}</p>
+                      </div>
+                    )}
+                    
+                    {selectedCourse.videoLanguage && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">Video Language</h4>
+                        <p className="text-gray-600">{selectedCourse.videoLanguage}</p>
+                      </div>
+                    )}
+                    
+                    {selectedCourse.doubtSolving && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">Doubt Solving Medium</h4>
+                        <p className="text-gray-600">{selectedCourse.doubtSolving}</p>
+                      </div>
+                    )}
+                    
+                    {selectedCourse.videoRunOn && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">Video Supporting Devices</h4>
+                        <p className="text-gray-600">{selectedCourse.videoRunOn}</p>
+                      </div>
+                    )}
+                    
+                    {selectedCourse.timing && (
+                      <div>
+                        <h4 className="font-semibold text-gray-700">Timing</h4>
+                        <p className="text-gray-600">{selectedCourse.timing}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {selectedCourse.description && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold text-gray-700 mb-2">Description</h4>
+                      <p className="text-gray-600">{selectedCourse.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
