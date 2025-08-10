@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏫 Academy Wale - Institute Database Setup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .status-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 50px;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 2px solid #bee5eb; }
+        .loading { background: #fff3cd; color: #856404; border: 2px solid #ffeaa7; }
+        .institute-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .institute-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background: #f9f9f9;
+            transition: transform 0.2s;
+        }
+        .institute-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .institute-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        .institute-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        .api-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-online { background: #d4edda; color: #155724; }
+        .status-offline { background: #f8d7da; color: #721c24; }
+        .status-unknown { background: #e2e3e5; color: #383d41; }
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏫 Academy Wale Institute Setup</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li><strong>Step 1:</strong> Click "Check API Status" to verify the connection</li>
+                <li><strong>Step 2:</strong> Click "🚀 Setup All Institutes" to populate the database</li>
+                <li><strong>Step 3:</strong> Refresh your main website to see the institutes</li>
+            </ol>
+            <p><strong>Note:</strong> This will add all 18 institutes with their images to your production database.</p>
+        </div>
+
+        <div class="status-section">
+            <h3>🔍 API Status</h3>
+            <p>Production API: <strong>https://academywale-lms.onrender.com</strong> 
+               <span id="apiStatus" class="api-status status-unknown">Checking...</span>
+            </p>
+            <p>Current institutes in database: <span id="instituteCount">Loading...</span></p>
+        </div>
+
+        <div class="button-group">
+            <button onclick="checkAPIStatus()" id="checkBtn">🔍 Check API Status</button>
+            <button onclick="setupInstitutes()" id="setupBtn">🚀 Setup All Institutes</button>
+            <button onclick="viewInstitutes()" id="viewBtn">👁️ View Current Institutes</button>
+        </div>
+
+        <div id="result" class="result info">
+            Ready to setup institutes. Click "Check API Status" to begin...
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://academywale-lms.onrender.com';
+        const resultDiv = document.getElementById('result');
+        const apiStatusSpan = document.getElementById('apiStatus');
+        const instituteCountSpan = document.getElementById('instituteCount');
+
+        function showResult(message, type = 'info') {
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+        }
+
+        function updateAPIStatus(status, count = 0) {
+            if (status === 'online') {
+                apiStatusSpan.className = 'api-status status-online';
+                apiStatusSpan.textContent = 'Online ✅';
+                instituteCountSpan.textContent = count;
+            } else if (status === 'offline') {
+                apiStatusSpan.className = 'api-status status-offline';
+                apiStatusSpan.textContent = 'Offline ❌';
+                instituteCountSpan.textContent = 'N/A';
+            } else {
+                apiStatusSpan.className = 'api-status status-unknown';
+                apiStatusSpan.textContent = 'Unknown ❓';
+                instituteCountSpan.textContent = 'Loading...';
+            }
+        }
+
+        async function checkAPIStatus() {
+            const btn = document.getElementById('checkBtn');
+            btn.disabled = true;
+            showResult('🔍 Checking API status...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/institutes`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const institutes = data.institutes || [];
+                    
+                    updateAPIStatus('online', institutes.length);
+                    
+                    if (institutes.length === 0) {
+                        showResult(`
+✅ API is online and working!
+📊 Current institutes in database: ${institutes.length}
+💡 Ready to setup institutes. Click "🚀 Setup All Institutes" to add all 18 institutes.
+                        `, 'info');
+                    } else {
+                        showResult(`
+✅ API is online and working!
+📊 Current institutes in database: ${institutes.length}
+✨ Institutes are already setup! Click "👁️ View Current Institutes" to see them.
+                        `, 'success');
+                    }
+                } else {
+                    updateAPIStatus('offline');
+                    showResult(`
+❌ API Error (HTTP ${response.status})
+The API server might be sleeping (common with free hosting).
+Try clicking "Check API Status" again in a few moments.
+                    `, 'error');
+                }
+            } catch (error) {
+                updateAPIStatus('offline');
+                showResult(`
+🚨 Connection Error
+Could not connect to the API server.
+Error: ${error.message}
+
+This might be due to:
+- Server is starting up (free hosting can take 30-60 seconds)
+- Network issues
+- Server maintenance
+
+Try again in a few moments.
+                `, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function setupInstitutes() {
+            const btn = document.getElementById('setupBtn');
+            btn.disabled = true;
+            
+            if (!confirm('This will add 18 institutes to your PRODUCTION database. Continue?')) {
+                btn.disabled = false;
+                return;
+            }
+            
+            showResult('🚀 Setting up institutes... This may take a moment.', 'loading');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/institutes/bulk-insert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAPIStatus('online', data.institutes.length);
+                    
+                    showResult(`
+🎉 SUCCESS! All institutes have been added to your database!
+
+📊 Institutes added: ${data.institutes.length}
+✅ Status: ${data.message}
+
+🔄 Next steps:
+1. Go to https://www.academywale.com/institutes
+2. Refresh the page
+3. You should now see all ${data.institutes.length} institutes with their images!
+
+Click "👁️ View Current Institutes" below to preview them.
+                    `, 'success');
+                } else {
+                    const data = await response.json();
+                    showResult(`
+❌ Setup Failed
+HTTP ${response.status}: ${data.error || 'Unknown error'}
+
+Try:
+1. Check if the API is online (click "Check API Status")
+2. Try the setup again in a few moments
+                    `, 'error');
+                }
+            } catch (error) {
+                showResult(`
+🚨 Setup Error
+Could not connect to setup the institutes.
+Error: ${error.message}
+
+Make sure the API server is online and try again.
+                `, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function viewInstitutes() {
+            const btn = document.getElementById('viewBtn');
+            btn.disabled = true;
+            showResult('👁️ Loading current institutes...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/institutes`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const institutes = data.institutes || [];
+                    
+                    if (institutes.length === 0) {
+                        showResult(`
+📭 No institutes found in database.
+Click "🚀 Setup All Institutes" to add them.
+                        `, 'info');
+                    } else {
+                        let html = `
+🎯 Found ${institutes.length} institutes in database:
+
+<div class="institute-grid">`;
+                        
+                        institutes.forEach(inst => {
+                            html += `
+<div class="institute-card">
+    <img src="${inst.imageUrl}" alt="${inst.name}" 
+         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iODAiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSI1MCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'">
+    <div class="institute-name">${inst.name}</div>
+</div>`;
+                        });
+                        
+                        html += '</div>';
+                        showResult(html, 'success');
+                    }
+                } else {
+                    showResult(`
+❌ Could not load institutes
+HTTP ${response.status}
+Check if the API is online.
+                    `, 'error');
+                }
+            } catch (error) {
+                showResult(`
+🚨 Error loading institutes
+${error.message}
+                `, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-check API status on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkAPIStatus, 1000);
+        });
+    </script>
+</body>
+</html>
