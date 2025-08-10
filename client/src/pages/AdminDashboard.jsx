@@ -583,6 +583,25 @@ export default function AdminDashboard() {
     } else {
       setCourseForm(prev => ({ ...prev, [name]: value }));
       
+      // Reset dependent fields when category changes
+      if (name === 'category') {
+        setCourseForm(prev => ({ 
+          ...prev, 
+          subcategory: '', 
+          paperId: '', 
+          paperName: '' 
+        }));
+      }
+      
+      // Reset paper fields when subcategory changes
+      if (name === 'subcategory') {
+        setCourseForm(prev => ({ 
+          ...prev, 
+          paperId: '', 
+          paperName: '' 
+        }));
+      }
+      
       // Auto-fill paper name when paper ID is selected
       if (name === 'paperId') {
         const papers = getPapers(courseForm.category, courseForm.subcategory);
@@ -677,8 +696,9 @@ export default function AdminDashboard() {
     // Validation for standalone courses vs faculty courses
     if (courseForm.isStandalone) {
       // Standalone course validation
-      if (!courseForm.title || !courseForm.subject || !courseForm.poster) {
-        setError('Please fill all required fields (Title, Subject, and Poster are required for standalone courses)');
+      if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
+          !courseForm.title || !courseForm.subject || !courseForm.poster) {
+        setError('Please fill all required fields (Category, Subcategory, Paper, Title, Subject, and Poster are required for standalone courses)');
         return;
       }
     } else {
@@ -1448,11 +1468,69 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Course Title for Standalone Courses */}
+            {/* Step 1: Course Category for Standalone Courses */}
             {courseForm.isStandalone && (
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-200">
-                <h3 className="text-xl font-semibold text-yellow-800 mb-4">Course Information</h3>
+                <h3 className="text-xl font-semibold text-yellow-800 mb-4">Step 1: Course Category</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select 
+                      name="category" 
+                      value={courseForm.category} 
+                      onChange={handleCourseFormChange}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      required={courseForm.isStandalone}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      ))}
+                    </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
+                  <select 
+                    name="subcategory" 
+                    value={courseForm.subcategory} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required={courseForm.isStandalone}
+                    disabled={!courseForm.category}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.value} value={sub.value}>{sub.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
+                  <select 
+                    name="paperId" 
+                    value={courseForm.paperId} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required={courseForm.isStandalone}
+                    disabled={!courseForm.category || !courseForm.subcategory}
+                  >
+                    <option value="">Select Paper</option>
+                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
+                      <option key={paper.id} value={paper.id}>Paper {paper.id} - {paper.name}</option>
+                    ))}
+                  </select>
+                </div>
+                </div>
+              </div>
+            )}
+
+            {/* Course Information for Standalone Courses */}
+            {courseForm.isStandalone && (
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
+                <h3 className="text-xl font-semibold text-green-800 mb-4">Course Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                     <input
@@ -1461,7 +1539,7 @@ export default function AdminDashboard() {
                       value={courseForm.title}
                       onChange={handleCourseFormChange}
                       placeholder="e.g., Advanced Excel Training, Digital Marketing Course"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                       required={courseForm.isStandalone}
                     />
                   </div>
@@ -1473,22 +1551,9 @@ export default function AdminDashboard() {
                       value={courseForm.subject}
                       onChange={handleCourseFormChange}
                       placeholder="e.g., Excel, Digital Marketing, Programming"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                       required
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category (Optional)</label>
-                    <select
-                      name="category"
-                      value={courseForm.category}
-                      onChange={handleCourseFormChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    >
-                      <option value="">Select Category (Optional)</option>
-                      <option value="CA">CA</option>
-                      <option value="CMA">CMA</option>
-                    </select>
                   </div>
                 </div>
               </div>

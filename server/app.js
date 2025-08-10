@@ -56,12 +56,13 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 cloudinary.config({
-  cloud_name: 'dwjfgvbgg',
-  api_key: '431532398896464',
-  api_secret: 'dPfpGKKlIxZhJXC_8aDt2hVk2nY'
+  cloud_name: 'drlqhsjgm',
+  api_key: process.env.CLOUDINARY_API_KEY || '484639516573658',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'M1dYIUdgfP7nFIZRVZnL8Jrh7E4'
 });
 
-const storage = new CloudinaryStorage({
+// Cloudinary storage configuration for courses
+const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'academywale/courses',
@@ -70,7 +71,18 @@ const storage = new CloudinaryStorage({
   }
 });
 
-const upload = multer({ storage });
+// Cloudinary storage configuration for faculty
+const facultyStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'faculty',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 500, height: 500, crop: 'fill' }]
+  }
+});
+
+const courseUpload = multer({ storage: courseStorage });
+const facultyUpload = multer({ storage: facultyStorage });
 
 // Routes
 app.get('/', (req, res) => {
@@ -374,7 +386,7 @@ app.get('/api/courses/all', async (req, res) => {
 });
 
 // Create a new standalone course
-app.post('/api/admin/courses/standalone', upload.single('poster'), async (req, res) => {
+app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (req, res) => {
   try {
     const {
       title, subject, description, category, subcategory, paperId, paperName,
@@ -444,7 +456,7 @@ app.post('/api/admin/courses/standalone', upload.single('poster'), async (req, r
 });
 
 // Update a standalone course
-app.put('/api/admin/courses/standalone/:id', upload.single('poster'), async (req, res) => {
+app.put('/api/admin/courses/standalone/:id', courseUpload.single('poster'), async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -502,28 +514,6 @@ app.delete('/api/admin/courses/standalone/:id', async (req, res) => {
 // ==================== END STANDALONE COURSES ROUTES ====================
 
 // ==================== FACULTY ROUTES ====================
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-
-// Configure cloudinary
-cloudinary.config({
-  cloud_name: 'drlqhsjgm',
-  api_key: process.env.CLOUDINARY_API_KEY || '484639516573658',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'M1dYIUdgfP7nFIZRVZnL8Jrh7E4'
-});
-
-// Cloudinary storage configuration
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'faculty', // Cloudinary folder name
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-    transformation: [{ width: 500, height: 500, crop: 'fill' }]
-  }
-});
-
-const upload = multer({ storage: storage });
 
 // Get all faculties
 app.get('/api/faculties', async (req, res) => {
@@ -537,7 +527,7 @@ app.get('/api/faculties', async (req, res) => {
 });
 
 // Add new faculty
-app.post('/api/admin/faculty', upload.single('image'), async (req, res) => {
+app.post('/api/admin/faculty', facultyUpload.single('image'), async (req, res) => {
   try {
     console.log('📝 Faculty creation request received');
     console.log('📤 Request body:', req.body);
