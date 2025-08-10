@@ -105,18 +105,18 @@ const CAInterPaperDetailPage = () => {
         )}
 
         {/* Course List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
           {courses.map((course, idx) => (
             <div
               key={idx}
               onClick={() => handleCourseClick(course)}
-              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+              className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
             >
               <div className="relative">
                 <img
                   src={getPosterUrl(course)}
                   alt={course.subject}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-32 sm:h-48 object-cover"
                   onError={(e) => {
                     e.target.src = '/logo.svg';
                   }}
@@ -126,13 +126,13 @@ const CAInterPaperDetailPage = () => {
                 </div>
               </div>
               
-              <div className="p-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+              <div className="p-3 sm:p-4">
+                <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2 line-clamp-2">
                   {course.subject}
                 </h3>
                 
                 {course.facultyName && (
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
                     by {course.facultyName}
                   </p>
                 )}

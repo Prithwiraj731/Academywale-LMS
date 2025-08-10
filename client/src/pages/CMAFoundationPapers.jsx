@@ -30,14 +30,6 @@ const CMAFoundationPapers = () => {
             </Link>
           ))}
         </div>
-        <div className="text-center mt-8">
-          <Link
-            to="/courses/cma/foundation/combo"
-            className="bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-300 text-lg w-full md:w-auto"
-          >
-            Combo Papers
-          </Link>
-        </div>
       </main>
       <Footer />
     </div>

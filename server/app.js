@@ -501,6 +501,175 @@ app.delete('/api/admin/courses/standalone/:id', async (req, res) => {
 
 // ==================== END STANDALONE COURSES ROUTES ====================
 
+// ==================== FACULTY ROUTES ====================
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Configure cloudinary
+cloudinary.config({
+  cloud_name: 'drlqhsjgm',
+  api_key: process.env.CLOUDINARY_API_KEY || '484639516573658',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'M1dYIUdgfP7nFIZRVZnL8Jrh7E4'
+});
+
+// Cloudinary storage configuration
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'faculty', // Cloudinary folder name
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 500, height: 500, crop: 'fill' }]
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Get all faculties
+app.get('/api/faculties', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+    const faculties = await Faculty.find();
+    res.status(200).json({ faculties });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add new faculty
+app.post('/api/admin/faculty', upload.single('image'), async (req, res) => {
+  try {
+    console.log('📝 Faculty creation request received');
+    console.log('📤 Request body:', req.body);
+    console.log('📸 File received:', req.file ? 'Yes' : 'No');
+    
+    const Faculty = require('./src/model/Faculty.model');
+    const { firstName, lastName, bio, teaches } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image is required' });
+    }
+    
+    // Get the Cloudinary URL from the uploaded file
+    const imageUrl = req.file.path;
+    const public_id = req.file.filename;
+
+    // Handle teaches array
+    let parsedTeaches = [];
+    if (teaches) {
+      try {
+        parsedTeaches = JSON.parse(teaches);
+      } catch (e) {
+        if (typeof teaches === 'string') {
+          parsedTeaches = teaches.split(',').map(t => t.trim());
+        } else if (Array.isArray(teaches)) {
+          parsedTeaches = teaches;
+        } else {
+          parsedTeaches = [teaches];
+        }
+      }
+    }
+
+    // Generate slug
+    const slug = `${firstName.toLowerCase().replace(/ /g, '-')}-${lastName ? lastName.toLowerCase().replace(/ /g, '-') : ''}`.replace(/--/g, '-').replace(/^-|-$/g, '');
+
+    const newFaculty = new Faculty({
+      firstName,
+      lastName: lastName || '',
+      bio,
+      teaches: parsedTeaches,
+      imageUrl,
+      image: public_id,
+      public_id,
+      slug,
+    });
+
+    await newFaculty.save();
+    console.log('✅ Faculty saved successfully:', newFaculty._id);
+    
+    res.status(201).json({ success: true, faculty: newFaculty });
+  } catch (error) {
+    console.error('❌ Faculty creation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get faculty info by firstName
+app.get('/api/faculty-info/:firstName', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+    const { firstName } = req.params;
+    
+    const faculty = await Faculty.findOne({ 
+      firstName: { $regex: new RegExp('^' + firstName + '$', 'i') } 
+    });
+    
+    if (faculty) {
+      res.json({
+        bio: faculty.bio,
+        teaches: faculty.teaches,
+        lastName: faculty.lastName
+      });
+    } else {
+      res.json({
+        bio: '',
+        teaches: [],
+        lastName: ''
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update faculty info
+app.post('/api/admin/faculty-info', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+    const { firstName, bio, teaches } = req.body;
+    
+    if (!firstName) {
+      return res.status(400).json({ error: 'Faculty firstName is required' });
+    }
+
+    const updateData = {
+      bio: bio || '',
+      teaches: teaches || []
+    };
+
+    const faculty = await Faculty.findOneAndUpdate(
+      { firstName: { $regex: new RegExp('^' + firstName + '$', 'i') } },
+      updateData,
+      { new: true, upsert: false }
+    );
+
+    if (faculty) {
+      res.json({ success: true, faculty });
+    } else {
+      res.status(404).json({ error: 'Faculty not found' });
+    }
+  } catch (error) {
+    console.error('Faculty update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete all faculty (emergency endpoint)
+app.delete('/emergency-delete-faculty', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+    const result = await Faculty.deleteMany({});
+    res.json({ 
+      success: true, 
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== END FACULTY ROUTES ====================
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ status: 'error', message: 'Route not found' });

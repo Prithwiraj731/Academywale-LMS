@@ -50,6 +50,62 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Responsive utilities */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Mobile-first responsive design improvements */
+@media (max-width: 640px) {
+  /* Reduce padding and margins on mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Smaller buttons on mobile */
+  .btn-mobile {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Compact cards on mobile */
+  .card-mobile {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+  }
+  
+  /* Smaller text on mobile */
+  .text-mobile-sm {
+    font-size: 0.75rem;
+  }
+  
+  .text-mobile-base {
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-tablet-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid-tablet-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 /* Professional font classes */
 .font-heading {
   font-family: 'Poppins', sans-serif;

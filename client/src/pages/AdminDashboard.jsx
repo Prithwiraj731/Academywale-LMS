@@ -1452,7 +1452,7 @@ export default function AdminDashboard() {
             {courseForm.isStandalone && (
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-200">
                 <h3 className="text-xl font-semibold text-yellow-800 mb-4">Course Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                     <input
@@ -1476,6 +1476,19 @@ export default function AdminDashboard() {
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
                       required
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category (Optional)</label>
+                    <select
+                      name="category"
+                      value={courseForm.category}
+                      onChange={handleCourseFormChange}
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    >
+                      <option value="">Select Category (Optional)</option>
+                      <option value="CA">CA</option>
+                      <option value="CMA">CMA</option>
+                    </select>
                   </div>
                 </div>
               </div>

@@ -96,28 +96,28 @@ const CMAInterPaperDetailPage = () => {
             No courses found for this paper.
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
           {courses.map((course, idx) => (
-            <div key={idx} className="bg-white/95 rounded-3xl shadow-2xl p-4 flex flex-col items-center border border-[#20b2aa]">
-              <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-4">
+            <div key={idx} className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-3 sm:p-4 flex flex-col items-center border border-[#20b2aa]">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border-2 sm:border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-3 sm:mb-4">
                 <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
               </div>
-              <div className="text-lg font-bold text-[#17817a] mb-1 text-center">{course.subject}</div>
-              <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
-              <div className="flex flex-col gap-1 text-xs text-gray-500 mb-2 text-center">
+              <div className="text-sm sm:text-lg font-bold text-[#17817a] mb-1 text-center line-clamp-2">{course.subject}</div>
+              <div className="text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
+              <div className="flex flex-col gap-1 text-xs text-gray-500 mb-1 sm:mb-2 text-center">
                 <div>Lectures: {course.noOfLecture}</div>
                 <div>Books: {course.books}</div>
                 <div>Language: {course.videoLanguage}</div>
                 <div>Validity: {course.validityStartFrom}</div>
                 <div>Mode: {course.mode}</div>
               </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-sm sm:text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
+                <span className="text-lg sm:text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
               </div>
               <button
                 onClick={() => navigate(`/payment/${encodeURIComponent(course.courseType)}/${course._id}`)}
-                className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
+                className="mt-1 sm:mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-4 sm:px-6 rounded-lg sm:rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-sm sm:text-base w-full"
               >
                 Buy Now
               </button>
