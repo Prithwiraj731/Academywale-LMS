@@ -1203,13 +1203,54 @@ export default function AdminDashboard() {
   const [faculties, setFaculties] = useState([]);
   const [allFaculties, setAllFaculties] = useState([]); // Combined hardcoded + database faculties
   
+  // Hardcoded institutes as fallback
+  const hardcodedInstitutes = [
+    { name: "Aaditya Jain Classes", _id: "hardcoded-1" },
+    { name: "Arjun Chhabra Tutorial", _id: "hardcoded-2" },
+    { name: "Avinash Lala Classes", _id: "hardcoded-3" },
+    { name: "BB Virtuals", _id: "hardcoded-4" },
+    { name: "Bishnu Kedia Classes", _id: "hardcoded-5" },
+    { name: "CA Buddy", _id: "hardcoded-6" },
+    { name: "CA Praveen Jindal", _id: "hardcoded-7" },
+    { name: "COC Education", _id: "hardcoded-8" },
+    { name: "Ekatvam", _id: "hardcoded-9" },
+    { name: "Gopal Bhoot Classes", _id: "hardcoded-10" },
+    { name: "Harshad Jaju Classes", _id: "hardcoded-11" },
+    { name: "Navin Classes", _id: "hardcoded-12" },
+    { name: "Nitin Guru Classes", _id: "hardcoded-13" },
+    { name: "Ranjan Periwal Classes", _id: "hardcoded-14" },
+    { name: "Shivangi Agarwal", _id: "hardcoded-15" },
+    { name: "Siddharth Agarrwal Classes", _id: "hardcoded-16" },
+    { name: "SJC Institute", _id: "hardcoded-17" },
+    { name: "Yashwant Mangal Classes", _id: "hardcoded-18" }
+  ];
+  
   // Fetch institutes and faculties on mount
   useEffect(() => {
     // Fetch institutes
+    console.log('🏫 Fetching institutes from:', `${API_URL}/api/institutes`);
     fetch(`${API_URL}/api/institutes`)
-      .then(res => res.json())
-      .then(data => setInstitutes(data.institutes || []))
-      .catch(err => console.error('Error fetching institutes:', err));
+      .then(res => {
+        console.log('🏫 Institutes response status:', res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log('🏫 Institutes data received:', data);
+        const apiInstitutes = data.institutes || [];
+        
+        // If no institutes from API, use hardcoded ones
+        if (apiInstitutes.length === 0) {
+          console.log('🏫 No institutes from API, using hardcoded institutes');
+          setInstitutes(hardcodedInstitutes);
+        } else {
+          setInstitutes(apiInstitutes);
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error fetching institutes:', err);
+        console.log('🏫 Using hardcoded institutes due to error');
+        setInstitutes(hardcodedInstitutes);
+      });
     
     // Fetch database faculties
     fetch(`${API_URL}/api/faculties`)
@@ -1545,8 +1586,14 @@ export default function AdminDashboard() {
                     required={!courseForm.isStandalone}
                   >
                     <option value="">Select Institute</option>
+                    {console.log('🏫 Institutes available for dropdown:', institutes)}
+                    {institutes.length === 0 && (
+                      <option disabled>No institutes available</option>
+                    )}
                     {institutes.map(inst => (
-                      <option key={inst.name} value={inst.name}>{inst.name}</option>
+                      <option key={inst.name || inst._id} value={inst.name}>
+                        {inst.name}
+                      </option>
                     ))}
                   </select>
                 </div>
