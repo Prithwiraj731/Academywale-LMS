@@ -80,7 +80,44 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    cloudinary: {
+      configured: !!cloudinary.config().cloud_name,
+      cloud_name: cloudinary.config().cloud_name
+    },
+    mongodb: {
+      connected: mongoose.connection.readyState === 1
+    }
+  });
+});
+
+app.get('/api/health/db', async (req, res) => {
+  try {
+    // Test database connection by counting documents
+    const courseCount = await Course.countDocuments();
+    const facultyCount = await Faculty.countDocuments();
+    const userCount = await User.countDocuments();
+    
+    res.json({
+      status: 'OK',
+      database: 'connected',
+      collections: {
+        courses: courseCount,
+        faculties: facultyCount,
+        users: userCount
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      database: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 app.get('/api/auth/test', (req, res) => {
