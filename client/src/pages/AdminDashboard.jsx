@@ -2396,7 +2396,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {fac.courses.map((c, idx) => (
                   <div key={idx} className="bg-white rounded-xl shadow p-4 flex gap-4 items-center border border-[#20b2aa]">
-                    {c.posterUrl && <img src={`${API_URL}${c.posterUrl}`} alt="Poster" className="w-20 h-20 object-cover rounded-lg border-2 border-purple-200" />}
+                    {c.posterUrl && <img src={c.posterUrl.startsWith('http') ? c.posterUrl : `${API_URL}${c.posterUrl}`} alt="Poster" className="w-20 h-20 object-cover rounded-lg border-2 border-purple-200" />}
                     <div>
                       <div className="font-bold text-[#17817a]">{c.subject}</div>
                       <div className="text-xs text-gray-500">Lectures: {c.noOfLecture} | Attempt: {c.duration}</div>
