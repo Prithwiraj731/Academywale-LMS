@@ -5,6 +5,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 
+// Import route files
+const courseRoutes = require('./src/routes/course.routes');
+const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes');
+
 const app = express();
 
 // Middleware
@@ -13,6 +17,10 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Use route files
+app.use(courseRoutes);
+app.use(standaloneCourseRoutes);
 
 // MongoDB Connection
 const connectDB = async () => {

@@ -57,14 +57,21 @@ exports.createStandaloneCourse = async (req, res) => {
       courseType, noOfLecture, books, videoLanguage, videoRunOn, timing,
       doubtSolving, supportMail, supportCall, validityStartFrom,
       facultySlug, facultyName, institute, modeAttemptPricing,
-      costPrice, sellingPrice
+      costPrice, sellingPrice, isStandalone
     } = req.body;
 
     const posterUrl = req.file ? req.file.path : '';
     const posterPublicId = req.file ? req.file.filename : '';
 
-    if (!title || !subject) {
-      return res.status(400).json({ error: 'Title and subject are required' });
+    // Determine if it's standalone based on the isStandalone field or lack of facultySlug
+    const courseIsStandalone = isStandalone === 'true' || !facultySlug;
+
+    if (!subject) {
+      return res.status(400).json({ error: 'Subject is required' });
+    }
+    
+    if (courseIsStandalone && !title) {
+      return res.status(400).json({ error: 'Title is required for standalone courses' });
     }
 
     // Parse mode and attempt pricing if provided
@@ -77,43 +84,90 @@ exports.createStandaloneCourse = async (req, res) => {
       }
     }
 
-    const newCourse = new Course({
-      title,
-      subject,
-      description: description || '',
-      category: category || '',
-      subcategory: subcategory || '',
-      paperId: paperId || '',
-      paperName: paperName || '',
-      courseType: courseType || 'General Course',
-      noOfLecture: noOfLecture || '',
-      books: books || '',
-      videoLanguage: videoLanguage || 'Hindi',
-      videoRunOn: videoRunOn || '',
-      timing: timing || '',
-      doubtSolving: doubtSolving || '',
-      supportMail: supportMail || '',
-      supportCall: supportCall || '',
-      validityStartFrom: validityStartFrom || '',
-      facultySlug: facultySlug || '',
-      facultyName: facultyName || '',
-      institute: institute || '',
-      posterUrl,
-      posterPublicId,
-      modeAttemptPricing: parsedModeAttemptPricing,
-      costPrice: costPrice ? Number(costPrice) : 0,
-      sellingPrice: sellingPrice ? Number(sellingPrice) : 0,
-      isStandalone: true,
-      isActive: true
-    });
+    if (courseIsStandalone) {
+      // Create standalone course
+      const newCourse = new Course({
+        title,
+        subject,
+        description: description || '',
+        category: category || '',
+        subcategory: subcategory || '',
+        paperId: paperId || '',
+        paperName: paperName || '',
+        courseType: courseType || 'General Course',
+        noOfLecture: noOfLecture || '',
+        books: books || '',
+        videoLanguage: videoLanguage || 'Hindi',
+        videoRunOn: videoRunOn || '',
+        timing: timing || '',
+        doubtSolving: doubtSolving || '',
+        supportMail: supportMail || '',
+        supportCall: supportCall || '',
+        validityStartFrom: validityStartFrom || '',
+        facultySlug: facultySlug || '',
+        facultyName: facultyName || '',
+        institute: institute || '',
+        posterUrl,
+        posterPublicId,
+        modeAttemptPricing: parsedModeAttemptPricing,
+        costPrice: costPrice ? Number(costPrice) : 0,
+        sellingPrice: sellingPrice ? Number(sellingPrice) : 0,
+        isStandalone: true,
+        isActive: true
+      });
 
-    await newCourse.save();
-    
-    res.status(201).json({ 
-      success: true, 
-      message: 'Standalone course created successfully',
-      course: newCourse 
-    });
+      await newCourse.save();
+      
+      res.status(201).json({ 
+        success: true, 
+        message: 'Standalone course created successfully',
+        course: newCourse 
+      });
+    } else {
+      // Create faculty-based course
+      const faculty = await Faculty.findOne({ slug: facultySlug });
+      if (!faculty) {
+        return res.status(404).json({ error: 'Faculty not found' });
+      }
+
+      const courseData = {
+        title: title || paperName || subject,
+        subject,
+        description: description || '',
+        category: category || '',
+        subcategory: subcategory || '',
+        paperId: paperId || '',
+        paperName: paperName || '',
+        courseType: courseType || 'General Course',
+        noOfLecture: noOfLecture || '',
+        books: books || '',
+        videoLanguage: videoLanguage || 'Hindi',
+        videoRunOn: videoRunOn || '',
+        timing: timing || '',
+        doubtSolving: doubtSolving || '',
+        supportMail: supportMail || '',
+        supportCall: supportCall || '',
+        validityStartFrom: validityStartFrom || '',
+        facultySlug: facultySlug,
+        facultyName: facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+        institute: institute || '',
+        posterUrl,
+        posterPublicId,
+        modeAttemptPricing: parsedModeAttemptPricing,
+        costPrice: costPrice ? Number(costPrice) : 0,
+        sellingPrice: sellingPrice ? Number(sellingPrice) : 0
+      };
+
+      faculty.courses.push(courseData);
+      await faculty.save();
+      
+      res.status(201).json({ 
+        success: true, 
+        message: 'Faculty-based course created successfully',
+        course: courseData,
+        faculty: faculty.slug
+      });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
