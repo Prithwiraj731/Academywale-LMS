@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
+const path = require('path');
 
 const app = express();
 
@@ -763,8 +764,21 @@ app.delete('/emergency-delete-faculty', async (req, res) => {
 
 // ==================== END FACULTY ROUTES ====================
 
-// 404 handler
-app.use('*', (req, res) => {
+// ==================== SERVE REACT BUILD FILES ====================
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ status: 'error', message: 'API route not found' });
+  }
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
   res.status(404).json({ status: 'error', message: 'Route not found' });
 });
 
