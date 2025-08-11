@@ -738,6 +738,16 @@ export default function AdminDashboard() {
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
+      console.log('🌐 API_URL value:', API_URL);
+      
+      // Test endpoint availability first
+      console.log('🧪 Testing endpoint availability...');
+      try {
+        const testResponse = await fetch(apiEndpoint, { method: 'OPTIONS' });
+        console.log('🔍 OPTIONS Response:', testResponse.status, testResponse.statusText);
+      } catch (testError) {
+        console.error('❌ Endpoint test failed:', testError);
+      }
       
       // Basic course info - common for both types
       formData.append('isStandalone', courseForm.isStandalone);
@@ -780,13 +790,33 @@ export default function AdminDashboard() {
       // Mode and attempt pricing
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
+      console.log('📤 Sending FormData with fields:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`   ${key}: ${value}`);
+      }
+
+      console.log('🚀 Making POST request to:', apiEndpoint);
       const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
       
-      const data = await res.json();
+      console.log('📥 Response received:', res.status, res.statusText);
+      console.log('📥 Response headers:', Object.fromEntries(res.headers.entries()));
+      
+      const responseText = await res.text();
+      console.log('📋 Raw response text:', responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ Failed to parse response as JSON:', parseError);
+        throw new Error(`Server response is not valid JSON: ${responseText}`);
+      }
+      
       if (res.ok) {
+        console.log('✅ Course creation successful:', data);
         setSuccess(courseForm.isStandalone ? 'Standalone course added successfully!' : 'Course added successfully!');
         // Reset form
         setCourseForm({
