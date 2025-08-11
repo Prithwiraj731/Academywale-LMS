@@ -385,7 +385,7 @@ app.get('/api/courses/all', async (req, res) => {
   }
 });
 
-// Create a new standalone course
+// Create a new course (both standalone and faculty-based)
 app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (req, res) => {
   try {
     const {
@@ -393,14 +393,21 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
       courseType, noOfLecture, books, videoLanguage, videoRunOn, timing,
       doubtSolving, supportMail, supportCall, validityStartFrom,
       facultySlug, facultyName, institute, modeAttemptPricing,
-      costPrice, sellingPrice
+      costPrice, sellingPrice, isStandalone
     } = req.body;
 
     const posterUrl = req.file ? req.file.path : '';
     const posterPublicId = req.file ? req.file.filename : '';
 
-    if (!title || !subject) {
-      return res.status(400).json({ error: 'Title and subject are required' });
+    // Determine if it's standalone based on the isStandalone field or lack of facultySlug
+    const courseIsStandalone = isStandalone === 'true' || !facultySlug;
+
+    if (!subject) {
+      return res.status(400).json({ error: 'Subject is required' });
+    }
+    
+    if (courseIsStandalone && !title) {
+      return res.status(400).json({ error: 'Title is required for standalone courses' });
     }
 
     // Parse mode and attempt pricing if provided
@@ -414,7 +421,7 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     }
 
     const newCourse = new Course({
-      title,
+      title: title || '',
       subject,
       description: description || '',
       category: category || '',
@@ -439,7 +446,7 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
       modeAttemptPricing: parsedModeAttemptPricing,
       costPrice: costPrice ? Number(costPrice) : 0,
       sellingPrice: sellingPrice ? Number(sellingPrice) : 0,
-      isStandalone: true,
+      isStandalone: courseIsStandalone,
       isActive: true
     });
 
@@ -447,7 +454,7 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     
     res.status(201).json({ 
       success: true, 
-      message: 'Standalone course created successfully',
+      message: courseIsStandalone ? 'Standalone course created successfully' : 'Faculty course created successfully',
       course: newCourse 
     });
   } catch (error) {

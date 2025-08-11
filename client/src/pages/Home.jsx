@@ -122,7 +122,7 @@ export default function Home() {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate('/courses/all')}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3 px-8 rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-400"
+              className="bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400"
             >
               🎓 Browse All Available Courses
             </button>

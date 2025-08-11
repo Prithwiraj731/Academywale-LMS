@@ -733,15 +733,12 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Determine API endpoint based on course type
-      const apiEndpoint = courseForm.isStandalone 
-        ? `${API_URL}/api/admin/courses/standalone`
-        : `${API_URL}/api/admin/courses/new`;
+      // Use the same endpoint for both course types since the backend handles both
+      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
       
       // Basic course info
-      if (courseForm.isStandalone) {
-        formData.append('title', courseForm.title);
-      }
+      formData.append('isStandalone', courseForm.isStandalone.toString());
+      formData.append('title', courseForm.title || courseForm.paperName || courseForm.subject);
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
