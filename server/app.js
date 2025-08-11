@@ -375,7 +375,6 @@ app.get('/api/courses/standalone', async (req, res) => {
 app.get('/api/courses/all', async (req, res) => {
   try {
     const courses = await Course.find({ 
-      isStandalone: true,
       isActive: true 
     }).sort({ createdAt: -1 });
     

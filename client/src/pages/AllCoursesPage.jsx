@@ -12,7 +12,6 @@ export default function AllCoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filterType, setFilterType] = useState('all'); // 'all', 'standalone', 'faculty'
 
   useEffect(() => {
     fetchCourses();
@@ -21,7 +20,8 @@ export default function AllCoursesPage() {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/courses/standalone`);
+      // Fetch all courses (both standalone and faculty-based)
+      const response = await fetch(`${API_URL}/api/courses/all`);
       const data = await response.json();
       
       if (response.ok) {
@@ -40,15 +40,6 @@ export default function AllCoursesPage() {
   const getPosterUrl = (course) => {
     return getCourseImageUrl(course);
   };
-
-  const getFilteredCourses = () => {
-    if (filterType === 'all') return courses;
-    if (filterType === 'standalone') return courses.filter(c => c.isStandalone);
-    if (filterType === 'faculty') return courses.filter(c => !c.isStandalone);
-    return courses;
-  };
-
-  const filteredCourses = getFilteredCourses();
 
   if (loading) {
     return (
@@ -75,40 +66,9 @@ export default function AllCoursesPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">All Available Courses</h1>
           <p className="text-lg text-gray-600">Browse through our comprehensive course catalog</p>
-        </div>
-
-        {/* Filter Buttons */}
-        <div className="mb-8 flex flex-wrap justify-center gap-4">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-6 py-3 rounded-full font-semibold transition-all ${
-              filterType === 'all'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            All Courses ({courses.length})
-          </button>
-          <button
-            onClick={() => setFilterType('standalone')}
-            className={`px-6 py-3 rounded-full font-semibold transition-all ${
-              filterType === 'standalone'
-                ? 'bg-green-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            General Courses ({courses.filter(c => c.isStandalone).length})
-          </button>
-          <button
-            onClick={() => setFilterType('faculty')}
-            className={`px-6 py-3 rounded-full font-semibold transition-all ${
-              filterType === 'faculty'
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Faculty Courses ({courses.filter(c => !c.isStandalone).length})
-          </button>
+          <div className="mt-4">
+            <span className="text-2xl font-semibold text-blue-600">{courses.length} Courses Available</span>
+          </div>
         </div>
 
         {/* Error State */}
@@ -119,16 +79,16 @@ export default function AllCoursesPage() {
         )}
 
         {/* Empty State */}
-        {!error && filteredCourses.length === 0 && (
+        {!error && courses.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">No courses found for the selected filter.</div>
+            <div className="text-gray-500 text-lg">No courses found.</div>
           </div>
         )}
 
         {/* Courses Grid */}
-        {!error && filteredCourses.length > 0 && (
+        {!error && courses.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCourses.map((course, index) => (
+            {courses.map((course, index) => (
               <div 
                 key={course._id || index} 
                 className="bg-white/95 rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-6 border border-gray-200"
@@ -161,19 +121,6 @@ export default function AllCoursesPage() {
                     {course.title || course.subject}
                   </h3>
 
-                  {/* Type Badge */}
-                  <div className="flex items-center gap-2">
-                    {course.isStandalone ? (
-                      <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
-                        General Course
-                      </span>
-                    ) : (
-                      <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                        {course.courseType || 'Faculty Course'}
-                      </span>
-                    )}
-                  </div>
-
                   {/* Description */}
                   {course.description && (
                     <p className="text-gray-600 text-sm line-clamp-2">
@@ -183,6 +130,12 @@ export default function AllCoursesPage() {
 
                   {/* Course Details */}
                   <div className="space-y-1 text-sm text-gray-600">
+                    {course.category && course.subcategory && (
+                      <div><span className="font-semibold">Category:</span> {course.category} {course.subcategory}</div>
+                    )}
+                    {course.paperName && (
+                      <div><span className="font-semibold">Paper:</span> {course.paperName}</div>
+                    )}
                     {course.facultyName && (
                       <div><span className="font-semibold">Faculty:</span> {course.facultyName}</div>
                     )}
