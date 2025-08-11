@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Storage Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        .section { margin: 25px 0; padding: 20px; border-radius: 8px; border-left: 5px solid #3498db; background: #f8f9fa; }
+        .success { border-left-color: #27ae60; background: #d5f4e6; }
+        .error { border-left-color: #e74c3c; background: #fdf2f2; }
+        .warning { border-left-color: #f39c12; background: #fef9e7; }
+        button { background: #3498db; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
+        button:hover { background: #2980b9; }
+        button.test { background: #27ae60; }
+        button.test:hover { background: #229954; }
+        button.danger { background: #e74c3c; }
+        button.danger:hover { background: #c0392b; }
+        .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; margin: 10px 0; white-space: pre-wrap; font-size: 14px; overflow-x: auto; }
+        .highlight { background: #f1c40f; color: #2c3e50; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .table th { background: #34495e; color: white; }
+        .loading { text-align: center; color: #7f8c8d; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗃️ DATABASE STORAGE VERIFICATION</h1>
+        <p style="text-align: center; color: #7f8c8d; font-size: 18px;">Let's check if your courses are actually being saved to the database!</p>
+        
+        <div class="section">
+            <h3>📊 Current Database Status</h3>
+            <button onclick="checkDatabaseConnection()">Check Database Connection</button>
+            <button onclick="getCurrentCourses()">Get All Courses from Database</button>
+            <div id="databaseStatus" class="loading">Click buttons above to check database status...</div>
+        </div>
+
+        <div class="section warning">
+            <h3>🧪 Test Course Creation & Database Storage</h3>
+            <p><strong>This will:</strong></p>
+            <ul>
+                <li>Create a test course with unique timestamp</li>
+                <li>Verify it gets saved to database</li>
+                <li>Show you the exact database record</li>
+                <li>Confirm storage is working</li>
+            </ul>
+            <button onclick="createAndVerifyTestCourse()" class="test">Create Test Course & Verify Storage</button>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="section">
+            <h3>📋 All Courses in Database</h3>
+            <button onclick="listAllCourses()">Refresh Course List</button>
+            <button onclick="showCourseDetails()" class="danger">Show Detailed Course Data</button>
+            <div id="courseList"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔍 Database Storage Analysis</h3>
+            <button onclick="analyzeDatabaseStorage()">Analyze Storage Pattern</button>
+            <div id="storageAnalysis"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://academywale-lms.onrender.com';
+
+        async function checkDatabaseConnection() {
+            const statusDiv = document.getElementById('databaseStatus');
+            statusDiv.innerHTML = '<div class="loading">🔄 Checking database connection...</div>';
+
+            try {
+                const response = await fetch(BASE_URL + '/api/courses/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="code">✅ DATABASE CONNECTION: Working
+📊 Total Courses Found: ${data.courses ? data.courses.length : 0}
+🔗 Database Endpoint: /api/courses/all
+✅ MongoDB Connection: Active</div>`;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="code">❌ DATABASE CONNECTION: Failed
+Status: ${response.status}
+Error: Cannot retrieve courses from database</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="code">❌ DATABASE CONNECTION: Error
+Network Error: ${error.message}
+Backend might be offline</div>`;
+            }
+        }
+
+        async function getCurrentCourses() {
+            const statusDiv = document.getElementById('databaseStatus');
+            statusDiv.innerHTML = '<div class="loading">📊 Fetching all courses from database...</div>';
+
+            try {
+                const response = await fetch(BASE_URL + '/api/courses/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    const courses = data.courses || [];
+                    
+                    statusDiv.innerHTML = `
+                        <div class="code">📊 COURSES IN DATABASE: ${courses.length}
+
+${courses.length > 0 ? 
+    'Recent Courses:\\n' + courses.slice(0, 5).map(course => 
+        `- ${course.title || course.subject} (${course.isStandalone ? 'Standalone' : 'Faculty'}) - Created: ${course.createdAt || 'Unknown'}`
+    ).join('\\n') + 
+    (courses.length > 5 ? '\\n... and ' + (courses.length - 5) + ' more courses' : '')
+    : 
+    'No courses found in database yet'
+}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="code">❌ Failed to fetch courses: ${response.status}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="code">❌ Error fetching courses: ${error.message}</div>`;
+            }
+        }
+
+        async function createAndVerifyTestCourse() {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toISOString();
+            resultsDiv.innerHTML = '<div class="loading">🧪 Creating test course and verifying database storage...</div>';
+
+            try {
+                // Step 1: Create test course
+                const formData = new FormData();
+                formData.append('subject', `Database Test Course - ${timestamp}`);
+                formData.append('title', `Test Course ${new Date().getTime()}`);
+                formData.append('category', 'CA');
+                formData.append('subcategory', 'Foundation');
+                formData.append('paperId', '999');
+                formData.append('paperName', 'Database Verification Test');
+                formData.append('isStandalone', 'true');
+                formData.append('description', 'This is a test course to verify database storage');
+                formData.append('modeAttemptPricing', JSON.stringify([{
+                    mode: 'Test Mode',
+                    attempts: [{ attempt: 'Database Test', costPrice: 100, sellingPrice: 80 }]
+                }]));
+
+                console.log('🚀 Creating test course...');
+                
+                const createResponse = await fetch(BASE_URL + '/api/admin/courses/standalone', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const createResult = await createResponse.text();
+                console.log('Creation response:', createResult);
+
+                if (createResponse.ok) {
+                    resultsDiv.innerHTML += `<div class="code">✅ STEP 1: Course creation successful!
+Status: ${createResponse.status}
+Response: ${createResult}</div>`;
+
+                    // Step 2: Wait a moment and then check if it's in database
+                    setTimeout(async () => {
+                        try {
+                            const verifyResponse = await fetch(BASE_URL + '/api/courses/all');
+                            if (verifyResponse.ok) {
+                                const verifyData = await verifyResponse.json();
+                                const courses = verifyData.courses || [];
+                                
+                                // Look for our test course
+                                const testCourse = courses.find(course => 
+                                    course.subject && course.subject.includes('Database Test Course')
+                                );
+
+                                if (testCourse) {
+                                    resultsDiv.innerHTML += `<div class="code">✅ STEP 2: Course found in database!
+
+🎉 DATABASE STORAGE IS WORKING! 🎉
+
+Course Details:
+- ID: ${testCourse._id || 'N/A'}
+- Title: ${testCourse.title}
+- Subject: ${testCourse.subject}
+- Category: ${testCourse.category}
+- Is Standalone: ${testCourse.isStandalone}
+- Created: ${testCourse.createdAt || 'N/A'}
+- Status: ${testCourse.isActive ? 'Active' : 'Inactive'}
+
+✅ Your courses ARE being saved to the database!</div>`;
+                                } else {
+                                    resultsDiv.innerHTML += `<div class="code">⚠️ STEP 2: Test course not found in database
+
+Total courses in database: ${courses.length}
+
+This might mean:
+- Course creation endpoint exists but isn't saving to database
+- Database save is failing silently
+- Test course was created in different collection
+
+Recent courses:
+${courses.slice(0, 3).map(c => `- ${c.title || c.subject}`).join('\\n')}</div>`;
+                                }
+                            } else {
+                                resultsDiv.innerHTML += `<div class="code">❌ STEP 2: Failed to verify database storage
+Status: ${verifyResponse.status}</div>`;
+                            }
+                        } catch (error) {
+                            resultsDiv.innerHTML += `<div class="code">❌ STEP 2: Error verifying database: ${error.message}</div>`;
+                        }
+                    }, 2000);
+
+                } else if (createResponse.status === 404) {
+                    resultsDiv.innerHTML = `<div class="code">❌ COURSE CREATION FAILED: Endpoint not found (404)
+
+This means your deployed backend doesn't have the updated route yet.
+
+Response: ${createResult}
+
+🚨 THE BACKEND CODE NEEDS TO BE DEPLOYED TO RENDER!</div>`;
+                } else {
+                    resultsDiv.innerHTML = `<div class="code">❌ COURSE CREATION FAILED: Status ${createResponse.status}
+
+Response: ${createResult}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="code">❌ ERROR: ${error.message}</div>`;
+            }
+        }
+
+        async function listAllCourses() {
+            const listDiv = document.getElementById('courseList');
+            listDiv.innerHTML = '<div class="loading">📋 Loading all courses from database...</div>';
+
+            try {
+                const response = await fetch(BASE_URL + '/api/courses/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    const courses = data.courses || [];
+                    
+                    if (courses.length === 0) {
+                        listDiv.innerHTML = `<div class="code">📭 NO COURSES FOUND IN DATABASE
+
+This means either:
+1. No courses have been successfully created yet
+2. Course creation is failing to save to database
+3. Database connection issues</div>`;
+                        return;
+                    }
+
+                    let tableHTML = `
+                        <h4>📊 Found ${courses.length} courses in database:</h4>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title/Subject</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                    courses.forEach(course => {
+                        tableHTML += `
+                            <tr>
+                                <td>${course.title || course.subject || 'N/A'}</td>
+                                <td><span class="highlight">${course.isStandalone ? 'Standalone' : 'Faculty'}</span></td>
+                                <td>${course.category || 'N/A'} ${course.subcategory || ''}</td>
+                                <td>${course.createdAt ? new Date(course.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                <td>${course.isActive ? '✅ Active' : '❌ Inactive'}</td>
+                            </tr>`;
+                    });
+
+                    tableHTML += '</tbody></table>';
+                    listDiv.innerHTML = tableHTML;
+
+                } else {
+                    listDiv.innerHTML = `<div class="code">❌ Failed to load courses: ${response.status}</div>`;
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="code">❌ Error loading courses: ${error.message}</div>`;
+            }
+        }
+
+        async function showCourseDetails() {
+            const listDiv = document.getElementById('courseList');
+            listDiv.innerHTML = '<div class="loading">🔍 Loading detailed course data...</div>';
+
+            try {
+                const response = await fetch(BASE_URL + '/api/courses/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    const courses = data.courses || [];
+                    
+                    if (courses.length === 0) {
+                        listDiv.innerHTML = `<div class="code">📭 NO COURSES IN DATABASE</div>`;
+                        return;
+                    }
+
+                    const detailedHTML = `
+                        <h4>🔍 Detailed Course Data (First 3 courses):</h4>
+                        <div class="code">${JSON.stringify(courses.slice(0, 3), null, 2)}</div>
+                        <p><strong>Total courses in database:</strong> ${courses.length}</p>`;
+                    
+                    listDiv.innerHTML = detailedHTML;
+                } else {
+                    listDiv.innerHTML = `<div class="code">❌ Failed to load course details: ${response.status}</div>`;
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="code">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function analyzeDatabaseStorage() {
+            const analysisDiv = document.getElementById('storageAnalysis');
+            analysisDiv.innerHTML = '<div class="loading">🔍 Analyzing database storage patterns...</div>';
+
+            try {
+                const response = await fetch(BASE_URL + '/api/courses/all');
+                if (response.ok) {
+                    const data = await response.json();
+                    const courses = data.courses || [];
+                    
+                    const standalone = courses.filter(c => c.isStandalone);
+                    const faculty = courses.filter(c => !c.isStandalone);
+                    const recent = courses.filter(c => c.createdAt && new Date(c.createdAt) > new Date(Date.now() - 24*60*60*1000));
+
+                    analysisDiv.innerHTML = `
+                        <div class="code">📊 DATABASE STORAGE ANALYSIS
+
+Total Courses: ${courses.length}
+├── Standalone Courses: ${standalone.length}
+├── Faculty-based Courses: ${faculty.length}
+└── Created in Last 24h: ${recent.length}
+
+Storage Locations:
+├── Standalone: Course collection (MongoDB)
+├── Faculty: Faculty.courses array (MongoDB)
+└── Database: MongoDB Atlas
+
+Storage Status: ${courses.length > 0 ? '✅ WORKING' : '❌ NO DATA FOUND'}
+
+${courses.length > 0 ? 
+    'Latest Course: ' + (courses[0]?.title || courses[0]?.subject || 'N/A') + 
+    ' (Created: ' + (courses[0]?.createdAt || 'Unknown') + ')'
+    : 
+    'No courses have been successfully saved to database yet'
+}</div>`;
+                } else {
+                    analysisDiv.innerHTML = `<div class="code">❌ Analysis failed: ${response.status}</div>`;
+                }
+            } catch (error) {
+                analysisDiv.innerHTML = `<div class="code">❌ Analysis error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run initial check
+        window.onload = () => {
+            checkDatabaseConnection();
+            setTimeout(getCurrentCourses, 1000);
+        };
+    </script>
+</body>
+</html>
