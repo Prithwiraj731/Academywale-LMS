@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Course Creation API Test</title>
+</head>
+<body>
+    <h1>Testing Course Creation APIs</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+    async function testCourseAPIs() {
+        const results = document.getElementById('results');
+        
+        try {
+            results.innerHTML += '<h3>Testing Course Creation Endpoints...</h3>';
+            
+            // Test 1: Check if faculty course endpoint exists
+            console.log('Testing faculty course endpoint...');
+            const facultyEndpointTest = await fetch('https://academywale-lms.onrender.com/api/admin/courses/new', {
+                method: 'OPTIONS'
+            });
+            
+            if (facultyEndpointTest.status !== 404) {
+                results.innerHTML += '<p>✅ Faculty course endpoint (/api/admin/courses/new) exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ Faculty course endpoint (/api/admin/courses/new) not found</p>';
+            }
+            
+            // Test 2: Check if standalone course endpoint exists
+            console.log('Testing standalone course endpoint...');
+            const standaloneEndpointTest = await fetch('https://academywale-lms.onrender.com/api/admin/courses/standalone', {
+                method: 'OPTIONS'
+            });
+            
+            if (standaloneEndpointTest.status !== 404) {
+                results.innerHTML += '<p>✅ Standalone course endpoint (/api/admin/courses/standalone) exists</p>';
+            } else {
+                results.innerHTML += '<p>❌ Standalone course endpoint (/api/admin/courses/standalone) not found</p>';
+            }
+            
+            // Test 3: Check courses retrieval
+            console.log('Testing course retrieval...');
+            const coursesResponse = await fetch('https://academywale-lms.onrender.com/api/courses/all');
+            
+            if (coursesResponse.ok) {
+                const data = await coursesResponse.json();
+                results.innerHTML += `<p>✅ Can fetch courses: ${data.courses?.length || 0} courses found</p>`;
+            } else {
+                results.innerHTML += '<p>❌ Cannot fetch courses</p>';
+            }
+            
+            results.innerHTML += '<h3>Conclusion:</h3>';
+            results.innerHTML += '<p>🎯 If both endpoints exist, course creation should work!</p>';
+            results.innerHTML += '<p>Try creating a course now in the admin dashboard.</p>';
+            
+        } catch (error) {
+            results.innerHTML += '<p>❌ Network error: ' + error.message + '</p>';
+        }
+    }
+    
+    // Run test when page loads
+    testCourseAPIs();
+    </script>
+</body>
+</html>

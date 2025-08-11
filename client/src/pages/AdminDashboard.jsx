@@ -733,22 +733,36 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use the same endpoint for both course types since the backend handles both
-      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
+      // Use the correct endpoints based on course type
+      const apiEndpoint = courseForm.isStandalone 
+        ? `${API_URL}/api/admin/courses/standalone`  // For standalone courses
+        : `${API_URL}/api/admin/courses/new`;        // For faculty-based courses
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       
-      // Basic course info
-      formData.append('isStandalone', courseForm.isStandalone.toString());
-      formData.append('title', courseForm.title || courseForm.paperName || courseForm.subject);
+      // Basic course info - common for both types
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
       formData.append('paperName', courseForm.paperName);
       formData.append('subject', courseForm.subject);
-      formData.append('facultySlug', courseForm.facultySlug);
       formData.append('institute', courseForm.institute);
+      
+      // Course type specific fields
+      if (courseForm.isStandalone) {
+        // Standalone course specific fields
+        formData.append('title', courseForm.title);
+        formData.append('facultySlug', courseForm.facultySlug || '');
+        formData.append('facultyName', courseForm.facultySlug || '');
+      } else {
+        // Faculty-based course specific fields
+        formData.append('facultySlug', courseForm.facultySlug);
+        // For faculty courses, title can be auto-generated from paperName
+        formData.append('title', courseForm.paperName || courseForm.subject);
+      }
+      
+      // Common fields for both course types
       formData.append('description', courseForm.description);
       formData.append('noOfLecture', courseForm.noOfLecture);
       formData.append('books', courseForm.books);
