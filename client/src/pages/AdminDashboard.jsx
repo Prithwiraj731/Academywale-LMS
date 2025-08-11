@@ -736,6 +736,9 @@ export default function AdminDashboard() {
       // Use the same endpoint for both course types since the backend handles both
       const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
       
+      console.log('🔗 API Endpoint:', apiEndpoint);
+      console.log('📋 Course Form Data:', courseForm);
+      
       // Basic course info
       formData.append('isStandalone', courseForm.isStandalone.toString());
       formData.append('title', courseForm.title || courseForm.paperName || courseForm.subject);
@@ -806,10 +809,16 @@ export default function AdminDashboard() {
         setPosterPreviewNew(null);
         setTimeout(() => setSuccess(''), 3000);
       } else {
+        console.error('❌ Course creation failed:', data);
         setError(data.error || 'Failed to add course');
       }
     } catch (err) {
-      setError('Server error: ' + err.message);
+      console.error('❌ Network/Server error:', err);
+      if (err.message.includes('fetch')) {
+        setError('Server error: Cannot connect to backend. Please check if the server is running or try again later.');
+      } else {
+        setError('Server error: ' + err.message);
+      }
     }
     setLoading(false);
   };
