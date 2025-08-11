@@ -29,6 +29,18 @@ const courseStorage = new CloudinaryStorage({
 
 const courseUpload = multer({ storage: courseStorage });
 
+// Multer configuration for faculty uploads
+const facultyStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'academy-wale/faculty',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }]
+  }
+});
+
+const facultyUpload = multer({ storage: facultyStorage });
+
 // Middleware
 app.use(cors({
   origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173', 'http://localhost:5174'],
