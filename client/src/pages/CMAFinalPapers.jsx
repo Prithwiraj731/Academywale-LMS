@@ -5,16 +5,16 @@ import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 
 const group3 = [
-  { id: 13, title: 'Corporate & Economic Laws' },
+  { id: 13, title: 'Corporate and Economic Laws' },
   { id: 14, title: 'Strategic Financial Management' },
   { id: 15, title: 'Direct Tax Laws and International Taxation' },
   { id: 16, title: 'Strategic Cost Management' },
 ];
 
 const group4 = [
-  { id: 17, title: 'Cost & Management Audit' },
+  { id: 17, title: 'Cost and Management Audit' },
   { id: 18, title: 'Corporate Financial Reporting' },
-  { id: 19, title: 'Indirect Tax Laws & Practice' },
+  { id: 19, title: 'Indirect Tax Laws and Practice' },
   { id: 20, title: 'Strategic Performance Management and Business Valuation' },
 ];
 

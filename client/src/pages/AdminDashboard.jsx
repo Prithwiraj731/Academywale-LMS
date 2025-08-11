@@ -507,7 +507,7 @@ export default function AdminDashboard() {
     { value: 'Final', label: 'Final' }
   ];
 
-  // Papers based on category and subcategory
+  // Papers based on category and subcategory - Using correct official CA/CMA structure
   const getPapers = (category, subcategory) => {
     if (category === 'CA') {
       if (subcategory === 'Foundation') {
@@ -519,54 +519,61 @@ export default function AdminDashboard() {
         ];
       } else if (subcategory === 'Inter') {
         return [
-          { id: 1, name: 'Accounting' },
-          { id: 2, name: 'Corporate and Other Laws' },
-          { id: 3, name: 'Cost and Management Accounting' },
-          { id: 4, name: 'Taxation' },
-          { id: 5, name: 'Advanced Accounting' },
-          { id: 6, name: 'Auditing and Assurance' },
-          { id: 7, name: 'Enterprise Information Systems & Strategic Management' },
-          { id: 8, name: 'Financial Management & Economics for Finance' }
+          // INTERMEDIATE GROUP 1
+          { id: 5, name: 'Advanced Accounting', group: 'Group 1' },
+          { id: 6, name: 'Corporate and Other Laws', group: 'Group 1' },
+          { id: 7, name: 'Taxation (Income tax laws & Goods & Service Tax)', group: 'Group 1' },
+          // INTERMEDIATE GROUP 2
+          { id: 8, name: 'Cost and Management Accounting', group: 'Group 2' },
+          { id: 9, name: 'Auditing and ethics', group: 'Group 2' },
+          { id: 10, name: 'Financial Management and Strategic Management', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
-          { id: 1, name: 'Financial Reporting' },
-          { id: 2, name: 'Strategic Financial Management' },
-          { id: 3, name: 'Advanced Auditing and Professional Ethics' },
-          { id: 4, name: 'Corporate and Economic Laws' },
-          { id: 5, name: 'Strategic Cost Management and Performance Evaluation' },
-          { id: 6, name: 'Elective Paper (One out of Four)' },
-          { id: 7, name: 'Direct Tax Laws' },
-          { id: 8, name: 'Indirect Tax Laws' }
+          // FINAL GROUP 3
+          { id: 11, name: 'Financial Reporting', group: 'Group 3' },
+          { id: 12, name: 'Advanced Financial Management', group: 'Group 3' },
+          { id: 13, name: 'Advanced Auditing and Professional Ethics', group: 'Group 3' },
+          { id: 14, name: 'Direct Tax Laws and International Taxation', group: 'Group 3' },
+          // FINAL GROUP 4
+          { id: 15, name: 'Indirect Tax Laws', group: 'Group 4' },
+          { id: 16, name: 'Corporate and Economic Laws', group: 'Group 4' },
+          { id: 17, name: 'Strategic Cost and Performance Management', group: 'Group 4' }
         ];
       }
     } else if (category === 'CMA') {
       if (subcategory === 'Foundation') {
         return [
-          { id: 1, name: 'Fundamentals of Economics and Management' },
-          { id: 2, name: 'Fundamentals of Accounting' },
-          { id: 3, name: 'Fundamentals of Laws and Ethics' },
-          { id: 4, name: 'Fundamentals of Business Mathematics and Statistics' }
+          { id: 1, name: 'Fundamentals of Business Laws' },
+          { id: 2, name: 'Fundamentals of Financial and Cost Accounting' },
+          { id: 3, name: 'Fundamentals of Business mathematics and statistics' },
+          { id: 4, name: 'Fundamentals of Business Economics and Management' }
         ];
       } else if (subcategory === 'Inter') {
         return [
-          { id: 1, name: 'Financial Accounting' },
-          { id: 2, name: 'Laws & Ethics' },
-          { id: 3, name: 'Direct Taxation' },
-          { id: 4, name: 'Cost Accounting' },
-          { id: 5, name: 'Financial Management' },
-          { id: 6, name: 'Indirect Taxation' },
-          { id: 7, name: 'Company Accounts & Audit' },
-          { id: 8, name: 'Cost & Management Accounting and Financial Management' }
+          // INTERMEDIATE GROUP 1
+          { id: 5, name: 'Business Laws and Ethics', group: 'Group 1' },
+          { id: 6, name: 'Financial Accounting', group: 'Group 1' },
+          { id: 7, name: 'Direct and Indirect Taxation', group: 'Group 1' },
+          { id: 8, name: 'Cost Accounting', group: 'Group 1' },
+          // INTERMEDIATE GROUP 2
+          { id: 9, name: 'Operations Management and Strategic Management', group: 'Group 2' },
+          { id: 10, name: 'Corporate Accounting and Auditing', group: 'Group 2' },
+          { id: 11, name: 'Financial Management and Business Data Analytics', group: 'Group 2' },
+          { id: 12, name: 'Management Accounting', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
-          { id: 1, name: 'Financial Reporting' },
-          { id: 2, name: 'Strategic Financial Management' },
-          { id: 3, name: 'Strategic Cost Management' },
-          { id: 4, name: 'Corporate Laws & Compliance' },
-          { id: 5, name: 'Strategic Performance Management' },
-          { id: 6, name: 'Tax Management & Practice' }
+          // FINAL GROUP 3
+          { id: 13, name: 'Corporate and Economic Laws', group: 'Group 3' },
+          { id: 14, name: 'Strategic Financial Management', group: 'Group 3' },
+          { id: 15, name: 'Direct Tax Laws and International Taxation', group: 'Group 3' },
+          { id: 16, name: 'Strategic Cost Management', group: 'Group 3' },
+          // FINAL GROUP 4
+          { id: 17, name: 'Cost and Management Audit', group: 'Group 4' },
+          { id: 18, name: 'Corporate Financial Reporting', group: 'Group 4' },
+          { id: 19, name: 'Indirect Tax Laws and Practice', group: 'Group 4' },
+          { id: 20, name: 'Strategic Performance Management and Business Valuation', group: 'Group 4' }
         ];
       }
     }
@@ -1567,7 +1574,10 @@ export default function AdminDashboard() {
                   >
                     <option value="">Select Paper</option>
                     {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
-                      <option key={paper.id} value={paper.id}>Paper {paper.id} - {paper.name}</option>
+                      <option key={paper.id} value={paper.id}>
+                        Paper {paper.id} - {paper.name}
+                        {paper.group ? ` (${paper.group})` : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -1658,7 +1668,10 @@ export default function AdminDashboard() {
                   >
                     <option value="">Select Paper</option>
                     {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
-                      <option key={paper.id} value={paper.id}>Paper {paper.id} - {paper.name}</option>
+                      <option key={paper.id} value={paper.id}>
+                        Paper {paper.id} - {paper.name}
+                        {paper.group ? ` (${paper.group})` : ''}
+                      </option>
                     ))}
                   </select>
                 </div>

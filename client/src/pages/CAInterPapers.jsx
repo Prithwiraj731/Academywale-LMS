@@ -7,12 +7,12 @@ import BackButton from '../components/common/BackButton';
 const group1 = [
   { id: 5, title: 'Advanced Accounting' },
   { id: 6, title: 'Corporate and Other Laws' },
-  { id: 7, title: 'Taxation (Income-tax Law and Goods and Services Tax)' },
+  { id: 7, title: 'Taxation (Income tax laws & Goods & Service Tax)' },
 ];
 
 const group2 = [
   { id: 8, title: 'Cost and Management Accounting' },
-  { id: 9, title: 'Auditing and Ethics' },
+  { id: 9, title: 'Auditing and ethics' },
   { id: 10, title: 'Financial Management and Strategic Management' },
 ];
 

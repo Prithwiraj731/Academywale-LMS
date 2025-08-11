@@ -5,16 +5,16 @@ import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 
 const group1 = [
-  { id: 5, title: 'Business Laws & Ethics' },
+  { id: 5, title: 'Business Laws and Ethics' },
   { id: 6, title: 'Financial Accounting' },
   { id: 7, title: 'Direct and Indirect Taxation' },
   { id: 8, title: 'Cost Accounting' },
 ];
 
 const group2 = [
-  { id: 9, title: 'Operations Management & Strategic Management' },
-  { id: 10, title: 'Corporate Accounting & Auditing' },
-  { id: 11, title: 'Financial Management & Business Data Analytics' },
+  { id: 9, title: 'Operations Management and Strategic Management' },
+  { id: 10, title: 'Corporate Accounting and Auditing' },
+  { id: 11, title: 'Financial Management and Business Data Analytics' },
   { id: 12, title: 'Management Accounting' },
 ];
 

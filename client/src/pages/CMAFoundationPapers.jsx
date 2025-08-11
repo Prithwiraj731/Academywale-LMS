@@ -5,9 +5,9 @@ import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 
 const papers = [
-  { id: 1, title: 'Fundamentals of Business Laws and Business Communication' },
+  { id: 1, title: 'Fundamentals of Business Laws' },
   { id: 2, title: 'Fundamentals of Financial and Cost Accounting' },
-  { id: 3, title: 'Fundamentals of Business Mathematics and Statistics' },
+  { id: 3, title: 'Fundamentals of Business mathematics and statistics' },
   { id: 4, title: 'Fundamentals of Business Economics and Management' },
 ];
 
