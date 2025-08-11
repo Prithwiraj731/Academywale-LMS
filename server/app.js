@@ -293,8 +293,29 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     let parsedModeAttemptPricing = [];
     if (modeAttemptPricing) {
       try {
-        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
-        console.log('✅ Parsed pricing:', parsedModeAttemptPricing);
+        const rawPricing = JSON.parse(modeAttemptPricing);
+        console.log('✅ Parsed pricing:', rawPricing);
+        
+        // Transform the pricing structure from frontend format to schema format
+        parsedModeAttemptPricing = [];
+        rawPricing.forEach(modeGroup => {
+          if (modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
+            // Frontend sends: {mode: "Live Watching", attempts: [{attempt: "First", costPrice: 1000, sellingPrice: 800}]}
+            // Schema needs: [{mode: "Live Watching", attempt: "First", costPrice: 1000, sellingPrice: 800}]
+            modeGroup.attempts.forEach(attemptData => {
+              parsedModeAttemptPricing.push({
+                mode: modeGroup.mode,
+                attempt: attemptData.attempt,
+                costPrice: attemptData.costPrice,
+                sellingPrice: attemptData.sellingPrice
+              });
+            });
+          } else {
+            // Handle direct format (backwards compatibility)
+            parsedModeAttemptPricing.push(modeGroup);
+          }
+        });
+        console.log('🔄 Transformed pricing for schema:', parsedModeAttemptPricing);
       } catch (e) {
         console.log('❌ Failed to parse pricing:', e.message);
         return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
