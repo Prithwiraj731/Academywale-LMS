@@ -309,10 +309,17 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     console.log('📎 File:', req.file);
 
     // Check if this is a faculty-based course
-    const isStandalone = req.body.isStandalone === 'true' || req.body.isStandalone === true || !req.body.facultySlug;
-    console.log('🔍 Course type detection:', { isStandalone, facultySlug: req.body.facultySlug });
+    const hasFaculty = req.body.facultySlug && req.body.facultySlug.trim() !== '';
+    const isStandalone = req.body.isStandalone === 'true' || req.body.isStandalone === true;
+    
+    console.log('🔍 Course type detection:', { 
+      isStandalone: req.body.isStandalone, 
+      facultySlug: req.body.facultySlug,
+      hasFaculty: hasFaculty,
+      finalDecision: isStandalone ? 'STANDALONE' : 'FACULTY'
+    });
 
-    if (!isStandalone && req.body.facultySlug) {
+    if (!isStandalone && hasFaculty) {
       // Handle faculty-based course
       console.log('📍 Processing as faculty-based course');
       

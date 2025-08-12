@@ -740,10 +740,8 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use correct endpoint based on course type (as suggested by Google)
-      const apiEndpoint = courseForm.isStandalone 
-        ? `${API_URL}/api/admin/courses/standalone`
-        : `${API_URL}/api/admin/courses/new`;
+      // Use the reliable standalone endpoint that handles both types
+      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
