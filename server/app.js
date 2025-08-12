@@ -106,17 +106,23 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    cloudinary: {
-      configured: !!cloudinary.config().cloud_name,
-      cloud_name: cloudinary.config().cloud_name
-    },
-    mongodb: {
-      connected: mongoose.connection.readyState === 1
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    version: '2024-01-15-15:30', // Deployment tracker
+    endpoints: {
+      testCourse: '/api/test/course',
+      courses: '/api/courses',
+      faculties: '/api/faculties',
+      institutes: '/api/institutes'
     }
   });
+});
+
+// Simple GET test endpoint
+app.get('/test', (req, res) => {
+  res.json({ message: 'Basic test endpoint working', timestamp: new Date().toISOString() });
 });
 
 // Simple test endpoint for course creation
