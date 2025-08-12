@@ -752,8 +752,28 @@ export default function AdminDashboard() {
       // Test endpoint availability first
       console.log('🧪 Testing endpoint availability...');
       try {
-        const testResponse = await fetch(apiEndpoint, { method: 'OPTIONS' });
+        const testResponse = await fetch(apiEndpoint, { 
+          method: 'OPTIONS',
+          headers: {
+            'Origin': window.location.origin
+          }
+        });
         console.log('🔍 OPTIONS Response:', testResponse.status, testResponse.statusText);
+        console.log('🔍 OPTIONS Headers:', Object.fromEntries(testResponse.headers.entries()));
+        
+        // If OPTIONS fails, try a simple GET request to test connectivity
+        if (!testResponse.ok) {
+          console.log('⚠️ OPTIONS failed, testing with GET request...');
+          const getTest = await fetch(apiEndpoint.replace('/standalone', '/test/course'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Origin': window.location.origin
+            },
+            body: JSON.stringify({ test: true })
+          });
+          console.log('🔍 GET Test Response:', getTest.status, getTest.statusText);
+        }
       } catch (testError) {
         console.error('❌ Endpoint test failed:', testError);
       }
@@ -813,6 +833,9 @@ export default function AdminDashboard() {
       const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
+        headers: {
+          'Origin': window.location.origin
+        }
       });
       
       console.log('📥 Response received:', res.status, res.statusText);
@@ -867,7 +890,27 @@ export default function AdminDashboard() {
         setTimeout(() => setSuccess(''), 3000);
       } else {
         console.error('❌ Course creation failed:', data);
-        setError(data.error || 'Failed to add course');
+        let errorMessage = 'Failed to add course';
+        
+        if (data && data.error) {
+          errorMessage = data.error;
+        } else if (data && data.message) {
+          errorMessage = data.message;
+        } else if (res.status === 500) {
+          errorMessage = 'Server error (500) - Check server logs';
+        } else if (res.status === 404) {
+          errorMessage = 'API endpoint not found (404)';
+        } else if (res.status === 403) {
+          errorMessage = 'Access forbidden (403)';
+        }
+        
+        setError(errorMessage);
+        console.error('❌ Detailed error info:', {
+          status: res.status,
+          statusText: res.statusText,
+          data: data,
+          headers: Object.fromEntries(res.headers.entries())
+        });
       }
     } catch (err) {
       console.error('❌ Network/Server error:', err);
@@ -1524,6 +1567,72 @@ export default function AdminDashboard() {
       {activePanel === 'course' && (
         <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-8 border border-blue-100 mb-8">
           <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
+          
+          {/* API Test Button */}
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h3 className="text-lg font-semibold text-yellow-800 mb-2">🔧 API Connection Test</h3>
+            <div className="flex gap-2 mb-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('🧪 Testing API connectivity...');
+                    const testRes = await fetch(`${API_URL}/api/test/course`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                      },
+                      body: JSON.stringify({ test: true, timestamp: new Date().toISOString() })
+                    });
+                    
+                    if (testRes.ok) {
+                      const testData = await testRes.json();
+                      console.log('✅ API Test Successful:', testData);
+                      alert('✅ API is working! Check console for details.');
+                    } else {
+                      console.error('❌ API Test Failed:', testRes.status, testRes.statusText);
+                      alert(`❌ API Test Failed: ${testRes.status} ${testRes.statusText}`);
+                    }
+                  } catch (error) {
+                    console.error('❌ API Test Error:', error);
+                    alert(`❌ API Test Error: ${error.message}`);
+                  }
+                }}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                Test API Connection
+              </button>
+              
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('🏥 Testing server health...');
+                    const healthRes = await fetch(`${API_URL}/health`);
+                    
+                    if (healthRes.ok) {
+                      const healthData = await healthRes.json();
+                      console.log('✅ Server Health:', healthData);
+                      alert(`✅ Server is healthy!\nStatus: ${healthData.status}\nMongoDB: ${healthData.mongodb.connected ? 'Connected' : 'Disconnected'}`);
+                    } else {
+                      console.error('❌ Health Check Failed:', healthRes.status, healthRes.statusText);
+                      alert(`❌ Health Check Failed: ${healthRes.status} ${healthRes.statusText}`);
+                    }
+                  } catch (error) {
+                    console.error('❌ Health Check Error:', error);
+                    alert(`❌ Health Check Error: ${error.message}`);
+                  }
+                }}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              >
+                Check Server Health
+              </button>
+            </div>
+            <p className="text-sm text-yellow-700">
+              Use these buttons to test if the backend API is accessible before creating courses.
+            </p>
+          </div>
           
           <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
             {/* Course Type Toggle */}
