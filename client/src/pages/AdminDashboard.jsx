@@ -740,12 +740,15 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use the standalone endpoint - your deployed backend has this
-      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
+      // Choose the correct endpoint based on course type
+      const apiEndpoint = courseForm.isStandalone 
+        ? `${API_URL}/api/admin/courses/standalone`
+        : `${API_URL}/api/admin/courses/faculty`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       console.log('🌐 API_URL value:', API_URL);
+      console.log('🎯 Course Type:', courseForm.isStandalone ? 'Standalone' : 'Faculty-based');
       
       // Test endpoint availability first
       console.log('🧪 Testing endpoint availability...');
