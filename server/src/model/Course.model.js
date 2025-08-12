@@ -4,7 +4,6 @@ const modeAttemptPricingSchema = new mongoose.Schema({
   mode: {
     type: String,
     required: false,
-    enum: ['Live Watching', 'Recorded Videos', ''],
     default: ''
   },
   attempt: {
@@ -42,12 +41,10 @@ const courseSchema = new mongoose.Schema({
   // Course hierarchy (optional for standalone courses)
   category: {
     type: String,
-    enum: ['CA', 'CMA', ''],
     default: ''
   },
   subcategory: {
     type: String,
-    enum: ['Foundation', 'Inter', 'Final', ''],
     default: ''
   },
   paperId: {
