@@ -740,15 +740,14 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Choose the correct endpoint based on course type
-      const apiEndpoint = courseForm.isStandalone 
-        ? `${API_URL}/api/admin/courses/standalone`
-        : `${API_URL}/api/admin/courses/faculty`;
+      // Use the unified endpoint that auto-detects course type
+      const apiEndpoint = `${API_URL}/api/admin/courses`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       console.log('🌐 API_URL value:', API_URL);
       console.log('🎯 Course Type:', courseForm.isStandalone ? 'Standalone' : 'Faculty-based');
+      console.log('🔍 isStandalone value:', courseForm.isStandalone, typeof courseForm.isStandalone);
       
       // Test endpoint availability first
       console.log('🧪 Testing endpoint availability...');
@@ -768,17 +767,22 @@ export default function AdminDashboard() {
       formData.append('subject', courseForm.subject);
       formData.append('institute', courseForm.institute);
       
+      console.log('📝 Appending isStandalone:', courseForm.isStandalone);
+      console.log('📝 Appending facultySlug:', courseForm.facultySlug);
+      
       // Course type specific fields
       if (courseForm.isStandalone) {
         // Standalone course specific fields
         formData.append('title', courseForm.title);
         formData.append('facultySlug', courseForm.facultySlug || '');
         formData.append('facultyName', courseForm.facultySlug || '');
+        console.log('📍 Preparing STANDALONE course data');
       } else {
         // Faculty-based course specific fields
         formData.append('facultySlug', courseForm.facultySlug);
         // For faculty courses, title can be auto-generated from paperName
         formData.append('title', courseForm.paperName || courseForm.subject);
+        console.log('📍 Preparing FACULTY course data');
       }
       
       // Common fields for both course types
