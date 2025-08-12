@@ -5,7 +5,9 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
+    "form-data": "^4.0.4",
     "multer": "1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
     "react-awesome-button": "^7.0.5",
     "react-modal": "^3.16.3"
   },
