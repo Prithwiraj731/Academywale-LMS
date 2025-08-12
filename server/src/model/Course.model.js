@@ -3,20 +3,24 @@ const mongoose = require('mongoose');
 const modeAttemptPricingSchema = new mongoose.Schema({
   mode: {
     type: String,
-    required: true,
-    enum: ['Live Watching', 'Recorded Videos']
+    required: false,
+    enum: ['Live Watching', 'Recorded Videos', ''],
+    default: ''
   },
   attempt: {
     type: String,
-    required: true
+    required: false,
+    default: ''
   },
   costPrice: {
     type: Number,
-    required: true
+    required: false,
+    default: 0
   },
   sellingPrice: {
     type: Number,
-    required: true
+    required: false,
+    default: 0
   }
 }, { _id: false });
 

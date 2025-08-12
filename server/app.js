@@ -418,7 +418,21 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     }
   } catch (error) {
     console.error('❌ Course creation error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      errors: error.errors
+    });
+    
+    // Send detailed error response
+    const errorResponse = {
+      error: 'Course creation failed',
+      message: error.message,
+      details: error.name === 'ValidationError' ? Object.keys(error.errors || {}) : null
+    };
+    
+    res.status(500).json(errorResponse);
   }
 });
 
