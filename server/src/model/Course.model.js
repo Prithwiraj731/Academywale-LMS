@@ -27,11 +27,13 @@ const courseSchema = new mongoose.Schema({
   // Course identification
   title: {
     type: String,
-    required: true
+    required: false,
+    default: 'Untitled Course'
   },
   subject: {
     type: String,
-    required: true
+    required: false,
+    default: 'General Subject'
   },
   description: {
     type: String,
