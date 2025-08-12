@@ -44,9 +44,18 @@ const facultyUpload = multer({ storage: facultyStorage });
 // Middleware
 app.use(cors({
   origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173', 'http://localhost:5174'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200
 }));
 app.use(express.json());
+
+// Middleware to ensure JSON responses for API routes
+app.use('/api/*', (req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
 
 // MongoDB Connection
 const connectDB = async () => {
@@ -303,6 +312,9 @@ app.post('/api/admin/courses/debug', async (req, res) => {
 
 // WORKING COURSE CREATION ENDPOINT (handles both standalone and faculty courses)
 app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (req, res) => {
+  // Ensure we always return JSON
+  res.setHeader('Content-Type', 'application/json');
+  
   try {
     console.log('🎯 Course creation request received');
     console.log('📋 Request body:', req.body);
