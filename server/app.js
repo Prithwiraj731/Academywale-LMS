@@ -45,10 +45,15 @@ const facultyUpload = multer({ storage: facultyStorage });
 app.use(cors({
   origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json());
 
 // Middleware to ensure JSON responses for API routes
@@ -112,6 +117,27 @@ app.get('/health', (req, res) => {
       connected: mongoose.connection.readyState === 1
     }
   });
+});
+
+// Simple test endpoint for course creation
+app.post('/api/test/course', async (req, res) => {
+  try {
+    console.log('🧪 Test course endpoint hit');
+    console.log('📋 Request body:', req.body);
+    
+    res.json({
+      success: true,
+      message: 'Test endpoint working',
+      receivedData: req.body,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Test endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 app.get('/api/health/db', async (req, res) => {
