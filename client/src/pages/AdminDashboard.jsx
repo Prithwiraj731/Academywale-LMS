@@ -740,8 +740,8 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use the unified endpoint that auto-detects course type
-      const apiEndpoint = `${API_URL}/api/admin/courses`;
+      // Use the working standalone endpoint temporarily
+      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
