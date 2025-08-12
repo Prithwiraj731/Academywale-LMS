@@ -1628,6 +1628,42 @@ export default function AdminDashboard() {
               >
                 Check Server Health
               </button>
+              
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('🧪 Testing simple course endpoint...');
+                    const simpleRes = await fetch(`${API_URL}/api/admin/courses/simple`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                      },
+                      body: JSON.stringify({ 
+                        title: 'Test Course', 
+                        subject: 'Test Subject',
+                        description: 'Test Description'
+                      })
+                    });
+                    
+                    if (simpleRes.ok) {
+                      const simpleData = await simpleRes.json();
+                      console.log('✅ Simple Course Test Successful:', simpleData);
+                      alert('✅ Simple course endpoint is working! Check console for details.');
+                    } else {
+                      console.error('❌ Simple Course Test Failed:', simpleRes.status, simpleRes.statusText);
+                      alert(`❌ Simple Course Test Failed: ${simpleRes.status} ${simpleRes.statusText}`);
+                    }
+                  } catch (error) {
+                    console.error('❌ Simple Course Test Error:', error);
+                    alert(`❌ Simple Course Test Error: ${error.message}`);
+                  }
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Test Simple Course
+              </button>
             </div>
             <p className="text-sm text-yellow-700">
               Use these buttons to test if the backend API is accessible before creating courses.
