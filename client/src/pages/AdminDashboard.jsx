@@ -740,8 +740,10 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use the working standalone endpoint temporarily
-      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
+      // Use correct endpoint based on course type (as suggested by Google)
+      const apiEndpoint = courseForm.isStandalone 
+        ? `${API_URL}/api/admin/courses/standalone`
+        : `${API_URL}/api/admin/courses/new`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
@@ -1336,14 +1338,22 @@ export default function AdminDashboard() {
       });
     
     // Fetch database faculties
+    console.log('🔍 Starting to fetch faculties from:', `${API_URL}/api/faculties`);
     fetch(`${API_URL}/api/faculties`)
-      .then(res => res.json())
+      .then(res => {
+        console.log('📡 Faculty API response status:', res.status);
+        return res.json();
+      })
       .then(data => {
+        console.log('📋 Raw faculty API data:', data);
         const dbFaculties = data.faculties || [];
+        console.log('🎓 Database faculties found:', dbFaculties.length);
         setFaculties(dbFaculties);
         
         // Combine hardcoded faculties with database faculties
         const hardcoded = getAllFaculties();
+        console.log('📚 Hardcoded faculties found:', hardcoded.length);
+        
         const combinedFaculties = [
           // Add hardcoded faculties first (convert to needed format)
           ...hardcoded.map(faculty => ({
@@ -1361,9 +1371,23 @@ export default function AdminDashboard() {
           }))
         ];
         
+        console.log('🎯 Final combined faculties:', combinedFaculties.length, combinedFaculties);
         setAllFaculties(combinedFaculties);
       })
-      .catch(err => console.error('Error fetching faculties:', err));
+      .catch(err => {
+        console.error('❌ Error fetching faculties:', err);
+        // Fallback to hardcoded faculties only
+        const hardcoded = getAllFaculties();
+        console.log('🔄 Using hardcoded faculties as fallback:', hardcoded.length);
+        const fallbackFaculties = hardcoded.map(faculty => ({
+          slug: faculty.slug,
+          firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
+          lastName: '',
+          isHardcoded: true,
+          fullName: faculty.name
+        }));
+        setAllFaculties(fallbackFaculties);
+      });
   }, []);
 
   // Testimonial state

@@ -520,6 +520,137 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
   }
 });
 
+// NEW FACULTY COURSE CREATION ENDPOINT (as suggested by Google)
+app.post('/api/admin/courses/new', courseUpload.single('poster'), async (req, res) => {
+  try {
+    console.log('🎯 NEW Faculty course creation request received');
+    console.log('📋 Request body:', req.body);
+    console.log('📎 File:', req.file);
+
+    const Faculty = require('./src/model/Faculty.model');
+    
+    // Extract and validate faculty slug
+    const facultySlug = req.body.facultySlug;
+    if (!facultySlug) {
+      console.log('❌ Faculty slug required');
+      return res.status(400).json({
+        success: false,
+        error: 'Faculty slug is required for faculty-based courses'
+      });
+    }
+
+    // Find the faculty
+    const faculty = await Faculty.findOne({ slug: facultySlug });
+    if (!faculty) {
+      console.log('❌ Faculty not found:', facultySlug);
+      return res.status(404).json({
+        success: false,
+        error: 'Faculty not found'
+      });
+    }
+
+    // Extract basic fields with safe defaults
+    const title = req.body.title || req.body.paperName || req.body.subject || 'New Faculty Course';
+    const subject = req.body.subject || 'General Subject';
+    const description = req.body.description || '';
+    const category = req.body.category || '';
+    const subcategory = req.body.subcategory || '';
+    const posterUrl = req.file ? req.file.path : '';
+    const posterPublicId = req.file ? req.file.filename : '';
+    
+    // Handle pricing data safely
+    let modeAttemptPricing = [];
+    if (req.body.modeAttemptPricing) {
+      try {
+        const rawPricing = JSON.parse(req.body.modeAttemptPricing);
+        rawPricing.forEach(modeGroup => {
+          if (modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
+            modeGroup.attempts.forEach(attemptData => {
+              modeAttemptPricing.push({
+                mode: modeGroup.mode || '',
+                attempt: attemptData.attempt || '',
+                costPrice: attemptData.costPrice || 0,
+                sellingPrice: attemptData.sellingPrice || 0
+              });
+            });
+          }
+        });
+      } catch (e) {
+        console.log('⚠️ Pricing parse error, using defaults');
+        modeAttemptPricing = [];
+      }
+    }
+
+    // Create course data for faculty
+    const courseData = {
+      title,
+      subject,
+      description,
+      category,
+      subcategory,
+      paperId: req.body.paperId || '',
+      paperName: req.body.paperName || '',
+      courseType: req.body.courseType || 'General Course',
+      noOfLecture: req.body.noOfLecture || '',
+      books: req.body.books || '',
+      videoLanguage: req.body.videoLanguage || 'Hindi',
+      videoRunOn: req.body.videoRunOn || '',
+      timing: req.body.timing || '',
+      doubtSolving: req.body.doubtSolving || '',
+      supportMail: req.body.supportMail || '',
+      supportCall: req.body.supportCall || '',
+      validityStartFrom: req.body.validityStartFrom || '',
+      facultySlug: facultySlug,
+      facultyName: req.body.facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+      institute: req.body.institute || '',
+      posterUrl,
+      posterPublicId,
+      modeAttemptPricing,
+      costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
+      sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
+      isStandalone: false,
+      isActive: true
+    };
+
+    console.log('📝 Adding course to faculty via NEW endpoint:', facultySlug);
+    console.log('📝 Course data:', courseData);
+    
+    // Add course to faculty's courses array
+    faculty.courses.push(courseData);
+    
+    // Save faculty with new course
+    const savedFaculty = await faculty.save();
+    
+    console.log('✅ Faculty course saved successfully via NEW endpoint');
+    
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Faculty course created successfully',
+      course: courseData,
+      faculty: {
+        slug: faculty.slug,
+        name: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ NEW Faculty course creation error:', error);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    // Ensure we always return JSON
+    return res.status(500).json({
+      success: false,
+      error: 'Faculty course creation failed',
+      message: error.message || 'Internal Server Error',
+      details: error.name || 'UnknownError'
+    });
+  }
+});
+
 // FACULTY-BASED COURSE CREATION ENDPOINT
 app.post('/api/admin/courses/faculty', courseUpload.single('poster'), async (req, res) => {
   try {
@@ -883,9 +1014,12 @@ app.get('/api/courses/all', async (req, res) => {
 // Get all institutes
 app.get('/api/institutes', async (req, res) => {
   try {
+    console.log('🏫 Fetching institutes from database...');
     const institutes = await Institute.find();
+    console.log('🏫 Found institutes:', institutes.length);
     res.status(200).json({ institutes });
   } catch (error) {
+    console.error('❌ Error fetching institutes:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -1110,10 +1244,14 @@ app.delete('/api/admin/courses/standalone/:id', async (req, res) => {
 // Get all faculties
 app.get('/api/faculties', async (req, res) => {
   try {
+    console.log('🎓 Fetching faculties from database...');
     const Faculty = require('./src/model/Faculty.model');
     const faculties = await Faculty.find();
+    console.log('🎓 Found faculties:', faculties.length);
+    console.log('🎓 Faculty details:', faculties.map(f => ({ slug: f.slug, firstName: f.firstName, lastName: f.lastName })));
     res.status(200).json({ faculties });
   } catch (error) {
+    console.error('❌ Error fetching faculties:', error);
     res.status(500).json({ message: error.message });
   }
 });
