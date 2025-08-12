@@ -308,13 +308,14 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
     console.log('📋 Request body:', req.body);
     console.log('📎 File:', req.file);
 
-    // Extract basic fields
+    // Extract basic fields with safe defaults
     const title = req.body.title || 'New Course';
     const subject = req.body.subject || 'General Subject';
     const description = req.body.description || '';
     const category = req.body.category || '';
     const subcategory = req.body.subcategory || '';
     const posterUrl = req.file ? req.file.path : '';
+    const posterPublicId = req.file ? req.file.filename : '';
     
     // Handle pricing data safely
     let modeAttemptPricing = [];
@@ -339,26 +340,59 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
       }
     }
 
-    // Create course with minimal required data
+    // Create course with ALL possible fields set to defaults
     const courseData = {
       title,
       subject,
       description,
       category,
       subcategory,
+      paperId: req.body.paperId || '',
+      paperName: req.body.paperName || '',
+      courseType: req.body.courseType || 'General Course',
+      noOfLecture: req.body.noOfLecture || '',
+      books: req.body.books || '',
+      videoLanguage: req.body.videoLanguage || 'Hindi',
+      videoRunOn: req.body.videoRunOn || '',
+      timing: req.body.timing || '',
+      doubtSolving: req.body.doubtSolving || '',
+      supportMail: req.body.supportMail || '',
+      supportCall: req.body.supportCall || '',
+      validityStartFrom: req.body.validityStartFrom || '',
+      facultySlug: req.body.facultySlug || '',
+      facultyName: req.body.facultyName || '',
+      institute: req.body.institute || '',
       posterUrl,
+      posterPublicId,
       modeAttemptPricing,
+      costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
+      sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
       isStandalone: true,
       isActive: true
     };
 
-    console.log('📝 Creating course with data:', courseData);
+    console.log('📝 Creating course with complete data:', courseData);
+    
+    // Create and save with explicit error handling
     const newCourse = new Course(courseData);
+    
+    // Validate before saving
+    const validationError = newCourse.validateSync();
+    if (validationError) {
+      console.error('❌ Validation error:', validationError);
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        message: 'Course data validation failed',
+        details: Object.keys(validationError.errors || {})
+      });
+    }
+    
     const savedCourse = await newCourse.save();
     
     console.log('✅ Course saved successfully:', savedCourse._id);
     
-    res.status(201).json({ 
+    return res.status(201).json({ 
       success: true, 
       message: 'Course created successfully',
       course: savedCourse 
@@ -372,10 +406,12 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
       stack: error.stack
     });
     
-    res.status(500).json({
+    // Ensure we always return JSON
+    return res.status(500).json({
+      success: false,
       error: 'Course creation failed',
-      message: error.message,
-      details: error.name
+      message: error.message || 'Internal Server Error',
+      details: error.name || 'UnknownError'
     });
   }
 });
@@ -790,6 +826,58 @@ app.delete('/emergency-delete-faculty', async (req, res) => {
   }
 });
 
+// Get courses for a specific faculty
+app.get('/api/faculty/:slug/courses', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    console.log(`🔍 Getting courses for faculty: ${slug}`);
+    
+    const Faculty = require('./src/model/Faculty.model');
+    const Course = require('./src/model/Course.model');
+    
+    // Get faculty with courses
+    const faculty = await Faculty.findOne({ slug });
+    if (!faculty) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Faculty not found' 
+      });
+    }
+    
+    // Get standalone courses by this faculty
+    const standaloneCourses = await Course.find({ 
+      facultySlug: slug,
+      isStandalone: true 
+    });
+    
+    // Combine faculty-embedded courses and standalone courses
+    const facultyCourses = faculty.courses || [];
+    const allCourses = [...facultyCourses, ...standaloneCourses];
+    
+    console.log(`✅ Found ${allCourses.length} courses for faculty ${slug}`);
+    
+    res.status(200).json({
+      success: true,
+      faculty: {
+        slug: faculty.slug,
+        firstName: faculty.firstName,
+        lastName: faculty.lastName,
+        imageUrl: faculty.imageUrl
+      },
+      courses: allCourses,
+      total: allCourses.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting faculty courses:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get faculty courses',
+      error: error.message
+    });
+  }
+});
+
 // ==================== END FACULTY ROUTES ====================
 
 // ==================== SERVE REACT BUILD FILES ====================
@@ -808,6 +896,25 @@ app.get('*', (req, res) => {
 // 404 handler for API routes only
 app.use('/api/*', (req, res) => {
   res.status(404).json({ status: 'error', message: 'Route not found' });
+});
+
+// Global error handler - MUST return JSON for API routes
+app.use((error, req, res, next) => {
+  console.error('🚨 Global error handler caught:', error);
+  
+  // For API routes, always return JSON
+  if (req.path.startsWith('/api/')) {
+    const statusCode = error.status || error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      error: 'Server Error',
+      message: error.message || 'Internal Server Error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+  
+  // For non-API routes, use default Express error handling
+  next(error);
 });
 
 // Start server
