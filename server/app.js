@@ -1,9 +1,6 @@
 // Mount course routes
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
-// Mount course routes (only)
-const courseRoutes = require('./src/routes/course.routes.js');
-app.use('/', courseRoutes);
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
