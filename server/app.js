@@ -842,13 +842,14 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
     console.log('🎯 Unified course creation request received');
     console.log('📋 Request body:', req.body);
     
-    // Determine if it's standalone based on isStandalone field
-    const isStandalone = req.body.isStandalone === 'true' || req.body.isStandalone === true;
-    
-    if (isStandalone) {
-      // Standalone course logic
-      console.log('📍 Creating standalone course');
-      
+    // Unified logic: if facultySlug is missing or empty, treat as general course
+    const facultySlug = req.body.facultySlug;
+    const hasFaculty = facultySlug && facultySlug.trim() !== '';
+
+    if (!hasFaculty) {
+      // General course (no faculty)
+      console.log('📍 Creating general course (no faculty)');
+      const Course = require('./src/model/Course.model');
       const title = req.body.title || 'New Course';
       const subject = req.body.subject || 'General Subject';
       const description = req.body.description || '';
@@ -856,7 +857,7 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
       const subcategory = req.body.subcategory || '';
       const posterUrl = req.file ? req.file.path : '';
       const posterPublicId = req.file ? req.file.filename : '';
-      
+
       let modeAttemptPricing = [];
       if (req.body.modeAttemptPricing) {
         try {
@@ -897,27 +898,24 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
         supportMail: req.body.supportMail || '',
         supportCall: req.body.supportCall || '',
         validityStartFrom: req.body.validityStartFrom || '',
-        facultySlug: req.body.facultySlug || '',
-        facultyName: req.body.facultyName || '',
+        facultySlug: '',
+        facultyName: '',
         institute: req.body.institute || '',
         posterUrl,
         posterPublicId,
         modeAttemptPricing,
         costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
         sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
-        isStandalone: true,
         isActive: true
       };
 
       const newCourse = new Course(courseData);
       const savedCourse = await newCourse.save();
-      
       return res.status(201).json({ 
         success: true, 
-        message: 'Standalone course created successfully',
+        message: 'Course created successfully',
         course: savedCourse 
       });
-      
     } else {
       // Faculty course logic
       console.log('📍 Creating faculty course');
