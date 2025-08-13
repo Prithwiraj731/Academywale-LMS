@@ -463,15 +463,14 @@ export default function AdminDashboard() {
 
   // New Course Management State
   const [courseForm, setCourseForm] = useState({
-    isStandalone: false, // New field for standalone courses
-    title: '', // Course title for standalone courses
-    category: '', // CA or CMA
-    subcategory: '', // Foundation, Inter, Final
-    paperId: '', // Paper 1, Paper 2, etc.
-    paperName: '',
-    subject: '',
-    facultySlug: '',
-    institute: '',
+    title: '', // Course title (required)
+    category: '', // CA or CMA (required)
+    subcategory: '', // Foundation, Inter, Final (required)
+    paperId: '', // Paper 1, Paper 2, etc. (required)
+    paperName: '', // Auto-filled from paperId (required)
+    subject: '', // Subject name (required)
+    facultySlug: '', // Faculty selection (OPTIONAL)
+    institute: '', // Institute selection (OPTIONAL)
     description: '',
     noOfLecture: '',
     books: '',
@@ -700,21 +699,11 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
     
-    // Validation for standalone courses vs faculty courses
-    if (courseForm.isStandalone) {
-      // Standalone course validation
-      if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
-          !courseForm.title || !courseForm.subject || !courseForm.poster) {
-        setError('Please fill all required fields (Category, Subcategory, Paper, Title, Subject, and Poster are required for standalone courses)');
-        return;
-      }
-    } else {
-      // Faculty-based course validation
-      if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
-          !courseForm.subject || !courseForm.facultySlug || !courseForm.poster) {
-        setError('Please fill all required fields');
-        return;
-      }
+    // Unified validation - faculty and institute are now OPTIONAL
+    if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
+        !courseForm.title || !courseForm.subject || !courseForm.poster) {
+      setError('Please fill all required fields: Category, Subcategory, Paper, Title, Subject, and Poster are required');
+      return;
     }
 
     if (courseForm.modeAttemptPricing.length === 0) {
@@ -740,64 +729,42 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Fix: Use correct endpoint based on course type
-      const apiEndpoint = courseForm.isStandalone 
-        ? `${API_URL}/api/admin/courses/standalone`
-        : `${API_URL}/api/admin/courses`;
+      // Use unified endpoint for all course creation
+      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       console.log('🌐 API_URL value:', API_URL);
-      console.log('🎯 Course Type:', courseForm.isStandalone ? 'Standalone' : 'Faculty-based');
-      console.log('🔍 isStandalone value:', courseForm.isStandalone, typeof courseForm.isStandalone);
       
-      // Test endpoint availability first
-      console.log('🧪 Testing endpoint availability...');
-      try {
-        const testResponse = await fetch(apiEndpoint, { method: 'OPTIONS' });
-        console.log('🔍 OPTIONS Response:', testResponse.status, testResponse.statusText);
-      } catch (testError) {
-        console.error('❌ Endpoint test failed:', testError);
-      }
+      // Determine if course has faculty (for server logic)
+      const hasFactulty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+      formData.append('isStandalone', hasFactulty ? 'false' : 'true');
       
-      // Fix: Convert boolean to string for backend compatibility
-      formData.append('isStandalone', courseForm.isStandalone ? 'true' : 'false');
-      
-      // Basic course info - common for both types
+      // Required fields for all courses
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
       formData.append('paperName', courseForm.paperName);
       formData.append('subject', courseForm.subject);
-      formData.append('institute', courseForm.institute);
+      formData.append('title', courseForm.title);
       
-      console.log('📝 Appending isStandalone:', courseForm.isStandalone ? 'true' : 'false');
-      console.log('📝 Appending facultySlug:', courseForm.facultySlug);
-      
-      // Course type specific fields
-      if (courseForm.isStandalone) {
-        // Standalone course specific fields
-        formData.append('title', courseForm.title);
-        // For standalone, facultySlug is optional
-        if (courseForm.facultySlug) {
-          formData.append('facultySlug', courseForm.facultySlug);
-          formData.append('facultyName', courseForm.facultySlug);
-        }
-        console.log('📍 Preparing STANDALONE course data');
-      } else {
-        // Faculty-based course specific fields - facultySlug is required
-        if (!courseForm.facultySlug) {
-          setError('Faculty is required for faculty-based courses');
-          setLoading(false);
-          return;
-        }
+      // Optional fields - only append if they have values
+      if (courseForm.facultySlug && courseForm.facultySlug.trim() !== '') {
         formData.append('facultySlug', courseForm.facultySlug);
-        // For faculty courses, title can be auto-generated from paperName
-        formData.append('title', courseForm.paperName || courseForm.subject);
-        console.log('📍 Preparing FACULTY course data');
+        formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
+        console.log('� Added faculty:', courseForm.facultySlug);
       }
       
-      // Common fields for both course types
+      if (courseForm.institute && courseForm.institute.trim() !== '') {
+        formData.append('institute', courseForm.institute);
+        console.log('📝 Added institute:', courseForm.institute);
+      }
+      
+      console.log('� Course type:', hasFactulty ? 'With Faculty' : 'Standalone');
+      
+      console.log('📝 Course type:', hasFactulty ? 'With Faculty' : 'Standalone');
+      
+      // Common fields for all courses
       formData.append('description', courseForm.description);
       formData.append('noOfLecture', courseForm.noOfLecture);
       formData.append('books', courseForm.books);
@@ -830,6 +797,12 @@ export default function AdminDashboard() {
       }
 
       console.log('🚀 Making POST request to:', apiEndpoint);
+      console.log('🔍 Complete API URL being used:', apiEndpoint);
+      console.log('🔍 FormData entries being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`   📝 ${key}: ${value}`);
+      }
+      
       const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
@@ -858,10 +831,10 @@ export default function AdminDashboard() {
       
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
-        setSuccess(courseForm.isStandalone ? 'Standalone course added successfully!' : 'Course added successfully!');
+        const hasFactulty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+        setSuccess(`Course added successfully! ${hasFactulty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Standalone Course)'}`);
         // Reset form
         setCourseForm({
-          isStandalone: false,
           title: '',
           category: '',
           subcategory: '',
@@ -894,7 +867,9 @@ export default function AdminDashboard() {
         setTimeout(() => setSuccess(''), 3000);
       } else {
         console.error('❌ Course creation failed:', data);
-        setError(data.error || 'Failed to add course');
+        console.error('❌ HTTP Status:', res.status, res.statusText);
+        console.error('❌ Response headers:', Object.fromEntries(res.headers.entries()));
+        setError(`Course creation failed: ${data.error || data.message || 'Unknown error'} (HTTP ${res.status})`);
       }
     } catch (err) {
       console.error('❌ Network/Server error:', err);
@@ -1558,30 +1533,132 @@ export default function AdminDashboard() {
           <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
           
           <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
-            {/* Course Type Toggle */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
-              <h3 className="text-xl font-semibold text-green-800 mb-4">Course Type</h3>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center">
+            {/* Unified Course Creation Form */}
+            
+            {/* Step 1: Course Category (Required) */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
+              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Information *</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <select 
+                    name="category" 
+                    value={courseForm.category} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
+                  <select 
+                    name="subcategory" 
+                    value={courseForm.subcategory} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                    disabled={!courseForm.category}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {subcategories.map(sub => (
+                      <option key={sub.value} value={sub.value}>{sub.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
+                  <select 
+                    name="paperId" 
+                    value={courseForm.paperId} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    required
+                    disabled={!courseForm.subcategory}
+                  >
+                    <option value="">Select Paper</option>
+                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
+                      <option key={paper.id} value={paper.id}>{paper.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: Course Details (Required) */}
+            <div className="bg-gradient-to-r from-green-50 to-yellow-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details *</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                   <input
-                    type="radio"
-                    name="courseType"
-                    checked={!courseForm.isStandalone}
-                    onChange={() => setCourseForm(prev => ({ ...prev, isStandalone: false }))}
-                    className="mr-2 text-blue-600"
+                    type="text"
+                    name="title"
+                    value={courseForm.title}
+                    onChange={handleCourseFormChange}
+                    placeholder="Enter course title"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
                   />
-                  <span className="text-gray-700">Faculty-based Course (with Category/Subcategory/Paper)</span>
-                </label>
-                <label className="flex items-center">
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
                   <input
-                    type="radio"
-                    name="courseType"
-                    checked={courseForm.isStandalone}
-                    onChange={() => setCourseForm(prev => ({ ...prev, isStandalone: true }))}
-                    className="mr-2 text-green-600"
+                    type="text"
+                    name="subject"
+                    value={courseForm.subject}
+                    onChange={handleCourseFormChange}
+                    placeholder="Enter subject"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
                   />
-                  <span className="text-gray-700">Standalone Course (General Course)</span>
-                </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3: Faculty & Institute (Optional) */}
+            <div className="bg-gradient-to-r from-orange-50 to-pink-50 p-6 rounded-xl border-2 border-orange-200">
+              <h3 className="text-xl font-semibold text-orange-800 mb-4">Step 3: Faculty & Institute (Optional)</h3>
+              <p className="text-sm text-orange-700 mb-4">🔹 Leave empty for standalone courses or fill to associate with faculty/institute</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Optional)</label>
+                  <select 
+                    name="facultySlug" 
+                    value={courseForm.facultySlug} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  >
+                    <option value="">No Faculty (Standalone Course)</option>
+                    {allFaculties.map(faculty => (
+                      <option key={faculty.slug} value={faculty.slug}>
+                        {faculty.firstName} {faculty.lastName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Optional)</label>
+                  <select 
+                    name="institute" 
+                    value={courseForm.institute} 
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  >
+                    <option value="">No Institute</option>
+                    {institutes.map(inst => (
+                      <option key={inst._id} value={inst.name}>{inst.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
