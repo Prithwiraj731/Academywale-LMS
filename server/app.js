@@ -1,3 +1,6 @@
+// Mount course routes
+const courseRoutes = require('./src/routes/course.routes.js');
+app.use('/', courseRoutes);
 // Unified course creation endpoint
 app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
   try {
