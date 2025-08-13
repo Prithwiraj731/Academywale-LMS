@@ -1,3 +1,117 @@
+// Unified course creation: supports both general and faculty courses, including hardcoded faculties/institutes
+exports.addCourseToFaculty = async (req, res) => {
+  try {
+    const {
+      category, subcategory, paperId, paperName, subject, facultySlug,
+      institute, description, noOfLecture, books, videoLanguage,
+      videoRunOn, doubtSolving, supportMail, supportCall, timing,
+      courseType, modeAttemptPricing, title
+    } = req.body;
+
+    const posterUrl = req.file ? req.file.path : '';
+
+    // If facultySlug is missing or empty, save as general course
+    if (!facultySlug || facultySlug.trim() === '') {
+      const Course = require('../model/Course.model');
+      let parsedModeAttemptPricing = [];
+      try {
+        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
+      } catch (e) {
+        parsedModeAttemptPricing = [];
+      }
+      const courseData = {
+        category,
+        subcategory,
+        paperId,
+        paperName,
+        subject,
+        title: title || 'New Course',
+        facultySlug: '',
+        facultyName: '',
+        institute,
+        description,
+        noOfLecture,
+        books,
+        videoLanguage,
+        videoRunOn,
+        doubtSolving,
+        supportMail,
+        supportCall,
+        timing,
+        courseType,
+        modeAttemptPricing: parsedModeAttemptPricing,
+        posterUrl,
+        isActive: true
+      };
+      const newCourse = new Course(courseData);
+      const savedCourse = await newCourse.save();
+      return res.status(201).json({ success: true, message: 'Course added successfully', course: savedCourse });
+    }
+
+    // Otherwise, add to faculty (supports hardcoded)
+    if (!category || !subcategory || !paperId || !subject) {
+      return res.status(400).json({ error: 'Required fields are missing' });
+    }
+
+    let faculty = await Faculty.findOne({ slug: facultySlug });
+    if (!faculty) {
+      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
+      if (hardcodedFaculty) {
+        faculty = new Faculty({
+          firstName: hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, ''),
+          lastName: '',
+          slug: hardcodedFaculty.slug,
+          specialization: hardcodedFaculty.specialization,
+          bio: `Expert ${hardcodedFaculty.specialization} faculty with years of professional experience.`,
+          courses: []
+        });
+        await faculty.save();
+      } else {
+        return res.status(404).json({ error: 'Faculty not found' });
+      }
+    }
+
+    let parsedModeAttemptPricing = [];
+    try {
+      parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
+    }
+
+    const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
+    const newCourse = {
+      facultyName,
+      subject,
+      noOfLecture,
+      books,
+      videoLanguage,
+      videoRunOn,
+      doubtSolving,
+      supportMail,
+      supportCall,
+      posterUrl,
+      timing,
+      description,
+      courseType: courseType || `${category} ${subcategory}`,
+      institute,
+      category,
+      subcategory,
+      paperId: parseInt(paperId),
+      paperName,
+      modeAttemptPricing: parsedModeAttemptPricing,
+      costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
+      sellingPrice: parsedModeAttemptPricing[0]?.attempts[0]?.sellingPrice || 0,
+      mode: parsedModeAttemptPricing[0]?.mode || 'Live Watching',
+      modes: parsedModeAttemptPricing.map(m => m.mode),
+      durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
+    };
+    faculty.courses.push(newCourse);
+    await faculty.save();
+    res.status(201).json({ success: true, message: 'Course added successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 const Faculty = require('../model/Faculty.model');
 const Institute = require('../model/Institute.model');
 
