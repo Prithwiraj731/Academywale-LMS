@@ -764,7 +764,8 @@ export default function AdminDashboard() {
         console.log('📝 Added institute:', courseForm.institute);
       }
       
-      console.log('🎓 Course type:', hasFactulty ? 'With Faculty' : 'Without Faculty');
+  const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+  console.log('🎓 Course type:', hasFaculty ? 'With Faculty' : 'Without Faculty');
       
 
       // Common fields for all courses
@@ -834,8 +835,8 @@ export default function AdminDashboard() {
       
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
-        const hasFactulty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-        setSuccess(`Course added successfully! ${hasFactulty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
+  const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+  setSuccess(`Course added successfully! ${hasFaculty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
         // Reset form
         setCourseForm({
           title: '',
