@@ -2,6 +2,12 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
+
+// CORS configuration
+app.use(cors({
+  origin: ['https://www.academywale.com'],
+  credentials: true
+}));
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
