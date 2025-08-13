@@ -737,16 +737,12 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       
-      // Use unified endpoint for all course creation
-      const apiEndpoint = `${API_URL}/api/admin/courses/standalone`;
+      // Use main courses endpoint for all course creation
+      const apiEndpoint = `${API_URL}/api/admin/courses`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       console.log('🌐 API_URL value:', API_URL);
-      
-      // Determine if course has faculty (for server logic)
-      const hasFactulty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-      formData.append('isStandalone', hasFactulty ? 'false' : 'true');
       
       // Required fields for all courses
       formData.append('category', courseForm.category);
@@ -768,10 +764,9 @@ export default function AdminDashboard() {
         console.log('📝 Added institute:', courseForm.institute);
       }
       
-      console.log('� Course type:', hasFactulty ? 'With Faculty' : 'Standalone');
+      console.log('🎓 Course type:', hasFactulty ? 'With Faculty' : 'Without Faculty');
       
-      console.log('📝 Course type:', hasFactulty ? 'With Faculty' : 'Standalone');
-      
+
       // Common fields for all courses
       formData.append('description', courseForm.description);
       formData.append('noOfLecture', courseForm.noOfLecture);
@@ -840,7 +835,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
         const hasFactulty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-        setSuccess(`Course added successfully! ${hasFactulty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Standalone Course)'}`);
+        setSuccess(`Course added successfully! ${hasFactulty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
         // Reset form
         setCourseForm({
           title: '',
@@ -1638,7 +1633,7 @@ export default function AdminDashboard() {
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
-                    <option value="">No Faculty (Standalone Course)</option>
+                    <option value="">No Faculty (Optional)</option>
                     {allFaculties.map(faculty => (
                       <option key={faculty.slug} value={faculty.slug}>
                         {faculty.isHardcoded ? faculty.fullName : (faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : ''))}
