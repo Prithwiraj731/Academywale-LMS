@@ -289,4 +289,6 @@ exports.getCoursesByInstitute = async (req, res) => {
   }
 };
 
+exports.addNewCourseToFaculty = exports.addCourseToFaculty;
+
 module.exports = exports;
