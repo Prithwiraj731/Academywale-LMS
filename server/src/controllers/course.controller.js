@@ -55,29 +55,64 @@ exports.getCoursesByFaculty = async (req, res) => {
 };
 
 // Add new structured course to faculty (supports both database and hardcoded faculties)
-exports.addNewCourseToFaculty = async (req, res) => {
+exports.addCourseToFaculty = async (req, res) => {
   try {
     const {
       category, subcategory, paperId, paperName, subject, facultySlug,
       institute, description, noOfLecture, books, videoLanguage,
       videoRunOn, doubtSolving, supportMail, supportCall, timing,
-      courseType, modeAttemptPricing
+      courseType, modeAttemptPricing, title
     } = req.body;
 
     const posterUrl = req.file ? req.file.path : '';
 
-    if (!facultySlug || !category || !subcategory || !paperId || !subject) {
+    // If facultySlug is missing or empty, save as general course
+    if (!facultySlug || facultySlug.trim() === '') {
+      const Course = require('../model/Course.model');
+      let parsedModeAttemptPricing = [];
+      try {
+        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
+      } catch (e) {
+        parsedModeAttemptPricing = [];
+      }
+      const courseData = {
+        category,
+        subcategory,
+        paperId,
+        paperName,
+        subject,
+        title: title || 'New Course',
+        facultySlug: '',
+        facultyName: '',
+        institute,
+        description,
+        noOfLecture,
+        books,
+        videoLanguage,
+        videoRunOn,
+        doubtSolving,
+        supportMail,
+        supportCall,
+        timing,
+        courseType,
+        modeAttemptPricing: parsedModeAttemptPricing,
+        posterUrl,
+        isActive: true
+      };
+      const newCourse = new Course(courseData);
+      const savedCourse = await newCourse.save();
+      return res.status(201).json({ success: true, message: 'Course added successfully', course: savedCourse });
+    }
+
+    // Otherwise, add to faculty
+    if (!category || !subcategory || !paperId || !subject) {
       return res.status(400).json({ error: 'Required fields are missing' });
     }
 
-    // First, try to find in database
     let faculty = await Faculty.findOne({ slug: facultySlug });
-    
-    // If not found in database, check hardcoded faculties
     if (!faculty) {
       const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
       if (hardcodedFaculty) {
-        // Create a new faculty entry in database for hardcoded faculty
         faculty = new Faculty({
           firstName: hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, ''),
           lastName: '',
@@ -92,7 +127,6 @@ exports.addNewCourseToFaculty = async (req, res) => {
       }
     }
 
-    // Parse mode and attempt pricing
     let parsedModeAttemptPricing = [];
     try {
       parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
@@ -101,7 +135,6 @@ exports.addNewCourseToFaculty = async (req, res) => {
     }
 
     const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
-    
     const newCourse = {
       facultyName,
       subject,
@@ -117,27 +150,19 @@ exports.addNewCourseToFaculty = async (req, res) => {
       description,
       courseType: courseType || `${category} ${subcategory}`,
       institute,
-      
-      // New paper-based categorization
       category,
       subcategory,
       paperId: parseInt(paperId),
       paperName,
-      
-      // New mode and attempt pricing structure
       modeAttemptPricing: parsedModeAttemptPricing,
-      
-      // Backwards compatibility: use first mode/attempt for old fields
       costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
       sellingPrice: parsedModeAttemptPricing[0]?.attempts[0]?.sellingPrice || 0,
       mode: parsedModeAttemptPricing[0]?.mode || 'Live Watching',
       modes: parsedModeAttemptPricing.map(m => m.mode),
       durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
     };
-
     faculty.courses.push(newCourse);
     await faculty.save();
-
     res.status(201).json({ success: true, message: 'Course added successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
