@@ -1541,11 +1541,10 @@ export default function AdminDashboard() {
           <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
           
           <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
-            {/* Unified Course Creation Form */}
             
-            {/* Step 1: Course Category (Required) */}
+            {/* Step 1: Course Information */}
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
-              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Information *</h3>
+              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
@@ -1582,11 +1581,6 @@ export default function AdminDashboard() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
-                  {courseForm.category && courseForm.subcategory && (
-                    <p className="text-xs text-blue-600 mb-2">
-                      📚 Showing papers for {courseForm.category} {courseForm.subcategory}
-                    </p>
-                  )}
                   <select 
                     name="paperId" 
                     value={courseForm.paperId} 
@@ -1606,9 +1600,9 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Step 2: Course Details (Required) */}
-            <div className="bg-gradient-to-r from-green-50 to-yellow-50 p-6 rounded-xl border-2 border-green-200">
-              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details *</h3>
+            {/* Step 2: Course Details */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
@@ -1635,26 +1629,19 @@ export default function AdminDashboard() {
                     required
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Step 3: Faculty & Institute (Optional) */}
-            <div className="bg-gradient-to-r from-orange-50 to-pink-50 p-6 rounded-xl border-2 border-orange-200">
-              <h3 className="text-xl font-semibold text-orange-800 mb-4">Step 3: Faculty & Institute (Optional)</h3>
-              <p className="text-sm text-orange-700 mb-4">🔹 Leave empty for standalone courses or fill to associate with faculty/institute</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Optional)</label>
                   <select 
                     name="facultySlug" 
                     value={courseForm.facultySlug} 
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
                     <option value="">No Faculty (Standalone Course)</option>
                     {allFaculties.map(faculty => (
                       <option key={faculty.slug} value={faculty.slug}>
-                        {faculty.firstName} {faculty.lastName}
+                        {faculty.isHardcoded ? faculty.fullName : (faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : ''))}
                       </option>
                     ))}
                   </select>
@@ -1666,7 +1653,7 @@ export default function AdminDashboard() {
                     name="institute" 
                     value={courseForm.institute} 
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
                     <option value="">No Institute</option>
                     {institutes.map(inst => (
@@ -1674,221 +1661,17 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-              </div>
-            </div>
-
-            {/* Step 1: Course Category for Standalone Courses */}
-            {courseForm.isStandalone && (
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border-2 border-yellow-200">
-                <h3 className="text-xl font-semibold text-yellow-800 mb-4">Step 1: Course Category</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                    <select 
-                      name="category" 
-                      value={courseForm.category} 
-                      onChange={handleCourseFormChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                      required={courseForm.isStandalone}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </select>
-                </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
-                  <select 
-                    name="subcategory" 
-                    value={courseForm.subcategory} 
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    name="description" 
+                    value={courseForm.description} 
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    required={courseForm.isStandalone}
-                    disabled={!courseForm.category}
-                  >
-                    <option value="">Select Subcategory</option>
-                    {subcategories.map(sub => (
-                      <option key={sub.value} value={sub.value}>{sub.label}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
-                  <select 
-                    name="paperId" 
-                    value={courseForm.paperId} 
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    required={courseForm.isStandalone}
-                    disabled={!courseForm.category || !courseForm.subcategory}
-                  >
-                    <option value="">Select Paper</option>
-                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
-                      <option key={paper.id} value={paper.id}>
-                        Paper {paper.id} - {paper.name}
-                        {paper.group ? ` (${paper.group})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                </div>
-              </div>
-            )}
-
-            {/* Course Information for Standalone Courses */}
-            {courseForm.isStandalone && (
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
-                <h3 className="text-xl font-semibold text-green-800 mb-4">Course Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={courseForm.title}
-                      onChange={handleCourseFormChange}
-                      placeholder="e.g., Advanced Excel Training, Digital Marketing Course"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                      required={courseForm.isStandalone}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
-                    <input
-                      type="text"
-                      name="subject"
-                      value={courseForm.subject}
-                      onChange={handleCourseFormChange}
-                      placeholder="e.g., Excel, Digital Marketing, Programming"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 1: Category Selection (Only for Faculty-based courses) */}
-            {!courseForm.isStandalone && (
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
-                <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Category</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                    <select 
-                      name="category" 
-                      value={courseForm.category} 
-                      onChange={handleCourseFormChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      required={!courseForm.isStandalone}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
-                  <select 
-                    name="subcategory" 
-                    value={courseForm.subcategory} 
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                    disabled={!courseForm.category}
-                  >
-                    <option value="">Select Subcategory</option>
-                    {subcategories.map(sub => (
-                      <option key={sub.value} value={sub.value}>{sub.label}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
-                  <select 
-                    name="paperId" 
-                    value={courseForm.paperId} 
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                    disabled={!courseForm.category || !courseForm.subcategory}
-                  >
-                    <option value="">Select Paper</option>
-                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
-                      <option key={paper.id} value={paper.id}>
-                        Paper {paper.id} - {paper.name}
-                        {paper.group ? ` (${paper.group})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            )}
-
-            {/* Step 2: Course Details */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
-              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Subject field for faculty-based courses only (standalone already has it above) */}
-                {!courseForm.isStandalone && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject/Course Title *</label>
-                    <input 
-                      name="subject" 
-                      value={courseForm.subject} 
-                      onChange={handleCourseFormChange}
-                      placeholder="e.g. Direct Tax Combo"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                      required 
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty {courseForm.isStandalone ? '(Optional)' : '*'}</label>
-                  <select 
-                    name="facultySlug" 
-                    value={courseForm.facultySlug} 
-                    onChange={handleCourseFormChange}
+                    placeholder="Course description"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required={!courseForm.isStandalone}
-                  >
-                    <option value="">Select Faculty</option>
-                    {allFaculties.map(fac => (
-                      <option key={fac.slug} value={fac.slug}>
-                        {fac.isHardcoded ? fac.fullName : (fac.firstName + (fac.lastName ? ' ' + fac.lastName : ''))}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute {courseForm.isStandalone ? '(Optional)' : '*'}</label>
-                  <select 
-                    name="institute" 
-                    value={courseForm.institute} 
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required={!courseForm.isStandalone}
-                  >
-                    <option value="">Select Institute</option>
-                    {console.log('🏫 Institutes available for dropdown:', institutes)}
-                    {institutes.length === 0 && (
-                      <option disabled>No institutes available</option>
-                    )}
-                    {institutes.map(inst => (
-                      <option key={inst.name || inst._id} value={inst.name}>
-                        {inst.name}
-                      </option>
-                    ))}
-                  </select>
+                    rows={3}
+                  />
                 </div>
                 
                 <div>
@@ -1980,18 +1763,6 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea 
-                    name="description" 
-                    value={courseForm.description} 
-                    onChange={handleCourseFormChange}
-                    placeholder="Course description"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    rows={3}
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
                   <div className="flex gap-4 items-center">
                     <input 
@@ -2011,8 +1782,8 @@ export default function AdminDashboard() {
             </div>
 
             {/* Step 3: Mode & Attempt Pricing */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
-              <h3 className="text-xl font-semibold text-purple-800 mb-4">Step 3: Mode & Attempt Pricing</h3>
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border-2 border-indigo-200">
+              <h3 className="text-xl font-semibold text-indigo-800 mb-4">Step 3: Mode & Attempt Pricing</h3>
               
               {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
                 <div key={modeIndex} className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
