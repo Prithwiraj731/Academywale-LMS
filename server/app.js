@@ -1,7 +1,5 @@
-// Mount course routes
-const courseRoutes = require('./src/routes/course.routes.js');
-app.use('/', courseRoutes);
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -11,7 +9,9 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 
-const app = express();
+// Mount course routes
+const courseRoutes = require('./src/routes/course.routes.js');
+app.use('/', courseRoutes);
 
 // Cloudinary configuration
 cloudinary.config({
