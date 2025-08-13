@@ -1,3 +1,118 @@
+// Unified course creation endpoint
+app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
+  try {
+    console.log('🎯 Unified course creation request received');
+    console.log('📋 Request body:', req.body);
+
+    // Unified logic: if facultySlug is missing or empty, treat as general course
+    const facultySlug = req.body.facultySlug;
+    const hasFaculty = facultySlug && facultySlug.trim() !== '';
+
+    if (!hasFaculty) {
+      // General course (no faculty)
+      console.log('📍 Creating general course (no faculty)');
+      const Course = require('./src/model/Course.model');
+      const title = req.body.title || 'New Course';
+      const subject = req.body.subject || 'General Subject';
+      const description = req.body.description || '';
+      const category = req.body.category || '';
+      const subcategory = req.body.subcategory || '';
+      const posterUrl = req.file ? req.file.path : '';
+      const posterPublicId = req.file ? req.file.filename : '';
+
+      let modeAttemptPricing = [];
+      if (req.body.modeAttemptPricing) {
+        try {
+          modeAttemptPricing = JSON.parse(req.body.modeAttemptPricing);
+        } catch (e) {
+          console.log('⚠️ Pricing parse error, using defaults');
+          modeAttemptPricing = [];
+        }
+      }
+
+      const courseData = {
+        category,
+        subcategory,
+        paperId: req.body.paperId || '',
+        paperName: req.body.paperName || '',
+        subject,
+        title,
+        facultySlug: '',
+        facultyName: '',
+        institute: req.body.institute || '',
+        description,
+        noOfLecture: req.body.noOfLecture || '',
+        books: req.body.books || '',
+        videoLanguage: req.body.videoLanguage || '',
+        videoRunOn: req.body.videoRunOn || '',
+        doubtSolving: req.body.doubtSolving || '',
+        supportMail: req.body.supportMail || '',
+        supportCall: req.body.supportCall || '',
+        timing: req.body.timing || '',
+        validityStartFrom: req.body.validityStartFrom || '',
+        posterUrl,
+        posterPublicId,
+        courseType: req.body.courseType || '',
+        modeAttemptPricing,
+        isActive: true
+      };
+
+      const newCourse = new Course(courseData);
+      const savedCourse = await newCourse.save();
+      return res.status(201).json({ success: true, message: 'Course created successfully', course: savedCourse });
+    } else {
+      // Faculty course logic
+      console.log('📍 Creating faculty course');
+      const Faculty = require('./src/model/Faculty.model');
+      const faculty = await Faculty.findOne({ slug: facultySlug });
+      if (!faculty) {
+        return res.status(404).json({ success: false, error: 'Faculty not found' });
+      }
+
+      let modeAttemptPricing = [];
+      if (req.body.modeAttemptPricing) {
+        try {
+          modeAttemptPricing = JSON.parse(req.body.modeAttemptPricing);
+        } catch (e) {
+          modeAttemptPricing = [];
+        }
+      }
+
+      const courseData = {
+        category: req.body.category || '',
+        subcategory: req.body.subcategory || '',
+        paperId: req.body.paperId || '',
+        paperName: req.body.paperName || '',
+        subject: req.body.subject || '',
+        title: req.body.title || '',
+        facultySlug,
+        facultyName: req.body.facultyName || '',
+        institute: req.body.institute || '',
+        description: req.body.description || '',
+        noOfLecture: req.body.noOfLecture || '',
+        books: req.body.books || '',
+        videoLanguage: req.body.videoLanguage || '',
+        videoRunOn: req.body.videoRunOn || '',
+        doubtSolving: req.body.doubtSolving || '',
+        supportMail: req.body.supportMail || '',
+        supportCall: req.body.supportCall || '',
+        timing: req.body.timing || '',
+        validityStartFrom: req.body.validityStartFrom || '',
+        posterUrl: req.file ? req.file.path : '',
+        posterPublicId: req.file ? req.file.filename : '',
+        courseType: req.body.courseType || '',
+        modeAttemptPricing,
+        isActive: true
+      };
+
+      faculty.courses.push(courseData);
+      await faculty.save();
+      return res.status(201).json({ success: true, message: 'Faculty course created successfully', course: courseData, faculty: facultySlug });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
