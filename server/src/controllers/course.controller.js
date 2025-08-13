@@ -55,119 +55,6 @@ exports.getCoursesByFaculty = async (req, res) => {
 };
 
 // Add new structured course to faculty (supports both database and hardcoded faculties)
-exports.addCourseToFaculty = async (req, res) => {
-  try {
-    const {
-      category, subcategory, paperId, paperName, subject, facultySlug,
-      institute, description, noOfLecture, books, videoLanguage,
-      videoRunOn, doubtSolving, supportMail, supportCall, timing,
-      courseType, modeAttemptPricing, title
-    } = req.body;
-
-    const posterUrl = req.file ? req.file.path : '';
-
-    // If facultySlug is missing or empty, save as general course
-    if (!facultySlug || facultySlug.trim() === '') {
-      const Course = require('../model/Course.model');
-      let parsedModeAttemptPricing = [];
-      try {
-        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
-      } catch (e) {
-        parsedModeAttemptPricing = [];
-      }
-      const courseData = {
-        category,
-        subcategory,
-        paperId,
-        paperName,
-        subject,
-        title: title || 'New Course',
-        facultySlug: '',
-        facultyName: '',
-        institute,
-        description,
-        noOfLecture,
-        books,
-        videoLanguage,
-        videoRunOn,
-        doubtSolving,
-        supportMail,
-        supportCall,
-        timing,
-        courseType,
-        modeAttemptPricing: parsedModeAttemptPricing,
-        posterUrl,
-        isActive: true
-      };
-      const newCourse = new Course(courseData);
-      const savedCourse = await newCourse.save();
-      return res.status(201).json({ success: true, message: 'Course added successfully', course: savedCourse });
-    }
-
-    // Otherwise, add to faculty
-    if (!category || !subcategory || !paperId || !subject) {
-      return res.status(400).json({ error: 'Required fields are missing' });
-    }
-
-    let faculty = await Faculty.findOne({ slug: facultySlug });
-    if (!faculty) {
-      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
-      if (hardcodedFaculty) {
-        faculty = new Faculty({
-          firstName: hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, ''),
-          lastName: '',
-          slug: hardcodedFaculty.slug,
-          specialization: hardcodedFaculty.specialization,
-          bio: `Expert ${hardcodedFaculty.specialization} faculty with years of professional experience.`,
-          courses: []
-        });
-        await faculty.save();
-      } else {
-        return res.status(404).json({ error: 'Faculty not found' });
-      }
-    }
-
-    let parsedModeAttemptPricing = [];
-    try {
-      parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
-    } catch (e) {
-      return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
-    }
-
-    const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
-    const newCourse = {
-      facultyName,
-      subject,
-      noOfLecture,
-      books,
-      videoLanguage,
-      videoRunOn,
-      doubtSolving,
-      supportMail,
-      supportCall,
-      posterUrl,
-      timing,
-      description,
-      courseType: courseType || `${category} ${subcategory}`,
-      institute,
-      category,
-      subcategory,
-      paperId: parseInt(paperId),
-      paperName,
-      modeAttemptPricing: parsedModeAttemptPricing,
-      costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
-      sellingPrice: parsedModeAttemptPricing[0]?.attempts[0]?.sellingPrice || 0,
-      mode: parsedModeAttemptPricing[0]?.mode || 'Live Watching',
-      modes: parsedModeAttemptPricing.map(m => m.mode),
-      durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
-    };
-    faculty.courses.push(newCourse);
-    await faculty.save();
-    res.status(201).json({ success: true, message: 'Course added successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Get courses by category, subcategory, and paper
 exports.getCoursesByPaper = async (req, res) => {
@@ -213,6 +100,61 @@ exports.getCoursesByPaper = async (req, res) => {
 };
 
 // Add course to faculty
+exports.addCourseToFaculty = async (req, res) => {
+  try {
+    const {
+      facultySlug, subject, noOfLecture, books, videoLanguage,
+      validityStartFrom, videoRunOn, doubtSolving, supportMail,
+      supportCall, mode, timing, description, title, costPrice,
+      sellingPrice, courseType, institute, modes, durations
+    } = req.body;
+
+    const posterUrl = req.file ? req.file.path : '';
+
+    if (!facultySlug) {
+      return res.status(400).json({ error: 'Faculty is required' });
+    }
+
+    const faculty = await Faculty.findOne({ slug: facultySlug });
+    if (!faculty) {
+      return res.status(404).json({ error: 'Faculty not found' });
+    }
+
+    // Parse modes and durations from comma-separated strings
+    const modesArray = modes ? modes.split(',').map(m => m.trim()) : [];
+    const durationsArray = durations ? durations.split(',').map(d => d.trim()) : [];
+
+    const newCourse = {
+      facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+      subject: subject || title,
+      noOfLecture,
+      books,
+      videoLanguage,
+      validityStartFrom,
+      videoRunOn,
+      doubtSolving,
+      supportMail,
+      supportCall,
+      posterUrl,
+      mode,
+      modes: modesArray,
+      timing,
+      description,
+      costPrice: Number(costPrice),
+      sellingPrice: Number(sellingPrice),
+      courseType,
+      institute,
+      durations: durationsArray
+    };
+
+    faculty.courses.push(newCourse);
+    await faculty.save();
+
+    res.status(201).json({ success: true, message: 'Course added successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 exports.addCourseToFaculty = async (req, res) => {
   try {
     const {
