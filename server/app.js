@@ -1014,9 +1014,9 @@ app.post('/api/admin/courses/faculty', courseUpload.single('poster'), async (req
   }
 });
 
-// MAIN COURSE CREATION ENDPOINT - UNIFIED FOR ALL COURSES
+// MAIN COURSE CREATION ENDPOINT - SIMPLE AND WORKING
 app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
-  // Ensure CORS headers reflect the requesting origin
+  // Set CORS headers
   if (req.headers.origin) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     res.setHeader('Vary', 'Origin');
@@ -1027,654 +1027,152 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
   res.setHeader('Content-Type', 'application/json');
 
   try {
-    console.log('🎯 MAIN COURSE CREATION ENDPOINT - Request received');
+    console.log('🎯 SIMPLE COURSE CREATION - Request received');
     console.log('📋 Request body:', req.body);
     console.log('📎 File received:', req.file ? 'Yes' : 'No');
 
-    // Validate request body
-    if (!req.body) {
-      console.error('❌ No request body received');
+    // Basic validation
+    if (!req.body.title || !req.body.subject) {
       return res.status(400).json({
         success: false,
-        error: 'No request body',
-        message: 'Request body is required'
+        error: 'Missing required fields',
+        message: 'Title and subject are required'
       });
     }
 
-    // Log all request body fields for debugging
-    console.log('📋 Request body fields:');
-    Object.keys(req.body).forEach(key => {
-      console.log(`   ${key}: ${req.body[key]}`);
-    });
+    // Get file info
+    const posterUrl = req.file ? req.file.path : '';
+    const posterPublicId = req.file ? req.file.filename : '';
 
-    if (req.file) {
-      console.log('📄 File details:', {
-        fieldname: req.file.fieldname,
-        originalname: req.file.originalname,
-        encoding: req.file.encoding,
-        mimetype: req.file.mimetype,
-        path: req.file.path,
-        size: req.file.size
-      });
-
-      // Validate cloudinary upload
-      if (!req.file.path) {
-        console.error('❌ Cloudinary upload failed - no path returned');
-        return res.status(500).json({
-          success: false,
-          error: 'File upload failed',
-          message: 'Cloudinary upload failed - no path returned'
-        });
-      }
-
-      // Validate cloudinary URL format
-      if (!req.file.path.startsWith('http')) {
-        console.error('❌ Cloudinary upload failed - invalid URL format:', req.file.path);
-        return res.status(500).json({
-          success: false,
-          error: 'File upload failed',
-          message: 'Cloudinary upload failed - invalid URL format'
-        });
-      }
-
-      // Validate cloudinary URL structure
-      if (!req.file.path.includes('cloudinary.com')) {
-        console.error('❌ Cloudinary upload failed - invalid cloudinary URL:', req.file.path);
-        return res.status(500).json({
-          success: false,
-          error: 'File upload failed',
-          message: 'Cloudinary upload failed - invalid cloudinary URL'
-        });
-      }
-
-      console.log('✅ Cloudinary upload successful:', req.file.path);
-      console.log('✅ Cloudinary URL validated');
-    } else {
-      console.log('⚠️ No file uploaded - this might be expected for some requests');
-    }
-
-    // Check if this is a faculty-based course or standalone
+    // Check if faculty-based or standalone
     const facultySlug = req.body.facultySlug;
     const hasFaculty = facultySlug && facultySlug.trim() !== '';
 
-    console.log('🔍 Course type detection:', {
-      facultySlug: facultySlug,
-      hasFaculty: hasFaculty,
-      finalDecision: hasFaculty ? 'FACULTY' : 'STANDALONE'
-    });
-
     if (hasFaculty) {
-      // Handle faculty-based course - save to Faculty's courses array
-      console.log('📍 Processing as faculty-based course');
+      // FACULTY COURSE - Save to Faculty collection
+      console.log('📍 Processing as faculty course for:', facultySlug);
 
-      try {
-        console.log('🔍 Looking up faculty with slug:', facultySlug);
-        const faculty = await Faculty.findOne({ slug: facultySlug });
-        if (!faculty) {
-          console.log('❌ Faculty not found:', facultySlug);
-          return res.status(404).json({
-            success: false,
-            error: 'Faculty not found',
-            message: `Faculty with slug '${facultySlug}' not found in database`
-          });
-        }
-
-        console.log('✅ Faculty found:', {
-          id: faculty._id,
-          firstName: faculty.firstName,
-          lastName: faculty.lastName,
-          slug: faculty.slug,
-          coursesCount: faculty.courses ? faculty.courses.length : 0
-        });
-
-        // Extract basic fields with safe defaults
-        const title = req.body.title || req.body.paperName || req.body.subject || 'New Faculty Course';
-        const subject = req.body.subject || 'General Subject';
-        const description = req.body.description || '';
-        const category = req.body.category || '';
-        const subcategory = req.body.subcategory || '';
-        const posterUrl = req.file ? req.file.path : '';
-        const posterPublicId = req.file ? req.file.filename : '';
-
-        // Handle pricing data safely
-        let modeAttemptPricing = [];
-        if (req.body.modeAttemptPricing) {
-          try {
-            const rawPricing = JSON.parse(req.body.modeAttemptPricing);
-            if (Array.isArray(rawPricing)) {
-              rawPricing.forEach(modeGroup => {
-                if (modeGroup && modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
-                  modeGroup.attempts.forEach(attemptData => {
-                    if (attemptData) {
-                      modeAttemptPricing.push({
-                        mode: modeGroup.mode || '',
-                        attempt: attemptData.attempt || '',
-                        costPrice: attemptData.costPrice || 0,
-                        sellingPrice: attemptData.sellingPrice || 0
-                      });
-                    }
-                  });
-                }
-              });
-            }
-          } catch (e) {
-            console.log('⚠️ Pricing parse error, using defaults');
-            console.log('⚠️ Raw pricing data:', req.body.modeAttemptPricing);
-            console.log('⚠️ Parse error:', e.message);
-            modeAttemptPricing = [];
-          }
-        }
-
-        // Create course data for faculty
-        const courseData = {
-          title,
-          subject,
-          description,
-          category,
-          subcategory,
-          paperId: req.body.paperId || '',
-          paperName: req.body.paperName || '',
-          courseType: req.body.courseType || 'General Course',
-          noOfLecture: req.body.noOfLecture || '',
-          books: req.body.books || '',
-          videoLanguage: req.body.videoLanguage || 'Hindi',
-          videoRunOn: req.body.videoRunOn || '',
-          timing: req.body.timing || '',
-          doubtSolving: req.body.doubtSolving || '',
-          supportMail: req.body.supportMail || '',
-          supportCall: req.body.supportCall || '',
-          validityStartFrom: req.body.validityStartFrom || '',
-          facultySlug: facultySlug,
-          facultyName: req.body.facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
-          institute: req.body.institute || '',
-          posterUrl,
-          posterPublicId,
-          modeAttemptPricing,
-          costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
-          sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
-          isStandalone: false,
-          isActive: true
-        };
-
-        // Log course data for debugging
-        console.log('📝 Course data created:', {
-          title: courseData.title,
-          subject: courseData.subject,
-          facultySlug: courseData.facultySlug,
-          facultyName: courseData.facultyName,
-          posterUrl: courseData.posterUrl ? 'Yes' : 'No',
-          pricingCount: courseData.modeAttemptPricing.length,
-          category: courseData.category,
-          subcategory: courseData.subcategory,
-          paperId: courseData.paperId,
-          paperName: courseData.paperName,
-          courseType: courseData.courseType,
-          isStandalone: courseData.isStandalone,
-          isActive: courseData.isActive
-        });
-
-        // Log full course data for debugging
-        console.log('📝 Full course data:', JSON.stringify(courseData, null, 2));
-
-        // Validate course data before adding to faculty
-        console.log('🔍 Validating faculty course data...');
-
-        // Check required fields
-        if (!courseData.title || !courseData.subject) {
-          console.error('❌ Faculty course validation failed - missing required fields');
-          console.error('❌ Title:', courseData.title);
-          console.error('❌ Subject:', courseData.subject);
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Title and subject are required for faculty courses'
-          });
-        }
-
-        // Validate string fields are not too long
-        if (courseData.title.length > 200) {
-          console.error('❌ Faculty course validation failed - title too long');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Title is too long (max 200 characters)'
-          });
-        }
-
-        if (courseData.subject.length > 200) {
-          console.error('❌ Faculty course validation failed - subject too long');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Subject is too long (max 200 characters)'
-          });
-        }
-
-        // Validate pricing data
-        if (courseData.modeAttemptPricing && courseData.modeAttemptPricing.length > 0) {
-          console.log('🔍 Validating pricing data...');
-          for (let i = 0; i < courseData.modeAttemptPricing.length; i++) {
-            const pricing = courseData.modeAttemptPricing[i];
-            console.log(`🔍 Validating pricing item ${i}:`, pricing);
-
-            if (!pricing.mode || !pricing.attempt || pricing.costPrice === undefined || pricing.sellingPrice === undefined) {
-              console.error('❌ Faculty course validation failed - invalid pricing data at index', i);
-              console.error('❌ Pricing data:', pricing);
-              return res.status(400).json({
-                success: false,
-                error: 'Validation failed',
-                message: 'Invalid pricing data - mode, attempt, costPrice, and sellingPrice are required'
-              });
-            }
-
-            // Validate pricing values
-            if (pricing.costPrice < 0 || pricing.sellingPrice < 0) {
-              console.error('❌ Faculty course validation failed - invalid pricing values at index', i);
-              console.error('❌ Pricing data:', pricing);
-              return res.status(400).json({
-                success: false,
-                error: 'Validation failed',
-                message: 'Pricing values must be non-negative'
-              });
-            }
-          }
-          console.log('✅ Pricing data validation passed');
-        } else {
-          console.log('⚠️ No pricing data to validate');
-        }
-
-        // Final validation check
-        console.log('🔍 Final faculty course data check:', {
-          title: courseData.title,
-          subject: courseData.subject,
-          facultySlug: courseData.facultySlug,
-          facultyName: courseData.facultyName,
-          posterUrl: courseData.posterUrl ? 'Yes' : 'No',
-          pricingCount: courseData.modeAttemptPricing.length,
-          isStandalone: courseData.isStandalone,
-          isActive: courseData.isActive,
-          category: courseData.category,
-          subcategory: courseData.subcategory,
-          paperId: courseData.paperId,
-          paperName: courseData.paperName,
-          courseType: courseData.courseType
-        });
-
-        // Additional validation for faculty course data structure
-        if (!courseData.title || courseData.title.trim() === '') {
-          console.error('❌ Faculty course validation failed - empty title');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Course title cannot be empty'
-          });
-        }
-
-        if (!courseData.subject || courseData.subject.trim() === '') {
-          console.error('❌ Faculty course validation failed - empty subject');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Course subject cannot be empty'
-          });
-        }
-
-        // Validate faculty slug is not empty
-        if (!courseData.facultySlug || courseData.facultySlug.trim() === '') {
-          console.error('❌ Faculty course validation failed - empty faculty slug');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Faculty slug cannot be empty'
-          });
-        }
-
-        console.log('📝 Adding course to faculty:', facultySlug);
-        console.log('📝 Course data:', courseData);
-
-        // Add course to faculty's courses array
-        faculty.courses.push(courseData);
-
-        console.log('📝 Faculty courses array length after adding:', faculty.courses.length);
-
-        // Save faculty with new course
-        try {
-          console.log('💾 Saving faculty with new course...');
-          const savedFaculty = await faculty.save();
-          console.log('✅ Faculty course saved successfully');
-          console.log('✅ Saved faculty ID:', savedFaculty._id);
-          console.log('✅ Faculty courses count after save:', savedFaculty.courses.length);
-        } catch (saveError) {
-          console.error('❌ Faculty save error:', saveError);
-          console.error('❌ Save error details:', {
-            name: saveError.name,
-            message: saveError.message,
-            code: saveError.code,
-            stack: saveError.stack
-          });
-          return res.status(500).json({
-            success: false,
-            error: 'Faculty save failed',
-            message: saveError.message || 'Failed to save faculty with new course',
-            details: saveError.name || 'UnknownError'
-          });
-        }
-
-        return res.status(201).json({
-          success: true,
-          message: 'Faculty course created successfully',
-          course: courseData,
-          faculty: {
-            slug: faculty.slug,
-            name: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
-          }
-        });
-      } catch (facultyError) {
-        console.error('❌ Faculty course creation error:', facultyError);
-        return res.status(500).json({
+      const faculty = await Faculty.findOne({ slug: facultySlug });
+      if (!faculty) {
+        return res.status(404).json({
           success: false,
-          error: 'Faculty course creation failed',
-          message: facultyError.message || 'Internal Server Error',
-          details: facultyError.name || 'UnknownError'
+          error: 'Faculty not found',
+          message: `Faculty with slug '${facultySlug}' not found`
         });
       }
+
+      // Create simple course data
+      const courseData = {
+        title: req.body.title,
+        subject: req.body.subject,
+        description: req.body.description || '',
+        category: req.body.category || '',
+        subcategory: req.body.subcategory || '',
+        paperId: req.body.paperId || '',
+        paperName: req.body.paperName || '',
+        courseType: req.body.courseType || 'General Course',
+        noOfLecture: req.body.noOfLecture || '',
+        books: req.body.books || '',
+        videoLanguage: req.body.videoLanguage || 'Hindi',
+        videoRunOn: req.body.videoRunOn || '',
+        timing: req.body.timing || '',
+        doubtSolving: req.body.doubtSolving || '',
+        supportMail: req.body.supportMail || '',
+        supportCall: req.body.supportCall || '',
+        validityStartFrom: req.body.validityStartFrom || '',
+        facultySlug: facultySlug,
+        facultyName: req.body.facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+        institute: req.body.institute || '',
+        posterUrl: posterUrl,
+        posterPublicId: posterPublicId,
+        modeAttemptPricing: [],
+        costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
+        sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
+        isStandalone: false,
+        isActive: true,
+        createdAt: new Date()
+      };
+
+      // Add to faculty courses array
+      faculty.courses.push(courseData);
+      await faculty.save();
+
+      console.log('✅ Faculty course saved successfully');
+      return res.status(201).json({
+        success: true,
+        message: 'Faculty course created successfully',
+        course: courseData,
+        faculty: {
+          slug: faculty.slug,
+          name: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+        }
+      });
 
     } else {
-      // Handle standalone course - save to Course collection
+      // STANDALONE COURSE - Save to Course collection
       console.log('📍 Processing as standalone course');
 
-      try {
-        // Extract basic fields with safe defaults
-        const title = req.body.title || req.body.paperName || req.body.subject || 'New Course';
-        const subject = req.body.subject || 'General Subject';
-        const description = req.body.description || '';
-        const category = req.body.category || '';
-        const subcategory = req.body.subcategory || '';
-        const posterUrl = req.file ? req.file.path : '';
-        const posterPublicId = req.file ? req.file.filename : '';
+      // Create simple course data
+      const courseData = {
+        title: req.body.title,
+        subject: req.body.subject,
+        description: req.body.description || '',
+        category: req.body.category || '',
+        subcategory: req.body.subcategory || '',
+        paperId: req.body.paperId || '',
+        paperName: req.body.paperName || '',
+        courseType: req.body.courseType || 'General Course',
+        noOfLecture: req.body.noOfLecture || '',
+        books: req.body.books || '',
+        videoLanguage: req.body.videoLanguage || 'Hindi',
+        videoRunOn: req.body.videoRunOn || '',
+        timing: req.body.timing || '',
+        doubtSolving: req.body.doubtSolving || '',
+        supportMail: req.body.supportMail || '',
+        supportCall: req.body.supportCall || '',
+        validityStartFrom: req.body.validityStartFrom || '',
+        facultySlug: '',
+        facultyName: '',
+        institute: req.body.institute || '',
+        posterUrl: posterUrl,
+        posterPublicId: posterPublicId,
+        modeAttemptPricing: [],
+        costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
+        sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
+        isStandalone: true,
+        isActive: true,
+        createdAt: new Date()
+      };
 
-        // Handle pricing data safely
-        let modeAttemptPricing = [];
-        if (req.body.modeAttemptPricing) {
-          try {
-            const rawPricing = JSON.parse(req.body.modeAttemptPricing);
-            if (Array.isArray(rawPricing)) {
-              rawPricing.forEach(modeGroup => {
-                if (modeGroup && modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
-                  modeGroup.attempts.forEach(attemptData => {
-                    if (attemptData) {
-                      modeAttemptPricing.push({
-                        mode: modeGroup.mode || '',
-                        attempt: attemptData.attempt || '',
-                        costPrice: attemptData.costPrice || 0,
-                        sellingPrice: attemptData.sellingPrice || 0
-                      });
-                    }
-                  });
-                }
-              });
-            }
-          } catch (e) {
-            console.log('⚠️ Pricing parse error, using defaults');
-            console.log('⚠️ Raw pricing data:', req.body.modeAttemptPricing);
-            console.log('⚠️ Parse error:', e.message);
-            modeAttemptPricing = [];
-          }
-        }
+      // Create and save course
+      const newCourse = new Course(courseData);
+      const savedCourse = await newCourse.save();
 
-        // Create course data structure
-        const courseData = {
-          title,
-          subject,
-          description,
-          category,
-          subcategory,
-          paperId: req.body.paperId || '',
-          paperName: req.body.paperName || '',
-          courseType: req.body.courseType || 'General Course',
-          noOfLecture: req.body.noOfLecture || '',
-          books: req.body.books || '',
-          videoLanguage: req.body.videoLanguage || 'Hindi',
-          videoRunOn: req.body.videoRunOn || '',
-          timing: req.body.timing || '',
-          doubtSolving: req.body.doubtSolving || '',
-          supportMail: req.body.supportMail || '',
-          supportCall: req.body.supportCall || '',
-          validityStartFrom: req.body.validityStartFrom || '',
-          facultySlug: '',
-          facultyName: '',
-          institute: req.body.institute || '',
-          posterUrl,
-          posterPublicId,
-          modeAttemptPricing,
-          costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
-          sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
-          isStandalone: true,
-          isActive: true
-        };
-
-        console.log('📝 Creating standalone course with data:', courseData);
-
-        // Log full course data for debugging
-        console.log('📝 Full standalone course data:', JSON.stringify(courseData, null, 2));
-
-        const newCourse = new Course(courseData);
-
-        // Validate before saving
-        console.log('🔍 Validating standalone course data...');
-        const validationError = newCourse.validateSync();
-        if (validationError) {
-          console.error('❌ Validation error:', validationError);
-          console.error('❌ Validation error details:', validationError.errors);
-          return res.status(400).json({
-            success: false,
-            error: 'Validation Error',
-            message: 'Course data validation failed',
-            details: Object.keys(validationError.errors || {}),
-            validationErrors: validationError.errors
-          });
-        }
-
-        console.log('✅ Standalone course validation passed');
-
-        // Additional validation for standalone courses
-        if (!courseData.title || !courseData.subject) {
-          console.error('❌ Standalone course validation failed - missing required fields');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Title and subject are required for standalone courses'
-          });
-        }
-
-        // Validate string fields are not too long
-        if (courseData.title.length > 200) {
-          console.error('❌ Standalone course validation failed - title too long');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Title is too long (max 200 characters)'
-          });
-        }
-
-        if (courseData.subject.length > 200) {
-          console.error('❌ Standalone course validation failed - subject too long');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Subject is too long (max 200 characters)'
-          });
-        }
-
-        // Validate pricing data
-        if (courseData.modeAttemptPricing && courseData.modeAttemptPricing.length > 0) {
-          console.log('🔍 Validating standalone course pricing data...');
-          for (let i = 0; i < courseData.modeAttemptPricing.length; i++) {
-            const pricing = courseData.modeAttemptPricing[i];
-            console.log(`🔍 Validating standalone pricing item ${i}:`, pricing);
-
-            if (!pricing.mode || !pricing.attempt || pricing.costPrice === undefined || pricing.sellingPrice === undefined) {
-              console.error('❌ Standalone course validation failed - invalid pricing data at index', i);
-              console.error('❌ Pricing data:', pricing);
-              return res.status(400).json({
-                success: false,
-                error: 'Validation failed',
-                message: 'Invalid pricing data - mode, attempt, costPrice, and sellingPrice are required'
-              });
-            }
-
-            // Validate pricing values
-            if (pricing.costPrice < 0 || pricing.sellingPrice < 0) {
-              console.error('❌ Standalone course validation failed - invalid pricing values at index', i);
-              console.error('❌ Pricing data:', pricing);
-              return res.status(400).json({
-                success: false,
-                error: 'Validation failed',
-                message: 'Pricing values must be non-negative'
-              });
-            }
-          }
-          console.log('✅ Standalone course pricing data validation passed');
-        } else {
-          console.log('⚠️ No standalone course pricing data to validate');
-        }
-
-        // Final validation check for standalone course
-        console.log('🔍 Final standalone course data check:', {
-          title: courseData.title,
-          subject: courseData.subject,
-          facultySlug: courseData.facultySlug,
-          facultyName: courseData.facultyName,
-          posterUrl: courseData.posterUrl ? 'Yes' : 'No',
-          pricingCount: courseData.modeAttemptPricing.length,
-          isStandalone: courseData.isStandalone,
-          isActive: courseData.isActive,
-          category: courseData.category,
-          subcategory: courseData.subcategory,
-          paperId: courseData.paperId,
-          paperName: courseData.paperName,
-          courseType: courseData.courseType
-        });
-
-        // Additional validation for course data structure
-        if (!courseData.title || courseData.title.trim() === '') {
-          console.error('❌ Standalone course validation failed - empty title');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Course title cannot be empty'
-          });
-        }
-
-        if (!courseData.subject || courseData.subject.trim() === '') {
-          console.error('❌ Standalone course validation failed - empty subject');
-          return res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            message: 'Course subject cannot be empty'
-          });
-        }
-
-        // Save course to database
-        try {
-          console.log('💾 Saving standalone course to database...');
-          const savedCourse = await newCourse.save();
-          console.log('✅ Standalone course saved successfully:', savedCourse._id);
-          console.log('✅ Course data after save:', {
-            id: savedCourse._id,
-            title: savedCourse.title,
-            subject: savedCourse.subject,
-            isStandalone: savedCourse.isStandalone,
-            isActive: savedCourse.isActive
-          });
-        } catch (saveError) {
-          console.error('❌ Course save error:', saveError);
-          console.error('❌ Save error details:', {
-            name: saveError.name,
-            message: saveError.message,
-            code: saveError.code,
-            stack: saveError.stack
-          });
-          return res.status(500).json({
-            success: false,
-            error: 'Course save failed',
-            message: saveError.message || 'Failed to save course to database',
-            details: saveError.name || 'UnknownError'
-          });
-        }
-
-        return res.status(201).json({
-          success: true,
-          message: 'Standalone course created successfully',
-          course: savedCourse
-        });
-      } catch (standaloneError) {
-        console.error('❌ Standalone course creation error:', standaloneError);
-        return res.status(500).json({
-          success: false,
-          error: 'Standalone course creation failed',
-          message: standaloneError.message || 'Internal Server Error',
-          details: standaloneError.name || 'UnknownError'
-        });
-      }
+      console.log('✅ Standalone course saved successfully:', savedCourse._id);
+      return res.status(201).json({
+        success: true,
+        message: 'Standalone course created successfully',
+        course: savedCourse
+      });
     }
 
   } catch (error) {
-    console.error('❌ MAIN COURSE CREATION ERROR:', error);
-    console.error('❌ Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
+    console.error('❌ COURSE CREATION ERROR:', error);
 
     // Set CORS headers even on error
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (req.headers.origin) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+      res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    if (error.name === 'MulterError') {
-      console.error('❌ MulterError details:', error);
-      return res.status(400).json({
-        success: false,
-        error: 'File upload error',
-        message: error.message,
-        field: error.field,
-        code: error.code
-      });
-    }
-
-    if (error.name === 'ValidationError') {
-      console.error('❌ Mongoose validation error:', error);
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        message: error.message,
-        errors: error.errors
-      });
-    }
-
-    // Log additional error context
-    console.error('❌ Additional error context:', {
-      requestPath: req.path,
-      requestMethod: req.method,
-      requestHeaders: req.headers,
-      requestBody: req.body ? Object.keys(req.body) : 'No body',
-      fileInfo: req.file ? {
-        fieldname: req.file.fieldname,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-      } : 'No file'
-    });
-
-    // Ensure we always return JSON
     return res.status(500).json({
       success: false,
       error: 'Course creation failed',
       message: error.message || 'Internal Server Error',
-      details: error.name || 'UnknownError',
-      timestamp: new Date().toISOString(),
-      requestId: Math.random().toString(36).substr(2, 9)
+      details: error.name || 'UnknownError'
     });
   }
 });
