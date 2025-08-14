@@ -23,7 +23,6 @@ const freshStorage = new CloudinaryStorage({
     folder: 'academywale/faculty',
     upload_preset: 'faculty',
     resource_type: 'image',
-    format: 'auto',
     public_id: (req, file) => {
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
@@ -31,9 +30,7 @@ const freshStorage = new CloudinaryStorage({
       return `faculty_${sanitizedName}_${timestamp}_${randomString}`;
     },
     transformation: [
-      { width: 800, height: 800, crop: "limit" },
-      { quality: "auto:good" },
-      { fetch_format: "auto" }
+      { width: 800, height: 800, crop: "limit" }
     ]
   },
 });

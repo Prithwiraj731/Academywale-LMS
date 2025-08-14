@@ -24,6 +24,50 @@ const path = require('path');
 const cloudinary = cloudinaryEmergency; // Use emergency fix
 const { storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
 
+// --- CORS MUST COME BEFORE ANY ROUTES ---
+app.use(cors({
+  origin: [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Content-Length'],
+  exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false,
+  maxAge: 86400
+}));
+
+// Preflight handler
+app.options('*', cors());
+
+// Ensure CORS headers even when an error happens later
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed = [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+  ];
+  if (origin && allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  return next();
+});
+
 // Mount course routes
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
@@ -49,8 +93,9 @@ const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance
   params: {
     folder: 'academywale/courses',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-    transformation: [{ width: 800, height: 600, crop: 'limit', quality: 'auto' }]
+    resource_type: 'image',
+    // Avoid using format/fetch_format/quality auto to prevent "Invalid extension in transformation: auto"
+    transformation: [{ width: 800, height: 600, crop: 'limit' }]
   }
 });
 
@@ -72,40 +117,7 @@ const courseUpload = multer({
 // Use the imported faculty storage from cloudinary.config.js
 const facultyUpload = multer({ storage: cloudinaryFacultyStorage });
 
-// Comprehensive CORS configuration
-app.use(cors({
-  origin: [
-    'https://academywale.com',
-    'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:3000'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Content-Length'],
-  exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
-  optionsSuccessStatus: 200,
-  preflightContinue: false,
-  maxAge: 86400 // 24 hours
-}));
-
-// Handle preflight requests explicitly
-app.options('*', cors());
-
-// Additional CORS middleware for specific routes
-app.use('/api/admin/courses', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// Remove route-specific wildcard CORS and rely on global CORS above
 
 // Log all CORS requests for debugging
 app.use((req, res, next) => {
@@ -1004,8 +1016,12 @@ app.post('/api/admin/courses/faculty', courseUpload.single('poster'), async (req
 
 // MAIN COURSE CREATION ENDPOINT - UNIFIED FOR ALL COURSES
 app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
-  // Set response headers for CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Ensure CORS headers reflect the requesting origin
+  if (req.headers.origin) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Content-Type', 'application/json');
@@ -2117,6 +2133,23 @@ app.use((error, req, res, next) => {
 
   // For API routes, always return JSON
   if (req.path.startsWith('/api/')) {
+    // Ensure CORS headers on error responses too
+    const origin = req.headers.origin;
+    const allowed = [
+      'https://academywale.com',
+      'https://www.academywale.com',
+      'https://academywale-lms.onrender.com',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000'
+    ];
+    if (origin && allowed.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     const statusCode = error.status || error.statusCode || 500;
     return res.status(statusCode).json({
       success: false,

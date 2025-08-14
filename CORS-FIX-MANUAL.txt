@@ -1,0 +1,39 @@
+🚨 IMMEDIATE CORS FIX FOR RENDER DEPLOYMENT 🚨
+
+The issue: Your deployed backend on https://academywale-lms.onrender.com doesn't have CORS configured for your frontend domain.
+
+QUICK FIX - Copy this to your server/app.js:
+
+1. FIND this line in your deployed app.js:
+   app.use(cors());
+
+2. REPLACE it with:
+   app.use(cors({
+     origin: [
+       'https://academywale.com',
+       'https://www.academywale.com', 
+       'https://academywale-lms.onrender.com',
+       'http://localhost:5173',
+       'http://localhost:3000'
+     ],
+     credentials: true,
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+   }));
+
+3. ADD this line after the CORS middleware:
+   app.options('*', cors());
+
+4. ADD this to your course creation endpoint (around line 300-400):
+   app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
+     // Set CORS headers
+     res.setHeader('Access-Control-Allow-Origin', 'https://www.academywale.com');
+     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+     
+     // ... rest of your existing code
+   });
+
+5. DEPLOY: Save the file and Render will auto-redeploy
+
+This will fix the CORS error immediately!

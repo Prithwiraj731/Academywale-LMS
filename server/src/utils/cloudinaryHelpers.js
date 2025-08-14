@@ -19,14 +19,12 @@ const uploadToCloudinaryPermanent = async (fileBuffer, fileName, folder = 'acade
           unique_filename: true,
           use_filename: false,
           transformation: [
-            { width: 1200, height: 1200, crop: "limit" },
-            { quality: "auto:good" },
-            { fetch_format: "auto" }
+            { width: 1200, height: 1200, crop: "limit" }
           ],
           // Ensure permanent storage
           type: 'upload', // Not 'private' or 'authenticated'
           access_mode: 'public',
-          format: 'auto',
+          // avoid forcing auto format
           secure: true
         },
         (error, result) => {
@@ -82,7 +80,7 @@ const getOptimizedImageUrl = (publicId, transformations = {}) => {
   };
 
   const finalTransformations = { ...defaultTransformations, ...transformations };
-  
+
   return cloudinary.url(publicId, {
     secure: true,
     ...finalTransformations

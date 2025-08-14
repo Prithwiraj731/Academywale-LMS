@@ -8,7 +8,7 @@ console.log('🔥 LOADING CLOUDINARY CONFIG WITH DIRECT CREDENTIALS');
 // HARD-CODED CREDENTIALS TO ENSURE IT WORKS
 cloudinary.config({
   cloud_name: 'drlqhsjgm',
-  api_key: '367882575567196', 
+  api_key: '367882575567196',
   api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
   secure: true
 });
@@ -26,10 +26,9 @@ const storage = new CloudinaryStorage({
       const random = Math.random().toString(36).substring(2, 8);
       return `faculty_${timestamp}_${random}`;
     },
-    format: 'auto',
+    // Remove format/quality auto to avoid extension errors
     transformation: [
-      { width: 800, height: 800, crop: "limit" },
-      { quality: "auto" }
+      { width: 800, height: 800, crop: "limit" }
     ]
   }
 });
