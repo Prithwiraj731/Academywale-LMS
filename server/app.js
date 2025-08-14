@@ -1,3 +1,6 @@
+// EMERGENCY CLOUDINARY FIX - APPLIED ON TOP
+const cloudinaryEmergency = require('./cloudinary-emergency-fix');
+
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -14,8 +17,11 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const path = require('path');
 
-// Import Cloudinary configuration 
-const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
+// Import Cloudinary configuration but use the emergency cloudinary instance
+// const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
+// Use emergency cloudinary instance instead:
+const cloudinary = cloudinaryEmergency; // Use emergency fix
+const { storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
 
 // Mount course routes
 const courseRoutes = require('./src/routes/course.routes.js');
