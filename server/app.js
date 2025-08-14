@@ -1031,14 +1031,38 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
     console.log('📋 Request body:', req.body);
     console.log('📎 File received:', req.file ? 'Yes' : 'No');
 
-    // Basic validation
-    if (!req.body.title || !req.body.subject) {
+    // Debug: Log all received fields
+    console.log('🔍 All received fields:');
+    Object.keys(req.body).forEach(key => {
+      console.log(`   ${key}: "${req.body[key]}"`);
+    });
+
+    // Basic validation - Check for either title/subject OR paperName/category
+    if (!req.body.title && !req.body.paperName) {
+      console.log('❌ Validation failed: No title or paperName found');
+      console.log('❌ Available fields:', Object.keys(req.body));
       return res.status(400).json({
         success: false,
         error: 'Missing required fields',
-        message: 'Title and subject are required'
+        message: 'Either title or paperName is required',
+        receivedFields: Object.keys(req.body),
+        requiredFields: ['title or paperName', 'subject or category']
       });
     }
+
+    if (!req.body.subject && !req.body.category) {
+      console.log('❌ Validation failed: No subject or category found');
+      console.log('❌ Available fields:', Object.keys(req.body));
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Either subject or category is required',
+        receivedFields: Object.keys(req.body),
+        requiredFields: ['title or paperName', 'subject or category']
+      });
+    }
+
+    console.log('✅ Validation passed - proceeding with course creation');
 
     // Get file info
     const posterUrl = req.file ? req.file.path : '';
@@ -1061,15 +1085,15 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
         });
       }
 
-      // Create simple course data
+      // Create simple course data - Use available fields
       const courseData = {
-        title: req.body.title,
-        subject: req.body.subject,
+        title: req.body.title || req.body.paperName || 'Course Title',
+        subject: req.body.subject || req.body.category || 'Course Subject',
         description: req.body.description || '',
         category: req.body.category || '',
         subcategory: req.body.subcategory || '',
         paperId: req.body.paperId || '',
-        paperName: req.body.paperName || '',
+        paperName: req.body.paperName || req.body.title || '',
         courseType: req.body.courseType || 'General Course',
         noOfLecture: req.body.noOfLecture || '',
         books: req.body.books || '',
@@ -1112,15 +1136,15 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
       // STANDALONE COURSE - Save to Course collection
       console.log('📍 Processing as standalone course');
 
-      // Create simple course data
+      // Create simple course data - Use available fields
       const courseData = {
-        title: req.body.title,
-        subject: req.body.subject,
+        title: req.body.title || req.body.paperName || 'Course Title',
+        subject: req.body.subject || req.body.category || 'Course Subject',
         description: req.body.description || '',
         category: req.body.category || '',
         subcategory: req.body.subcategory || '',
         paperId: req.body.paperId || '',
-        paperName: req.body.paperName || '',
+        paperName: req.body.paperName || req.body.title || '',
         courseType: req.body.courseType || 'General Course',
         noOfLecture: req.body.noOfLecture || '',
         books: req.body.books || '',
