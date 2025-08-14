@@ -15,21 +15,16 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 
+// Import Cloudinary configuration 
+const { cloudinary, storage: facultyStorage } = require('./src/config/cloudinary.config');
+
 // Mount course routes
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
 
-// Cloudinary configuration - matching the credentials in src/config/cloudinary.config.js
-cloudinary.config({
-  cloud_name: 'drlqhsjgm',
-  api_key: '367882575567196', 
-  api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
-  secure: true
-});
-
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary: cloudinary, // Using the imported cloudinary instance
   params: {
     folder: 'academy-wale/courses',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
