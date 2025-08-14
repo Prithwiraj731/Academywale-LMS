@@ -35,6 +35,10 @@ app.use('/', cloudinaryTestRoutes);
 const debugCourseRoutes = require('./src/routes/debug-courses.routes.js');
 app.use('/', debugCourseRoutes);
 
+// Mount course controller routes
+const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
+app.use('/', courseControllerRoutes);
+
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance

@@ -1,6 +1,19 @@
 // Unified course creation: supports both general and faculty courses, including hardcoded faculties/institutes
 exports.addCourseToFaculty = async (req, res) => {
   try {
+    console.log('🎯 Course controller: addCourseToFaculty called');
+    console.log('📋 Request body:', req.body);
+    console.log('📎 File received:', req.file ? 'Yes' : 'No');
+    
+    if (req.file) {
+      console.log('📄 File details:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        path: req.file.path
+      });
+    }
+    
     const {
       category, subcategory, paperId, paperName, subject, facultySlug,
       institute, description, noOfLecture, books, videoLanguage,
@@ -107,9 +120,28 @@ exports.addCourseToFaculty = async (req, res) => {
     };
     faculty.courses.push(newCourse);
     await faculty.save();
-    res.status(201).json({ success: true, message: 'Course added successfully' });
+    console.log('✅ Course controller: Course added successfully to faculty');
+    res.status(201).json({ success: true, message: 'Course added successfully', course: newCourse });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Course controller error:', error);
+    console.error('❌ Error stack:', error.stack);
+    
+    if (error.name === 'ValidationError') {
+      console.error('❌ Mongoose validation error:', error.errors);
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.errors,
+        message: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      error: 'Course creation failed', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 const Faculty = require('../model/Faculty.model');

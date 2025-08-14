@@ -31,8 +31,10 @@ echo 💡 After deployment, use the browser testing tool to diagnose the issue!
 echo 2. Pushing changes to Git...
 git add server\app.js
 git add server\src\routes\debug-courses.routes.js
+git add server\src\routes\course-controller.routes.js
+git add server\src\controllers\course.controller.js
 git add client\public\course-creation-test.html
-git commit -m "Fix course creation with debug endpoints and testing tools"
+git commit -m "Fix course creation with controller approach and enhanced testing tools"
 git push
 
 pause

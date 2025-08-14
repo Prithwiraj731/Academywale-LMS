@@ -1,66 +1,296 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Course Creation API Test</title>
+    <title>Enhanced Course Creation API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .endpoint-test {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border-left: 4px solid #ccc;
+        }
+        .success {
+            color: green;
+            border-left-color: green;
+        }
+        .failure {
+            color: red;
+            border-left-color: red;
+        }
+        .warning {
+            color: orange;
+            border-left-color: orange;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .endpoints {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .endpoint-option {
+            padding: 8px 15px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .endpoint-option.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Testing Course Creation APIs</h1>
+    <h1>Enhanced Course Creation API Test Tool</h1>
+    <p>Use this tool to test different course creation endpoints and diagnose issues.</p>
     
-    <div id="results"></div>
+    <div class="test-section">
+        <h2>1. Simple Test (No File Upload)</h2>
+        <button onclick="testEndpoints()">Run Basic API Tests</button>
+        <div id="basic-results"></div>
+    </div>
+    
+    <div class="form-section">
+        <h2>2. Test Course Creation</h2>
+        <div class="endpoints">
+            <div class="endpoint-option selected" onclick="selectEndpoint(this, '/api/debug/courses')">Debug Endpoint</div>
+            <div class="endpoint-option" onclick="selectEndpoint(this, '/api/admin/courses/controller')">Controller Endpoint</div>
+            <div class="endpoint-option" onclick="selectEndpoint(this, '/api/admin/courses')">Main Endpoint</div>
+        </div>
+        
+        <form id="course-form">
+            <div class="form-group">
+                <label for="title">Course Title:</label>
+                <input type="text" id="title" name="title" value="Test Course" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" value="Test Subject" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" value="This is a test course">
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <input type="text" id="category" name="category" value="Test Category">
+            </div>
+            
+            <div class="form-group">
+                <label for="courseType">Course Type:</label>
+                <select id="courseType" name="courseType">
+                    <option value="Standalone">Standalone</option>
+                    <option value="Faculty">Faculty</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="faculty-section" style="display:none;">
+                <label for="facultySlug">Faculty Slug:</label>
+                <select id="facultySlug" name="facultySlug">
+                    <option value="">None (Standalone Course)</option>
+                    <option value="ca-satish-jalan">CA Satish Jalan</option>
+                    <option value="ca-aaditya-jain">CA Aaditya Jain</option>
+                    <option value="ca-ranjan-periwal">CA Ranjan Periwal</option>
+                    <option value="cma-sumit-rastogi">CMA Sumit Rastogi</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="poster">Course Poster:</label>
+                <input type="file" id="poster" name="poster" accept="image/*">
+            </div>
+            
+            <input type="hidden" id="modeAttemptPricing" name="modeAttemptPricing" value='[{"mode":"Live Watching","attempts":[{"attempt":"First Attempt","costPrice":1000,"sellingPrice":750}]}]'>
+            
+            <button type="button" onclick="submitCourseForm()">Create Course</button>
+        </form>
+        
+        <div id="form-result" style="margin-top: 20px;"></div>
+    </div>
     
     <script>
-    async function testCourseAPIs() {
-        const results = document.getElementById('results');
+    let selectedEndpoint = '/api/debug/courses';
+    const baseUrl = window.location.hostname.includes('academywale.com') 
+        ? 'https://academywale-lms.onrender.com' 
+        : 'http://localhost:3000';
+
+    function selectEndpoint(element, endpoint) {
+        document.querySelectorAll('.endpoint-option').forEach(el => {
+            el.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        selectedEndpoint = endpoint;
+        console.log('Selected endpoint:', selectedEndpoint);
+    }
+    
+    document.getElementById('courseType').addEventListener('change', function() {
+        const facultySection = document.getElementById('faculty-section');
+        if (this.value === 'Faculty') {
+            facultySection.style.display = 'block';
+        } else {
+            facultySection.style.display = 'none';
+            document.getElementById('facultySlug').value = '';
+        }
+    });
+    
+    async function testEndpoints() {
+        const results = document.getElementById('basic-results');
+        results.innerHTML = '<h3>Testing Course API Endpoints...</h3>';
         
         try {
-            results.innerHTML += '<h3>Testing Course Creation Endpoints...</h3>';
-            
-            // Test 1: Check if faculty course endpoint exists
-            console.log('Testing faculty course endpoint...');
-            const facultyEndpointTest = await fetch('https://academywale-lms.onrender.com/api/admin/courses/new', {
-                method: 'OPTIONS'
-            });
-            
-            if (facultyEndpointTest.status !== 404) {
-                results.innerHTML += '<p>✅ Faculty course endpoint (/api/admin/courses/new) exists</p>';
+            // Test simple endpoint
+            const simpleTest = await fetch(`${baseUrl}/test`);
+            if (simpleTest.ok) {
+                const data = await simpleTest.json();
+                results.innerHTML += `<div class="endpoint-test success">✅ Basic API is working: ${data.message}</div>`;
             } else {
-                results.innerHTML += '<p>❌ Faculty course endpoint (/api/admin/courses/new) not found</p>';
+                results.innerHTML += `<div class="endpoint-test failure">❌ Basic API test failed (${simpleTest.status})</div>`;
             }
             
-            // Test 2: Check if standalone course endpoint exists
-            console.log('Testing standalone course endpoint...');
-            const standaloneEndpointTest = await fetch('https://academywale-lms.onrender.com/api/admin/courses/standalone', {
-                method: 'OPTIONS'
-            });
-            
-            if (standaloneEndpointTest.status !== 404) {
-                results.innerHTML += '<p>✅ Standalone course endpoint (/api/admin/courses/standalone) exists</p>';
+            // Test health endpoint
+            const healthTest = await fetch(`${baseUrl}/health`);
+            if (healthTest.ok) {
+                const data = await healthTest.json();
+                results.innerHTML += `<div class="endpoint-test success">✅ Health check passed: DB ${data.database}</div>`;
             } else {
-                results.innerHTML += '<p>❌ Standalone course endpoint (/api/admin/courses/standalone) not found</p>';
+                results.innerHTML += `<div class="endpoint-test failure">❌ Health check failed (${healthTest.status})</div>`;
             }
             
-            // Test 3: Check courses retrieval
-            console.log('Testing course retrieval...');
-            const coursesResponse = await fetch('https://academywale-lms.onrender.com/api/courses/all');
-            
-            if (coursesResponse.ok) {
-                const data = await coursesResponse.json();
-                results.innerHTML += `<p>✅ Can fetch courses: ${data.courses?.length || 0} courses found</p>`;
-            } else {
-                results.innerHTML += '<p>❌ Cannot fetch courses</p>';
+            // Test debug endpoint
+            try {
+                const debugTest = await fetch(`${baseUrl}/api/debug/courses/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true })
+                });
+                
+                if (debugTest.ok) {
+                    const data = await debugTest.json();
+                    results.innerHTML += `<div class="endpoint-test success">✅ Debug endpoint working</div>`;
+                } else {
+                    results.innerHTML += `<div class="endpoint-test failure">❌ Debug endpoint failed (${debugTest.status})</div>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<div class="endpoint-test failure">❌ Debug endpoint error: ${error.message}</div>`;
             }
             
-            results.innerHTML += '<h3>Conclusion:</h3>';
-            results.innerHTML += '<p>🎯 If both endpoints exist, course creation should work!</p>';
-            results.innerHTML += '<p>Try creating a course now in the admin dashboard.</p>';
+            // Test controller route
+            try {
+                const controllerTest = await fetch(`${baseUrl}/api/courses/test`);
+                
+                if (controllerTest.ok) {
+                    const data = await controllerTest.json();
+                    results.innerHTML += `<div class="endpoint-test success">✅ Controller routes working</div>`;
+                } else {
+                    results.innerHTML += `<div class="endpoint-test failure">❌ Controller routes failed (${controllerTest.status})</div>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<div class="endpoint-test failure">❌ Controller routes error: ${error.message}</div>`;
+            }
             
         } catch (error) {
-            results.innerHTML += '<p>❌ Network error: ' + error.message + '</p>';
+            results.innerHTML += `<div class="endpoint-test failure">❌ Network error: ${error.message}</div>`;
         }
     }
     
-    // Run test when page loads
-    testCourseAPIs();
+    async function submitCourseForm() {
+        const form = document.getElementById('course-form');
+        const formResult = document.getElementById('form-result');
+        formResult.innerHTML = '<p>Submitting course data...</p>';
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch(`${baseUrl}${selectedEndpoint}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                formResult.innerHTML = `
+                    <h3 class="success">✅ Course creation successful!</h3>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } else {
+                formResult.innerHTML = `
+                    <h3 class="failure">❌ Course creation failed</h3>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            }
+        } catch (error) {
+            formResult.innerHTML = `
+                <h3 class="failure">❌ Error submitting form</h3>
+                <p>${error.message}</p>
+            `;
+        }
+    }
+    
+    // Auto-run basic tests when page loads
+    window.onload = function() {
+        console.log('Using API base URL:', baseUrl);
+        testEndpoints();
+    };
     </script>
 </body>
 </html>
