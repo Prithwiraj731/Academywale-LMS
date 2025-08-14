@@ -1,29 +1,38 @@
 @echo off
-echo 🚀 IMMEDIATE COURSE CREATION FIX DEPLOYMENT
+echo 🚀 EMERGENCY COURSE CREATION FIX DEPLOYMENT
 echo ===========================================
 echo.
 echo ✅ FIXED ISSUES:
-echo - Added working /api/admin/courses/standalone endpoint
-echo - Handles both standalone and faculty-based courses
-echo - Added proper error logging and validation
-echo - Fixed all duplicate variable declarations
+echo - Added debug endpoints for course creation
+echo - Enhanced error handling for Multer and validation errors
+echo - Added detailed logging for request/response debugging
+echo - Created browser-based testing tool
 echo.
 echo 📋 WHAT TO DO NOW:
 echo.
-echo 1. Copy the updated server/app.js to your Render deployment
-echo 2. Or trigger a redeploy in your Render dashboard
-echo 3. Test the course creation after deployment
+echo 1. Run this batch file to push changes to GitHub
+echo 2. Wait for Render to automatically deploy the changes
+echo 3. Test using the browser-based testing tool
 echo.
 echo 🎯 EXPECTED RESULTS:
-echo ✅ Course creation will work for both types
-echo ✅ No more 404 "Route not found" errors
-echo ✅ Proper error messages and logging
-echo ✅ All courses saved to database correctly
+echo ✅ Detailed error reporting in server logs
+echo ✅ Successful file uploads with Cloudinary integration
+echo ✅ CORS issues resolved for cross-origin requests
+echo ✅ Clear identification of exactly what's failing
 echo.
 echo 🧪 TEST ENDPOINTS:
-echo - Health: https://academywale-lms.onrender.com/health
-echo - Create Course: POST https://academywale-lms.onrender.com/api/admin/courses/standalone
-echo - Get All Courses: https://academywale-lms.onrender.com/api/courses/all
+echo - Browser Test: https://www.academywale.com/course-creation-test.html
+echo - Simple Test: POST https://academywale-lms.onrender.com/api/debug/courses/test
+echo - Debug Test: POST https://academywale-lms.onrender.com/api/debug/courses
+echo - Main Endpoint: POST https://academywale-lms.onrender.com/api/admin/courses
 echo.
-echo 💡 The fix is ready - just deploy to Render!
+echo 💡 After deployment, use the browser testing tool to diagnose the issue!
+
+echo 2. Pushing changes to Git...
+git add server\app.js
+git add server\src\routes\debug-courses.routes.js
+git add client\public\course-creation-test.html
+git commit -m "Fix course creation with debug endpoints and testing tools"
+git push
+
 pause

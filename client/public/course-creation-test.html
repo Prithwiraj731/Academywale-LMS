@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Creation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: #f1f1f1;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 2px solid white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 4px 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Course Creation Test</h1>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="simple">Simple Test</div>
+        <div class="tab" data-tab="debug">Debug Endpoint</div>
+        <div class="tab" data-tab="main">Main Endpoint</div>
+    </div>
+
+    <!-- Simple Test -->
+    <div id="simple" class="tab-content active">
+        <h2>Simple API Test - No File Upload</h2>
+        <form id="simpleForm">
+            <div class="form-group">
+                <label for="simpleTitle">Course Title</label>
+                <input type="text" id="simpleTitle" name="title" value="Test Course">
+            </div>
+            <div class="form-group">
+                <label for="simpleSubject">Subject</label>
+                <input type="text" id="simpleSubject" name="subject" value="Test Subject">
+            </div>
+            <div class="form-group">
+                <button type="button" onclick="testSimpleApi()">Test Simple API</button>
+            </div>
+        </form>
+        <div id="simpleResult" class="result"></div>
+    </div>
+
+    <!-- Debug Endpoint -->
+    <div id="debug" class="tab-content">
+        <h2>Debug Course Creation - Local Storage</h2>
+        <form id="debugForm">
+            <div class="form-group">
+                <label for="debugTitle">Course Title</label>
+                <input type="text" id="debugTitle" name="title" value="Debug Course">
+            </div>
+            <div class="form-group">
+                <label for="debugSubject">Subject</label>
+                <input type="text" id="debugSubject" name="subject" value="Debug Subject">
+            </div>
+            <div class="form-group">
+                <label for="debugPoster">Course Poster</label>
+                <input type="file" id="debugPoster" name="poster">
+            </div>
+            <div class="form-group">
+                <button type="button" onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+            </div>
+        </form>
+        <div id="debugResult" class="result"></div>
+    </div>
+
+    <!-- Main Endpoint -->
+    <div id="main" class="tab-content">
+        <h2>Main Course Creation</h2>
+        <form id="mainForm">
+            <div class="form-group">
+                <label for="mainTitle">Course Title</label>
+                <input type="text" id="mainTitle" name="title" value="Production Course">
+            </div>
+            <div class="form-group">
+                <label for="mainSubject">Subject</label>
+                <input type="text" id="mainSubject" name="subject" value="Production Subject">
+            </div>
+            <div class="form-group">
+                <label for="mainDescription">Description</label>
+                <textarea id="mainDescription" name="description">Test course description</textarea>
+            </div>
+            <div class="form-group">
+                <label for="mainCategory">Category</label>
+                <input type="text" id="mainCategory" name="category" value="Test Category">
+            </div>
+            <div class="form-group">
+                <label for="mainSubcategory">Subcategory</label>
+                <input type="text" id="mainSubcategory" name="subcategory" value="Test Subcategory">
+            </div>
+            <div class="form-group">
+                <label for="mainPoster">Course Poster</label>
+                <input type="file" id="mainPoster" name="poster">
+            </div>
+            <div class="form-group">
+                <button type="button" onclick="testMainEndpoint()">Create Course</button>
+            </div>
+        </form>
+        <div id="mainResult" class="result"></div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // API base URL
+        const API_URL = 'https://academywale-lms.onrender.com';
+
+        // Function to log messages to result divs
+        function logResult(elementId, message, isError = false) {
+            const resultElement = document.getElementById(elementId);
+            if (isError) {
+                resultElement.innerHTML += `<div class="error">${message}</div>`;
+            } else {
+                resultElement.innerHTML += `<div>${message}</div>`;
+            }
+            console.log(message);
+        }
+
+        // Function to test simple API
+        async function testSimpleApi() {
+            const resultElement = document.getElementById('simpleResult');
+            resultElement.innerHTML = '<div>Testing simple API...</div>';
+            
+            try {
+                const formData = new FormData(document.getElementById('simpleForm'));
+                
+                logResult('simpleResult', `Sending request to: ${API_URL}/api/debug/courses/test`);
+                
+                const response = await fetch(`${API_URL}/api/debug/courses/test`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                logResult('simpleResult', `Response status: ${response.status}`);
+                
+                const data = await response.json();
+                logResult('simpleResult', `Response data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok) {
+                    logResult('simpleResult', 'Simple test successful!', false);
+                } else {
+                    logResult('simpleResult', `Error: ${data.error || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                logResult('simpleResult', `Fetch error: ${error.message}`, true);
+            }
+        }
+
+        // Function to test debug endpoint
+        async function testDebugEndpoint() {
+            const resultElement = document.getElementById('debugResult');
+            resultElement.innerHTML = '<div>Testing debug endpoint...</div>';
+            
+            try {
+                const formData = new FormData(document.getElementById('debugForm'));
+                
+                // Add file if selected
+                const fileInput = document.getElementById('debugPoster');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    logResult('debugResult', `Selected file: ${file.name} (${file.type}, ${file.size} bytes)`);
+                    // formData.append('poster', file); // File is already included through the FormData constructor
+                } else {
+                    logResult('debugResult', 'No file selected');
+                }
+                
+                logResult('debugResult', `Sending request to: ${API_URL}/api/debug/courses`);
+                
+                const response = await fetch(`${API_URL}/api/debug/courses`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                logResult('debugResult', `Response status: ${response.status}`);
+                
+                const data = await response.json();
+                logResult('debugResult', `Response data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok) {
+                    logResult('debugResult', 'Debug test successful!', false);
+                } else {
+                    logResult('debugResult', `Error: ${data.error || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                logResult('debugResult', `Fetch error: ${error.message}`, true);
+            }
+        }
+
+        // Function to test main endpoint
+        async function testMainEndpoint() {
+            const resultElement = document.getElementById('mainResult');
+            resultElement.innerHTML = '<div>Creating course...</div>';
+            
+            try {
+                const formData = new FormData(document.getElementById('mainForm'));
+                
+                // Add file if selected
+                const fileInput = document.getElementById('mainPoster');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    logResult('mainResult', `Selected file: ${file.name} (${file.type}, ${file.size} bytes)`);
+                    // formData.append('poster', file); // File is already included through the FormData constructor
+                } else {
+                    logResult('mainResult', 'No file selected');
+                }
+                
+                // Add sample pricing data
+                const pricingData = JSON.stringify([
+                    {
+                        mode: "Online",
+                        attempts: [
+                            { attempt: "First", costPrice: 1000, sellingPrice: 800 }
+                        ]
+                    }
+                ]);
+                formData.append('modeAttemptPricing', pricingData);
+                
+                logResult('mainResult', `Sending request to: ${API_URL}/api/admin/courses`);
+                
+                const response = await fetch(`${API_URL}/api/admin/courses`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                logResult('mainResult', `Response status: ${response.status}`);
+                
+                const data = await response.json();
+                logResult('mainResult', `Response data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok) {
+                    logResult('mainResult', 'Course created successfully!', false);
+                } else {
+                    logResult('mainResult', `Error: ${data.error || 'Unknown error'}`, true);
+                }
+            } catch (error) {
+                logResult('mainResult', `Fetch error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

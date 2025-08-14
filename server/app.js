@@ -31,6 +31,10 @@ app.use('/', facultyRoutes);
 const cloudinaryTestRoutes = require('./src/routes/cloudinary-test.routes.js');
 app.use('/', cloudinaryTestRoutes);
 
+// Mount debug course routes
+const debugCourseRoutes = require('./src/routes/debug-courses.routes.js');
+app.use('/', debugCourseRoutes);
+
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance
@@ -859,6 +863,19 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
   try {
     console.log('🎯 Unified course creation request received');
     console.log('📋 Request body:', req.body);
+    console.log('📋 Request headers:', req.headers);
+    console.log('📎 File received:', req.file ? 'Yes' : 'No');
+    
+    if (req.file) {
+      console.log('📄 File details:', {
+        fieldname: req.file.fieldname,
+        originalname: req.file.originalname,
+        encoding: req.file.encoding,
+        mimetype: req.file.mimetype,
+        path: req.file.path,
+        size: req.file.size
+      });
+    }
     
     // Unified logic: if facultySlug is missing or empty, treat as general course
     const facultySlug = req.body.facultySlug;
@@ -1032,6 +1049,29 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
 
   } catch (error) {
     console.error('❌ Unified course creation error:', error);
+    console.error('❌ Error stack:', error.stack);
+    
+    if (error.name === 'MulterError') {
+      console.error('❌ MulterError details:', error);
+      return res.status(400).json({
+        success: false,
+        error: 'File upload error',
+        message: error.message,
+        field: error.field,
+        code: error.code
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      console.error('❌ Mongoose validation error:', error);
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        message: error.message,
+        errors: error.errors
+      });
+    }
+    
     return res.status(500).json({
       success: false,
       error: 'Course creation failed',
