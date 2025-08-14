@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Creation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Course Creation Test</h1>
+    
+    <form id="courseForm">
+        <div class="form-group">
+            <label for="title">Course Title:</label>
+            <input type="text" id="title" name="title" value="Test Course" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" value="Test Subject" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description">Test Description</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="CA">CA</option>
+                <option value="CMA">CMA</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="subcategory">Subcategory:</label>
+            <select id="subcategory" name="subcategory">
+                <option value="Foundation">Foundation</option>
+                <option value="Inter">Inter</option>
+                <option value="Final">Final</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="courseType">Course Type:</label>
+            <input type="text" id="courseType" name="courseType" value="Test Course Type">
+        </div>
+        
+        <div class="form-group">
+            <label for="facultySlug">Faculty Slug (leave empty for standalone):</label>
+            <input type="text" id="facultySlug" name="facultySlug" placeholder="e.g., aaditya-jain">
+        </div>
+        
+        <button type="submit">Create Course</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('courseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const form = e.target;
+            
+            // Add form fields
+            formData.append('title', form.title.value);
+            formData.append('subject', form.subject.value);
+            formData.append('description', form.description.value);
+            formData.append('category', form.category.value);
+            formData.append('subcategory', form.subcategory.value);
+            formData.append('courseType', form.courseType.value);
+            formData.append('facultySlug', form.facultySlug.value);
+            
+            // Add some default values
+            formData.append('isStandalone', form.facultySlug.value ? 'false' : 'true');
+            formData.append('isActive', 'true');
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Creating course...</p>';
+            
+            try {
+                // Test local endpoint first
+                const response = await fetch('http://localhost:5000/api/admin/courses', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Success!</h3>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                            <p><strong>Course ID:</strong> ${result.course?._id || 'N/A'}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error (${response.status})</h3>
+                            <p><strong>Error:</strong> ${result.error || 'Unknown error'}</p>
+                            <p><strong>Message:</strong> ${result.message || 'No message'}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>This might be a CORS issue or the server is not running.</p>
+                    </div>
+                `;
+                console.error('Error:', error);
+            }
+        });
+        
+        // Test health endpoint
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:5000/api/admin/courses/health');
+                const result = await response.json();
+                console.log('Health check result:', result);
+            } catch (error) {
+                console.error('Health check failed:', error);
+            }
+        }
+        
+        // Run health check on page load
+        testHealth();
+    </script>
+</body>
+</html>

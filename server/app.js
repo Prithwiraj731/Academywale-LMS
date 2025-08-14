@@ -77,8 +77,10 @@ app.use(cors({
   origin: [
     'https://academywale.com',
     'https://www.academywale.com',
+    'https://academywale-lms.onrender.com',
     'http://localhost:5173',
-    'http://localhost:5174'
+    'http://localhost:5174',
+    'http://localhost:3000'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -92,9 +94,23 @@ app.use(cors({
 // Handle preflight requests explicitly
 app.options('*', cors());
 
+// Additional CORS middleware for specific routes
+app.use('/api/admin/courses', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Log all CORS requests for debugging
 app.use((req, res, next) => {
   console.log(`🌐 ${req.method} request from origin: ${req.headers.origin || 'unknown'} to ${req.path}`);
+  console.log(`🌐 User-Agent: ${req.headers['user-agent'] || 'unknown'}`);
   next();
 });
 
@@ -162,6 +178,47 @@ app.post('/api/test/course', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+// Course creation health check endpoint
+app.get('/api/admin/courses/health', async (req, res) => {
+  try {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json');
+
+    console.log('🏥 Course creation health check');
+
+    // Test database connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+
+    // Test model imports
+    let modelsStatus = 'OK';
+    try {
+      const courseCount = await Course.countDocuments();
+      const facultyCount = await Faculty.countDocuments();
+      modelsStatus = 'OK';
+    } catch (modelError) {
+      modelsStatus = 'ERROR: ' + modelError.message;
+    }
+
+    res.json({
+      success: true,
+      message: 'Course creation endpoint is healthy',
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      models: modelsStatus,
+      cloudinary: 'configured',
+      multer: 'configured',
+      cors: 'enabled'
+    });
+  } catch (error) {
+    console.error('❌ Health check error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Health check failed',
+      message: error.message
     });
   }
 });
@@ -947,7 +1004,10 @@ app.post('/api/admin/courses/faculty', courseUpload.single('poster'), async (req
 
 // MAIN COURSE CREATION ENDPOINT - UNIFIED FOR ALL COURSES
 app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) => {
-  // Set response headers
+  // Set response headers for CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Content-Type', 'application/json');
 
   try {
@@ -1551,6 +1611,11 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
       stack: error.stack
     });
 
+    // Set CORS headers even on error
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
     if (error.name === 'MulterError') {
       console.error('❌ MulterError details:', error);
       return res.status(400).json({
@@ -1572,12 +1637,28 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
       });
     }
 
+    // Log additional error context
+    console.error('❌ Additional error context:', {
+      requestPath: req.path,
+      requestMethod: req.method,
+      requestHeaders: req.headers,
+      requestBody: req.body ? Object.keys(req.body) : 'No body',
+      fileInfo: req.file ? {
+        fieldname: req.file.fieldname,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      } : 'No file'
+    });
+
     // Ensure we always return JSON
     return res.status(500).json({
       success: false,
       error: 'Course creation failed',
       message: error.message || 'Internal Server Error',
-      details: error.name || 'UnknownError'
+      details: error.name || 'UnknownError',
+      timestamp: new Date().toISOString(),
+      requestId: Math.random().toString(36).substr(2, 9)
     });
   }
 });
