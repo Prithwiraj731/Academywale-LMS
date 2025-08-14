@@ -6,11 +6,7 @@ const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// CORS configuration
-app.use(cors({
-  origin: ['https://www.academywale.com'],
-  credentials: true
-}));
+// CORS configuration moved below with other middleware
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
@@ -50,18 +46,31 @@ const courseUpload = multer({ storage: courseStorage });
 // Use the imported faculty storage from cloudinary.config.js
 const facultyUpload = multer({ storage: cloudinaryFacultyStorage });
 
-// Middleware
+// Comprehensive CORS configuration
 app.use(cors({
-  origin: ['https://academywale.com', 'https://www.academywale.com', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    'https://academywale.com', 
+    'https://www.academywale.com', 
+    'http://localhost:5173', 
+    'http://localhost:5174'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Content-Length'],
+  exposedHeaders: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
   optionsSuccessStatus: 200,
-  preflightContinue: false
+  preflightContinue: false,
+  maxAge: 86400 // 24 hours
 }));
 
 // Handle preflight requests explicitly
 app.options('*', cors());
+
+// Log all CORS requests for debugging
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} request from origin: ${req.headers.origin || 'unknown'} to ${req.path}`);
+  next();
+});
 
 app.use(express.json());
 
