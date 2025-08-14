@@ -12,11 +12,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('cloudinary').v2;
 const path = require('path');
 
 // Import Cloudinary configuration 
-const { cloudinary, storage: facultyStorage } = require('./src/config/cloudinary.config');
+const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
 
 // Mount course routes
 const courseRoutes = require('./src/routes/course.routes.js');
@@ -34,17 +33,8 @@ const courseStorage = new CloudinaryStorage({
 
 const courseUpload = multer({ storage: courseStorage });
 
-// Multer configuration for faculty uploads
-const facultyStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'academy-wale/faculty',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-    transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }]
-  }
-});
-
-const facultyUpload = multer({ storage: facultyStorage });
+// Use the imported faculty storage from cloudinary.config.js
+const facultyUpload = multer({ storage: cloudinaryFacultyStorage });
 
 // Middleware
 app.use(cors({
