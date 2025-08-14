@@ -22,7 +22,7 @@ const COURSE_OPTIONS = [
   'CA Inter', 'CMA Inter', 
   'CA Final', 'CMA Final'
 ];
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL, fetchWithCredentials } from '../api';
 
 // Modal styles
 const modalStyles = {
@@ -935,10 +935,9 @@ export default function AdminDashboard() {
       // Add modes and durations as comma-separated strings
       formData.append('modes', modesText);
       formData.append('durations', durationsText);
-      const res = await fetch(`${API_URL}/api/admin/courses`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses`, {
         method: 'POST',
         body: formData,
-        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: '/user', // Adjust if your API base path is different
+  withCredentials: true, // Include cookies in all requests
 });
 
 // Request interceptor: attach access token
@@ -51,7 +52,25 @@ api.interceptors.response.use(
   }
 );
 
-const API_URL = import.meta.env.VITE_API_URL;
+// API URL definition - used for all API requests
+export const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms.onrender.com';
+
+/**
+ * Fetch wrapper that includes credentials for admin requests
+ * @param {string} url - The URL to fetch from
+ * @param {object} options - Fetch options
+ * @returns {Promise<Response>} - Fetch response
+ */
+export async function fetchWithCredentials(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    credentials: 'include', // Always include credentials
+    headers: {
+      ...options.headers,
+      // Add any required headers here
+    }
+  });
+}
 
 export async function registerUser(data) {
   return fetch(`${API_URL}/api/auth/register`, {
