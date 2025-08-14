@@ -31,6 +31,10 @@ app.use('/', courseRoutes);
 const facultyRoutes = require('./src/routes/faculty.routes.js');
 app.use('/', facultyRoutes);
 
+// Mount Cloudinary test routes
+const cloudinaryTestRoutes = require('./src/routes/cloudinary-test.routes.js');
+app.use('/', cloudinaryTestRoutes);
+
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance

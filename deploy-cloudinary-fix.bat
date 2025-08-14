@@ -34,14 +34,15 @@ echo console.log('☁️ EMERGENCY CLOUDINARY CONFIG APPLIED!'); >> server\cloud
 echo. >> server\cloudinary-emergency-fix.js
 echo module.exports = cloudinary; >> server\cloudinary-emergency-fix.js
 
-echo 3. Updating app.js to use emergency fix...
-echo const cloudinaryEmergency = require('./cloudinary-emergency-fix'); > server\cloudinary-emergency-require.js
+echo 3. Creating Cloudinary test routes...
+echo Test routes created in server\src\routes\cloudinary-test.routes.js
 
 echo 4. Pushing changes to Git...
 git add server\app.js
 git add server\app-working-fix.js
 git add server\cloudinary-emergency-fix.js
-git add server\cloudinary-emergency-require.js
+git add server\src\routes\cloudinary-test.routes.js
+git add server\src\routes\faculty.routes.js
 git commit -m "Fix Cloudinary API key issue and create emergency fix"
 git push
 

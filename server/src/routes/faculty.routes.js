@@ -1,8 +1,48 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
-const upload = multer({ storage });
+
+// EMERGENCY CLOUDINARY FIX
+// Create direct cloudinary config without relying on imported modules
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Force correct credentials
+cloudinary.config({
+  cloud_name: 'drlqhsjgm',
+  api_key: '367882575567196',
+  api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
+  secure: true
+});
+
+console.log('☁️ EMERGENCY FACULTY ROUTES - CLOUDINARY CONFIG:', {
+  cloud_name: cloudinary.config().cloud_name,
+  api_key_last_5: cloudinary.config().api_key.slice(-5)
+});
+
+// Create storage directly in this file
+const emergencyStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'academywale/faculty',
+    resource_type: 'image',
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 8);
+      return `faculty_${timestamp}_${random}`;
+    },
+    format: 'auto',
+    transformation: [
+      { width: 800, height: 800, crop: "limit" },
+      { quality: "auto" }
+    ]
+  }
+});
+
+// Use the emergency storage
+const upload = multer({ storage: emergencyStorage });
+
+// Import controller normally
 const facultyController = require('../controllers/faculty.controller');
 
 // Test endpoint to verify routes are working
