@@ -19,11 +19,12 @@ const path = require('path');
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
 
-// Cloudinary configuration
+// Cloudinary configuration - matching the credentials in src/config/cloudinary.config.js
 cloudinary.config({
-  cloud_name: 'dms3kqzb1',
-  api_key: '959547171781827',
-  api_secret: 'fMdWN8ZEh4vwMCj5wIx8pnz9Rdo'
+  cloud_name: 'drlqhsjgm',
+  api_key: '367882575567196', 
+  api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
+  secure: true
 });
 
 // Multer configuration for course uploads
