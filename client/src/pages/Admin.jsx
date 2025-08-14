@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../api';
 
 const ADMIN_EMAIL = 'admin@academywale.com';
 const ADMIN_PASSWORD = 'AdminAcademy12';
@@ -12,43 +11,28 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     
     try {
-      // First client-side validation for hardcoded credentials
+      // Client-side validation for hardcoded credentials
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        // Then make a backend auth request to set cookies
-        const response = await fetch(`${API_URL}/api/admin/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include' // Important to include cookies
-        });
-
-        if (response.ok) {
-          localStorage.setItem('isAdmin', 'true');
-          navigate('/admin-dashboard');
-        } else {
-          const data = await response.json();
-          setError(data.error || 'Authentication failed');
-        }
+        // Set admin status in localStorage
+        localStorage.setItem('isAdmin', 'true');
+        
+        // Set a simulated auth cookie for the session
+        document.cookie = "adminAuthenticated=true; path=/; max-age=86400"; // 24 hours
+        
+        // Navigate to admin dashboard
+        navigate('/admin-dashboard');
       } else {
         setError('Invalid credentials.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      // Fallback to client-side auth if server is down
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        localStorage.setItem('isAdmin', 'true');
-        navigate('/admin-dashboard');
-      } else {
-        setError('Authentication error. Please try again.');
-      }
+      setError('Authentication error. Please try again.');
     } finally {
       setLoading(false);
     }
