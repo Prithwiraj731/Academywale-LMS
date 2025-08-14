@@ -21,6 +21,10 @@ const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
 
+// Mount faculty routes
+const facultyRoutes = require('./src/routes/faculty.routes.js');
+app.use('/', facultyRoutes);
+
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance
@@ -1304,62 +1308,7 @@ app.get('/api/faculties', async (req, res) => {
 });
 
 // Add new faculty
-app.post('/api/admin/faculty', facultyUpload.single('image'), async (req, res) => {
-  try {
-    console.log('📝 Faculty creation request received');
-    console.log('📤 Request body:', req.body);
-    console.log('📸 File received:', req.file ? 'Yes' : 'No');
-    
-    const Faculty = require('./src/model/Faculty.model');
-    const { firstName, lastName, bio, teaches } = req.body;
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'Image is required' });
-    }
-    
-    // Get the Cloudinary URL from the uploaded file
-    const imageUrl = req.file.path;
-    const public_id = req.file.filename;
-
-    // Handle teaches array
-    let parsedTeaches = [];
-    if (teaches) {
-      try {
-        parsedTeaches = JSON.parse(teaches);
-      } catch (e) {
-        if (typeof teaches === 'string') {
-          parsedTeaches = teaches.split(',').map(t => t.trim());
-        } else if (Array.isArray(teaches)) {
-          parsedTeaches = teaches;
-        } else {
-          parsedTeaches = [teaches];
-        }
-      }
-    }
-
-    // Generate slug
-    const slug = `${firstName.toLowerCase().replace(/ /g, '-')}-${lastName ? lastName.toLowerCase().replace(/ /g, '-') : ''}`.replace(/--/g, '-').replace(/^-|-$/g, '');
-
-    const newFaculty = new Faculty({
-      firstName,
-      lastName: lastName || '',
-      bio,
-      teaches: parsedTeaches,
-      imageUrl,
-      image: public_id,
-      public_id,
-      slug,
-    });
-
-    await newFaculty.save();
-    console.log('✅ Faculty saved successfully:', newFaculty._id);
-    
-    res.status(201).json({ success: true, faculty: newFaculty });
-  } catch (error) {
-    console.error('❌ Faculty creation error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+// Faculty creation endpoint has been moved to faculty.routes.js and faculty.controller.js
 
 // Get faculty info by firstName
 app.get('/api/faculty-info/:firstName', async (req, res) => {

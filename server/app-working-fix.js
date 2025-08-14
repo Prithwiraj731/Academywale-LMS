@@ -5,16 +5,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('cloudinary').v2;
 
 const app = express();
 
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: 'dms3kqzb1',
-  api_key: '959547171781827',
-  api_secret: 'fMdWN8ZEh4vwMCj5wIx8pnz9Rdo'
-});
+// Import Cloudinary configuration 
+const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
 
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
