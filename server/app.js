@@ -14,6 +14,9 @@ const Course = require('./src/model/Course.model');
 const Faculty = require('./src/model/Faculty.model');
 const User = require('./src/model/User.model');
 
+// Import validation bypass middleware early to avoid reference errors
+const { removeValidationMiddleware, directSaveMiddleware } = require('./src/middleware/forceValidationBypass');
+
 // Apply aggressive direct monkey patch to Faculty model to completely fix mode validation
 try {
   console.log('🔧 Applying aggressive direct monkey patch to Faculty model...');
@@ -1046,9 +1049,6 @@ app.post('/api/admin/courses/faculty', [removeValidationMiddleware, directSaveMi
 });
 
 // MAIN COURSE CREATION ENDPOINT - SIMPLE AND WORKING
-// Import validation bypass middleware
-const { removeValidationMiddleware, directSaveMiddleware } = require('./src/middleware/forceValidationBypass');
-
 // Apply validation bypass middleware to course creation routes
 app.post('/api/admin/courses', [removeValidationMiddleware, directSaveMiddleware, courseUpload.single('poster')], async (req, res) => {
   // Set CORS headers
