@@ -201,7 +201,7 @@ export default function Home() {
             </h2>
             <div className="w-full max-w-2xl shadow-xl rounded-lg overflow-hidden">
               <img 
-                src="client/src/assets/sjcCert.jpg" 
+                src="client/src/assets/sjcCert.jpg"
                 alt="SJC Institute Certificate" 
                 className="w-full h-auto object-contain"
                 onError={(e) => {
