@@ -7,255 +7,197 @@ const VenomBeam = ({
   children 
 }) => {
   const canvasRef = useRef(null);
-  const containerRef = useRef(null);
+  const animationRef = useRef();
+  const particlesRef = useRef([]);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const touchRef = useRef({ x: 0, y: 0, isActive: false });
-  const rafRef = useRef(null);
+  const isDarkRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d", { alpha: false });
-    
-    // Set canvas size
-    const setCanvasSize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      
-      const dpr = window.devicePixelRatio || 1;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-      
-      // Initialize nodes
-      initNodes();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        isDarkRef.current = false; // Always use light theme for AcademyWale
+        ctx.fillStyle = "#111827"; // Match your gray-900 background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
     };
-    
-    let nodes = [];
-    let nodeCount = 150; // Exact node count from ScrollX UI
-    
-    // Node properties
-    const initNodes = () => {
-      nodes = [];
-      const width = canvas.width;
-      const height = canvas.height;
-      
-      for (let i = 0; i < nodeCount; i++) {
-        const x = Math.random() * width;
-        const y = Math.random() * height;
-        const vx = Math.random() * 0.2 - 0.1; // Faster movement like in the demo
-        const vy = Math.random() * 0.2 - 0.1;
-        
-        nodes.push({
-          x,
-          y,
-          vx,
-          vy,
-          radius: Math.random() * 1.5 + 0.5,
-          lastUpdate: Date.now(),
-          connectionDistance: Math.random() * 120 + 60,
-          fillColor: `rgba(32, 178, 170, ${Math.random() * 0.5 + 0.1})`, // Using the teal color (#20b2aa)
+
+    resizeCanvas();
+
+    let resizeTimeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        resizeCanvas();
+        initParticles();
+      }, 100);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    const initParticles = () => {
+      particlesRef.current = [];
+      for (let i = 0; i < 80; i++) {
+        particlesRef.current.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          life: 0,
+          maxLife: Math.random() * 100 + 50,
+          size: Math.random() * 3 + 1,
+          opacity: Math.random() * 0.8 + 0.2,
         });
       }
     };
-    
-    // Handle mouse movement
+
+    initParticles();
+
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
       mouseRef.current = {
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        y: e.clientY - rect.top
       };
     };
+
+    canvas.addEventListener("mousemove", handleMouseMove);
     
-    // Handle touch movement
-    const handleTouchStart = (e) => {
-      if (e.touches.length > 0) {
-        const rect = canvas.getBoundingClientRect();
-        touchRef.current = {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top,
-          isActive: true,
-        };
-      }
-    };
-    
+    // Add touch support
     const handleTouchMove = (e) => {
       if (e.touches.length > 0) {
         const rect = canvas.getBoundingClientRect();
-        touchRef.current = {
+        mouseRef.current = {
           x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top,
-          isActive: true,
+          y: e.touches[0].clientY - rect.top
         };
       }
     };
     
-    const handleTouchEnd = () => {
-      touchRef.current.isActive = false;
-    };
-    
-    // Drawing functions
-    const drawConnection = (x1, y1, x2, y2, distance, maxDistance) => {
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      
-      const alpha = 1 - distance / maxDistance;
-      // Use teal color for connections like in the demo
-      ctx.strokeStyle = `rgba(32, 178, 170, ${alpha * 0.3})`;
-      ctx.lineWidth = Math.min(1.0, alpha * 0.8);
-      ctx.stroke();
-    };
-    
-    const drawNode = (node) => {
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-      ctx.fillStyle = node.fillColor;
-      ctx.fill();
-      
-      // Add a subtle glow for bigger particles
-      if (node.radius > 1) {
+    canvas.addEventListener("touchmove", handleTouchMove);
+
+    const animate = () => {
+      // Use teal color scheme for AcademyWale
+      ctx.fillStyle = "rgba(17, 24, 39, 0.05)"; // Slightly transparent gray-900
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((particle, index) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.life++;
+
+        const dx = mouseRef.current.x - particle.x;
+        const dy = mouseRef.current.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 150) {
+          const force = (150 - distance) / 150;
+          particle.vx += (dx / distance) * force * 0.1;
+          particle.vy += (dy / distance) * force * 0.1;
+        }
+
+        particle.vx *= 0.99;
+        particle.vy *= 0.99;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -0.8;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -0.8;
+
+        particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+        particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+
+        if (particle.life > particle.maxLife) {
+          particle.x = Math.random() * canvas.width;
+          particle.y = Math.random() * canvas.height;
+          particle.vx = (Math.random() - 0.5) * 2;
+          particle.vy = (Math.random() - 0.5) * 2;
+          particle.life = 0;
+          particle.maxLife = Math.random() * 100 + 50;
+        }
+
+        const alpha = particle.opacity * (1 - particle.life / particle.maxLife);
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius * 2, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+
         const gradient = ctx.createRadialGradient(
-          node.x, node.y, node.radius * 0.5,
-          node.x, node.y, node.radius * 2
+          particle.x,
+          particle.y,
+          0,
+          particle.x,
+          particle.y,
+          particle.size * 2
         );
-        gradient.addColorStop(0, `rgba(32, 178, 170, 0.3)`);
-        gradient.addColorStop(1, `rgba(32, 178, 170, 0)`);
+
+        // Use teal color scheme for AcademyWale
+        gradient.addColorStop(0, `rgba(32, 178, 170, ${alpha})`);
+        gradient.addColorStop(0.5, `rgba(32, 178, 170, ${alpha * 0.8})`);
+        gradient.addColorStop(1, `rgba(32, 178, 170, ${alpha * 0.3})`);
+
         ctx.fillStyle = gradient;
         ctx.fill();
-      }
-    };
-    
-    // Animation loop
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      const currentTime = Date.now();
-      const mousePos = mouseRef.current;
-      const touchPos = touchRef.current;
-      
-      // Update and draw nodes
-      for (const node of nodes) {
-        const deltaTime = (currentTime - node.lastUpdate) / 16.67; // Normalize to ~60fps
-        node.lastUpdate = currentTime;
-        
-        // Faster movement like in the demo
-        node.x += node.vx * deltaTime * 1.2;
-        node.y += node.vy * deltaTime * 1.2;
-        
-        // Boundary checking with wrap-around for smoother effect
-        if (node.x < -50) {
-          node.x = canvas.width + 50;
-        } else if (node.x > canvas.width + 50) {
-          node.x = -50;
-        }
-        
-        if (node.y < -50) {
-          node.y = canvas.height + 50;
-        } else if (node.y > canvas.height + 50) {
-          node.y = -50;
-        }
-        
-        // Mouse/touch interaction
-        const interactionPoint = touchRef.current.isActive ? touchPos : mousePos;
-        const dx = interactionPoint.x - node.x;
-        const dy = interactionPoint.y - node.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 200) { // Increased interaction radius for better effect
-          const force = (200 - distance) / 200;
-          const angle = Math.atan2(dy, dx);
-          node.vx -= Math.cos(angle) * force * 0.02 * deltaTime; // Stronger repulsion
-          node.vy -= Math.sin(angle) * force * 0.02 * deltaTime;
-        }
-        
-        // Less dampening for faster animation
-        node.vx *= 0.995;
-        node.vy *= 0.995;
-        
-        // Draw node
-        drawNode(node);
-      }
-      
-      // Draw connections between nodes
-      for (let i = 0; i < nodes.length; i++) {
-        const nodeA = nodes[i];
-        for (let j = i + 1; j < nodes.length; j++) {
-          const nodeB = nodes[j];
-          const dx = nodeB.x - nodeA.x;
-          const dy = nodeB.y - nodeA.y;
+      });
+
+      particlesRef.current.forEach((particle, i) => {
+        particlesRef.current.slice(i + 1).forEach((otherParticle) => {
+          const dx = particle.x - otherParticle.x;
+          const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          const maxDistance = (nodeA.connectionDistance + nodeB.connectionDistance) / 2;
-          
-          if (distance < maxDistance) {
-            drawConnection(nodeA.x, nodeA.y, nodeB.x, nodeB.y, distance, maxDistance);
+
+          if (distance < 100) {
+            const alpha = ((100 - distance) / 100) * 0.3;
+            ctx.beginPath();
+            ctx.moveTo(particle.x, particle.y);
+            ctx.lineTo(otherParticle.x, otherParticle.y);
+
+            // Use teal color for connections
+            ctx.strokeStyle = `rgba(32, 178, 170, ${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           }
-        }
-      }
-      
-      rafRef.current = requestAnimationFrame(animate);
+        });
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
     };
-    
-    // Set up resize listener and initial sizes
-    window.addEventListener("resize", setCanvasSize);
-    setCanvasSize();
-    
-    // Set up mouse and touch event listeners
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchmove", handleTouchMove);
-    window.addEventListener("touchend", handleTouchEnd);
-    
-    // Start animation
+
     animate();
-    
-    // Cleanup
+
     return () => {
-      window.removeEventListener("resize", setCanvasSize);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
+      window.removeEventListener("resize", handleResize);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
     };
   }, []);
 
   return (
-    <div 
-      ref={containerRef}
-      className={`relative w-full h-full ${className || ''}`}
-      style={{ 
-        position: 'relative',
-        overflow: 'hidden',
-        width: '100%',
-        height: '100%'
-      }}
-    >
+    <div className="relative h-full w-full overflow-hidden bg-gray-900">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 z-0"
-        style={{ 
-          width: '100%',
-          height: '100%',
-          background: '#111827', // This matches your footer's bg-gray-900
-          opacity: 1,
-          transition: 'opacity 0.3s ease'
-        }}
+        className="absolute inset-0 w-full h-full bg-gray-900"
       />
-      {children && (
-        <div className="relative z-10">
-          {children}
-        </div>
-      )}
+
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/20 to-gray-900/60" />
+
+      <div className={`absolute inset-0 ${className}`}>{children}</div>
+
+      {/* Small animated dots for extra effect */}
+      <div className="absolute top-20 left-10 w-2 h-2 bg-[#20b2aa] rounded-full animate-pulse opacity-60" />
+      <div className="absolute top-40 right-20 w-1 h-1 bg-[#20b2aa] rounded-full animate-pulse opacity-40" />
+      <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-[#20b2aa] rounded-full animate-pulse opacity-50" />
+      <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-[#20b2aa] rounded-full animate-pulse opacity-30" />
     </div>
   );
 };
