@@ -87,85 +87,79 @@ export default function AllCoursesPage() {
 
         {/* Courses Grid */}
         {!error && courses.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {courses.map((course, index) => (
               <div 
                 key={course._id || index} 
-                className="bg-white/95 rounded-2xl shadow-lg hover:shadow-xl transition-shadow p-6 border border-gray-200"
+                className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102"
               >
                 {/* Course Poster */}
-                <div className="w-full h-48 rounded-xl overflow-hidden bg-gray-100 mb-4 flex items-center justify-center">
+                <div className="relative">
                   {course.posterUrl ? (
                     <img 
                       src={getPosterUrl(course)} 
                       alt="Course Poster" 
-                      className="object-cover w-full h-full"
+                      className="w-full h-52 object-cover"
                       onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
+                        e.target.src = '/logo.svg';
                       }}
                     />
-                  ) : null}
-                  <div 
-                    className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-gray-500"
-                    style={{ display: course.posterUrl ? 'none' : 'flex' }}
-                  >
-                    No Image
-                  </div>
+                  ) : (
+                    <div className="w-full h-52 bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center">
+                      <span className="text-teal-600">No Image</span>
+                    </div>
+                  )}
+                  {course.category && (
+                    <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
+                      {course.category} {course.subcategory}
+                    </div>
+                  )}
                 </div>
 
                 {/* Course Info */}
-                <div className="space-y-3">
+                <div className="p-4">
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                     {course.title || course.subject}
                   </h3>
-
-                  {/* Description */}
-                  {course.description && (
-                    <p className="text-gray-600 text-sm line-clamp-2">
-                      {course.description}
+                  
+                  {/* Faculty */}
+                  {course.facultyName && (
+                    <p className="text-sm text-gray-600 mb-3">
+                      by <span className="font-medium">{course.facultyName}</span>
                     </p>
                   )}
 
-                  {/* Course Details */}
-                  <div className="space-y-1 text-sm text-gray-600">
-                    {course.category && course.subcategory && (
-                      <div><span className="font-semibold">Category:</span> {course.category} {course.subcategory}</div>
-                    )}
-                    {course.paperName && (
-                      <div><span className="font-semibold">Paper:</span> {course.paperName}</div>
-                    )}
-                    {course.facultyName && (
-                      <div><span className="font-semibold">Faculty:</span> {course.facultyName}</div>
-                    )}
-                    {course.institute && (
-                      <div><span className="font-semibold">Institute:</span> {course.institute}</div>
-                    )}
-                    {course.noOfLecture && (
-                      <div><span className="font-semibold">Lectures:</span> {course.noOfLecture}</div>
-                    )}
-                    {course.videoLanguage && (
-                      <div><span className="font-semibold">Language:</span> {course.videoLanguage}</div>
-                    )}
-                  </div>
-
-                  {/* Pricing */}
-                  {(course.costPrice || course.sellingPrice) && (
-                    <div className="flex items-center gap-3 pt-2">
-                      {course.costPrice && course.sellingPrice && course.costPrice > course.sellingPrice ? (
-                        <>
-                          <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                          <span className="text-xl font-bold text-green-600">₹{course.sellingPrice}</span>
-                          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">
-                            {Math.round(((course.costPrice - course.sellingPrice) / course.costPrice) * 100)}% off
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-xl font-bold text-blue-600">₹{course.sellingPrice || course.costPrice}</span>
-                      )}
+                  {/* Paper Name if available */}
+                  {course.paperName && (
+                    <div className="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-md inline-block mb-2">
+                      {course.paperName}
                     </div>
                   )}
+                  
+                  {/* Lectures count */}
+                  {course.noOfLecture && (
+                    <p className="text-xs text-gray-500 mb-2">
+                      {course.noOfLecture}
+                    </p>
+                  )}
+
+                  {/* Pricing */}
+                  <div className="mt-3">
+                    <div className="text-sm text-gray-500">Starting from:</div>
+                    <div className="flex items-center gap-2">
+                      {course.sellingPrice && (
+                        <span className="text-2xl font-bold text-teal-600">
+                          ₹{course.sellingPrice}
+                        </span>
+                      )}
+                      {course.costPrice && course.costPrice > (course.sellingPrice || 0) && (
+                        <span className="text-sm text-gray-400 line-through">
+                          ₹{course.costPrice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Action Button */}
                   <button
@@ -177,7 +171,7 @@ export default function AllCoursesPage() {
                         alert('Course details coming soon!');
                       }
                     }}
-                    className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors mt-4"
+                    className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
                   >
                     View Details
                   </button>

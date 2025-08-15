@@ -83,31 +83,76 @@ export default function CoursesPage() {
             No courses found for this paper.
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
           {filteredCourses.map((course, idx) => (
-            <div key={idx} className="bg-white/95 rounded-3xl shadow-2xl p-4 flex flex-col items-center border border-[#20b2aa]">
-              <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-4">
-                <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
+            <div key={idx} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102">
+              <div className="relative">
+                <img 
+                  src={getPosterUrl(course)} 
+                  alt={course.subject} 
+                  className="w-full h-52 object-cover"
+                  onError={(e) => {
+                    e.target.src = '/logo.svg';
+                  }}
+                />
+                {course.courseType && (
+                  <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
+                    {course.courseType}
+                  </div>
+                )}
               </div>
-              <div className="text-lg font-bold text-[#17817a] mb-1 text-center">{course.subject}</div>
-              <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
-              <div className="flex flex-col gap-1 text-xs text-gray-500 mb-2 text-center">
-                <div>Lectures: {course.noOfLecture}</div>
-                <div>Books: {course.books}</div>
-                <div>Language: {course.videoLanguage}</div>
-                <div>Validity: {course.validityStartFrom}</div>
-                <div>Mode: {course.mode}</div>
+              
+              <div className="p-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  {course.subject}
+                </h3>
+                
+                {course.facultyName && (
+                  <p className="text-sm text-gray-600 mb-3">
+                    by <span className="font-medium">{course.facultyName}</span>
+                  </p>
+                )}
+                
+                {course.noOfLecture && (
+                  <p className="text-xs text-gray-500 mb-2">
+                    {course.noOfLecture}
+                  </p>
+                )}
+                
+                {/* Quick Info */}
+                <div className="flex flex-wrap gap-2 text-xs mb-3">
+                  {course.mode && (
+                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                      {course.mode}
+                    </span>
+                  )}
+                  {course.videoLanguage && (
+                    <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                      {course.videoLanguage}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Pricing */}
+                <div className="mt-3">
+                  <div className="text-sm text-gray-500">Price:</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-teal-600">
+                      ₹{course.sellingPrice}
+                    </span>
+                    <span className="text-sm text-gray-400 line-through">
+                      ₹{course.costPrice}
+                    </span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => navigate(`/payment/${encodeURIComponent(type)}/${course._id}`)}
+                  className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
+                >
+                  Buy Now
+                </button>
               </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
-              </div>
-              <button
-                onClick={() => navigate(`/payment/${encodeURIComponent(type)}/${course._id}`)}
-                className="mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-base w-full"
-              >
-                Buy Now
-              </button>
             </div>
           ))}
         </div>

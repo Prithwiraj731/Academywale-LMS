@@ -105,18 +105,17 @@ const CAFinalPaperDetailPage = () => {
         )}
 
         {/* Course List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 mb-8">
           {courses.map((course, idx) => (
             <div
               key={idx}
-              onClick={() => handleCourseClick(course)}
-              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105"
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102"
             >
               <div className="relative">
                 <img
                   src={getPosterUrl(course)}
                   alt={course.subject}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-52 object-cover"
                   onError={(e) => {
                     e.target.src = '/logo.svg';
                   }}
@@ -127,18 +126,18 @@ const CAFinalPaperDetailPage = () => {
               </div>
               
               <div className="p-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                   {course.subject}
                 </h3>
                 
                 {course.facultyName && (
-                  <p className="text-sm text-gray-600 mb-2">
-                    by {course.facultyName}
+                  <p className="text-sm text-gray-600 mb-3">
+                    by <span className="font-medium">{course.facultyName}</span>
                   </p>
                 )}
                 
                 {course.noOfLecture && (
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-xs text-gray-500 mb-2">
                     {course.noOfLecture}
                   </p>
                 )}
@@ -147,7 +146,7 @@ const CAFinalPaperDetailPage = () => {
                   <div className="mt-3">
                     <div className="text-sm text-gray-500">Starting from:</div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-teal-600">
+                      <span className="text-2xl font-bold text-teal-600">
                         ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.sellingPrice)))}
                       </span>
                       <span className="text-sm text-gray-400 line-through">
@@ -157,7 +156,10 @@ const CAFinalPaperDetailPage = () => {
                   </div>
                 )}
                 
-                <button className="w-full mt-3 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors">
+                <button 
+                  onClick={() => handleCourseClick(course)}
+                  className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
+                >
                   View Details
                 </button>
               </div>
