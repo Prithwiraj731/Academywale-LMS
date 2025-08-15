@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+// Import mode mapper
+const { mapMode, ALLOWED_MODES } = require('../utils/modeMapper');
 
 const CourseSchema = new mongoose.Schema({
   facultyName: { type: String, required: true },
@@ -14,7 +16,13 @@ const CourseSchema = new mongoose.Schema({
   supportMail: { type: String },
   supportCall: { type: String },
   posterUrl: String, // URL or path to the poster image
-  mode: { type: String, enum: ['Live Watching', 'Recorded Videos', 'Live at Home With Hard Copy', 'Self Study'] },
+  // IMPORTANT: Set and get hooks ensure any value is mapped to an allowed value
+  mode: { 
+    type: String, 
+    enum: ALLOWED_MODES, // Only these values are allowed
+    set: mapMode, // Auto-convert any value to allowed values
+    default: 'Live Watching'
+  },
   modes: [{ type: String }], // OLD: array of modes (for backwards compatibility)
   timing: String,
   description: String,
@@ -53,4 +61,26 @@ const FacultySchema = new mongoose.Schema({
   courses: [CourseSchema],
 }, { timestamps: true });
 
+// Add pre-validate hook to ensure all mode values are valid
+FacultySchema.pre('validate', function(next) {
+  // Ensure we have courses
+  if (this.courses && this.courses.length > 0) {
+    // Go through all courses
+    this.courses.forEach(course => {
+      // Map mode to valid value if it exists
+      if (course.mode) {
+        const originalMode = course.mode;
+        course.mode = mapMode(course.mode);
+        
+        // Log if we changed something
+        if (originalMode !== course.mode) {
+          console.log(`🔄 Mapped mode from "${originalMode}" to "${course.mode}" during validation`);
+        }
+      }
+    });
+  }
+  next();
+});
+
+// Export the model
 module.exports = mongoose.model('Faculty', FacultySchema); 

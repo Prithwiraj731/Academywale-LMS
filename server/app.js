@@ -3,6 +3,9 @@ const cloudinaryEmergency = require('./cloudinary-emergency-fix');
 
 const express = require('express');
 const app = express();
+
+// Import the mode mapper utility
+const { mapMode } = require('./src/utils/modeMapper');
 const cors = require('cors');
 const mongoose = require('mongoose');
 

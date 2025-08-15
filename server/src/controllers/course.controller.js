@@ -1,5 +1,5 @@
-// Import course utilities
-const { validateCourseMode } = require('../utils/courseUtils');
+// Import the mode mapper utility
+const { mapMode } = require('../utils/modeMapper');
 
 // Unified course creation: supports both general and faculty courses, including hardcoded faculties/institutes
 exports.addCourseToFaculty = async (req, res) => {
@@ -117,14 +117,16 @@ exports.addCourseToFaculty = async (req, res) => {
       modeAttemptPricing: parsedModeAttemptPricing,
       costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
       sellingPrice: parsedModeAttemptPricing[0]?.attempts[0]?.sellingPrice || 0,
-      mode: parsedModeAttemptPricing[0]?.mode || 'Live Watching',
-      modes: parsedModeAttemptPricing.map(m => m.mode),
+      // Map the mode to only allowed values
+      mode: mapMode(parsedModeAttemptPricing[0]?.mode),
+      modes: parsedModeAttemptPricing.map(m => mapMode(m.mode)),
       durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
     };
     
-    // Validate and fix course mode before adding to faculty
-    newCourse = validateCourseMode(newCourse);
-    console.log('✅ Course mode validated and fixed if needed');
+    console.log('⚠️ Original mode value:', parsedModeAttemptPricing[0]?.mode);
+    console.log('✅ Mapped mode value:', newCourse.mode);
+    
+    // No need for complex validation - we've already mapped to allowed values
     
     // Make absolutely sure mode is a valid value
     newCourse.mode = 'Live Watching';
