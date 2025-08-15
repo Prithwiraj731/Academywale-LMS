@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 // Custom animation styles
 const styles = `
@@ -10,6 +10,25 @@ const styles = `
     100% {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideLeft {
+    0% {
+      transform: translateX(30px);
+      opacity: 0;
+    }
+    5% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    95% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-30px);
+      opacity: 0;
     }
   }
 `;
@@ -74,31 +93,91 @@ const testimonials = [
 ];
 
 export default function ModernTestimonial({ 
-  title = "Customer Reviews",
-  subtitle = "What our users think about our product"
+  title = "See What Teachers & Students Say",
+  subtitle = "Feedback from our community of learners and educators"
 }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [displayedTestimonials, setDisplayedTestimonials] = useState([]);
+  
+  // Calculate how many testimonials to show based on screen size
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Determine how many cards to show based on screen width
+  let cardsToShow = 1;
+  if (windowWidth >= 768) cardsToShow = 2;
+  if (windowWidth >= 1024) cardsToShow = 3;
+  
+  useEffect(() => {
+    // Initialize with first batch of testimonials
+    const initialTestimonials = [];
+    for (let i = 0; i < cardsToShow; i++) {
+      initialTestimonials.push(testimonials[(activeIndex + i) % testimonials.length]);
+    }
+    setDisplayedTestimonials(initialTestimonials);
+    
+    // Set up the rotation with faster speed
+    const interval = setInterval(() => {
+      setActiveIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % testimonials.length;
+        
+        // Update displayed testimonials
+        const newTestimonials = [];
+        for (let i = 0; i < cardsToShow; i++) {
+          newTestimonials.push(testimonials[(nextIndex + i) % testimonials.length]);
+        }
+        setDisplayedTestimonials(newTestimonials);
+        
+        return nextIndex;
+      });
+    }, 3000); // Change every 3 seconds for faster animation
+    
+    return () => clearInterval(interval);
+  }, [cardsToShow]);
+  
   return (
     <section className="py-12 bg-black text-white overflow-hidden">
       <style>{styles}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-block relative">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-              {title}
-            </h2>
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-400 to-pink-600 rounded-lg blur opacity-20 -z-10"></div>
-          </div>
+        <div className="text-center mb-10">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+            {title}
+          </h2>
           <p className="text-lg text-gray-400 mt-3">
             {subtitle}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
-          {testimonials.map((testimonial, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedTestimonials.map((testimonial, index) => (
             <TestimonialCard 
-              key={testimonial.id} 
-              testimonial={testimonial} 
-              delay={index * 0.05} // Reduced delay for faster animation
+              key={`${testimonial.id}-${activeIndex}-${index}`}
+              testimonial={testimonial}
+              isAnimating={true}
+            />
+          ))}
+        </div>
+        
+        {/* Pagination indicators */}
+        <div className="flex justify-center mt-8 space-x-2">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                Math.floor(activeIndex / cardsToShow) === Math.floor(index / cardsToShow) 
+                  ? 'bg-purple-500 w-4' 
+                  : 'bg-gray-600'
+              }`}
+              aria-label={`Go to testimonial ${index + 1}`}
             />
           ))}
         </div>
@@ -107,25 +186,29 @@ export default function ModernTestimonial({
   );
 }
 
-function TestimonialCard({ testimonial, delay = 0 }) {
+function TestimonialCard({ testimonial, isAnimating }) {
   return (
     <div 
-      className="bg-gray-900/70 rounded-2xl p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.05] transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20 transform"
+      className="bg-gray-900/70 rounded-2xl p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative"
       style={{
-        animation: `fadeIn 0.6s ease-out forwards`,
-        animationDelay: `${delay}s`,
-        opacity: 0,
+        animation: isAnimating ? `slideLeft 3s ease-in-out forwards` : 'none',
       }}
     >
-      <div className="absolute -top-1 -right-1 w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-20 blur-xl"></div>
-      <p className="text-gray-300 mb-6 flex-grow relative z-10">"{testimonial.review}"</p>
+      {/* Purple glow effect */}
+      <div className="absolute -top-1 -right-1 w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
       
+      {/* Main review text */}
+      <p className="text-gray-300 mb-6 flex-grow relative z-10 pt-2 text-sm sm:text-base">
+        "{testimonial.review}"
+      </p>
+      
+      {/* Author info */}
       <div className="flex items-center mt-auto relative z-10">
-        <div className="h-12 w-12 rounded-full overflow-hidden ring-2 ring-purple-500 hover:ring-4 hover:ring-purple-400 transition-all duration-200">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-purple-500">
           <img 
             src={testimonial.avatar} 
             alt={testimonial.name} 
-            className="h-full w-full object-cover hover:scale-110 transition-transform duration-300"
+            className="h-full w-full object-cover"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
@@ -140,8 +223,8 @@ function TestimonialCard({ testimonial, delay = 0 }) {
         </div>
         
         <div className="ml-3">
-          <div className="font-semibold text-white">{testimonial.name}</div>
-          <div className="text-sm text-purple-300">{testimonial.role}</div>
+          <div className="font-semibold text-white text-sm sm:text-base">{testimonial.name}</div>
+          <div className="text-xs sm:text-sm text-purple-300">{testimonial.role}</div>
         </div>
       </div>
     </div>
