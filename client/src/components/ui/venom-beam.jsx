@@ -1,203 +1,215 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const VenomBeam = ({ 
   className = "" 
 }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const animationRef = useRef(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const touchRef = useRef({ x: 0, y: 0, isActive: false });
+  const rafRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!canvas) return;
 
-    let width = container.offsetWidth;
-    let height = container.offsetHeight;
-    
-    canvas.width = width;
-    canvas.height = height;
-    
     const ctx = canvas.getContext("2d");
-    const particles = [];
-    const particleCount = 120;
-    let mouse = { x: 0, y: 0, radius: 180 };
-
+    
+    // Set canvas size
+    const setCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      
+      // Initialize nodes
+      initNodes();
+    };
+    
+    let nodes = [];
+    let nodeCount = 180; // Increased for better density
+    
+    // Node properties
+    const initNodes = () => {
+      nodes = [];
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      for (let i = 0; i < nodeCount; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const vx = Math.random() * 0.15 - 0.075; // Slightly slower movement
+        const vy = Math.random() * 0.15 - 0.075;
+        
+        nodes.push({
+          x,
+          y,
+          vx,
+          vy,
+          radius: Math.random() * 1.2 + 0.5,
+          lastUpdate: Date.now(),
+          connectionDistance: Math.random() * 100 + 60,
+          fillColor: `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.05})`,
+        });
+      }
+    };
+    
+    // Handle mouse movement
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
+      mouseRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
     };
-
+    
+    // Handle touch movement
+    const handleTouchStart = (e) => {
+      if (e.touches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        touchRef.current = {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top,
+          isActive: true,
+        };
+      }
+    };
+    
     const handleTouchMove = (e) => {
       if (e.touches.length > 0) {
         const rect = canvas.getBoundingClientRect();
-        mouse.x = e.touches[0].clientX - rect.left;
-        mouse.y = e.touches[0].clientY - rect.top;
+        touchRef.current = {
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top,
+          isActive: true,
+        };
       }
     };
-
-    const handleResize = () => {
-      width = container.offsetWidth;
-      height = container.offsetHeight;
-      canvas.width = width;
-      canvas.height = height;
-      particles.length = 0;
-      init();
+    
+    const handleTouchEnd = () => {
+      touchRef.current.isActive = false;
     };
-
-    class Particle {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.speedX = Math.random() * 2 - 1;
-        this.speedY = Math.random() * 2 - 1;
-        this.baseX = x;
-        this.baseY = y;
-        this.density = Math.random() * 25 + 5;
-        this.opacity = Math.random() * 0.3 + 0.2;
-        this.friction = 0.95;
-        this.links = [];
-        this.distance = Math.random() * 120 + 80;
-      }
-
-      update() {
-        // Basic motion
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance;
-        let forceDirectionY = dy / distance;
+    
+    // Drawing functions
+    const drawConnection = (x1, y1, x2, y2, distance, maxDistance) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      
+      const alpha = 1 - distance / maxDistance;
+      // Lighter shade for connections - closer to the example
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.25})`;
+      ctx.lineWidth = Math.min(0.8, alpha * 0.6);
+      ctx.stroke();
+    };
+    
+    const drawNode = (node) => {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+      ctx.fillStyle = node.fillColor;
+      ctx.fill();
+    };
+    
+    // Animation loop
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const currentTime = Date.now();
+      const mousePos = mouseRef.current;
+      const touchPos = touchRef.current;
+      
+      // Update and draw nodes
+      for (const node of nodes) {
+        const deltaTime = (currentTime - node.lastUpdate) / 16.67; // Normalize to ~60fps
+        node.lastUpdate = currentTime;
         
-        // Calculate force to apply
-        const maxDistance = mouse.radius;
-        const force = (maxDistance - distance) / maxDistance;
+        // Basic movement
+        node.x += node.vx * deltaTime;
+        node.y += node.vy * deltaTime;
         
-        // Apply force if within radius
-        if (distance < maxDistance && force > 0) {
-          const directionX = forceDirectionX * force * this.density;
-          const directionY = forceDirectionY * force * this.density;
-          
-          this.x -= directionX;
-          this.y -= directionY;
-        } else {
-          // Return to original position
-          if (this.x !== this.baseX) {
-            const dx = this.baseX - this.x;
-            this.x += dx * 0.03;
-          }
-          if (this.y !== this.baseY) {
-            const dy = this.baseY - this.y;
-            this.y += dy * 0.03;
-          }
+        // Boundary checking
+        if (node.x < 0 || node.x > canvas.width) {
+          node.vx = -node.vx;
         }
         
-        // Add random movement
-        this.x += (Math.random() - 0.5) * 0.3;
-        this.y += (Math.random() - 0.5) * 0.3;
+        if (node.y < 0 || node.y > canvas.height) {
+          node.vy = -node.vy;
+        }
+        
+        // Mouse/touch interaction
+        const interactionPoint = touchRef.current.isActive ? touchPos : mousePos;
+        const dx = interactionPoint.x - node.x;
+        const dy = interactionPoint.y - node.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < 150) { // Increased interaction radius
+          const force = (150 - distance) / 150;
+          const angle = Math.atan2(dy, dx);
+          node.vx -= Math.cos(angle) * force * 0.015 * deltaTime; // Stronger repulsion
+          node.vy -= Math.sin(angle) * force * 0.015 * deltaTime;
+        }
+        
+        // Slight dampening for stability
+        node.vx *= 0.99;
+        node.vy *= 0.99;
+        
+        // Draw node
+        drawNode(node);
       }
-
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-        ctx.fill();
-      }
-
-      // Find nearby particles to form connections
-      calculateLinks(particles) {
-        this.links = [];
-        for (const otherParticle of particles) {
-          if (this === otherParticle) continue;
-          
-          const dx = this.x - otherParticle.x;
-          const dy = this.y - otherParticle.y;
+      
+      // Draw connections between nodes
+      for (let i = 0; i < nodes.length; i++) {
+        const nodeA = nodes[i];
+        for (let j = i + 1; j < nodes.length; j++) {
+          const nodeB = nodes[j];
+          const dx = nodeB.x - nodeA.x;
+          const dy = nodeB.y - nodeA.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < this.distance) {
-            const opacity = 1 - distance / this.distance;
-            this.links.push({
-              x: otherParticle.x,
-              y: otherParticle.y,
-              opacity: opacity * 0.25,
-              distance: distance
-            });
+          const maxDistance = (nodeA.connectionDistance + nodeB.connectionDistance) / 2;
+          
+          if (distance < maxDistance) {
+            drawConnection(nodeA.x, nodeA.y, nodeB.x, nodeB.y, distance, maxDistance);
           }
         }
       }
-
-      // Draw connections to nearby particles
-      drawLinks() {
-        for (const link of this.links) {
-          // Thinner lines for distant particles
-          const lineWidth = 0.5 - (link.distance / this.distance * 0.4);
-          
-          ctx.beginPath();
-          ctx.moveTo(this.x, this.y);
-          ctx.lineTo(link.x, link.y);
-          ctx.strokeStyle = `rgba(255,255,255,${link.opacity})`;
-          ctx.lineWidth = Math.max(0.1, lineWidth);
-          ctx.stroke();
-        }
-      }
-    }
-
-    function init() {
-      for (let i = 0; i < particleCount; i++) {
-        const x = Math.random() * width;
-        const y = Math.random() * height;
-        particles.push(new Particle(x, y));
-      }
-    }
-
-    function animate() {
-      // Clear with semi-transparent black to create subtle trail effect
-      ctx.fillStyle = 'rgba(17, 24, 39, 0.05)';
-      ctx.fillRect(0, 0, width, height);
       
-      // Process all particles
-      for (const particle of particles) {
-        particle.update();
-        particle.calculateLinks(particles);
-      }
-      
-      // Draw connections first (so they appear behind particles)
-      for (const particle of particles) {
-        particle.drawLinks();
-      }
-      
-      // Draw particles on top
-      for (const particle of particles) {
-        particle.draw();
-      }
-      
-      animationRef.current = requestAnimationFrame(animate);
-    }
-
-    // Initialize and start animation
-    init();
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    
+    // Set up resize listener and initial sizes
+    window.addEventListener("resize", setCanvasSize);
+    setCanvasSize();
+    
+    // Set up mouse and touch event listeners
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+    
+    // Start animation
     animate();
-
-    // Event listeners
-    window.addEventListener('resize', handleResize);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('touchmove', handleTouchMove);
-
+    
     // Cleanup
     return () => {
-      window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener("resize", setCanvasSize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, []);
 
   return (
     <div 
-      ref={containerRef} 
+      ref={containerRef}
       className={`particles-container ${className || ''}`}
       style={{ 
         position: 'absolute',
@@ -206,13 +218,20 @@ const VenomBeam = ({
         width: '100%',
         height: '100%',
         zIndex: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        overflow: 'hidden'
       }}
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 z-0"
-        style={{ background: '#111827' }} // using a dark gray/black color to match Footer
+        className="absolute inset-0"
+        style={{ 
+          width: '100%',
+          height: '100%',
+          background: '#111827',
+          opacity: 1,
+          transition: 'opacity 0.3s ease'
+        }}
       />
     </div>
   );
