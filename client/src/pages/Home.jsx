@@ -5,7 +5,9 @@ import Categories from '../components/home/Categories';
 import Numbers from '../components/home/Numbers';
 import SearchBy from '../components/home/SearchBy';
 import Partners from '../components/home/Partners';
-import Reviews from '../components/home/Reviews';
+// Import the new testimonial component instead of Reviews
+import KineticTestimonial from '../components/ui/kinetic-testimonials';
+import { academyWaleTestimonials } from '../data/testimonials';
 import WhatsAppButton from '../components/home/WhatsAppButton';
 import Footer from '../components/layout/Footer';
 import Particles from '../components/common/Particles';
@@ -222,7 +224,19 @@ export default function Home() {
         </div>
       </section>
       
-      <Reviews />
+      {/* KineticTestimonial component replacing Reviews */}
+      <KineticTestimonial
+        testimonials={academyWaleTestimonials}
+        className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-black dark:to-black md:py-16 py-12"
+        cardClassName="hover:scale-105 shadow-lg"
+        avatarClassName="ring-2 ring-teal-500"
+        desktopColumns={3}
+        tabletColumns={3}
+        mobileColumns={2}
+        speed={1.5}
+        title="See What Teachers & Students Say"
+        subtitle="Feedback from our community of learners and educators"
+      />
       <WhatsAppButton />
       <Footer />
     </div>
