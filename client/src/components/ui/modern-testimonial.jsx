@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Custom animation styles
 const styles = `
@@ -29,6 +29,29 @@ const styles = `
     100% {
       transform: translateX(-30px);
       opacity: 0;
+    }
+  }
+  
+  .testimonial-slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%;
+    gap: 1.5rem;
+  }
+  
+  .testimonial-slide {
+    min-width: 100%;
+  }
+  
+  @media (min-width: 768px) {
+    .testimonial-slide {
+      min-width: calc(50% - 0.75rem);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .testimonial-slide {
+      min-width: calc(33.333% - 1rem);
     }
   }
 `;
@@ -97,7 +120,9 @@ export default function ModernTestimonial({
   subtitle = "Feedback from our community of learners and educators"
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [displayedTestimonials, setDisplayedTestimonials] = useState([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const sliderRef = useRef(null);
+  const intervalRef = useRef(null);
   
   // Calculate how many testimonials to show based on screen size
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
@@ -105,43 +130,56 @@ export default function ModernTestimonial({
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      if (sliderRef.current) {
+        sliderRef.current.style.transform = `translateX(-${activeIndex * 100}%)`;
+      }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [activeIndex]);
   
   // Determine how many cards to show based on screen width
   let cardsToShow = 1;
   if (windowWidth >= 768) cardsToShow = 2;
   if (windowWidth >= 1024) cardsToShow = 3;
   
-  useEffect(() => {
-    // Initialize with first batch of testimonials
-    const initialTestimonials = [];
-    for (let i = 0; i < cardsToShow; i++) {
-      initialTestimonials.push(testimonials[(activeIndex + i) % testimonials.length]);
+  // Total number of slides (accounting for wrapping)
+  const totalSlides = testimonials.length;
+  
+  // Handle slider movement
+  const moveSlider = (index) => {
+    setActiveIndex(index);
+    if (sliderRef.current) {
+      const slideWidth = 100 / cardsToShow;
+      sliderRef.current.style.transform = `translateX(-${index * slideWidth}%)`;
     }
-    setDisplayedTestimonials(initialTestimonials);
-    
-    // Set up the rotation with faster speed
-    const interval = setInterval(() => {
-      setActiveIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % testimonials.length;
-        
-        // Update displayed testimonials
-        const newTestimonials = [];
-        for (let i = 0; i < cardsToShow; i++) {
-          newTestimonials.push(testimonials[(nextIndex + i) % testimonials.length]);
+  };
+  
+  // Start/stop the auto slider
+  useEffect(() => {
+    const startInterval = () => {
+      // Clear existing interval if any
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      
+      intervalRef.current = setInterval(() => {
+        if (!isPaused) {
+          const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
+          moveSlider(nextIndex);
         }
-        setDisplayedTestimonials(newTestimonials);
-        
-        return nextIndex;
-      });
-    }, 3000); // Change every 3 seconds for faster animation
+      }, 3000); // Change every 3 seconds
+    };
     
-    return () => clearInterval(interval);
-  }, [cardsToShow]);
+    startInterval();
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [activeIndex, isPaused, cardsToShow, totalSlides]);
   
   return (
     <section className="py-12 bg-black text-white overflow-hidden">
@@ -156,43 +194,81 @@ export default function ModernTestimonial({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedTestimonials.map((testimonial, index) => (
-            <TestimonialCard 
-              key={`${testimonial.id}-${activeIndex}-${index}`}
-              testimonial={testimonial}
-              isAnimating={true}
-            />
-          ))}
+        <div className="overflow-hidden">
+          <div 
+            className="testimonial-slider"
+            ref={sliderRef}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+          >
+            {testimonials.map((testimonial, index) => (
+              <div className="testimonial-slide" key={`testimonial-${testimonial.id}`}>
+                <TestimonialCard 
+                  testimonial={testimonial}
+                  isAnimating={false}
+                />
+              </div>
+            ))}
+          </div>
         </div>
         
-        {/* Pagination indicators */}
-        <div className="flex justify-center mt-8 space-x-2">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                Math.floor(activeIndex / cardsToShow) === Math.floor(index / cardsToShow) 
-                  ? 'bg-purple-500 w-4' 
-                  : 'bg-gray-600'
-              }`}
-              aria-label={`Go to testimonial ${index + 1}`}
-            />
-          ))}
+        {/* Navigation controls */}
+        <div className="flex justify-between items-center mt-8">
+          <button 
+            onClick={() => {
+              const prevIndex = activeIndex === 0 
+                ? totalSlides - cardsToShow 
+                : activeIndex - 1;
+              moveSlider(prevIndex);
+            }}
+            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            aria-label="Previous testimonial"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          
+          {/* Pagination indicators */}
+          <div className="flex justify-center space-x-2">
+            {Array.from({ length: totalSlides - cardsToShow + 1 }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => moveSlider(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  activeIndex === index 
+                    ? 'bg-purple-500 w-4' 
+                    : 'bg-gray-600'
+                }`}
+                aria-label={`Go to testimonial set ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          <button 
+            onClick={() => {
+              const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
+              moveSlider(nextIndex);
+            }}
+            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            aria-label="Next testimonial"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
         </div>
       </div>
     </section>
   );
 }
 
-function TestimonialCard({ testimonial, isAnimating }) {
+function TestimonialCard({ testimonial }) {
   return (
     <div 
       className="bg-gray-900/70 rounded-2xl p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative"
-      style={{
-        animation: isAnimating ? `slideLeft 3s ease-in-out forwards` : 'none',
-      }}
     >
       {/* Purple glow effect */}
       <div className="absolute -top-1 -right-1 w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
