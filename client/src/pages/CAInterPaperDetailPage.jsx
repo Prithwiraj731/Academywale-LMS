@@ -1,20 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import BackButton from '../components                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.sellingPrice)))}
-                      </span>
-                      <span className="text-sm text-gray-400 line-through">
-                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.costPrice)))}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => handleCourseClick(course)}
-                  className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
-                >
-                  View Details
-                </button>kButton';
+import BackButton from '../components/common/BackButton';
 import papersData from '../data/papersData';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
