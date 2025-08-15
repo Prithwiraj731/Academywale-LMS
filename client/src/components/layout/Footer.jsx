@@ -49,7 +49,9 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-white relative overflow-hidden">
-      <VenomBeam />
+      <VenomBeam className="min-h-full w-full absolute inset-0">
+        {/* Empty children for VenomBeam as we only need the animation background */}
+      </VenomBeam>
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8 lg:gap-12">
           {/* Company info */}
@@ -161,14 +163,14 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-gray-800">
+      <div className="border-t border-gray-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 xs:py-5 sm:py-6">
           <div className="flex flex-col xs:flex-row justify-between items-center">
-            <div className="text-gray-400 text-xs xs:text-sm mb-2 xs:mb-0">
+            <div className="text-gray-300 text-xs xs:text-sm mb-2 xs:mb-0 font-medium">
               ©2025 Academywale. All Rights Reserved.
             </div>
-            <div className="text-gray-400 text-xs xs:text-sm">
-              Designed and developed by <a href="https://www.linkedin.com/in/prithwiraj-mazumdar-963086291/">Prithwiraj</a>
+            <div className="text-gray-300 text-xs xs:text-sm font-medium">
+              Designed and developed by <a href="https://www.linkedin.com/in/prithwiraj-mazumdar-963086291/" className="hover:text-[#20b2aa] transition-colors">Prithwiraj</a>
             </div>
           </div>
         </div>

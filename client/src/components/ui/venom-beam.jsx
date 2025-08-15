@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 const VenomBeam = ({ 
-  className = "" 
+  className = "",
+  children 
 }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -30,7 +31,7 @@ const VenomBeam = ({
     };
     
     let nodes = [];
-    let nodeCount = 180; // Increased for better density
+    let nodeCount = 150; // Exact node count from ScrollX UI
     
     // Node properties
     const initNodes = () => {
@@ -41,18 +42,18 @@ const VenomBeam = ({
       for (let i = 0; i < nodeCount; i++) {
         const x = Math.random() * width;
         const y = Math.random() * height;
-        const vx = Math.random() * 0.15 - 0.075; // Slightly slower movement
-        const vy = Math.random() * 0.15 - 0.075;
+        const vx = Math.random() * 0.2 - 0.1; // Faster movement like in the demo
+        const vy = Math.random() * 0.2 - 0.1;
         
         nodes.push({
           x,
           y,
           vx,
           vy,
-          radius: Math.random() * 1.2 + 0.5,
+          radius: Math.random() * 1.5 + 0.5,
           lastUpdate: Date.now(),
-          connectionDistance: Math.random() * 100 + 60,
-          fillColor: `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.05})`,
+          connectionDistance: Math.random() * 120 + 60,
+          fillColor: `rgba(32, 178, 170, ${Math.random() * 0.5 + 0.1})`, // Using the teal color (#20b2aa)
         });
       }
     };
@@ -100,9 +101,9 @@ const VenomBeam = ({
       ctx.lineTo(x2, y2);
       
       const alpha = 1 - distance / maxDistance;
-      // Lighter shade for connections - closer to the example
-      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.25})`;
-      ctx.lineWidth = Math.min(0.8, alpha * 0.6);
+      // Use teal color for connections like in the demo
+      ctx.strokeStyle = `rgba(32, 178, 170, ${alpha * 0.3})`;
+      ctx.lineWidth = Math.min(1.0, alpha * 0.8);
       ctx.stroke();
     };
     
@@ -111,6 +112,20 @@ const VenomBeam = ({
       ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
       ctx.fillStyle = node.fillColor;
       ctx.fill();
+      
+      // Add a subtle glow for bigger particles
+      if (node.radius > 1) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * 2, 0, Math.PI * 2);
+        const gradient = ctx.createRadialGradient(
+          node.x, node.y, node.radius * 0.5,
+          node.x, node.y, node.radius * 2
+        );
+        gradient.addColorStop(0, `rgba(32, 178, 170, 0.3)`);
+        gradient.addColorStop(1, `rgba(32, 178, 170, 0)`);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
     };
     
     // Animation loop
@@ -126,17 +141,21 @@ const VenomBeam = ({
         const deltaTime = (currentTime - node.lastUpdate) / 16.67; // Normalize to ~60fps
         node.lastUpdate = currentTime;
         
-        // Basic movement
-        node.x += node.vx * deltaTime;
-        node.y += node.vy * deltaTime;
+        // Faster movement like in the demo
+        node.x += node.vx * deltaTime * 1.2;
+        node.y += node.vy * deltaTime * 1.2;
         
-        // Boundary checking
-        if (node.x < 0 || node.x > canvas.width) {
-          node.vx = -node.vx;
+        // Boundary checking with wrap-around for smoother effect
+        if (node.x < -50) {
+          node.x = canvas.width + 50;
+        } else if (node.x > canvas.width + 50) {
+          node.x = -50;
         }
         
-        if (node.y < 0 || node.y > canvas.height) {
-          node.vy = -node.vy;
+        if (node.y < -50) {
+          node.y = canvas.height + 50;
+        } else if (node.y > canvas.height + 50) {
+          node.y = -50;
         }
         
         // Mouse/touch interaction
@@ -145,16 +164,16 @@ const VenomBeam = ({
         const dy = interactionPoint.y - node.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 150) { // Increased interaction radius
-          const force = (150 - distance) / 150;
+        if (distance < 200) { // Increased interaction radius for better effect
+          const force = (200 - distance) / 200;
           const angle = Math.atan2(dy, dx);
-          node.vx -= Math.cos(angle) * force * 0.015 * deltaTime; // Stronger repulsion
-          node.vy -= Math.sin(angle) * force * 0.015 * deltaTime;
+          node.vx -= Math.cos(angle) * force * 0.02 * deltaTime; // Stronger repulsion
+          node.vy -= Math.sin(angle) * force * 0.02 * deltaTime;
         }
         
-        // Slight dampening for stability
-        node.vx *= 0.99;
-        node.vy *= 0.99;
+        // Less dampening for faster animation
+        node.vx *= 0.995;
+        node.vy *= 0.995;
         
         // Draw node
         drawNode(node);
@@ -210,21 +229,15 @@ const VenomBeam = ({
   return (
     <div 
       ref={containerRef}
-      className={`particles-container ${className || ''}`}
+      className={`relative ${className || ''}`}
       style={{ 
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        pointerEvents: 'none',
+        position: 'relative',
         overflow: 'hidden'
       }}
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         style={{ 
           width: '100%',
           height: '100%',
@@ -233,6 +246,11 @@ const VenomBeam = ({
           transition: 'opacity 0.3s ease'
         }}
       />
+      {children && (
+        <div className="relative z-10">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
