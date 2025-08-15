@@ -1,3 +1,6 @@
+// Import course utilities
+const { validateCourseMode } = require('../utils/courseUtils');
+
 // Unified course creation: supports both general and faculty courses, including hardcoded faculties/institutes
 exports.addCourseToFaculty = async (req, res) => {
   try {
@@ -92,7 +95,7 @@ exports.addCourseToFaculty = async (req, res) => {
     }
 
     const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
-    const newCourse = {
+    let newCourse = {
       facultyName,
       subject,
       noOfLecture,
@@ -118,6 +121,11 @@ exports.addCourseToFaculty = async (req, res) => {
       modes: parsedModeAttemptPricing.map(m => m.mode),
       durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
     };
+    
+    // Validate and fix course mode before adding to faculty
+    newCourse = validateCourseMode(newCourse);
+    console.log('✅ Course mode validated and fixed if needed');
+    
     faculty.courses.push(newCourse);
     await faculty.save();
     console.log('✅ Course controller: Course added successfully to faculty');
@@ -128,11 +136,45 @@ exports.addCourseToFaculty = async (req, res) => {
     
     if (error.name === 'ValidationError') {
       console.error('❌ Mongoose validation error:', error.errors);
+      
+      // Check if it's a mode validation error
+      const modeError = error.errors?.['courses.0.mode'];
+      if (modeError && modeError.kind === 'enum') {
+        const invalidMode = modeError.value;
+        console.error(`❌ Invalid mode value: "${invalidMode}"`);
+        
+        // Try to fix the mode value
+        try {
+          // If we can find the faculty
+          if (faculty && faculty.courses && faculty.courses.length > 0) {
+            // Get the last course (the one that failed validation)
+            const lastCourseIndex = faculty.courses.length - 1;
+            
+            // Update the mode to a valid enum value
+            faculty.courses[lastCourseIndex].mode = 'Live Watching';
+            
+            // Save again
+            await faculty.save();
+            
+            console.log('✅ Course saved successfully after fixing mode value');
+            return res.status(201).json({ 
+              success: true, 
+              message: 'Course added successfully (mode fixed automatically)', 
+              course: faculty.courses[lastCourseIndex],
+              warning: `Mode "${invalidMode}" was changed to "Live Watching"` 
+            });
+          }
+        } catch (retryError) {
+          console.error('❌ Failed to retry saving with fixed mode:', retryError);
+        }
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Validation failed',
         details: error.errors,
-        message: error.message
+        message: error.message,
+        suggestion: 'This may be due to an invalid mode value. Try using "Live Watching" or "Recorded Videos".'
       });
     }
     

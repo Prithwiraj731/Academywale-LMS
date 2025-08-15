@@ -14,7 +14,7 @@ const CourseSchema = new mongoose.Schema({
   supportMail: { type: String },
   supportCall: { type: String },
   posterUrl: String, // URL or path to the poster image
-  mode: { type: String, enum: ['Live Watching', 'Recorded Videos'] },
+  mode: { type: String, enum: ['Live Watching', 'Recorded Videos', 'Live at Home With Hard Copy', 'Self Study'] },
   modes: [{ type: String }], // OLD: array of modes (for backwards compatibility)
   timing: String,
   description: String,
@@ -32,6 +32,7 @@ const CourseSchema = new mongoose.Schema({
   // NEW: Mode and Attempt pricing structure
   modeAttemptPricing: [{
     mode: { type: String, required: true }, // e.g., "Live at Home With Hard Copy"
+    attempt: { type: String }, // Legacy field (for backward compatibility)
     attempts: [{
       attempt: { type: String, required: true }, // e.g., "1.5 Views & 12 Months Validity"
       costPrice: { type: Number, required: true },
