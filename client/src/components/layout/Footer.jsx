@@ -48,9 +48,9 @@ export default function Footer() {
   };
 
   return (
-    <footer className="text-white relative overflow-hidden">
-      <VenomBeam className="w-full">
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
+    <footer className="bg-gray-900 text-white relative overflow-hidden">
+      <VenomBeam />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8 lg:gap-12">
           {/* Company info */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -173,7 +173,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      </VenomBeam>
     </footer>
   );
 }

@@ -3,7 +3,6 @@
 import React, { useRef, useEffect } from "react";
 
 const VenomBeam = ({ 
-  children, 
   className = "" 
 }) => {
   const canvasRef = useRef(null);
@@ -197,15 +196,24 @@ const VenomBeam = ({
   }, []);
 
   return (
-    <div ref={containerRef} className={`relative w-full h-full overflow-hidden ${className}`}>
+    <div 
+      ref={containerRef} 
+      className={`particles-container ${className || ''}`}
+      style={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }}
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 z-0"
         style={{ background: '#111827' }} // using a dark gray/black color to match Footer
       />
-      <div className="relative z-10 w-full h-full">
-        {children}
-      </div>
     </div>
   );
 };
