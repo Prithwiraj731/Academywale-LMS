@@ -197,12 +197,12 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col items-center">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
-              Recognized by <span className="text-blue-600">St. Joseph's College</span>
+              Recognized by <span className="text-blue-600">SJC Institute</span>
             </h2>
             <div className="w-full max-w-2xl shadow-xl rounded-lg overflow-hidden">
               <img 
-                src="/src/sjcCert.jpg" 
-                alt="St. Joseph's College Certificate" 
+                src="client/src/assets/sjcCert.jpg" 
+                alt="SJC Institute Certificate" 
                 className="w-full h-auto object-contain"
                 onError={(e) => {
                   console.error('Image failed to load');
