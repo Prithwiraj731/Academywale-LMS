@@ -88,6 +88,9 @@ app.use('/', debugCourseRoutes);
 const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
 app.use('/', courseControllerRoutes);
 
+// Import course utilities
+const { validateCourseMode } = require('./src/utils/courseUtils');
+
 // Multer configuration for course uploads
 const courseStorage = new CloudinaryStorage({
   cloudinary: cloudinary, // Using the imported cloudinary instance
@@ -717,8 +720,12 @@ app.post('/api/admin/courses/standalone', courseUpload.single('poster'), async (
       courseData.facultyName = courseData.facultyName || `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`;
       courseData.isStandalone = false;
 
+      // Validate and fix course mode before adding to faculty
+      const validatedCourseData = validateCourseMode(courseData);
+      console.log('✅ Course mode validated and fixed if needed');
+
       // Add course to faculty's courses array
-      faculty.courses.push(courseData);
+      faculty.courses.push(validatedCourseData);
       await faculty.save();
 
       console.log('✅ Faculty course saved successfully');
@@ -847,8 +854,12 @@ app.post('/api/admin/courses/new', courseUpload.single('poster'), async (req, re
     console.log('📝 Adding course to faculty via NEW endpoint:', facultySlug);
     console.log('📝 Course data:', courseData);
 
+    // Validate and fix course mode before adding to faculty
+    const validatedCourseData = validateCourseMode(courseData);
+    console.log('✅ Course mode validated and fixed if needed');
+
     // Add course to faculty's courses array
-    faculty.courses.push(courseData);
+    faculty.courses.push(validatedCourseData);
 
     // Save faculty with new course
     const savedFaculty = await faculty.save();
@@ -978,8 +989,12 @@ app.post('/api/admin/courses/faculty', courseUpload.single('poster'), async (req
     console.log('📝 Adding course to faculty:', facultySlug);
     console.log('📝 Course data:', courseData);
 
+    // Validate and fix course mode before adding to faculty
+    const validatedCourseData = validateCourseMode(courseData);
+    console.log('✅ Course mode validated and fixed if needed');
+
     // Add course to faculty's courses array
-    faculty.courses.push(courseData);
+    faculty.courses.push(validatedCourseData);
 
     // Save faculty with new course
     const savedFaculty = await faculty.save();
@@ -1117,8 +1132,12 @@ app.post('/api/admin/courses', courseUpload.single('poster'), async (req, res) =
         createdAt: new Date()
       };
 
+      // Validate and fix course mode before adding to faculty
+      const validatedCourseData = validateCourseMode(courseData);
+      console.log('✅ Course mode validated and fixed if needed');
+      
       // Add to faculty courses array
-      faculty.courses.push(courseData);
+      faculty.courses.push(validatedCourseData);
       await faculty.save();
 
       console.log('✅ Faculty course saved successfully');
@@ -1651,6 +1670,35 @@ app.use((error, req, res, next) => {
         code: error.code
       });
     }
+  }
+
+  // Special handling for Mongoose validation errors
+  if (error.name === 'ValidationError') {
+    console.error('❌ Mongoose validation error:', error.errors);
+    
+    // Check if it's a mode validation error
+    const modeError = error.errors?.['courses.0.mode'];
+    if (modeError && modeError.kind === 'enum') {
+      const invalidMode = modeError.value;
+      console.error(`❌ Invalid mode value detected: "${invalidMode}"`);
+      
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error with course mode',
+        message: 'Invalid mode value',
+        invalidValue: invalidMode,
+        validModes: ['Live Watching', 'Recorded Videos', 'Live at Home With Hard Copy', 'Self Study'],
+        suggestion: 'Please use one of these modes: "Live Watching", "Recorded Videos", "Live at Home With Hard Copy", "Self Study"'
+      });
+    }
+    
+    // Handle other validation errors
+    return res.status(400).json({
+      success: false,
+      error: 'Validation failed',
+      message: error.message,
+      details: error.errors
+    });
   }
 
   // For API routes, always return JSON
