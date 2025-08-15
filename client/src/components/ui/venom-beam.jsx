@@ -2,12 +2,16 @@
 
 import React, { useEffect, useRef } from "react";
 
+/**
+ * VenomBeam component - Creates an interactive particle network animation
+ * Adapted from ScrollX UI
+ */
 const VenomBeam = ({ 
   className = "",
   children 
 }) => {
   const canvasRef = useRef(null);
-  const animationRef = useRef();
+  const animationRef = useRef(null);
   const particlesRef = useRef([]);
   const mouseRef = useRef({ x: 0, y: 0 });
   const isDarkRef = useRef(false);
@@ -16,7 +20,7 @@ const VenomBeam = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -26,8 +30,9 @@ const VenomBeam = ({
 
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        isDarkRef.current = false; // Always use light theme for AcademyWale
-        ctx.fillStyle = "#111827"; // Match your gray-900 background
+        // For AcademyWale, we're using a dark theme
+        isDarkRef.current = true;
+        ctx.fillStyle = "#111827"; // dark background for your footer
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     };
@@ -72,7 +77,7 @@ const VenomBeam = ({
     };
 
     canvas.addEventListener("mousemove", handleMouseMove);
-    
+
     // Add touch support
     const handleTouchMove = (e) => {
       if (e.touches.length > 0) {
@@ -81,14 +86,15 @@ const VenomBeam = ({
           x: e.touches[0].clientX - rect.left,
           y: e.touches[0].clientY - rect.top
         };
+        e.preventDefault();
       }
     };
-    
+
     canvas.addEventListener("touchmove", handleTouchMove);
 
     const animate = () => {
-      // Use teal color scheme for AcademyWale
-      ctx.fillStyle = "rgba(17, 24, 39, 0.05)"; // Slightly transparent gray-900
+      // For dark theme (AcademyWale footer)
+      ctx.fillStyle = "rgba(17, 24, 39, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particlesRef.current.forEach((particle, index) => {
@@ -137,7 +143,7 @@ const VenomBeam = ({
           particle.size * 2
         );
 
-        // Use teal color scheme for AcademyWale
+        // Use color scheme from ScrollX UI but with teal for AcademyWale
         gradient.addColorStop(0, `rgba(32, 178, 170, ${alpha})`);
         gradient.addColorStop(0.5, `rgba(32, 178, 170, ${alpha * 0.8})`);
         gradient.addColorStop(1, `rgba(32, 178, 170, ${alpha * 0.3})`);
@@ -158,7 +164,7 @@ const VenomBeam = ({
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
 
-            // Use teal color for connections
+            // Use teal for AcademyWale
             ctx.strokeStyle = `rgba(32, 178, 170, ${alpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
@@ -193,7 +199,7 @@ const VenomBeam = ({
 
       <div className={`absolute inset-0 ${className}`}>{children}</div>
 
-      {/* Small animated dots for extra effect */}
+      {/* Small animated dots for extra effect with teal color */}
       <div className="absolute top-20 left-10 w-2 h-2 bg-[#20b2aa] rounded-full animate-pulse opacity-60" />
       <div className="absolute top-40 right-20 w-1 h-1 bg-[#20b2aa] rounded-full animate-pulse opacity-40" />
       <div className="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-[#20b2aa] rounded-full animate-pulse opacity-50" />
