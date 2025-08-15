@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Particles from '../common/Particles';
+import VenomBeam from '../ui/venom-beam';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -48,9 +48,9 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white relative overflow-hidden">
-      <Particles />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
+    <footer className="text-white relative overflow-hidden">
+      <VenomBeam className="w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8 lg:gap-12">
           {/* Company info */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -168,11 +168,12 @@ export default function Footer() {
               ©2025 Academywale. All Rights Reserved.
             </div>
             <div className="text-gray-400 text-xs xs:text-sm">
-              Designed and developed by Prithwiraj
+              Designed and developed by <a href="https://www.linkedin.com/in/prithwiraj-mazumdar-963086291/">Prithwiraj</a>
             </div>
           </div>
         </div>
       </div>
+      </VenomBeam>
     </footer>
   );
 }
