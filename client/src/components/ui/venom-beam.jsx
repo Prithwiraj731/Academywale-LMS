@@ -16,10 +16,12 @@ const VenomBeam = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     
     // Set canvas size
     const setCanvasSize = () => {
+      if (!canvas || !canvas.parentElement) return;
+      
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width * dpr;
@@ -222,6 +224,7 @@ const VenomBeam = ({
       
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
     };
   }, []);
@@ -229,10 +232,12 @@ const VenomBeam = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative ${className || ''}`}
+      className={`relative w-full h-full ${className || ''}`}
       style={{ 
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        width: '100%',
+        height: '100%'
       }}
     >
       <canvas
@@ -241,7 +246,7 @@ const VenomBeam = ({
         style={{ 
           width: '100%',
           height: '100%',
-          background: '#111827',
+          background: '#111827', // This matches your footer's bg-gray-900
           opacity: 1,
           transition: 'opacity 0.3s ease'
         }}
