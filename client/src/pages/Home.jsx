@@ -16,6 +16,7 @@ import CMAClasses from '../components/home/CMAClasses';
 import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
 import { getAllFacultiesWithUpdates } from '../data/facultyUpdates';
 import InstitutesPage from './InstitutesPage';
+import sjcCert from '../assets/sjcCert.jpg';
 
 // import banner3 from '../assets/banner3.png';
 
@@ -201,7 +202,7 @@ export default function Home() {
             </h2>
             <div className="w-full max-w-2xl shadow-xl rounded-lg overflow-hidden">
               <img 
-                src="client/src/assets/sjcCert.jpg"
+                src={sjcCert}
                 alt="SJC Institute Certificate" 
                 className="w-full h-auto object-contain"
                 onError={(e) => {
