@@ -132,8 +132,8 @@ export default function AllCoursesPage() {
                   
                   {/* For standalone courses, show type */}
                   {course.isStandalone && !course.facultyName && (
-                    <p className="text-sm text-teal-600 mb-3 font-medium">
-                      Standalone Course
+                    <p className="text-sm text-teal-600 mb-3 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
+                      <span className="font-medium">✓ Standalone Course</span>
                     </p>
                   )}
 

@@ -22,32 +22,19 @@ const CMAInterPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        const [facRes, instRes] = await Promise.all([
-          fetch(`${API_URL}/api/faculties`),
-          fetch(`${API_URL}/api/institutes`)
-        ]);
-        const facData = await facRes.json();
-        const instData = await instRes.json();
+        // Use the unified API endpoint for courses by category, subcategory, and paper
+        const res = await fetch(`${API_URL}/api/courses/CMA/inter/${paperId}?includeStandalone=true`);
+        
+        console.log(`Fetching CMA inter courses from: ${API_URL}/api/courses/CMA/inter/${paperId}?includeStandalone=true`);
+        const data = await res.json();
+        
+        console.log('CMA inter courses response:', data);
 
-        if (facRes.ok && Array.isArray(facData.faculties) && instRes.ok && Array.isArray(instData.institutes)) {
-          let allCourses = [];
-          facData.faculties.forEach(fac => {
-            (fac.courses || []).forEach(course => {
-              allCourses.push({ ...course, facultyName: fac.firstName + (fac.lastName ? ' ' + fac.lastName : '') });
-            });
-          });
-          instData.institutes.forEach(inst => {
-            (inst.courses || []).forEach(course => {
-              allCourses.push({ ...course, facultyName: '' });
-            });
-          });
-
-          const filtered = allCourses.filter(course => {
-            return course.courseType && 
-                   course.courseType.toLowerCase().includes('cma') && 
-                   course.courseType.toLowerCase().includes('inter') &&
-                   course.paperId === currentPaper?.id;
-          });
+        if (res.ok) {
+          console.log(`Found ${data.courses?.length || 0} CMA inter courses, including standalone:`, 
+                    data.courses?.filter(c => c.isStandalone).length || 0);
+          
+          const filtered = data.courses || [];
 
           setCourses(filtered);
         } else {
@@ -103,7 +90,13 @@ const CMAInterPaperDetailPage = () => {
                 <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
               </div>
               <div className="text-sm sm:text-lg font-bold text-[#17817a] mb-1 text-center line-clamp-2">{course.subject}</div>
-              <div className="text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
+              {course.isStandalone ? (
+                <div className="text-xs sm:text-sm text-teal-600 mb-1 sm:mb-2 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
+                  <span className="font-medium">✓ Standalone Course</span>
+                </div>
+              ) : (
+                <div className="text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
+              )}
               <div className="flex flex-col gap-1 text-xs text-gray-500 mb-1 sm:mb-2 text-center">
                 <div>Lectures: {course.noOfLecture}</div>
                 <div>Books: {course.books}</div>

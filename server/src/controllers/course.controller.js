@@ -322,6 +322,8 @@ exports.getCoursesByPaper = async (req, res) => {
     });
     
     // Get standalone courses matching the same criteria
+    console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase()}, paperId=${parseInt(paperId)}`);
+    
     const standaloneCourses = await Course.find({
       isStandalone: true,
       isActive: true,
@@ -330,14 +332,41 @@ exports.getCoursesByPaper = async (req, res) => {
       paperId: parseInt(paperId)
     }).sort({ createdAt: -1 });
     
-    // Add standalone courses to allCourses array
-    allCourses = [...allCourses, ...standaloneCourses];
+    console.log(`🔎 Found ${standaloneCourses.length} matching standalone courses`);
     
-    // Filter by category, subcategory, and paper
+    // Format standalone courses to match the structure of faculty courses
+    const formattedStandaloneCourses = standaloneCourses.map(course => ({
+      ...course.toObject(),
+      facultyName: 'Standalone Course',
+      isStandalone: true
+    }));
+    
+    // Add standalone courses to allCourses array
+    allCourses = [...allCourses, ...formattedStandaloneCourses];
+    
+    // Filter by category, subcategory, and paper - using looser comparison for paperId
     const filteredCourses = allCourses.filter(course => {
-      return course.category === category.toUpperCase() &&
-             course.subcategory === subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() &&
-             course.paperId === parseInt(paperId);
+      // Convert paperId to string for comparison to handle both string and number types
+      const courseCategory = course.category?.toUpperCase() || '';
+      const courseSubcategory = course.subcategory?.charAt(0)?.toUpperCase() + (course.subcategory?.slice(1)?.toLowerCase() || '') || '';
+      const coursePaperId = course.paperId?.toString() || '';
+      const requestedPaperId = paperId?.toString() || '';
+      const requestedCategory = category.toUpperCase();
+      const requestedSubcategory = subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase();
+      
+      // For debug purposes
+      console.log(`Course comparison: ${course._id}`);
+      console.log(`- Category: ${courseCategory} vs ${requestedCategory}, match: ${courseCategory === requestedCategory}`);
+      console.log(`- Subcategory: ${courseSubcategory} vs ${requestedSubcategory}, match: ${courseSubcategory === requestedSubcategory}`);
+      console.log(`- PaperId: ${coursePaperId} vs ${requestedPaperId}, match: ${coursePaperId === requestedPaperId}`);
+      
+      const matches = courseCategory === requestedCategory &&
+                     courseSubcategory === requestedSubcategory &&
+                     coursePaperId === requestedPaperId;
+                     
+      console.log(`- Overall match: ${matches} (isStandalone: ${course.isStandalone || false})`);
+      
+      return matches;
     });
     
     res.status(200).json({ courses: filteredCourses });

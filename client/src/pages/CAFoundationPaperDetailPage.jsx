@@ -28,15 +28,23 @@ const CAFoundationPaperDetailPage = () => {
       setError('');
       try {
         // Use new API endpoint that filters by category, subcategory, and paper
-        const res = await fetch(`${API_URL}/api/courses/CA/foundation/${paperId}`);
+        // Add includeStandalone parameter to ensure we get standalone courses too
+        const res = await fetch(`${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`);
+        
+        console.log(`Fetching courses from: ${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`);
         const data = await res.json();
+        
+        console.log('Courses response:', data);
 
         if (res.ok) {
           setCourses(data.courses || []);
+          console.log(`Found ${data.courses?.length || 0} courses, including standalone:`, 
+                     data.courses?.filter(c => c.isStandalone).length || 0);
         } else {
           setError(data.error || 'Could not fetch courses');
         }
       } catch (err) {
+        console.error('Error fetching courses:', err);
         setError('Server error');
       }
       setLoading(false);
@@ -137,8 +145,8 @@ const CAFoundationPaperDetailPage = () => {
                 </h3>
                 
                 {course.isStandalone ? (
-                  <p className="text-sm text-gray-600 mb-3 font-medium">
-                    Standalone Course
+                  <p className="text-sm text-teal-600 mb-3 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
+                    <span className="font-medium">✓ Standalone Course</span>
                   </p>
                 ) : course.facultyName && (
                   <p className="text-sm text-gray-600 mb-3">

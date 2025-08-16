@@ -99,14 +99,22 @@ exports.createStandaloneCourse = async (req, res) => {
     }
 
     if (courseIsStandalone) {
-      // Create standalone course
+      // Create standalone course with proper category formatting
+      // Format category and subcategory consistently for all course types (CA, CMA, etc.)
+      const formattedCategory = category ? category.toUpperCase() : '';
+      const formattedSubcategory = subcategory ? 
+        subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
+      
+      console.log(`Creating standalone course: ${formattedCategory}/${formattedSubcategory}/Paper-${paperId}`);
+      console.log(`- Original values: category=${category}, subcategory=${subcategory}, paperId=${paperId}`);
+      
       const newCourse = new Course({
         title,
         subject,
         description: description || '',
-        category: category || '',
-        subcategory: subcategory || '',
-        paperId: paperId || '',
+        category: formattedCategory,
+        subcategory: formattedSubcategory,
+        paperId: paperId ? parseInt(paperId) : '',
         paperName: paperName || '',
         courseType: courseType || 'General Course',
         noOfLecture: noOfLecture || '',
@@ -130,12 +138,22 @@ exports.createStandaloneCourse = async (req, res) => {
         isActive: true
       });
 
-      await newCourse.save();
+      const savedCourse = await newCourse.save();
+      
+      console.log('✅ Standalone course saved successfully:');
+      console.log('  ID:', savedCourse._id);
+      console.log('  Title:', savedCourse.title);
+      console.log('  Subject:', savedCourse.subject);
+      console.log('  Category:', savedCourse.category);
+      console.log('  Subcategory:', savedCourse.subcategory);
+      console.log('  Paper ID:', savedCourse.paperId);
+      console.log('  isStandalone:', savedCourse.isStandalone);
+      console.log('  isActive:', savedCourse.isActive);
       
       res.status(201).json({ 
         success: true, 
         message: 'Standalone course created successfully',
-        course: newCourse 
+        course: savedCourse 
       });
     } else {
       // Create faculty-based course

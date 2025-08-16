@@ -2,6 +2,7 @@ import Particles from '../components/common/Particles';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
+
 export default function About() {
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 overflow-x-hidden">
