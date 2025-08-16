@@ -32,25 +32,43 @@ const styles = `
     }
   }
   
+  .testimonial-section {
+    padding: 0 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .testimonial-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
   .testimonial-slider {
     display: flex;
     transition: transform 0.5s ease-in-out;
     width: 100%;
-    gap: 1rem;
+    gap: 0.5rem;
   }
   
   .testimonial-slide {
     min-width: 100%;
-    padding: 0 0.25rem;
+    width: 100%;
+    padding: 0.25rem;
+    box-sizing: border-box;
   }
   
   @media (min-width: 640px) {
+    .testimonial-section {
+      padding: 0 1rem;
+    }
+    
     .testimonial-slider {
-      gap: 1.25rem;
+      gap: 1rem;
     }
     
     .testimonial-slide {
-      padding: 0 0.5rem;
+      padding: 0.5rem;
     }
   }
   
@@ -66,6 +84,10 @@ const styles = `
   }
   
   @media (min-width: 1024px) {
+    .testimonial-section {
+      padding: 0;
+    }
+    
     .testimonial-slide {
       min-width: calc(33.333% - 1rem);
     }
@@ -167,7 +189,7 @@ export default function ModernTestimonial({
   const moveSlider = (index) => {
     setActiveIndex(index);
     if (sliderRef.current) {
-      const slideWidth = 100 / cardsToShow;
+      const slideWidth = windowWidth < 768 ? 100 : 100 / cardsToShow;
       sliderRef.current.style.transform = `translateX(-${index * slideWidth}%)`;
     }
   };
@@ -200,17 +222,17 @@ export default function ModernTestimonial({
   return (
     <section className="py-12 bg-black text-white overflow-hidden">
       <style>{styles}</style>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
+      <div className="max-w-7xl mx-auto testimonial-section">
+        <div className="text-center mb-6 sm:mb-10">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
             {title}
           </h2>
-          <p className="text-lg text-gray-400 mt-3">
+          <p className="text-base sm:text-lg text-gray-400 mt-2 sm:mt-3 px-2">
             {subtitle}
           </p>
         </div>
 
-        <div className="overflow-hidden px-0 sm:px-2">
+        <div className="testimonial-container">
           <div 
             className="testimonial-slider"
             ref={sliderRef}
@@ -230,7 +252,7 @@ export default function ModernTestimonial({
         </div>
         
         {/* Navigation controls */}
-        <div className="flex justify-between items-center mt-6 sm:mt-8 px-2">
+        <div className="flex justify-between items-center mt-6 sm:mt-8">
           <button 
             onClick={() => {
               const prevIndex = activeIndex === 0 
@@ -238,7 +260,7 @@ export default function ModernTestimonial({
                 : activeIndex - 1;
               moveSlider(prevIndex);
             }}
-            className="p-1 sm:p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20"
+            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
             aria-label="Previous testimonial"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -247,14 +269,14 @@ export default function ModernTestimonial({
           </button>
           
           {/* Pagination indicators */}
-          <div className="flex justify-center space-x-1 sm:space-x-2">
+          <div className="flex justify-center space-x-1.5 sm:space-x-2">
             {Array.from({ length: totalSlides - cardsToShow + 1 }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => moveSlider(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                   activeIndex === index 
-                    ? 'bg-purple-500 w-3 sm:w-4' 
+                    ? 'bg-purple-500 w-5' 
                     : 'bg-gray-600'
                 }`}
                 aria-label={`Go to testimonial set ${index + 1}`}
@@ -267,7 +289,7 @@ export default function ModernTestimonial({
               const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
               moveSlider(nextIndex);
             }}
-            className="p-1 sm:p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20"
+            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
             aria-label="Next testimonial"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -283,23 +305,24 @@ export default function ModernTestimonial({
 function TestimonialCard({ testimonial }) {
   return (
     <div 
-      className="bg-gray-900/70 rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative"
+      className="bg-gray-900/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative mx-auto w-full max-w-sm sm:max-w-none"
     >
       {/* Purple glow effect */}
-      <div className="absolute -top-1 -right-1 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
+      <div className="absolute -top-1 -right-1 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
       
       {/* Main review text */}
-      <p className="text-gray-300 mb-4 sm:mb-6 flex-grow relative z-10 pt-1 sm:pt-2 text-sm line-clamp-5 sm:line-clamp-none">
+      <p className="text-gray-300 mb-3 sm:mb-6 flex-grow relative z-10 text-sm sm:text-base line-clamp-4 sm:line-clamp-none leading-relaxed">
         "{testimonial.review}"
       </p>
       
       {/* Author info */}
       <div className="flex items-center mt-auto relative z-10">
-        <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-purple-500 flex-shrink-0">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-purple-500 flex-shrink-0">
           <img 
             src={testimonial.avatar} 
             alt={testimonial.name} 
             className="h-full w-full object-cover"
+            loading="lazy"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
