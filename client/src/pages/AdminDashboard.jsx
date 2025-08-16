@@ -792,6 +792,12 @@ export default function AdminDashboard() {
       // Course type for backwards compatibility
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
       
+      // Mark as standalone course if no faculty and no institute
+      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') && 
+                          (!courseForm.institute || courseForm.institute.trim() === '');
+      formData.append('isStandalone', isStandalone);
+      console.log('🚩 Is Standalone Course:', isStandalone);
+      
       // Mode and attempt pricing
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
@@ -932,6 +938,13 @@ export default function AdminDashboard() {
       formData.append('sellingPrice', form.sellingPrice);
       formData.append('courseType', form.courseType);
       formData.append('institute', form.institute);
+      
+      // Mark as standalone course if no faculty and no institute
+      const isStandalone = (!form.facultySlug || form.facultySlug.trim() === '') && 
+                          (!form.institute || form.institute.trim() === '');
+      formData.append('isStandalone', isStandalone);
+      console.log('🚩 Is Standalone Course:', isStandalone);
+      
       // Add modes and durations as comma-separated strings
       formData.append('modes', modesText);
       formData.append('durations', durationsText);

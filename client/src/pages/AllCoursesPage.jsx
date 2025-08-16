@@ -129,6 +129,13 @@ export default function AllCoursesPage() {
                       by <span className="font-medium">{course.facultyName}</span>
                     </p>
                   )}
+                  
+                  {/* For standalone courses, show type */}
+                  {course.isStandalone && !course.facultyName && (
+                    <p className="text-sm text-teal-600 mb-3 font-medium">
+                      Standalone Course
+                    </p>
+                  )}
 
                   {/* Paper Name if available */}
                   {course.paperName && (
@@ -166,9 +173,21 @@ export default function AllCoursesPage() {
                     onClick={() => {
                       if (course.facultySlug) {
                         navigate(`/faculty/${course.facultySlug}`);
+                      } else if (course.isStandalone) {
+                        // For standalone courses, navigate to the course's category/subcategory page if available
+                        if (course.category && course.subcategory) {
+                          if (course.category.toLowerCase() === 'ca') {
+                            navigate(`/ca/${course.subcategory.toLowerCase()}-papers`);
+                          } else if (course.category.toLowerCase() === 'cma') {
+                            navigate(`/cma/${course.subcategory.toLowerCase()}-papers`);
+                          } else {
+                            navigate(`/courses/all`); // Fallback to all courses
+                          }
+                        } else {
+                          navigate(`/courses/all`); // Fallback to all courses
+                        }
                       } else {
-                        // For standalone courses without faculty, you might want to create a separate course detail page
-                        alert('Course details coming soon!');
+                        navigate(`/courses/all`); // Fallback to all courses
                       }
                     }}
                     className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
