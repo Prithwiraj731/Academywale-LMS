@@ -107,6 +107,10 @@ app.use('/', debugCourseRoutes);
 const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
 app.use('/', courseControllerRoutes);
 
+// Mount standalone course routes
+const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
+app.use('/', standaloneCourseRoutes);
+
 // Import course utilities
 const { validateCourseMode } = require('./src/utils/courseUtils');
 

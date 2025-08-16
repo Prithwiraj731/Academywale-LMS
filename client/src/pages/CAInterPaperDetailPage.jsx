@@ -130,7 +130,11 @@ const CAInterPaperDetailPage = () => {
                   {course.subject}
                 </h3>
                 
-                {course.facultyName && (
+                {course.isStandalone ? (
+                  <p className="text-sm text-gray-600 mb-3 font-medium">
+                    Standalone Course
+                  </p>
+                ) : course.facultyName && (
                   <p className="text-sm text-gray-600 mb-3">
                     by <span className="font-medium">{course.facultyName}</span>
                   </p>

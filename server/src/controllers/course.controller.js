@@ -299,7 +299,8 @@ exports.getCoursesByPaper = async (req, res) => {
       (faculty.courses || []).forEach(course => {
         allCourses.push({
           ...course.toObject(),
-          facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+          facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+          isStandalone: false
         });
       });
     });
@@ -309,10 +310,23 @@ exports.getCoursesByPaper = async (req, res) => {
       (institute.courses || []).forEach(course => {
         allCourses.push({
           ...course.toObject(),
-          facultyName: ''
+          facultyName: '',
+          isStandalone: false
         });
       });
     });
+    
+    // Get standalone courses matching the same criteria
+    const standaloneCourses = await Course.find({
+      isStandalone: true,
+      isActive: true,
+      category: category.toUpperCase(),
+      subcategory: subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase(),
+      paperId: parseInt(paperId)
+    }).sort({ createdAt: -1 });
+    
+    // Add standalone courses to allCourses array
+    allCourses = [...allCourses, ...standaloneCourses];
     
     // Filter by category, subcategory, and paper
     const filteredCourses = allCourses.filter(course => {
