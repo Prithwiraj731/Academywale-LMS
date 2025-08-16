@@ -287,6 +287,11 @@ exports.getCoursesByFaculty = async (req, res) => {
 // Get courses by category, subcategory, and paper
 exports.getCoursesByPaper = async (req, res) => {
   try {
+    // Import required models at function level to avoid circular dependencies
+    const Faculty = require('../model/Faculty.model');
+    const Institute = require('../model/Institute.model');
+    const Course = require('../model/Course.model');
+    
     const { category, subcategory, paperId } = req.params;
     
     const faculties = await Faculty.find({});
