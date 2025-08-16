@@ -733,18 +733,18 @@ export default function AdminDashboard() {
       }
     }
 
-    setLoading(true);
+      setLoading(true);
     try {
       const formData = new FormData();
       
-      // Use main courses endpoint for all course creation
-      const apiEndpoint = `${API_URL}/api/admin/courses`;
+      // Determine endpoint based on whether it's a standalone course or not
+      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') && 
+                          (!courseForm.institute || courseForm.institute.trim() === '');
+      const apiEndpoint = `${API_URL}${isStandalone ? '/api/admin/courses/standalone' : '/api/admin/courses'}`;
       
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
-      console.log('🌐 API_URL value:', API_URL);
-      
-      // Required fields for all courses
+      console.log('🌐 API_URL value:', API_URL);      // Required fields for all courses
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
@@ -793,8 +793,6 @@ export default function AdminDashboard() {
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
       
       // Mark as standalone course if no faculty and no institute
-      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') && 
-                          (!courseForm.institute || courseForm.institute.trim() === '');
       formData.append('isStandalone', isStandalone);
       console.log('🚩 Is Standalone Course:', isStandalone);
       

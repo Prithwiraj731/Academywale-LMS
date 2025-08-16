@@ -52,6 +52,20 @@ exports.getAllCourses = async (req, res) => {
 // Create a new standalone course
 exports.createStandaloneCourse = async (req, res) => {
   try {
+    // Log request details for debugging
+    console.log('📥 Standalone course creation request received');
+    console.log('📋 Request body:', req.body);
+    console.log('📎 File received:', req.file ? 'Yes' : 'No');
+    
+    if (req.file) {
+      console.log('📄 File details:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        path: req.file.path
+      });
+    }
+    
     const {
       title, subject, description, category, subcategory, paperId, paperName,
       courseType, noOfLecture, books, videoLanguage, videoRunOn, timing,
@@ -63,8 +77,8 @@ exports.createStandaloneCourse = async (req, res) => {
     const posterUrl = req.file ? req.file.path : '';
     const posterPublicId = req.file ? req.file.filename : '';
 
-    // Determine if it's standalone based on the isStandalone field or lack of facultySlug
-    const courseIsStandalone = isStandalone === 'true' || !facultySlug;
+    // Always create a standalone course when using this endpoint
+    const courseIsStandalone = true;
 
     if (!subject) {
       return res.status(400).json({ error: 'Subject is required' });
