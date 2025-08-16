@@ -15,6 +15,8 @@ const CMAFinalPaperDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Extract paper ID from paperSlug (e.g., "paper-1" -> 1)
+  const paperId = paperSlug?.replace('paper-', '');
   const currentPaper = papersData.cma.final.find(p => `paper-${p.id}` === paperSlug);
 
   useEffect(() => {
@@ -33,6 +35,12 @@ const CMAFinalPaperDetailPage = () => {
         if (res.ok) {
           console.log(`Found ${data.courses?.length || 0} CMA final courses, including standalone:`, 
                     data.courses?.filter(c => c.isStandalone).length || 0);
+          console.log('Course data summary:', data.courses?.map(c => ({ 
+            id: c._id,
+            subject: c.subject,
+            isStandalone: c.isStandalone,
+            facultyName: c.facultyName || 'N/A' 
+          })));
           
           const filtered = data.courses || [];
 

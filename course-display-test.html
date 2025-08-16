@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .course-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .course-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .standalone-badge {
+            display: inline-block;
+            background: #e1f5fe;
+            color: #0288d1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .details span {
+            color: #666;
+        }
+        .faculty {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .loading {
+            color: #1976d2;
+            margin: 20px 0;
+        }
+        .endpoint {
+            font-family: monospace;
+            background: #f1f1f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            display: inline-block;
+        }
+        .success {
+            color: #4caf50;
+        }
+        .count {
+            background: #e8f5e9;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .category-selector {
+            margin-bottom: 20px;
+        }
+        .category-selector select {
+            padding: 8px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Course Display Test</h1>
+        <p>This page tests the API endpoints for retrieving courses, focusing on properly displaying courses without faculty and standalone courses.</p>
+        
+        <div class="test-section">
+            <h2>Test Specific Course API Endpoint</h2>
+            <div class="category-selector">
+                <select id="categorySelect">
+                    <option value="CA">CA</option>
+                    <option value="CMA">CMA</option>
+                </select>
+                <select id="subcategorySelect">
+                    <option value="foundation">Foundation</option>
+                    <option value="inter">Inter</option>
+                    <option value="final">Final</option>
+                </select>
+                <select id="paperSelect">
+                    <option value="1">Paper 1</option>
+                    <option value="2">Paper 2</option>
+                    <option value="3">Paper 3</option>
+                    <option value="4">Paper 4</option>
+                    <option value="5">Paper 5</option>
+                    <option value="6">Paper 6</option>
+                    <option value="7">Paper 7</option>
+                    <option value="8">Paper 8</option>
+                </select>
+                <button onclick="testSpecificCourseEndpoint()">Test Endpoint</button>
+            </div>
+            <div id="specificCourseResult">
+                <p>Click the button to test the endpoint.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get base API URL from environment or default to localhost
+        const API_URL = 'http://localhost:5000'; // Adjust as needed
+        
+        // Test specific course endpoint
+        async function testSpecificCourseEndpoint() {
+            const resultDiv = document.getElementById('specificCourseResult');
+            resultDiv.innerHTML = '<p class="loading">Loading courses...</p>';
+            
+            const category = document.getElementById('categorySelect').value;
+            const subcategory = document.getElementById('subcategorySelect').value;
+            const paperId = document.getElementById('paperSelect').value;
+            
+            try {
+                const endpoint = `${API_URL}/api/courses/${category}/${subcategory}/${paperId}?includeStandalone=true`;
+                console.log(`Fetching from: ${endpoint}`);
+                
+                resultDiv.innerHTML = `
+                    <p>Testing endpoint: <span class="endpoint">${endpoint}</span></p>
+                    <p class="loading">Loading courses...</p>
+                `;
+                
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const courses = data.courses || [];
+                    const standaloneCourses = courses.filter(c => c.isStandalone);
+                    const regularCourses = courses.filter(c => !c.isStandalone);
+                    const coursesWithoutFaculty = courses.filter(c => !c.isStandalone && (!c.facultyName || c.facultyName === ''));
+                    
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ API request successful</p>
+                        <p class="count">Total courses: ${courses.length}</p>
+                        <p class="count">Standalone courses: ${standaloneCourses.length}</p>
+                        <p class="count">Regular courses: ${regularCourses.length}</p>
+                        <p class="count">Regular courses without faculty: ${coursesWithoutFaculty.length}</p>
+                        
+                        <h3>All Courses</h3>
+                        <div class="course-container" id="courseContainer"></div>
+                    `;
+                    
+                    const courseContainer = document.getElementById('courseContainer');
+                    
+                    courses.forEach(course => {
+                        const card = document.createElement('div');
+                        card.className = 'course-card';
+                        
+                        // Create HTML content
+                        card.innerHTML = `
+                            <h3>${course.subject || 'No Subject'}</h3>
+                            ${course.isStandalone ? '<div class="standalone-badge">✓ Standalone Course</div>' : ''}
+                            <div class="faculty">
+                                ${course.isStandalone ? '' : `Faculty: ${course.facultyName || 'No Faculty'}`}
+                            </div>
+                            <div class="details">
+                                <div>Lectures: <span>${course.noOfLecture || 'N/A'}</span></div>
+                                <div>Books: <span>${course.books || 'N/A'}</span></div>
+                                <div>Language: <span>${course.videoLanguage || 'N/A'}</span></div>
+                                <div>Price: <span>₹${course.sellingPrice || 'N/A'}</span></div>
+                                <div>Mode: <span>${course.mode || 'N/A'}</span></div>
+                            </div>
+                        `;
+                        
+                        courseContainer.appendChild(card);
+                    });
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">API Error: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">Error fetching data: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

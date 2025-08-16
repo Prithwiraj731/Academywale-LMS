@@ -293,6 +293,10 @@ exports.getCoursesByPaper = async (req, res) => {
     const Course = require('../model/Course.model');
     
     const { category, subcategory, paperId } = req.params;
+    // Check if includeStandalone parameter is present
+    const includeStandalone = req.query.includeStandalone === 'true';
+    
+    console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}, includeStandalone=${includeStandalone}`);
     
     const faculties = await Faculty.find({});
     const institutes = await Institute.find({});
@@ -321,13 +325,14 @@ exports.getCoursesByPaper = async (req, res) => {
       });
     });
     
-    // Get standalone courses matching the same criteria
-    console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase()}, paperId=${parseInt(paperId)}`);
-    
-    const standaloneCourses = await Course.find({
-      isStandalone: true,
-      isActive: true,
-      category: category.toUpperCase(),
+    // Get standalone courses matching the same criteria if includeStandalone is true
+    if (includeStandalone) {
+      console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase()}, paperId=${parseInt(paperId)}`);
+      
+      const standaloneCourses = await Course.find({
+        isStandalone: true,
+        isActive: true,
+        category: category.toUpperCase(),
       subcategory: subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase(),
       paperId: parseInt(paperId)
     }).sort({ createdAt: -1 });
@@ -341,8 +346,11 @@ exports.getCoursesByPaper = async (req, res) => {
       isStandalone: true
     }));
     
-    // Add standalone courses to allCourses array
-    allCourses = [...allCourses, ...formattedStandaloneCourses];
+      // Add standalone courses to allCourses array
+      allCourses = [...allCourses, ...formattedStandaloneCourses];
+    } else {
+      console.log('🚫 Skipping standalone courses as includeStandalone is not true');
+    }
     
     // Filter by category, subcategory, and paper - using looser comparison for paperId
     const filteredCourses = allCourses.filter(course => {

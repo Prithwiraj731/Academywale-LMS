@@ -23,7 +23,8 @@ const CAFinalPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/api/courses/CA/final/${paperId}`);
+        const res = await fetch(`${API_URL}/api/courses/CA/final/${paperId}?includeStandalone=true`);
+        console.log(`Fetching CA final courses from: ${API_URL}/api/courses/CA/final/${paperId}?includeStandalone=true`);
         const data = await res.json();
 
         if (res.ok) {

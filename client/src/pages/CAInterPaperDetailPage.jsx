@@ -23,7 +23,8 @@ const CAInterPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/api/courses/CA/inter/${paperId}`);
+        const res = await fetch(`${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
+        console.log(`Fetching CA inter courses from: ${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
         const data = await res.json();
 
         if (res.ok) {
