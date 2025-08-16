@@ -36,16 +36,32 @@ const styles = `
     display: flex;
     transition: transform 0.5s ease-in-out;
     width: 100%;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   
   .testimonial-slide {
     min-width: 100%;
+    padding: 0 0.25rem;
+  }
+  
+  @media (min-width: 640px) {
+    .testimonial-slider {
+      gap: 1.25rem;
+    }
+    
+    .testimonial-slide {
+      padding: 0 0.5rem;
+    }
   }
   
   @media (min-width: 768px) {
+    .testimonial-slider {
+      gap: 1.5rem;
+    }
+    
     .testimonial-slide {
       min-width: calc(50% - 0.75rem);
+      padding: 0;
     }
   }
   
@@ -194,7 +210,7 @@ export default function ModernTestimonial({
           </p>
         </div>
 
-        <div className="overflow-hidden">
+        <div className="overflow-hidden px-0 sm:px-2">
           <div 
             className="testimonial-slider"
             ref={sliderRef}
@@ -207,7 +223,6 @@ export default function ModernTestimonial({
               <div className="testimonial-slide" key={`testimonial-${testimonial.id}`}>
                 <TestimonialCard 
                   testimonial={testimonial}
-                  isAnimating={false}
                 />
               </div>
             ))}
@@ -215,7 +230,7 @@ export default function ModernTestimonial({
         </div>
         
         {/* Navigation controls */}
-        <div className="flex justify-between items-center mt-8">
+        <div className="flex justify-between items-center mt-6 sm:mt-8 px-2">
           <button 
             onClick={() => {
               const prevIndex = activeIndex === 0 
@@ -223,23 +238,23 @@ export default function ModernTestimonial({
                 : activeIndex - 1;
               moveSlider(prevIndex);
             }}
-            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            className="p-1 sm:p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20"
             aria-label="Previous testimonial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
           
           {/* Pagination indicators */}
-          <div className="flex justify-center space-x-2">
+          <div className="flex justify-center space-x-1 sm:space-x-2">
             {Array.from({ length: totalSlides - cardsToShow + 1 }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => moveSlider(index)}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   activeIndex === index 
-                    ? 'bg-purple-500 w-4' 
+                    ? 'bg-purple-500 w-3 sm:w-4' 
                     : 'bg-gray-600'
                 }`}
                 aria-label={`Go to testimonial set ${index + 1}`}
@@ -252,10 +267,10 @@ export default function ModernTestimonial({
               const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
               moveSlider(nextIndex);
             }}
-            className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            className="p-1 sm:p-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-lg shadow-purple-500/20"
             aria-label="Next testimonial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>
             </svg>
           </button>
@@ -268,19 +283,19 @@ export default function ModernTestimonial({
 function TestimonialCard({ testimonial }) {
   return (
     <div 
-      className="bg-gray-900/70 rounded-2xl p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative"
+      className="bg-gray-900/70 rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-purple-900/30 flex flex-col h-full hover:scale-[1.02] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 relative"
     >
       {/* Purple glow effect */}
-      <div className="absolute -top-1 -right-1 w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
+      <div className="absolute -top-1 -right-1 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full opacity-10 blur-xl"></div>
       
       {/* Main review text */}
-      <p className="text-gray-300 mb-6 flex-grow relative z-10 pt-2 text-sm sm:text-base">
+      <p className="text-gray-300 mb-4 sm:mb-6 flex-grow relative z-10 pt-1 sm:pt-2 text-sm line-clamp-5 sm:line-clamp-none">
         "{testimonial.review}"
       </p>
       
       {/* Author info */}
       <div className="flex items-center mt-auto relative z-10">
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-purple-500">
+        <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-purple-500 flex-shrink-0">
           <img 
             src={testimonial.avatar} 
             alt={testimonial.name} 
@@ -298,9 +313,9 @@ function TestimonialCard({ testimonial }) {
           </div>
         </div>
         
-        <div className="ml-3">
-          <div className="font-semibold text-white text-sm sm:text-base">{testimonial.name}</div>
-          <div className="text-xs sm:text-sm text-purple-300">{testimonial.role}</div>
+        <div className="ml-3 overflow-hidden">
+          <div className="font-semibold text-white text-sm sm:text-base truncate">{testimonial.name}</div>
+          <div className="text-xs sm:text-sm text-purple-300 truncate">{testimonial.role}</div>
         </div>
       </div>
     </div>
