@@ -33,13 +33,13 @@ const CAInterPaperDetailPage = () => {
       try {
         console.log(`Fetching CA inter courses from: ${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
         
-        // Define all the URL variations we'll try
+        // Define all the URL variations we'll try - ALWAYS include the standalone parameter
         const urlVariations = [
           `${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`,
           `${API_URL}/api/courses/ca/inter/${paperId}?includeStandalone=true`,
           `${API_URL}/api/courses/CA/Inter/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CA/inter/${paperId}`,
-          `${API_URL}/api/courses/ca/inter/${paperId}`,
+          `${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`, // Added parameter to URL that was missing it
+          `${API_URL}/api/courses/ca/inter/${paperId}?includeStandalone=true`, // Added parameter to URL that was missing it
           `${API_URL}/api/courses/CA/INTER/${paperId}?includeStandalone=true`,
         ];
         

@@ -57,6 +57,7 @@ exports.addCourseToFaculty = async (req, res) => {
         courseType,
         modeAttemptPricing: parsedModeAttemptPricing,
         posterUrl,
+        isStandalone: true, // Explicitly set isStandalone flag for courses without faculty
         isActive: true
       };
       const newCourse = new Course(courseData);
@@ -331,50 +332,37 @@ exports.getCoursesByPaper = async (req, res) => {
       });
     });
     
-    // Get standalone courses matching the same criteria if includeStandalone is true
+      // Get standalone courses matching the same criteria if includeStandalone is true
     if (includeStandalone) {
       console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
       
-      // Use a more flexible and reliable query approach for standalone courses
-      const standaloneCourses = await Course.find({
-        $and: [
-          // Either isStandalone is true or facultySlug is empty
-          {
-            $or: [
-              { isStandalone: true },
-              { facultySlug: { $in: [null, '', undefined] } }
-            ]
-          },
-          // Category match (case insensitive)
-          {
-            $or: [
-              { category: category.toUpperCase() },
-              { category: category.toLowerCase() },
-              { category: category }
-            ]
-          },
-          // Subcategory match (case insensitive)
-          {
-            $or: [
-              { subcategory: subcategory.toLowerCase() },
-              { subcategory: subcategory.toUpperCase() },
-              { subcategory: subcategory }
-            ]
-          },
-          // PaperId match (both string and number formats)
-          {
-            $or: [
-              { paperId: parseInt(paperId) },
-              { paperId: paperId.toString() }
-            ]
-          }
-        ]
-      }).sort({ createdAt: -1 });
-    
-    console.log(`🔎 Found ${standaloneCourses.length} matching standalone courses`);
+      // FIXED QUERY: Use a super flexible query to ensure we find ALL standalone courses
+      const standaloneCourses = await Course.find({}).sort({ createdAt: -1 });
+      
+      console.log(`🔎 Found ${standaloneCourses.length} total courses in database`);
+      
+      // Filter courses manually to ensure we catch all variations
+      const filteredStandaloneCourses = standaloneCourses.filter(course => {
+        // Convert all values to strings for comparison
+        const courseCategory = String(course.category || '').toUpperCase();
+        const courseSubcategory = String(course.subcategory || '').toLowerCase();
+        const coursePaperId = String(course.paperId || '');
+        
+        const requestedCategory = String(category || '').toUpperCase();
+        const requestedSubcategory = String(subcategory || '').toLowerCase();
+        const requestedPaperId = String(paperId || '');
+        
+        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
+        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
+        const paperIdMatch = coursePaperId === requestedPaperId || parseInt(coursePaperId) === parseInt(requestedPaperId);
+        
+        console.log(`Standalone course check: ${course._id}, ${course.subject || 'unnamed'}, matches: ${categoryMatch && subcategoryMatch && paperIdMatch}`);
+        
+        return categoryMatch && subcategoryMatch && paperIdMatch;
+      });    console.log(`🔎 Found ${filteredStandaloneCourses.length} matching standalone courses after filtering`);
     
     // Format standalone courses to match the structure of faculty courses
-    const formattedStandaloneCourses = standaloneCourses.map(course => ({
+    const formattedStandaloneCourses = filteredStandaloneCourses.map(course => ({
       ...course.toObject(),
       facultyName: 'Standalone Course',
       isStandalone: true
