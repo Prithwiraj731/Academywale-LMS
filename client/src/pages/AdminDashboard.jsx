@@ -7,11 +7,11 @@ import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import { getAllFaculties } from '../data/hardcodedFaculties';
-import { 
-  getFacultyUpdates, 
-  updateFacultyDetails, 
-  getFacultyDetails, 
-  getAllFacultiesWithUpdates 
+import {
+  getFacultyUpdates,
+  updateFacultyDetails,
+  getFacultyDetails,
+  getAllFacultiesWithUpdates
 } from '../data/facultyUpdates';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
@@ -19,7 +19,7 @@ const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027
 const TEACHES_OPTIONS = ['CA', 'CMA'];
 const COURSE_OPTIONS = [
   'CA Foundation', 'CMA Foundation',
-  'CA Inter', 'CMA Inter', 
+  'CA Inter', 'CMA Inter',
   'CA Final', 'CMA Final'
 ];
 import { API_URL, fetchWithCredentials } from '../api';
@@ -173,10 +173,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     console.log('🚀 Faculty submission started');
     console.log('Faculty data:', facultyAdd);
-    
+
     setFacultyAddStatus('');
     setFacultyAddError('');
-    
+
     if (!facultyAdd.firstName.trim()) {
       setFacultyAddError('Faculty name is required.');
       console.log('❌ Faculty name is missing');
@@ -197,32 +197,32 @@ export default function AdminDashboard() {
       console.log('❌ Faculty image is missing');
       return;
     }
-    
+
     console.log('✅ All validation passed, creating FormData');
     const formData = new FormData();
     // Send full name as firstName, leave lastName blank
     formData.append('firstName', facultyAdd.firstName.trim());
     formData.append('lastName', '');
     formData.append('bio', facultyAdd.bio.trim());
-    
+
     // Send teaches as JSON string to avoid array handling issues
     formData.append('teaches', JSON.stringify(facultyAdd.teaches));
-    
+
     formData.append('image', facultyAdd.image);
-    
+
     console.log('📤 Sending request to:', `${API_URL}/api/admin/faculty`);
-    
+
     try {
       setFacultyAddStatus('Adding faculty...');
       const res = await fetch(`${API_URL}/api/admin/faculty`, {
         method: 'POST',
         body: formData
       });
-      
+
       console.log('📥 Response status:', res.status);
       const data = await res.json();
       console.log('📥 Response data:', data);
-      
+
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
         setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null });
@@ -242,22 +242,22 @@ export default function AdminDashboard() {
   const handleDeleteAllFaculty = async () => {
     setDeleteAllStatus('');
     setDeleteAllError('');
-    
+
     try {
       setDeleteAllStatus('Deleting all faculty...');
       console.log('🗑️ Starting delete all faculty operation');
-      
+
       const res = await fetch(`${API_URL}/emergency-delete-faculty`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         }
       });
-      
+
       console.log('📥 Delete all response status:', res.status);
       const data = await res.json();
       console.log('📥 Delete all response data:', data);
-      
+
       if (res.ok) {
         setDeleteAllStatus(`Successfully deleted ${data.deletedCount} faculty members!`);
         setShowDeleteConfirm(false);
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
       const res = await fetch(`${API_URL}/api/admin/coupons`);
       const data = await res.json();
       if (res.ok && data.success) setCoupons(data.coupons);
-    } catch {}
+    } catch { }
   };
 
   const handleCouponChange = e => {
@@ -409,7 +409,7 @@ export default function AdminDashboard() {
     try {
       await fetch(`${API_URL}/api/admin/coupons/${code}`, { method: 'DELETE' });
       fetchCoupons();
-    } catch {}
+    } catch { }
   };
 
   const requiredFields = [
@@ -433,28 +433,44 @@ export default function AdminDashboard() {
   // Fetch courses for a faculty or institute
   const fetchCourses = async (facultyName, instituteName) => {
     let url = '';
-    if (facultyName) {
+    const isStandalone = (!facultyName || facultyName.trim() === '') &&
+      (!instituteName || instituteName.trim() === '');
+
+    if (isStandalone) {
+      // For standalone courses, use the special standalone endpoint
+      url = `${API_URL}/api/admin/courses/standalone`;
+      console.log('🎯 Fetching standalone courses from:', url);
+    } else if (facultyName) {
+      // For faculty-based courses
       const firstName = facultyName.split(' ')[0].toUpperCase();
       url = `${API_URL}/api/courses/${firstName}`;
+      console.log('🎯 Fetching faculty courses from:', url);
     } else if (instituteName) {
+      // For institute-based courses
       url = `${API_URL}/api/institutes/${encodeURIComponent(instituteName)}/courses`;
+      console.log('🎯 Fetching institute courses from:', url);
     } else {
+      // Fallback case (should not happen with the logic above)
       setCourses([]);
       return;
     }
+
     setLoading(true);
     setError('');
     try {
       const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
+        console.log(`✅ Fetched ${data.courses?.length || 0} courses successfully`);
         setCourses(data.courses || []);
         setFacultyQueried(facultyName || '');
       } else {
+        console.error('❌ Failed to fetch courses:', data.error);
         setCourses([]);
         setError(data.error || 'Could not fetch courses');
       }
     } catch (err) {
+      console.error('❌ Server error fetching courses:', err);
       setError('Server error');
       setCourses([]);
     }
@@ -509,7 +525,7 @@ export default function AdminDashboard() {
   // Papers based on category and subcategory - Using correct official CA/CMA structure
   const getPapers = (category, subcategory) => {
     console.log('🔍 getPapers called with:', { category, subcategory });
-    
+
     if (category === 'CA') {
       if (subcategory === 'Foundation') {
         return [
@@ -581,7 +597,7 @@ export default function AdminDashboard() {
         ];
       }
     }
-    
+
     const result = [];
     console.log('📋 Returning papers:', result);
     return result;
@@ -596,26 +612,26 @@ export default function AdminDashboard() {
       setPosterPreviewNew(file ? URL.createObjectURL(file) : null);
     } else {
       setCourseForm(prev => ({ ...prev, [name]: value }));
-      
+
       // Reset dependent fields when category changes
       if (name === 'category') {
-        setCourseForm(prev => ({ 
-          ...prev, 
-          subcategory: '', 
-          paperId: '', 
-          paperName: '' 
+        setCourseForm(prev => ({
+          ...prev,
+          subcategory: '',
+          paperId: '',
+          paperName: ''
         }));
       }
-      
+
       // Reset paper fields when subcategory changes
       if (name === 'subcategory') {
-        setCourseForm(prev => ({ 
-          ...prev, 
-          paperId: '', 
-          paperName: '' 
+        setCourseForm(prev => ({
+          ...prev,
+          paperId: '',
+          paperName: ''
         }));
       }
-      
+
       // Auto-fill paper name when paper ID is selected
       if (name === 'paperId') {
         const papers = getPapers(courseForm.category, courseForm.subcategory);
@@ -652,7 +668,7 @@ export default function AdminDashboard() {
   const updateModeAttemptPricing = (modeIndex, field, value) => {
     setCourseForm(prev => ({
       ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
         index === modeIndex ? { ...item, [field]: value } : item
       )
     }));
@@ -661,12 +677,12 @@ export default function AdminDashboard() {
   const addAttemptToPricing = (modeIndex) => {
     setCourseForm(prev => ({
       ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
-        index === modeIndex 
-          ? { 
-              ...item, 
-              attempts: [...item.attempts, { attempt: '', costPrice: 0, sellingPrice: 0 }] 
-            } 
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+        index === modeIndex
+          ? {
+            ...item,
+            attempts: [...item.attempts, { attempt: '', costPrice: 0, sellingPrice: 0 }]
+          }
           : item
       )
     }));
@@ -675,12 +691,12 @@ export default function AdminDashboard() {
   const removeAttemptFromPricing = (modeIndex, attemptIndex) => {
     setCourseForm(prev => ({
       ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
-        index === modeIndex 
-          ? { 
-              ...item, 
-              attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex) 
-            } 
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+        index === modeIndex
+          ? {
+            ...item,
+            attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex)
+          }
           : item
       )
     }));
@@ -689,14 +705,14 @@ export default function AdminDashboard() {
   const updateAttemptPricing = (modeIndex, attemptIndex, field, value) => {
     setCourseForm(prev => ({
       ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) => 
-        index === modeIndex 
-          ? { 
-              ...item, 
-              attempts: item.attempts.map((attempt, aIndex) => 
-                aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
-              ) 
-            } 
+      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+        index === modeIndex
+          ? {
+            ...item,
+            attempts: item.attempts.map((attempt, aIndex) =>
+              aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
+            )
+          }
           : item
       )
     }));
@@ -706,10 +722,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     setSuccess('');
     setError('');
-    
+
     // Unified validation - faculty and institute are now OPTIONAL
-    if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId || 
-        !courseForm.title || !courseForm.subject || !courseForm.poster) {
+    if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId ||
+      !courseForm.title || !courseForm.subject || !courseForm.poster) {
       setError('Please fill all required fields: Category, Subcategory, Paper, Title, Subject, and Poster are required');
       return;
     }
@@ -733,15 +749,15 @@ export default function AdminDashboard() {
       }
     }
 
-      setLoading(true);
+    setLoading(true);
     try {
       const formData = new FormData();
-      
+
       // Determine endpoint based on whether it's a standalone course or not
-      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') && 
-                          (!courseForm.institute || courseForm.institute.trim() === '');
+      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') &&
+        (!courseForm.institute || courseForm.institute.trim() === '');
       const apiEndpoint = `${API_URL}${isStandalone ? '/api/admin/courses/standalone' : '/api/admin/courses'}`;
-      
+
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
       console.log('🌐 API_URL value:', API_URL);      // Required fields for all courses
@@ -751,22 +767,22 @@ export default function AdminDashboard() {
       formData.append('paperName', courseForm.paperName);
       formData.append('subject', courseForm.subject);
       formData.append('title', courseForm.title);
-      
+
       // Optional fields - only append if they have values
       if (courseForm.facultySlug && courseForm.facultySlug.trim() !== '') {
         formData.append('facultySlug', courseForm.facultySlug);
         formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
         console.log('� Added faculty:', courseForm.facultySlug);
       }
-      
+
       if (courseForm.institute && courseForm.institute.trim() !== '') {
         formData.append('institute', courseForm.institute);
         console.log('📝 Added institute:', courseForm.institute);
       }
-      
-  const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-  console.log('🎓 Course type:', hasFaculty ? 'With Faculty' : 'Without Faculty');
-      
+
+      const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+      console.log('🎓 Course type:', hasFaculty ? 'With Faculty' : 'Without Faculty');
+
 
       // Common fields for all courses
       formData.append('description', courseForm.description);
@@ -779,7 +795,7 @@ export default function AdminDashboard() {
       formData.append('supportCall', courseForm.supportCall);
       formData.append('timing', courseForm.timing);
       formData.append('validityStartFrom', courseForm.validityStartFrom);
-      
+
       // Poster upload validation
       if (courseForm.poster) {
         formData.append('poster', courseForm.poster);
@@ -788,14 +804,14 @@ export default function AdminDashboard() {
         setLoading(false);
         return;
       }
-      
+
       // Course type for backwards compatibility
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
-      
+
       // Mark as standalone course if no faculty and no institute
       formData.append('isStandalone', isStandalone);
       console.log('🚩 Is Standalone Course:', isStandalone);
-      
+
       // Mode and attempt pricing
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
@@ -810,25 +826,25 @@ export default function AdminDashboard() {
       for (let [key, value] of formData.entries()) {
         console.log(`   📝 ${key}: ${value}`);
       }
-      
+
       const res = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
-      
+
       console.log('📥 Response received:', res.status, res.statusText);
       console.log('📥 Response headers:', Object.fromEntries(res.headers.entries()));
-      
+
       const responseText = await res.text();
       console.log('📋 Raw response text:', responseText);
-      
+
       let data;
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('❌ Failed to parse response as JSON:', parseError);
         console.error('❌ Raw response:', responseText);
-        
+
         // Check if it's an HTML error page (500 error)
         if (responseText.includes('<!DOCTYPE html>') && responseText.includes('Internal Server Error')) {
           throw new Error('Backend server error - please check server logs. The server crashed while processing your request.');
@@ -836,11 +852,11 @@ export default function AdminDashboard() {
           throw new Error(`Server response is not valid JSON: ${responseText.substring(0, 200)}...`);
         }
       }
-      
+
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
-  const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-  setSuccess(`Course added successfully! ${hasFaculty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
+        const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
+        setSuccess(`Course added successfully! ${hasFaculty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
         // Reset form
         setCourseForm({
           title: '',
@@ -881,7 +897,7 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('❌ Network/Server error:', err);
-      
+
       if (err.message.includes('fetch')) {
         setError('Network error: Cannot connect to backend. Please check if the server is running.');
       } else if (err.message.includes('Backend server error')) {
@@ -904,11 +920,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     setSuccess('');
     setError('');
-    // Extra validation for facultySlug and institute
-    if (!form.facultySlug && !form.institute) {
-      setError('Please select either a Faculty or an Institute.');
-      return;
-    }
+
+    // Remove validation that requires either faculty or institute - make both optional
+    // This allows standalone courses to work properly
+
     // Validate required fields
     for (const field of requiredFields) {
       if (!form[field.name] || (field.name === 'poster' && !form.poster)) {
@@ -916,10 +931,27 @@ export default function AdminDashboard() {
         return;
       }
     }
+
     setLoading(true);
     try {
       const formData = new FormData();
-      if (form.facultySlug) formData.append('facultySlug', form.facultySlug);
+
+      // Determine if this is a standalone course (no faculty, no institute)
+      const isStandalone = (!form.facultySlug || form.facultySlug.trim() === '') &&
+        (!form.institute || form.institute.trim() === '');
+
+      // Select the appropriate endpoint based on standalone status
+      const apiEndpoint = isStandalone ?
+        `${API_URL}/api/admin/courses/standalone` :
+        `${API_URL}/api/admin/courses`;
+
+      console.log('🔗 Using API endpoint:', apiEndpoint);
+
+      if (form.facultySlug) {
+        formData.append('facultySlug', form.facultySlug);
+        formData.append('facultyName', form.facultySlug); // For backward compatibility
+      }
+
       formData.append('subject', form.subject);
       formData.append('noOfLecture', form.noOfLecture);
       formData.append('books', form.books);
@@ -936,17 +968,17 @@ export default function AdminDashboard() {
       formData.append('sellingPrice', form.sellingPrice);
       formData.append('courseType', form.courseType);
       formData.append('institute', form.institute);
-      
+
       // Mark as standalone course if no faculty and no institute
-      const isStandalone = (!form.facultySlug || form.facultySlug.trim() === '') && 
-                          (!form.institute || form.institute.trim() === '');
       formData.append('isStandalone', isStandalone);
       console.log('🚩 Is Standalone Course:', isStandalone);
-      
+
       // Add modes and durations as comma-separated strings
       formData.append('modes', modesText);
       formData.append('durations', durationsText);
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses`, {
+
+      // Use the selected endpoint
+      const res = await fetchWithCredentials(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
@@ -1131,18 +1163,18 @@ export default function AdminDashboard() {
 
     if (success) {
       setFacultyUpdateStatus(`Faculty details updated successfully for ${selectedFaculty.name}!`);
-      
+
       // Refresh the hardcoded faculties list
       const faculties = getAllFaculties();
       const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
       setHardcodedFaculties(facultiesWithUpdates);
-      
+
       // Trigger a custom event to notify other components
       console.log('🔔 Dispatching facultyUpdated event for faculty ID:', selectedFaculty.id);
-      window.dispatchEvent(new CustomEvent('facultyUpdated', { 
-        detail: { facultyId: selectedFaculty.id, updates: facultyUpdateData } 
+      window.dispatchEvent(new CustomEvent('facultyUpdated', {
+        detail: { facultyId: selectedFaculty.id, updates: facultyUpdateData }
       }));
-      
+
       setTimeout(() => setFacultyUpdateStatus(''), 3000);
     } else {
       setFacultyUpdateError('Failed to update faculty details.');
@@ -1307,7 +1339,7 @@ export default function AdminDashboard() {
   const [institutes, setInstitutes] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [allFaculties, setAllFaculties] = useState([]); // Combined hardcoded + database faculties
-  
+
   // Hardcoded institutes as fallback
   const hardcodedInstitutes = [
     { name: "Aaditya Jain Classes", _id: "hardcoded-1" },
@@ -1329,9 +1361,24 @@ export default function AdminDashboard() {
     { name: "SJC Institute", _id: "hardcoded-17" },
     { name: "Yashwant Mangal Classes", _id: "hardcoded-18" }
   ];
-  
+
   // Fetch institutes and faculties on mount
   useEffect(() => {
+    // Initialize faculties from hardcoded data first to ensure the dropdown has values
+    const hardcodedFaculties = getAllFaculties();
+    console.log('🎓 Initializing with hardcoded faculties:', hardcodedFaculties.length);
+
+    const initialFaculties = hardcodedFaculties.map(faculty => ({
+      slug: faculty.slug,
+      firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
+      lastName: '',
+      isHardcoded: true,
+      fullName: faculty.name
+    }));
+
+    // Set initial faculty values immediately
+    setAllFaculties(initialFaculties);
+
     // Fetch institutes
     console.log('🏫 Fetching institutes from:', `${API_URL}/api/institutes`);
     fetch(`${API_URL}/api/institutes`)
@@ -1342,7 +1389,7 @@ export default function AdminDashboard() {
       .then(data => {
         console.log('🏫 Institutes data received:', data);
         const apiInstitutes = data.institutes || [];
-        
+
         // If no institutes from API, use hardcoded ones
         if (apiInstitutes.length === 0) {
           console.log('🏫 No institutes from API, using hardcoded institutes');
@@ -1356,9 +1403,26 @@ export default function AdminDashboard() {
         console.log('🏫 Using hardcoded institutes due to error');
         setInstitutes(hardcodedInstitutes);
       });
-    
+
     // Fetch database faculties
     console.log('🔍 Starting to fetch faculties from:', `${API_URL}/api/faculties`);
+
+    // Ensure we have hardcoded faculties ready first
+    const hardcoded = getAllFaculties();
+    console.log('📚 Hardcoded faculties loaded initially:', hardcoded.length);
+
+    // Always set the hardcoded faculties immediately, before API call completes
+    const fallbackFaculties = hardcoded.map(faculty => ({
+      slug: faculty.slug,
+      firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
+      lastName: '',
+      isHardcoded: true,
+      fullName: faculty.name
+    }));
+
+    // Set initial faculties from hardcoded data
+    setAllFaculties(fallbackFaculties);
+
     fetch(`${API_URL}/api/faculties`)
       .then(res => {
         console.log('📡 Faculty API response status:', res.status);
@@ -1369,11 +1433,10 @@ export default function AdminDashboard() {
         const dbFaculties = data.faculties || [];
         console.log('🎓 Database faculties found:', dbFaculties.length);
         setFaculties(dbFaculties);
-        
+
         // Combine hardcoded faculties with database faculties
-        const hardcoded = getAllFaculties();
         console.log('📚 Hardcoded faculties found:', hardcoded.length);
-        
+
         const combinedFaculties = [
           // Add hardcoded faculties first (convert to needed format)
           ...hardcoded.map(faculty => ({
@@ -1390,7 +1453,7 @@ export default function AdminDashboard() {
             fullName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
           }))
         ];
-        
+
         console.log('🎯 Final combined faculties:', combinedFaculties.length, combinedFaculties);
         setAllFaculties(combinedFaculties);
       })
@@ -1512,7 +1575,7 @@ export default function AdminDashboard() {
     try {
       await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'DELETE' });
       fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
-    } catch {}
+    } catch { }
   };
 
   // Render the AdminDashboard component
@@ -1546,18 +1609,18 @@ export default function AdminDashboard() {
       {activePanel === 'course' && (
         <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-8 border border-blue-100 mb-8">
           <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
-          
+
           <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
-            
+
             {/* Step 1: Course Information */}
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
               <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                  <select 
-                    name="category" 
-                    value={courseForm.category} 
+                  <select
+                    name="category"
+                    value={courseForm.category}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
@@ -1568,12 +1631,12 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
-                  <select 
-                    name="subcategory" 
-                    value={courseForm.subcategory} 
+                  <select
+                    name="subcategory"
+                    value={courseForm.subcategory}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
@@ -1585,12 +1648,12 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
-                  <select 
-                    name="paperId" 
-                    value={courseForm.paperId} 
+                  <select
+                    name="paperId"
+                    value={courseForm.paperId}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
                     required
@@ -1623,7 +1686,7 @@ export default function AdminDashboard() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
                   <input
@@ -1636,12 +1699,12 @@ export default function AdminDashboard() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Optional)</label>
-                  <select 
-                    name="facultySlug" 
-                    value={courseForm.facultySlug} 
+                  <select
+                    name="facultySlug"
+                    value={courseForm.facultySlug}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
@@ -1653,12 +1716,12 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Optional)</label>
-                  <select 
-                    name="institute" 
-                    value={courseForm.institute} 
+                  <select
+                    name="institute"
+                    value={courseForm.institute}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
@@ -1668,117 +1731,117 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea 
-                    name="description" 
-                    value={courseForm.description} 
+                  <textarea
+                    name="description"
+                    value={courseForm.description}
                     onChange={handleCourseFormChange}
                     placeholder="Course description"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Number of Lectures</label>
-                  <input 
-                    name="noOfLecture" 
-                    value={courseForm.noOfLecture} 
+                  <input
+                    name="noOfLecture"
+                    value={courseForm.noOfLecture}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 65 Lectures"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Books</label>
-                  <input 
-                    name="books" 
-                    value={courseForm.books} 
+                  <input
+                    name="books"
+                    value={courseForm.books}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Main Book, Practice Manual"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Video Language</label>
-                  <input 
-                    name="videoLanguage" 
-                    value={courseForm.videoLanguage} 
+                  <input
+                    name="videoLanguage"
+                    value={courseForm.videoLanguage}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Hindi + English Mix"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Video Run On</label>
-                  <input 
-                    name="videoRunOn" 
-                    value={courseForm.videoRunOn} 
+                  <input
+                    name="videoRunOn"
+                    value={courseForm.videoRunOn}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Windows Laptop, Android Mobile"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Doubt Solving</label>
-                  <input 
-                    name="doubtSolving" 
-                    value={courseForm.doubtSolving} 
+                  <input
+                    name="doubtSolving"
+                    value={courseForm.doubtSolving}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. WhatsApp / Telegram"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Support Mail</label>
-                  <input 
-                    name="supportMail" 
-                    value={courseForm.supportMail} 
+                  <input
+                    name="supportMail"
+                    value={courseForm.supportMail}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. support@academywale.com"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Support Call</label>
-                  <input 
-                    name="supportCall" 
-                    value={courseForm.supportCall} 
+                  <input
+                    name="supportCall"
+                    value={courseForm.supportCall}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 8910416751"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Timing</label>
-                  <input 
-                    name="timing" 
-                    value={courseForm.timing} 
+                  <input
+                    name="timing"
+                    value={courseForm.timing}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 120 Hours"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
                   <div className="flex gap-4 items-center">
-                    <input 
-                      name="poster" 
-                      type="file" 
-                      accept="image/*" 
+                    <input
+                      name="poster"
+                      type="file"
+                      accept="image/*"
                       onChange={handleCourseFormChange}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                      required 
+                      required
                     />
                     {posterPreviewNew && (
                       <img src={posterPreviewNew} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200" />
@@ -1791,13 +1854,13 @@ export default function AdminDashboard() {
             {/* Step 3: Mode & Attempt Pricing */}
             <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border-2 border-indigo-200">
               <h3 className="text-xl font-semibold text-indigo-800 mb-4">Step 3: Mode & Attempt Pricing</h3>
-              
+
               {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
                 <div key={modeIndex} className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="text-lg font-semibold text-purple-700">Mode {modeIndex + 1}</h4>
                     {courseForm.modeAttemptPricing.length > 1 && (
-                      <button 
+                      <button
                         type="button"
                         onClick={() => removeModeAttemptPricing(modeIndex)}
                         className="text-red-600 hover:text-red-800 font-semibold"
@@ -1806,26 +1869,26 @@ export default function AdminDashboard() {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Mode Name *</label>
-                    <input 
-                      value={modeData.mode} 
+                    <input
+                      value={modeData.mode}
                       onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value)}
                       placeholder="e.g. Live at Home With Hard Copy"
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-400"
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing:</h5>
                     {modeData.attempts.map((attempt, attemptIndex) => (
                       <div key={attemptIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-purple-50 rounded-lg">
                         <div>
                           <label className="block text-xs font-medium text-gray-600 mb-1">Attempt *</label>
-                          <input 
-                            value={attempt.attempt} 
+                          <input
+                            value={attempt.attempt}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value)}
                             placeholder="e.g. 1.5 Views & 12 Months"
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
@@ -1834,9 +1897,9 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-600 mb-1">Cost Price *</label>
-                          <input 
+                          <input
                             type="number"
-                            value={attempt.costPrice} 
+                            value={attempt.costPrice}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0)}
                             placeholder="15999"
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
@@ -1845,9 +1908,9 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-600 mb-1">Selling Price *</label>
-                          <input 
+                          <input
                             type="number"
-                            value={attempt.sellingPrice} 
+                            value={attempt.sellingPrice}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0)}
                             placeholder="13999"
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
@@ -1856,7 +1919,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-end">
                           {modeData.attempts.length > 1 && (
-                            <button 
+                            <button
                               type="button"
                               onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex)}
                               className="text-red-600 hover:text-red-800 text-sm font-semibold"
@@ -1867,8 +1930,8 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ))}
-                    
-                    <button 
+
+                    <button
                       type="button"
                       onClick={() => addAttemptToPricing(modeIndex)}
                       className="text-purple-600 hover:text-purple-800 text-sm font-semibold"
@@ -1878,8 +1941,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
-              
-              <button 
+
+              <button
                 type="button"
                 onClick={addModeAttemptPricing}
                 className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
@@ -1890,8 +1953,8 @@ export default function AdminDashboard() {
 
             {/* Submit Button */}
             <div className="text-center">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all text-lg flex items-center justify-center gap-3 mx-auto"
                 disabled={loading}
               >
@@ -1974,14 +2037,14 @@ export default function AdminDashboard() {
             {facultyAddStatus && <div className="text-green-600 text-center font-semibold">{facultyAddStatus}</div>}
             {facultyAddError && <div className="text-red-600 text-center font-semibold">{facultyAddError}</div>}
           </form>
-          
+
           {/* Delete All Faculty Section */}
           <div className="mt-8 p-6 bg-red-50 rounded-xl border-2 border-red-200">
             <h3 className="text-lg font-bold text-red-700 mb-3">⚠️ Danger Zone</h3>
             <p className="text-sm text-red-600 mb-4">This action will permanently delete ALL faculty members from the database. This cannot be undone.</p>
-            
+
             {!showDeleteConfirm ? (
-              <button 
+              <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
               >
@@ -1991,13 +2054,13 @@ export default function AdminDashboard() {
               <div className="flex flex-col gap-3">
                 <p className="text-red-700 font-semibold">Are you absolutely sure? This will delete ALL faculty members!</p>
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={handleDeleteAllFaculty}
                     className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
                   >
                     ✅ Yes, Delete All
                   </button>
-                  <button 
+                  <button
                     onClick={() => setShowDeleteConfirm(false)}
                     className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
                   >
@@ -2006,7 +2069,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
-            
+
             {deleteAllStatus && <div className="text-green-600 font-semibold mt-3">{deleteAllStatus}</div>}
             {deleteAllError && <div className="text-red-600 font-semibold mt-3">{deleteAllError}</div>}
           </div>
@@ -2069,36 +2132,35 @@ export default function AdminDashboard() {
               </div>
             </form>
           </Modal>
-          
+
           {/* Hardcoded Faculty Management Section */}
           <div className="w-full max-w-5xl bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl shadow-2xl p-8 border border-purple-300 mt-8">
             <h2 className="text-2xl font-bold text-purple-700 mb-6">📚 Manage Faculty Details</h2>
             <p className="text-gray-600 mb-6">Update bio and teaching areas for faculty members. These details will be displayed on faculty profile pages.</p>
-            
+
             <div className="grid md:grid-cols-2 gap-8">
               {/* Faculty Selection */}
               <div>
                 <h3 className="text-lg font-bold text-purple-600 mb-4">Select Faculty Member</h3>
                 <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2">
                   {hardcodedFaculties.map(faculty => (
-                    <div 
-                      key={faculty.id} 
+                    <div
+                      key={faculty.id}
                       onClick={() => handleSelectFaculty(faculty)}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${
-                        selectedFaculty?.id === faculty.id 
-                          ? 'border-purple-500 bg-purple-100 shadow-lg' 
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${selectedFaculty?.id === faculty.id
+                          ? 'border-purple-500 bg-purple-100 shadow-lg'
                           : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
-                      }`}
+                        }`}
                     >
-                      <img 
-                        src={faculty.image} 
+                      <img
+                        src={faculty.image}
                         alt={faculty.name}
                         className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-gray-800">{faculty.name}</div>
                         <div className="text-xs text-gray-500">
-                          {faculty.bio ? '✅ Bio Added' : '⚠️ No Bio'} • 
+                          {faculty.bio ? '✅ Bio Added' : '⚠️ No Bio'} •
                           {faculty.teaches && faculty.teaches.length > 0 ? ` Teaches: ${faculty.teaches.join(', ')}` : ' No Teaching Areas'}
                         </div>
                       </div>
@@ -2112,13 +2174,13 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-bold text-purple-600 mb-4">
                   {selectedFaculty ? `Update ${selectedFaculty.name}` : 'Select a Faculty Member'}
                 </h3>
-                
+
                 {selectedFaculty ? (
                   <form onSubmit={handleFacultyUpdateSubmit} className="space-y-4">
                     {/* Selected Faculty Display */}
                     <div className="p-4 bg-white rounded-xl border border-purple-200 flex items-center gap-4">
-                      <img 
-                        src={selectedFaculty.image} 
+                      <img
+                        src={selectedFaculty.image}
                         alt={selectedFaculty.name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-purple-300"
                       />
@@ -2163,8 +2225,8 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Submit Button */}
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all text-lg"
                     >
                       💾 Update Faculty Details
