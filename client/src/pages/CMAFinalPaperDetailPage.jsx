@@ -3,9 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import papersData from '../data/papersData';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Try to use remote API URL first, fall back to local if not available
+const REMOTE_API_URL = import.meta.env.VITE_API_URL || '';
+const LOCAL_API_URL = import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:5000';
+const API_URL = REMOTE_API_URL || LOCAL_API_URL;
+
+console.log('Using API URL:', API_URL);
 if (!API_URL) {
-  console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
+  console.warn('Warning: No API URL is available. Image URLs and API calls may fail.');
 }
 
 const CMAFinalPaperDetailPage = () => {
@@ -25,9 +30,16 @@ const CMAFinalPaperDetailPage = () => {
       setError('');
       try {
         // Use the unified API endpoint for courses by category, subcategory, and paper
-        const res = await fetch(`${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`);
-        
         console.log(`Fetching CMA final courses from: ${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`);
+        
+        const res = await fetch(`${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-cache', // Avoid caching issues
+          mode: 'cors', // Ensure CORS mode
+        });
         const data = await res.json();
         
         console.log('CMA final courses response:', data);

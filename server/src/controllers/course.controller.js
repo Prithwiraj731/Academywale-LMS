@@ -306,22 +306,28 @@ exports.getCoursesByPaper = async (req, res) => {
     // Get courses from faculties
     faculties.forEach(faculty => {
       (faculty.courses || []).forEach(course => {
-        allCourses.push({
-          ...course.toObject(),
-          facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
-          isStandalone: false
-        });
+        // Only add if course has required fields
+        if (course) {
+          allCourses.push({
+            ...course.toObject(),
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+            isStandalone: false
+          });
+        }
       });
     });
     
     // Get courses from institutes
     institutes.forEach(institute => {
       (institute.courses || []).forEach(course => {
-        allCourses.push({
-          ...course.toObject(),
-          facultyName: '',
-          isStandalone: false
-        });
+        // Only add if course has required fields
+        if (course) {
+          allCourses.push({
+            ...course.toObject(),
+            facultyName: '',
+            isStandalone: false
+          });
+        }
       });
     });
     
@@ -352,31 +358,42 @@ exports.getCoursesByPaper = async (req, res) => {
       console.log('🚫 Skipping standalone courses as includeStandalone is not true');
     }
     
-    // Filter by category, subcategory, and paper - using looser comparison for paperId
+    // Filter by category, subcategory, and paper - using looser comparison for all fields
     const filteredCourses = allCourses.filter(course => {
-      // Convert paperId to string for comparison to handle both string and number types
-      const courseCategory = course.category?.toUpperCase() || '';
-      const courseSubcategory = course.subcategory?.charAt(0)?.toUpperCase() + (course.subcategory?.slice(1)?.toLowerCase() || '') || '';
-      const coursePaperId = course.paperId?.toString() || '';
-      const requestedPaperId = paperId?.toString() || '';
-      const requestedCategory = category.toUpperCase();
-      const requestedSubcategory = subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase();
-      
-      // For debug purposes
-      console.log(`Course comparison: ${course._id}`);
-      console.log(`- Category: ${courseCategory} vs ${requestedCategory}, match: ${courseCategory === requestedCategory}`);
-      console.log(`- Subcategory: ${courseSubcategory} vs ${requestedSubcategory}, match: ${courseSubcategory === requestedSubcategory}`);
-      console.log(`- PaperId: ${coursePaperId} vs ${requestedPaperId}, match: ${coursePaperId === requestedPaperId}`);
-      
-      const matches = courseCategory === requestedCategory &&
-                     courseSubcategory === requestedSubcategory &&
-                     coursePaperId === requestedPaperId;
+      try {
+        // Handle different formats and data types that might be stored in MongoDB
+        const courseCategory = String(course.category || '').toUpperCase();
+        const courseSubcategory = String(course.subcategory || '').toLowerCase();
+        const coursePaperId = String(course.paperId || '').replace(/\D/g, ''); // Extract numeric part only
+        
+        const requestedCategory = String(category || '').toUpperCase();
+        const requestedSubcategory = String(subcategory || '').toLowerCase();
+        const requestedPaperId = String(paperId || '').replace(/\D/g, ''); // Extract numeric part only
+        
+        // Very lenient comparisons for debugging
+        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
+        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
+        const paperIdMatch = coursePaperId === requestedPaperId;
+        
+        // Log detailed comparison for debugging
+        console.log(`Course comparison: ${course._id || 'unknown'}, Subject: ${course.subject || 'unknown'}`);
+        console.log(`- Category: "${courseCategory}" vs "${requestedCategory}", match: ${categoryMatch}`);
+        console.log(`- Subcategory: "${courseSubcategory}" vs "${requestedSubcategory}", match: ${subcategoryMatch}`);
+        console.log(`- PaperId: "${coursePaperId}" vs "${requestedPaperId}", match: ${paperIdMatch}`);
+        
+        const matches = categoryMatch && subcategoryMatch && paperIdMatch;
                      
       console.log(`- Overall match: ${matches} (isStandalone: ${course.isStandalone || false})`);
       
       return matches;
+      } catch (filterError) {
+        console.error(`Error filtering course: ${filterError.message}`);
+        // Skip this course if there was an error
+        return false;
+      }
     });
     
+    console.log(`Returning ${filteredCourses.length} total filtered courses`);
     res.status(200).json({ courses: filteredCourses });
   } catch (error) {
     res.status(500).json({ error: error.message });

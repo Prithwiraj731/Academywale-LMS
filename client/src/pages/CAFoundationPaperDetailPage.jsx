@@ -29,12 +29,29 @@ const CAFoundationPaperDetailPage = () => {
       try {
         // Use new API endpoint that filters by category, subcategory, and paper
         // Add includeStandalone parameter to ensure we get standalone courses too
-        const res = await fetch(`${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`);
-        
         console.log(`Fetching courses from: ${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`);
+        
+        const res = await fetch(`${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-cache', // Avoid caching issues
+          mode: 'cors', // Ensure CORS mode
+        });
+        
+        console.log('Response status:', res.status);
         const data = await res.json();
         
         console.log('Courses response:', data);
+        console.log(`Found ${data.courses?.length || 0} CA foundation courses, including standalone:`, 
+                  data.courses?.filter(c => c.isStandalone).length || 0);
+        console.log('Course data summary:', data.courses?.map(c => ({ 
+          id: c._id,
+          subject: c.subject,
+          isStandalone: c.isStandalone,
+          facultyName: c.facultyName || 'N/A' 
+        })));
 
         if (res.ok) {
           setCourses(data.courses || []);

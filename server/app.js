@@ -45,14 +45,15 @@ const { storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.c
 
 // --- CORS MUST COME BEFORE ANY ROUTES ---
 app.use(cors({
-  origin: [
+  origin: '*', // Allow all origins for now to fix immediate issue
+  /*origin: [
     'https://academywale.com',
     'https://www.academywale.com',
     'https://academywale-lms.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
-  ],
+  ],*/
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Content-Length'],
@@ -68,18 +69,9 @@ app.options('*', cors());
 // Ensure CORS headers even when an error happens later
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowed = [
-    'https://academywale.com',
-    'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://localhost:3000'
-  ];
-  if (origin && allowed.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
+  // Allow all origins for now to fix immediate issue
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');

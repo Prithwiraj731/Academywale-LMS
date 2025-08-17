@@ -3,7 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import papersData from '../data/papersData';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Try to use remote API URL first, fall back to local if not available
+const REMOTE_API_URL = import.meta.env.VITE_API_URL || '';
+const LOCAL_API_URL = import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:5000';
+const API_URL = REMOTE_API_URL || LOCAL_API_URL;
+
+console.log('Using API URL:', API_URL);
+if (!API_URL) {
+  console.warn('Warning: No API URL is available. Image URLs and API calls may fail.');
+}
 
 const CAInterPaperDetailPage = () => {
   const { paperSlug } = useParams();
@@ -23,9 +31,26 @@ const CAInterPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
         console.log(`Fetching CA inter courses from: ${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
+        
+        const res = await fetch(`${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-cache', // Avoid caching issues
+          mode: 'cors', // Ensure CORS mode
+        });
+        
+        console.log('Response status:', res.status);
         const data = await res.json();
+        
+        console.log('Course data summary:', data.courses?.map(c => ({ 
+          id: c._id,
+          subject: c.subject,
+          isStandalone: c.isStandalone,
+          facultyName: c.facultyName || 'N/A' 
+        })));
 
         if (res.ok) {
           setCourses(data.courses || []);
