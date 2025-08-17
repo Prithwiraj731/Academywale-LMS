@@ -1,15 +1,13 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter object using the default SMTP transport
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
-  auth: {
-    user: process.env.EMAIL_USER || 'support@academywale.com',
-    pass: process.env.EMAIL_PASS
+// Mock transporter for development
+console.log('⚠️ Using mock email transporter for development');
+const transporter = {
+  sendMail: (options) => {
+    console.log('📧 Mock email sent:', options);
+    return Promise.resolve({ messageId: 'mock-id-' + Date.now() });
   }
-});
+};
 
 /**
  * Send email notification

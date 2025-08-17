@@ -335,27 +335,39 @@ exports.getCoursesByPaper = async (req, res) => {
     if (includeStandalone) {
       console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
       
-      // Use more flexible query conditions to handle different data formats
+      // Use a more flexible and reliable query approach for standalone courses
       const standaloneCourses = await Course.find({
-        isStandalone: true,
-        // Use case insensitive search for category
-        $or: [
-          { category: category.toUpperCase() },
-          { category: category.toLowerCase() },
-          { category: category }
-        ],
-        // Use case insensitive search for subcategory
-        $or: [
-          { subcategory: subcategory.toLowerCase() },
-          { subcategory: subcategory.toUpperCase() },
-          { subcategory: subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() },
-          { subcategory: subcategory }
-        ],
-        // Handle paperId as both string and number
-        $or: [
-          { paperId: parseInt(paperId) },
-          { paperId: paperId.toString() },
-          { paperId: paperId }
+        $and: [
+          // Either isStandalone is true or facultySlug is empty
+          {
+            $or: [
+              { isStandalone: true },
+              { facultySlug: { $in: [null, '', undefined] } }
+            ]
+          },
+          // Category match (case insensitive)
+          {
+            $or: [
+              { category: category.toUpperCase() },
+              { category: category.toLowerCase() },
+              { category: category }
+            ]
+          },
+          // Subcategory match (case insensitive)
+          {
+            $or: [
+              { subcategory: subcategory.toLowerCase() },
+              { subcategory: subcategory.toUpperCase() },
+              { subcategory: subcategory }
+            ]
+          },
+          // PaperId match (both string and number formats)
+          {
+            $or: [
+              { paperId: parseInt(paperId) },
+              { paperId: paperId.toString() }
+            ]
+          }
         ]
       }).sort({ createdAt: -1 });
     
