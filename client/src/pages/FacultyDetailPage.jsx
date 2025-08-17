@@ -331,10 +331,10 @@ export default function FacultyDetailPage() {
                   ) : (
                     <div className="mt-4 sm:mt-7 w-full sm:w-auto">
                       <button
-                        onClick={() => navigate(`/payment/${facultyInfo.slug}/${idx}`, { state: { selectedAttempt: selectedDuration } })}
+                        onClick={() => navigate(`/course/${facultyInfo.slug}/${idx}`, { state: { selectedAttempt: selectedDuration } })}
                         className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-700 transition-all text-lg w-full sm:w-auto"
                       >
-                        Buy Now
+                        View Details
                       </button>
                     </div>
                   )}

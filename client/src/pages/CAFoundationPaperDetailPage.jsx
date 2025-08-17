@@ -84,9 +84,7 @@ const CAFoundationPaperDetailPage = () => {
   };
 
   const handleCourseClick = (course) => {
-    setSelectedCourse(course);
-    setSelectedMode('');
-    setSelectedAttempt('');
+    navigate(`/course/${encodeURIComponent(course.courseType)}/${course._id}`);
   };
 
   const handleModeChange = (mode) => {
