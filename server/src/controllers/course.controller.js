@@ -333,15 +333,31 @@ exports.getCoursesByPaper = async (req, res) => {
     
     // Get standalone courses matching the same criteria if includeStandalone is true
     if (includeStandalone) {
-      console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase()}, paperId=${parseInt(paperId)}`);
+      console.log(`🔍 Searching for standalone courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
       
+      // Use more flexible query conditions to handle different data formats
       const standaloneCourses = await Course.find({
         isStandalone: true,
-        isActive: true,
-        category: category.toUpperCase(),
-      subcategory: subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase(),
-      paperId: parseInt(paperId)
-    }).sort({ createdAt: -1 });
+        // Use case insensitive search for category
+        $or: [
+          { category: category.toUpperCase() },
+          { category: category.toLowerCase() },
+          { category: category }
+        ],
+        // Use case insensitive search for subcategory
+        $or: [
+          { subcategory: subcategory.toLowerCase() },
+          { subcategory: subcategory.toUpperCase() },
+          { subcategory: subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() },
+          { subcategory: subcategory }
+        ],
+        // Handle paperId as both string and number
+        $or: [
+          { paperId: parseInt(paperId) },
+          { paperId: paperId.toString() },
+          { paperId: paperId }
+        ]
+      }).sort({ createdAt: -1 });
     
     console.log(`🔎 Found ${standaloneCourses.length} matching standalone courses`);
     
@@ -394,7 +410,29 @@ exports.getCoursesByPaper = async (req, res) => {
     });
     
     console.log(`Returning ${filteredCourses.length} total filtered courses`);
-    res.status(200).json({ courses: filteredCourses });
+    
+    // Make sure we're returning valid data by checking each course
+    const sanitizedCourses = filteredCourses.filter(course => {
+      // Filter out any null or undefined courses
+      if (!course) return false;
+      
+      // Ensure all courses have required fields
+      return course._id && (course.subject || course.title);
+    }).map(course => {
+      // Make sure all courses have these minimum fields
+      return {
+        ...course,
+        _id: course._id || new mongoose.Types.ObjectId(),
+        subject: course.subject || course.title || 'Untitled Course',
+        facultyName: course.facultyName || 'Standalone Course',
+        isStandalone: !!course.isStandalone,
+        courseType: course.courseType || `${category} ${subcategory} - Paper ${paperId}`,
+        modeAttemptPricing: course.modeAttemptPricing || []
+      };
+    });
+    
+    console.log(`Returning ${sanitizedCourses.length} sanitized filtered courses`);
+    res.status(200).json({ courses: sanitizedCourses });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

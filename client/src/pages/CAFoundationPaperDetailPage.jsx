@@ -31,6 +31,7 @@ const CAFoundationPaperDetailPage = () => {
         // Add includeStandalone parameter to ensure we get standalone courses too
         console.log(`Fetching courses from: ${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`);
         
+        // First attempt - standard URL
         const res = await fetch(`${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`, {
           headers: {
             'Accept': 'application/json',
@@ -43,22 +44,42 @@ const CAFoundationPaperDetailPage = () => {
         console.log('Response status:', res.status);
         const data = await res.json();
         
-        console.log('Courses response:', data);
-        console.log(`Found ${data.courses?.length || 0} CA foundation courses, including standalone:`, 
-                  data.courses?.filter(c => c.isStandalone).length || 0);
-        console.log('Course data summary:', data.courses?.map(c => ({ 
-          id: c._id,
-          subject: c.subject,
-          isStandalone: c.isStandalone,
-          facultyName: c.facultyName || 'N/A' 
-        })));
-
-        if (res.ok) {
-          setCourses(data.courses || []);
-          console.log(`Found ${data.courses?.length || 0} courses, including standalone:`, 
-                     data.courses?.filter(c => c.isStandalone).length || 0);
+        // Log course data if available
+        if (data.courses && data.courses.length > 0) {
+          console.log('Courses response:', data);
+          console.log(`Found ${data.courses.length} CA foundation courses, including standalone:`, 
+                    data.courses.filter(c => c.isStandalone).length || 0);
+          console.log('Course data summary:', data.courses.map(c => ({ 
+            id: c._id,
+            subject: c.subject,
+            isStandalone: c.isStandalone,
+            facultyName: c.facultyName || 'N/A' 
+          })));
+          setCourses(data.courses);
         } else {
-          setError(data.error || 'Could not fetch courses');
+          console.log('No courses found in first attempt, trying alternative format...');
+          
+          // Second attempt - try alternative URL format (just to be sure)
+          const altRes = await fetch(`${API_URL}/api/courses/ca/foundation/${paperId}?includeStandalone=true`, {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            cache: 'no-cache',
+            mode: 'cors',
+          });
+          
+          if (altRes.ok) {
+            const altData = await altRes.json();
+            if (altData.courses && altData.courses.length > 0) {
+              console.log('Alternative URL returned courses:', altData.courses.length);
+              setCourses(altData.courses);
+            } else {
+              setError('No courses found for this paper');
+            }
+          } else {
+            setError(data.error || 'Could not fetch courses');
+          }
         }
       } catch (err) {
         console.error('Error fetching courses:', err);
