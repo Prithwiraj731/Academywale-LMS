@@ -22,7 +22,7 @@ export default function About() {
         <Navbar />
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center py-16 px-4 bg-transparent">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse text-center">About <span className="text-[#ffd600]">AcademyWale</span></h1>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse text-center">About <span className="text-[#20b2aa]">AcademyWale</span></h1>
           <p className="text-base sm:text-lg md:text-xl text-cyan-200 max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto mb-8 text-left md:text-center leading-relaxed md:leading-8">
             AcademyWale is a trusted educational platform committed to delivering high-quality learning experiences through strategic partnerships with some of the most reputed faculties across India. We bring together expert educators, dynamic content, and a student-first approach to provide affordable and result-oriented courses for competitive and professional exams.<br/><br/>
             With a vision to empower every learner, AcademyWale collaborates with top-rated faculties from diverse domains like CMA, CA, CS, and other commerce-related streams, ensuring students get access to the best guidance, updated curriculum, and practical insights — all in one place.<br/><br/>
@@ -47,24 +47,24 @@ export default function About() {
             {/* Example team cards, replace with real data/images if available */}
             <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
               <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#0a6ebd] to-[#00eaff] rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                <span className="text-2xl sm:text-4xl text-white font-bold">A</span>
+                <span className="text-2xl sm:text-4xl text-white font-bold">S</span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Ankit Sharma</h3>
-              <p className="text-gray-700 text-sm sm:text-base">Founder & CEO</p>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Sourav Pathak</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Founder</p>
             </div>
             <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
               <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#ffd600] to-[#00eaff] rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                <span className="text-2xl sm:text-4xl text-white font-bold">S</span>
+                <span className="text-2xl sm:text-4xl text-white font-bold">P</span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Sneha Verma</h3>
-              <p className="text-gray-700 text-sm sm:text-base">Head of Academics</p>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Prithwiraj Mazumdar</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Tech Lead</p>
             </div>
             <div className="bg-white/90 rounded-xl shadow-lg p-4 sm:p-6 w-48 sm:w-64 flex flex-col items-center hover:scale-105 transition-transform">
               <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-[#0a6ebd] to-[#ffd600] rounded-full flex items-center justify-center mb-3 sm:mb-4">
                 <span className="text-2xl sm:text-4xl text-white font-bold">R</span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Rahul Mehta</h3>
-              <p className="text-gray-700 text-sm sm:text-base">Tech Lead</p>
+              <h3 className="text-lg sm:text-xl font-bold text-[#0a6ebd]">Raj Pathak</h3>
+              <p className="text-gray-700 text-sm sm:text-base">Sales Executive</p>
             </div>
           </div>
         </section>
