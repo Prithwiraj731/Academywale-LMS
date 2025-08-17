@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const purchaseController = require('../controllers/purchase.controller');
+const { isAuth } = require('../middleware/authMiddleware');
 
-// Purchase a course
+// Purchase a course (legacy route)
 router.post('/purchase', purchaseController.purchaseCourse);
+
+// UPI Purchase route
+router.post('/upi-purchase', isAuth, purchaseController.upiPurchase);
 
 // Get user's purchased courses
 router.get('/user/:userId', purchaseController.getUserPurchases);

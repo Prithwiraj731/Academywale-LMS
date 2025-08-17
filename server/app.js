@@ -103,6 +103,14 @@ app.use('/', courseControllerRoutes);
 const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
 app.use('/', standaloneCourseRoutes);
 
+// Mount purchase routes
+const purchaseRoutes = require('./src/routes/purchase.routes.js');
+app.use('/api/purchase', purchaseRoutes);
+
+// Mount notification routes
+const notifyRoutes = require('./src/routes/notify.routes.js');
+app.use('/api/notify', notifyRoutes);
+
 // Import course utilities
 const { validateCourseMode } = require('./src/utils/courseUtils');
 

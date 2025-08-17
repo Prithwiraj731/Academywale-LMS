@@ -1,6 +1,7 @@
 const Purchase = require('../model/Purchase.model');
 const Faculty = require('../model/Faculty.model');
 const User = require('../model/User.model');
+const Course = require('../model/Course.model'); 
 const { sendPurchaseInvoiceEmail } = require('../utils/email.utils');
 
 // Generate unique transaction ID
@@ -192,6 +193,118 @@ exports.checkCoursePurchase = async (req, res) => {
       success: false,
       message: 'Failed to check purchase status',
       error: error.message
+    });
+  }
+};
+
+// Purchase a course via UPI
+exports.upiPurchase = async (req, res) => {
+  try {
+    const { userId, courseId, transactionId, amount, userDetails, courseDetails } = req.body;
+
+    // Validate required fields
+    if (!userId || !courseId || !transactionId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, courseId, transactionId, amount'
+      });
+    }
+
+    // Find the course
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    // Check if user already purchased this course
+    const existingPurchase = await Purchase.findOne({
+      userId,
+      courseId,
+      isActive: true
+    });
+
+    if (existingPurchase) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already purchased this course'
+      });
+    }
+
+    // Create purchase record for standalone course
+    const purchase = new Purchase({
+      userId,
+      courseId,
+      paymentMethod: 'UPI',
+      amount,
+      transactionId,
+      paymentStatus: 'pending_verification', // UPI payments need verification
+      courseDetails: {
+        title: course.title || course.subject,
+        subject: course.subject,
+        mode: courseDetails?.mode || '',
+        validity: courseDetails?.validity || ''
+      },
+      userDetails: {
+        name: userDetails?.name || '',
+        email: userDetails?.email || '',
+        phone: userDetails?.phone || ''
+      }
+    });
+
+    await purchase.save();
+
+    // Add course to user's purchased courses list
+    await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { purchasedCourses: courseId } }
+    );
+
+    // Send notification email to admin
+    try {
+      const user = await User.findById(userId);
+      const emailText = `
+        New UPI payment received:
+        Course: ${course.title || course.subject}
+        User: ${user?.name || userDetails?.name} (${user?.email || userDetails?.email})
+        Phone: ${userDetails?.phone || ''}
+        Amount: ₹${amount}
+        Transaction ID: ${transactionId}
+        Mode: ${courseDetails?.mode || ''}
+        Validity: ${courseDetails?.validity || ''}
+        Status: Pending verification
+      `;
+      
+      await sendPurchaseInvoiceEmail(
+        'support@academywale.com',
+        'Admin',
+        { subject: 'New UPI Purchase - Verification Needed' },
+        transactionId,
+        new Date(),
+        amount,
+        emailText
+      );
+    } catch (emailErr) {
+      console.error('Failed to send notification email:', emailErr);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment recorded successfully! Your course will be activated after payment verification.',
+      purchase: {
+        id: purchase._id,
+        transactionId,
+        status: 'pending_verification'
+      }
+    });
+
+  } catch (error) {
+    console.error('UPI Purchase error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while processing UPI purchase'
     });
   }
 };

@@ -20,6 +20,8 @@ import StudentDashboard from './pages/StudentDashboard';
 import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentPage from './pages/PaymentPage';
+import UPIPaymentPage from './pages/UPIPaymentPage';
+import CourseDetailPage from './pages/CourseDetailPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CAFoundationPapers from './pages/CAFoundationPapers';
 import CAInterPapers from './pages/CAInterPapers';
@@ -63,7 +65,9 @@ const App = () => {
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/payment/:courseType/:courseId" element={<UPIPaymentPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/course/:courseType/:courseId" element={<CourseDetailPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* General paper overview pages */}
