@@ -2,24 +2,15 @@ const Faculty = require('../model/Faculty.model');
 const Course = require('../model/Course.model');
 const mongoose = require('mongoose');
 
-// Get course details by ID - supports standalone and faculty courses
+// Get course details by ID - Unified logic for all courses, using "N/A" faculty for standalone courses
 exports.getCourseDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
     let course = null;
-    let isStandaloneCourse = false;
 
-    // First try to find it as a standalone course
+    // First look in faculty courses since we're moving towards unified approach
     if (mongoose.Types.ObjectId.isValid(courseId)) {
-      course = await Course.findById(courseId);
-      if (course) {
-        isStandaloneCourse = true;
-      }
-    }
-
-    // If not found as standalone, search in faculty courses
-    if (!course) {
-      // Try to find the course in all faculties
+      // Find all faculties, including the special "N/A" faculty
       const faculties = await Faculty.find({});
       
       // Loop through all faculties and their courses
@@ -31,22 +22,31 @@ exports.getCourseDetails = async (req, res) => {
           course._id && course._id.toString() === courseId);
         
         if (foundCourse) {
+          // Check if this is the "N/A" faculty
+          const isNAFaculty = faculty.firstName === 'N/A' || faculty.lastName === 'N/A';
+          
           course = {
             ...foundCourse.toObject(),
-            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultyName: isNAFaculty ? 'N/A' : `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
             facultySlug: faculty.slug,
             facultyId: faculty._id
           };
           break;
         }
       }
-    } else {
-      // Format standalone course
-      course = {
-        ...course.toObject(),
-        facultyName: 'N/A',
-        isStandalone: true
-      };
+    }
+    
+    // As a fallback, look for standalone course (legacy support)
+    if (!course && mongoose.Types.ObjectId.isValid(courseId)) {
+      const standaloneCourse = await Course.findById(courseId);
+      if (standaloneCourse) {
+        course = {
+          ...standaloneCourse.toObject(),
+          facultyName: 'N/A',
+          // Keep legacy flag for backward compatibility
+          isStandalone: true
+        };
+      }
     }
 
     if (!course) {

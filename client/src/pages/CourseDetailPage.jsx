@@ -214,11 +214,9 @@ const CourseDetailPage = () => {
               <div>
                 <span className="opacity-80">Paper:</span> {course.paperName || 'N/A'}
               </div>
-              {course.facultyName && (
-                <div>
-                  <span className="opacity-80">Faculty:</span> {course.facultyName}
-                </div>
-              )}
+              <div>
+                <span className="opacity-80">Faculty:</span> {course.facultyName || 'N/A'}
+              </div>
               {course.institute && (
                 <div>
                   <span className="opacity-80">Institute:</span> {course.institute}

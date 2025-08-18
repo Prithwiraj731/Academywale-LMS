@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
+import CourseCard from '../components/common/CourseCard';
 import papersData from '../data/papersData';
 
 // Try to use remote API URL first, fall back to local if not available
@@ -195,38 +196,13 @@ const CMAFoundationPaperDetailPage = () => {
             No courses found for this paper.
           </div>
         )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
           {courses.map((course, idx) => (
-            <div key={idx} className="bg-white/95 rounded-3xl shadow-2xl p-4 flex flex-col items-center border border-[#20b2aa]">
-              <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg border-4 border-[#20b2aa] bg-gray-100 flex-shrink-0 flex items-center justify-center mb-4">
-                <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
-              </div>
-              <div className="text-lg font-bold text-[#17817a] mb-1 text-center">{course.subject}</div>
-              {course.isStandalone ? (
-                <div className="text-sm text-teal-600 mb-2 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
-                  <span className="font-medium">✓ Standalone Course</span>
-                </div>
-              ) : (
-                <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
-              )}
-              <div className="flex flex-col gap-1 text-xs text-gray-500 mb-2 text-center">
-                <div>Lectures: {course.noOfLecture}</div>
-                <div>Books: {course.books}</div>
-                <div>Language: {course.videoLanguage}</div>
-                <div>Validity: {course.validityStartFrom}</div>
-                <div>Mode: {course.mode}</div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                <span className="text-xl font-bold text-indigo-700">₹{course.sellingPrice}</span>
-              </div>
-              <button
-                onClick={() => navigate(`/course/${encodeURIComponent(course.courseType)}/${course._id}`)}
-                className="mt-1 sm:mt-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-4 sm:px-6 rounded-lg sm:rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-sm sm:text-base w-full"
-              >
-                View Details
-              </button>
-            </div>
+            <CourseCard 
+              key={idx}
+              course={course}
+              apiUrl={API_URL}
+            />
           ))}
         </div>
       </div>
