@@ -6,6 +6,7 @@ import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
+import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
 import { getAllFaculties } from '../data/hardcodedFaculties';
 import {
   getFacultyUpdates,
@@ -2394,38 +2395,10 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div className="w-full max-w-3xl">
-        <h3 className="text-xl font-bold text-purple-700 mb-4">All Courses by Faculty</h3>
-        {loading && <div className="text-blue-500">Loading...</div>}
-        {!loading && faculties.map(fac => (
-          <div key={fac.slug} className="mb-8">
-            <div className="font-bold text-lg text-[#17817a] mb-2">{fac.firstName} {fac.lastName}</div>
-            {(!fac.courses || fac.courses.length === 0) ? (
-              <div className="text-gray-400 text-sm mb-4">No courses for this faculty.</div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {fac.courses.map((c, idx) => (
-                  <div key={idx} className="bg-white rounded-xl shadow p-4 flex gap-4 items-center border border-[#20b2aa]">
-                    {c.posterUrl && <img src={c.posterUrl.startsWith('http') ? c.posterUrl : `${API_URL}${c.posterUrl}`} alt="Poster" className="w-20 h-20 object-cover rounded-lg border-2 border-purple-200" />}
-                    <div>
-                      <div className="font-bold text-[#17817a]">{c.subject}</div>
-                      <div className="text-xs text-gray-500">Lectures: {c.noOfLecture} | Attempt: {c.duration}</div>
-                      <div className="text-xs text-gray-500">Books: {c.books}</div>
-                      <div className="text-xs text-gray-500">Language: {c.videoLanguage}</div>
-                      <div className="text-xs text-gray-500">Validity: {c.validityStartFrom}</div>
-                      <div className="text-xs text-gray-500">Mode: {c.mode} | Timing: {c.timing}</div>
-                      <div className="text-xs text-gray-500">Type: {c.courseType}</div>
-                      <div className="text-xs text-gray-500">Institute: {c.institute}</div>
-                      <div className="flex gap-2 mt-2">
-                        <button onClick={() => openEditModal(fac.slug, idx)} className="px-3 py-1 rounded bg-yellow-200 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition">✏️ Edit</button>
-                        <button onClick={() => handleDeleteCourse(fac.slug, idx)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition">🗑️ Delete</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+        <CoursesByPaperSection 
+          onEditCourse={openEditModal}
+          onDeleteCourse={handleDeleteCourse}
+        />
       </div>
       {/* Edit Course Modal */}
       <Modal
