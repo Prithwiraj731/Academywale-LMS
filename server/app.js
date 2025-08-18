@@ -1640,6 +1640,40 @@ app.delete('/emergency-delete-faculty', async (req, res) => {
   }
 });
 
+// Delete all courses (emergency endpoint)
+app.delete('/api/admin/courses/delete-all', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+    const Course = require('./src/model/Course.model');
+    
+    let totalDeleted = 0;
+    
+    // Delete standalone courses
+    const standaloneResult = await Course.deleteMany({});
+    totalDeleted += standaloneResult.deletedCount;
+    
+    // Delete courses from all faculties
+    const faculties = await Faculty.find({});
+    for (const faculty of faculties) {
+      if (faculty.courses && faculty.courses.length > 0) {
+        const courseCount = faculty.courses.length;
+        faculty.courses = [];
+        await faculty.save();
+        totalDeleted += courseCount;
+      }
+    }
+    
+    res.json({
+      success: true,
+      deletedCount: totalDeleted,
+      message: `Successfully deleted ${totalDeleted} courses (both standalone and faculty courses).`
+    });
+  } catch (error) {
+    console.error('Error deleting all courses:', error);
+    res.status(500).json({ error: error.message || 'An error occurred while deleting courses.' });
+  }
+});
+
 // Get courses for a specific faculty
 app.get('/api/faculty/:slug/courses', async (req, res) => {
   try {

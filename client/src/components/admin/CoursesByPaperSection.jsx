@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../../api';
+import DeleteAllCoursesButton from './DeleteAllCoursesButton';
 
 // Component to display courses organized by CA/CMA papers
 const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse }) => {
@@ -162,7 +163,23 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse }) => {
   // Render courses by category and paper
   return (
     <div className="w-full">
-      <h3 className="text-xl font-bold text-purple-700 mb-4">All Courses by CA/CMA Papers</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-bold text-purple-700">All Courses by CA/CMA Papers</h3>
+        <div className="flex space-x-2">
+          <button 
+            onClick={loadCoursesByPaper}
+            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      
+      <DeleteAllCoursesButton />
+      
       {loading && <div className="text-blue-500">Loading courses...</div>}
       
       {!loading && (
@@ -424,14 +441,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse }) => {
         </div>
       )}
       
-      <div className="mt-6">
-        <button 
-          onClick={loadCoursesByPaper} 
-          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
-        >
-          Refresh Courses
-        </button>
-      </div>
+      {/* Button moved to top of component */}
     </div>
   );
 };
