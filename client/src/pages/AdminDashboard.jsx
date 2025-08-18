@@ -754,20 +754,20 @@ export default function AdminDashboard() {
       const formData = new FormData();
 
       // Validate required fields
-    if (!courseForm.facultySlug) {
-      setError('Faculty is required. Select "N/A - No Faculty" if none.');
-      setLoading(false);
-      return;
-    }
-    
-    if (!courseForm.institute) {
-      setError('Institute is required. Select "N/A - No Institute" if none.');
-      setLoading(false);
-      return;
-    }
-    
-    // Always use the same endpoint for all courses - we no longer use standalone
-    const apiEndpoint = `${API_URL}/api/admin/courses`;
+      if (!courseForm.facultySlug) {
+        setError('Faculty is required. Select "N/A - No Faculty" if none.');
+        setLoading(false);
+        return;
+      }
+      
+      if (!courseForm.institute) {
+        setError('Institute is required. Select "N/A - No Institute" if none.');
+        setLoading(false);
+        return;
+      }
+      
+      // Always use the same endpoint for all courses - we no longer use standalone concept
+      const apiEndpoint = `${API_URL}/api/admin/courses`;
 
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
@@ -785,6 +785,7 @@ export default function AdminDashboard() {
         formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
       } else {
         formData.append('facultyName', 'N/A');
+        console.log('👨‍🏫 Using N/A faculty');
       }
       console.log('👨‍🏫 Added faculty:', courseForm.facultySlug);
       

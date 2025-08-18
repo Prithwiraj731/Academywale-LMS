@@ -147,7 +147,8 @@ const courseSchema = new mongoose.Schema({
     default: true
   },
   
-  // Standalone course flag
+  // Legacy standalone course flag - always false now as we use N/A faculty instead
+  // Keeping for backward compatibility but no longer used
   isStandalone: {
     type: Boolean,
     default: false
