@@ -26,8 +26,8 @@ exports.addCourseToFaculty = async (req, res) => {
 
     const posterUrl = req.file ? req.file.path : '';
 
-    // If facultySlug is missing or empty, save as general course
-    if (!facultySlug || facultySlug.trim() === '') {
+    // If facultySlug is missing, empty, or set to 'n/a', save as general course with N/A faculty
+    if (!facultySlug || facultySlug.trim() === '' || facultySlug.toLowerCase() === 'n/a') {
       const Course = require('../model/Course.model');
       let parsedModeAttemptPricing = [];
       try {
@@ -42,9 +42,9 @@ exports.addCourseToFaculty = async (req, res) => {
         paperName,
         subject,
         title: title || 'New Course',
-        facultySlug: '',
-        facultyName: '',
-        institute,
+        facultySlug: 'n/a',
+        facultyName: 'N/A',
+        institute: institute || 'N/A',
         description,
         noOfLecture,
         books,
@@ -57,7 +57,7 @@ exports.addCourseToFaculty = async (req, res) => {
         courseType,
         modeAttemptPricing: parsedModeAttemptPricing,
         posterUrl,
-        isStandalone: true, // Explicitly set isStandalone flag for courses without faculty
+        isStandalone: false, // No longer using standalone flag - all courses have faculty (real or N/A)
         isActive: true
       };
       const newCourse = new Course(courseData);
@@ -294,8 +294,8 @@ exports.getCoursesByPaper = async (req, res) => {
     const Course = require('../model/Course.model');
     
     const { category, subcategory, paperId } = req.params;
-    // Check if includeStandalone parameter is present
-    const includeStandalone = req.query.includeStandalone === 'true';
+    // We always include all courses - the standalone parameter is kept for backward compatibility
+    const includeStandalone = true; // Always true now
     
     console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}, includeStandalone=${includeStandalone}`);
     

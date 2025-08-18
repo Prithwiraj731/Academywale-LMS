@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
-const upload = multer({ storage });
+const { instituteStorage } = require('../config/cloudinary.config');
+const upload = multer({ storage: instituteStorage });
 const instituteController = require('../controllers/institute.controller');
 
 // Public routes

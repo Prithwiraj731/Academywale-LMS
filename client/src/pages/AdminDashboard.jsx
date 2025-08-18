@@ -753,10 +753,21 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
 
-      // Determine endpoint based on whether it's a standalone course or not
-      const isStandalone = (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') &&
-        (!courseForm.institute || courseForm.institute.trim() === '');
-      const apiEndpoint = `${API_URL}${isStandalone ? '/api/admin/courses/standalone' : '/api/admin/courses'}`;
+      // Validate required fields
+    if (!courseForm.facultySlug) {
+      setError('Faculty is required. Select "N/A - No Faculty" if none.');
+      setLoading(false);
+      return;
+    }
+    
+    if (!courseForm.institute) {
+      setError('Institute is required. Select "N/A - No Institute" if none.');
+      setLoading(false);
+      return;
+    }
+    
+    // Always use the same endpoint for all courses - we no longer use standalone
+    const apiEndpoint = `${API_URL}/api/admin/courses`;
 
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
@@ -768,17 +779,17 @@ export default function AdminDashboard() {
       formData.append('subject', courseForm.subject);
       formData.append('title', courseForm.title);
 
-      // Optional fields - only append if they have values
-      if (courseForm.facultySlug && courseForm.facultySlug.trim() !== '') {
-        formData.append('facultySlug', courseForm.facultySlug);
+      // Faculty and institute are now required
+      formData.append('facultySlug', courseForm.facultySlug);
+      if (courseForm.facultySlug !== 'n/a') {
         formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
-        console.log('� Added faculty:', courseForm.facultySlug);
+      } else {
+        formData.append('facultyName', 'N/A');
       }
-
-      if (courseForm.institute && courseForm.institute.trim() !== '') {
-        formData.append('institute', courseForm.institute);
-        console.log('📝 Added institute:', courseForm.institute);
-      }
+      console.log('👨‍🏫 Added faculty:', courseForm.facultySlug);
+      
+      formData.append('institute', courseForm.institute);
+      console.log('🏫 Added institute:', courseForm.institute);
 
       const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
       console.log('🎓 Course type:', hasFaculty ? 'With Faculty' : 'Without Faculty');
@@ -1701,14 +1712,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Required)</label>
                   <select
                     name="facultySlug"
                     value={courseForm.facultySlug}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
                   >
-                    <option value="">No Faculty (Optional)</option>
+                    <option value="">Select Faculty</option>
+                    <option value="n/a">N/A - No Faculty</option>
                     {allFaculties.map(faculty => (
                       <option key={faculty.slug} value={faculty.slug}>
                         {faculty.isHardcoded ? faculty.fullName : (faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : ''))}
@@ -1718,14 +1731,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Required)</label>
                   <select
                     name="institute"
                     value={courseForm.institute}
                     onChange={handleCourseFormChange}
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    required
                   >
-                    <option value="">No Institute</option>
+                    <option value="">Select Institute</option>
+                    <option value="N/A">N/A - No Institute</option>
                     {institutes.map(inst => (
                       <option key={inst._id} value={inst.name}>{inst.name}</option>
                     ))}

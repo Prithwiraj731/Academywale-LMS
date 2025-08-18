@@ -99,6 +99,10 @@ app.use('/', debugCourseRoutes);
 const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
 app.use('/', courseControllerRoutes);
 
+// Mount course detail routes
+const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
+app.use('/', courseDetailRoutes);
+
 // Mount standalone course routes
 const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
 app.use('/', standaloneCourseRoutes);

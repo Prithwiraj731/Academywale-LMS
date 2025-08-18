@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
-const upload = multer({ storage });
+const { courseStorage } = require('../config/cloudinary.config');
+const upload = multer({ storage: courseStorage });
 const courseController = require('../controllers/course.controller');
 
 // Admin course routes

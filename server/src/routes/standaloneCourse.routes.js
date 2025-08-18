@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary.config');
-const upload = multer({ storage });
+const { courseStorage } = require('../config/cloudinary.config');
+const upload = multer({ storage: courseStorage });
 const standaloneCourseController = require('../controllers/standaloneCourse.controller');
 
 // Explicitly handle OPTIONS requests for CORS preflight

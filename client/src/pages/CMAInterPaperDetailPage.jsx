@@ -31,13 +31,11 @@ const CMAInterPaperDetailPage = () => {
       try {
         console.log(`Fetching CMA inter courses from: ${API_URL}/api/courses/CMA/inter/${paperId}?includeStandalone=true`);
         
-        // Define all the URL variations we'll try
+        // Only use URLs with includeStandalone=true
         const urlVariations = [
           `${API_URL}/api/courses/CMA/inter/${paperId}?includeStandalone=true`,
           `${API_URL}/api/courses/cma/inter/${paperId}?includeStandalone=true`,
           `${API_URL}/api/courses/CMA/Inter/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CMA/inter/${paperId}`,
-          `${API_URL}/api/courses/cma/inter/${paperId}`,
           `${API_URL}/api/courses/CMA/INTER/${paperId}?includeStandalone=true`,
         ];
         

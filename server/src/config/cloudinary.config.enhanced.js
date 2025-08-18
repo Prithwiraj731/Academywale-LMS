@@ -1,4 +1,3 @@
-
 // ENHANCED CLOUDINARY CONFIGURATION WITH ERROR HANDLING
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -81,8 +80,6 @@ const courseStorage = new CloudinaryStorage({
 
 // Alias for backward compatibility
 const storage = facultyStorage;
-
-console.log('📁 STORAGE CREATED FOR FOLDERS: academywale/faculty, academywale/institute, academywale/courses');
 
 // Export everything
 module.exports = {
