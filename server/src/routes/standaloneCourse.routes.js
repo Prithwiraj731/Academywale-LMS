@@ -39,10 +39,10 @@ router.get('/api/courses/standalone', (req, res) => {
   // Standalone courses are no longer supported
   console.log('⚠️ Legacy route /api/courses/standalone called - standalone courses no longer supported');
   
-  res.status(400).json({ 
-    success: false,
-    error: 'Standalone courses are no longer supported',
-    message: 'All courses must be associated with a specific faculty. Please use the faculty-based course endpoints.'
+  // Instead of error, return empty array to prevent frontend from displaying anything
+  res.status(200).json({ 
+    courses: [],
+    notice: 'Standalone courses are no longer supported. All courses must be associated with a specific faculty.'
   });
 });
 
@@ -51,11 +51,18 @@ router.get('/api/courses/all', (req, res) => {
   console.log('⚠️ Legacy route /api/courses/all called - retrieving courses from all faculties');
   
   const Faculty = require('../model/Faculty.model');
-  Faculty.find({ firstName: { $ne: 'N/A' }}) // Exclude N/A faculty
+  Faculty.find({}) // Find all faculties
     .then(faculties => {
       // Collect all courses from all faculties
       let allCourses = [];
+      
+      // Filter out standalone courses and N/A faculty courses
       faculties.forEach(faculty => {
+        // Skip N/A faculty
+        if (faculty.firstName === 'N/A' || faculty.firstName === 'Standalone') {
+          return;
+        }
+        
         if (faculty.courses && faculty.courses.length > 0) {
           const facultyCourses = faculty.courses.map(course => ({
             ...course.toObject(),
