@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
+import CourseCard from '../components/common/CourseCard';
 import papersData from '../data/papersData';
 
 // Try to use remote API URL first, fall back to local if not available
@@ -155,65 +156,15 @@ const CAInterPaperDetailPage = () => {
         )}
 
         {/* Course List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 mb-8">
           {courses.map((course, idx) => (
-            <div
+            <CourseCard 
               key={idx}
-              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102"
-            >
-              <div className="relative">
-                <img
-                  src={getPosterUrl(course)}
-                  alt={course.subject}
-                  className="w-full h-52 object-cover"
-                  onError={(e) => {
-                    e.target.src = '/logo.svg';
-                  }}
-                />
-                <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
-                  {course.courseType || 'CA Inter'}
-                </div>
-              </div>
-              
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                  {course.subject}
-                </h3>
-                
-                {course.facultyName && (
-                  <p className="text-sm text-gray-600 mb-3">
-                    by <span className="font-medium">{course.facultyName}</span>
-                  </p>
-                )}
-                
-                {course.noOfLecture && (
-                  <p className="text-xs text-gray-500 mb-2">
-                    {course.noOfLecture}
-                  </p>
-                )}
-                
-                {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (
-                  <div className="mt-3">
-                    <div className="text-sm text-gray-500">Starting from:</div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-teal-600">
-                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.sellingPrice)))}
-                      </span>
-                      <span className="text-sm text-gray-400 line-through">
-                        ₹{Math.min(...course.modeAttemptPricing.flatMap(m => m.attempts.map(a => a.costPrice)))}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => handleCourseClick(course)}
-                  className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
+              course={course}
+              onViewDetails={handleCourseClick}
+              apiUrl={API_URL}
+              showModal={true}
+            />
           ))}
         </div>
 
