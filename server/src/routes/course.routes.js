@@ -10,6 +10,7 @@ router.post('/api/admin/courses', upload.single('poster'), courseController.addC
 router.post('/api/admin/courses/new', upload.single('poster'), courseController.addNewCourseToFaculty);
 router.put('/api/admin/courses/:facultySlug/:courseIndex', upload.single('poster'), courseController.updateCourse);
 router.delete('/api/admin/courses/:facultySlug/:courseIndex', courseController.deleteCourse);
+router.delete('/api/admin/courses/deleteAll/confirm', courseController.deleteAllCourses);
 
 // Public course routes
 router.get('/api/courses/:facultySlug', courseController.getCoursesByFaculty);

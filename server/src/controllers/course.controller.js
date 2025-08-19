@@ -428,6 +428,39 @@ exports.deleteCourse = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+}
+
+// Delete ALL courses from all faculties
+exports.deleteAllCourses = async (req, res) => {
+  try {
+    console.log('🧨 DELETING ALL COURSES FROM ALL FACULTIES');
+    
+    // Find all faculties
+    const faculties = await Faculty.find({});
+    const totalFaculties = faculties.length;
+    let totalCoursesRemoved = 0;
+    
+    // For each faculty, empty their courses array
+    for (const faculty of faculties) {
+      totalCoursesRemoved += faculty.courses ? faculty.courses.length : 0;
+      faculty.courses = []; // Remove all courses
+      await faculty.save();
+    }
+    
+    console.log(`✅ Successfully removed all courses from ${totalFaculties} faculties (${totalCoursesRemoved} courses total)`);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: `Successfully removed all courses from all faculties`,
+      details: {
+        facultiesAffected: totalFaculties,
+        coursesRemoved: totalCoursesRemoved
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error deleting all courses:', error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Get courses by institute
