@@ -1,17 +1,16 @@
 const Faculty = require('../model/Faculty.model');
-const Course = require('../model/Course.model');
 const mongoose = require('mongoose');
 
-// Get course details by ID - Unified logic for all courses, using "N/A" faculty for standalone courses
+// Get course details by ID - Only for courses under actual faculties
 exports.getCourseDetails = async (req, res) => {
   try {
     const { courseId } = req.params;
     let course = null;
 
-    // First look in faculty courses since we're moving towards unified approach
+    // Look for courses within faculties
     if (mongoose.Types.ObjectId.isValid(courseId)) {
-      // Find all faculties, including the special "N/A" faculty
-      const faculties = await Faculty.find({});
+      // Find all faculties - we no longer use "N/A" faculty
+      const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
       
       // Loop through all faculties and their courses
       for (const faculty of faculties) {
@@ -22,30 +21,14 @@ exports.getCourseDetails = async (req, res) => {
           course._id && course._id.toString() === courseId);
         
         if (foundCourse) {
-          // Check if this is the "N/A" faculty
-          const isNAFaculty = faculty.firstName === 'N/A' || faculty.lastName === 'N/A';
-          
           course = {
             ...foundCourse.toObject(),
-            facultyName: isNAFaculty ? 'N/A' : `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
             facultySlug: faculty.slug,
             facultyId: faculty._id
           };
           break;
         }
-      }
-    }
-    
-    // As a fallback, look for standalone course (legacy support)
-    if (!course && mongoose.Types.ObjectId.isValid(courseId)) {
-      const standaloneCourse = await Course.findById(courseId);
-      if (standaloneCourse) {
-        course = {
-          ...standaloneCourse.toObject(),
-          facultyName: 'N/A',
-          // Keep legacy flag for backward compatibility
-          isStandalone: true
-        };
       }
     }
 

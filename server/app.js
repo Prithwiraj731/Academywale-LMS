@@ -10,7 +10,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import models
-const Course = require('./src/model/Course.model');
 const Faculty = require('./src/model/Faculty.model');
 const User = require('./src/model/User.model');
 
@@ -25,7 +24,7 @@ try {
   console.log('🔧 Faculty model monkey patch result:', patchResult ? 'SUCCESS' : 'FAILED');
   
   // Attach models to app object for middleware access
-  app.models = { Faculty, Course, User };
+  app.models = { Faculty, User };
 } catch (patchError) {
   console.error('❌ Faculty model monkey patch error:', patchError);
 }
@@ -103,9 +102,7 @@ app.use('/', courseControllerRoutes);
 const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
-// Mount standalone course routes
-const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
-app.use('/', standaloneCourseRoutes);
+// Standalone course routes removed - all courses now under faculty (including "N/A" faculty)
 
 // Mount purchase routes
 const purchaseRoutes = require('./src/routes/purchase.routes.js');
@@ -1643,24 +1640,118 @@ app.delete('/emergency-delete-faculty', async (req, res) => {
 // Delete all courses (emergency endpoint)
 app.delete('/api/admin/courses/delete-all', async (req, res) => {
   try {
+    console.log('🔥 Delete all courses operation started...');
     const Faculty = require('./src/model/Faculty.model');
     const Course = require('./src/model/Course.model');
     
     let totalDeleted = 0;
+    let facultyErrors = [];
     
     // Delete standalone courses
-    const standaloneResult = await Course.deleteMany({});
-    totalDeleted += standaloneResult.deletedCount;
+    console.log('📦 Deleting standalone courses...');
+    try {
+      const standaloneResult = await Course.deleteMany({});
+      totalDeleted += standaloneResult.deletedCount;
+      console.log(`✅ Deleted ${standaloneResult.deletedCount} standalone courses`);
+    } catch (courseError) {
+      console.error('❌ Error deleting standalone courses:', courseError);
+      facultyErrors.push({
+        type: 'standalone',
+        error: courseError.message
+      });
+    }
     
     // Delete courses from all faculties
-    const faculties = await Faculty.find({});
+    console.log('👩‍🏫 Finding faculties to delete courses...');
+    let faculties = [];
+    try {
+      faculties = await Faculty.find({});
+      console.log(`📚 Found ${faculties.length} faculties`);
+    } catch (findError) {
+      console.error('❌ Error finding faculties:', findError);
+      facultyErrors.push({
+        type: 'find_faculties',
+        error: findError.message
+      });
+    }
+    
+    // Process each faculty using direct database update instead of validation
     for (const faculty of faculties) {
-      if (faculty.courses && faculty.courses.length > 0) {
-        const courseCount = faculty.courses.length;
-        faculty.courses = [];
-        await faculty.save();
-        totalDeleted += courseCount;
+      try {
+        if (faculty.courses && faculty.courses.length > 0) {
+          console.log(`📚 Processing faculty: ${faculty.firstName} ${faculty.lastName} with ${faculty.courses.length} courses`);
+          const courseCount = faculty.courses.length;
+          
+          // Use direct update instead of save to bypass validation
+          const updateResult = await Faculty.updateOne(
+            { _id: faculty._id },
+            { $set: { courses: [] } }
+          );
+          
+          if (updateResult.modifiedCount === 1) {
+            totalDeleted += courseCount;
+            console.log(`✅ Removed ${courseCount} courses from faculty via direct update`);
+          } else {
+            console.warn(`⚠️ Failed to update faculty ${faculty._id} - no document modified`);
+            facultyErrors.push({
+              type: 'faculty_update',
+              facultyId: faculty._id,
+              name: `${faculty.firstName} ${faculty.lastName}`,
+              error: 'No document was modified'
+            });
+          }
+        }
+      } catch (facultyError) {
+        console.error(`❌ Error updating faculty ${faculty._id}:`, facultyError);
+        facultyErrors.push({
+          type: 'faculty_update',
+          facultyId: faculty._id,
+          name: `${faculty.firstName} ${faculty.lastName}`,
+          error: facultyError.message
+        });
       }
+    }
+    
+    console.log(`✅ Delete all courses operation completed. Total deleted: ${totalDeleted}`);
+    
+    // If we have errors but also deleted some courses, it's a partial success
+    if (facultyErrors.length > 0) {
+      console.error(`⚠️ Some errors occurred during deletion: ${JSON.stringify(facultyErrors)}`);
+      
+      // If we failed to delete ANY courses, try one more desperate approach
+      if (totalDeleted === 0) {
+        console.log('🔥 Zero courses deleted with standard method. Trying direct database approach...');
+        try {
+          // Try to update all faculties at once
+          const bulkUpdateResult = await Faculty.updateMany(
+            {}, // Match all faculties
+            { $set: { courses: [] } } // Set courses to empty array
+          );
+          
+          console.log(`📊 Bulk update result: ${JSON.stringify(bulkUpdateResult)}`);
+          if (bulkUpdateResult.modifiedCount > 0) {
+            return res.json({
+              success: true, 
+              deletedCount: -1, // We can't know exact count, use -1 to indicate "all"
+              message: "Successfully removed all courses using direct database update. Please refresh to see changes."
+            });
+          }
+        } catch (emergencyError) {
+          console.error('💥 Emergency deletion also failed:', emergencyError);
+          facultyErrors.push({
+            type: 'emergency_update',
+            error: emergencyError.message
+          });
+        }
+      }
+      
+      return res.status(207).json({
+        success: true,
+        partial: true,
+        deletedCount: totalDeleted,
+        errors: facultyErrors,
+        message: `Partially deleted ${totalDeleted} courses. Some errors occurred.`
+      });
     }
     
     res.json({
@@ -1669,8 +1760,15 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
       message: `Successfully deleted ${totalDeleted} courses (both standalone and faculty courses).`
     });
   } catch (error) {
-    console.error('Error deleting all courses:', error);
-    res.status(500).json({ error: error.message || 'An error occurred while deleting courses.' });
+    console.error('❌ Major error deleting all courses:', error);
+    // Add stack trace for more debugging info
+    console.error('Stack trace:', error.stack);
+    
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'An error occurred while deleting courses.',
+      details: error.stack ? error.stack.split('\n').slice(0, 3).join('\n') : 'No stack trace available'
+    });
   }
 });
 

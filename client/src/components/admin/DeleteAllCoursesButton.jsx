@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { API_URL } from '../../api';
 
-const DeleteAllCoursesButton = () => {
+const DeleteAllCoursesButton = ({ onDeleteSuccess }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -17,27 +17,54 @@ const DeleteAllCoursesButton = () => {
     setError(null);
     
     try {
+      console.log('Sending delete request to:', `${API_URL}/api/admin/courses/delete-all`);
       const response = await fetch(`${API_URL}/api/admin/courses/delete-all`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
       
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Non-JSON response received:', await response.text());
+        throw new Error('Unexpected response format from server');
+      }
       
-      if (response.ok) {
+      const data = await response.json();
+      console.log('Delete response:', data);
+      
+      if (response.ok || response.status === 207) {
         setResult(data);
+        
+        // If there were partial errors, show them too
+        if (data.partial && data.errors) {
+          const errorDetails = data.errors.map(err => 
+            `${err.type}: ${err.error}`
+          ).join('; ');
+          setError(`Warning: ${data.message} Errors: ${errorDetails}`);
+        }
+        
+        // Call onDeleteSuccess callback if provided
+        if (typeof onDeleteSuccess === 'function' && data.deletedCount > 0) {
+          setTimeout(() => {
+            onDeleteSuccess();
+          }, 1000);
+        }
+        
         // Auto-hide confirmation after showing success
         setTimeout(() => {
-          setShowConfirmation(false);
-        }, 3000);
+          if (data.deletedCount > 0) {
+            setShowConfirmation(false);
+          }
+        }, 5000);
       } else {
         setError(data.error || 'Failed to delete courses');
       }
     } catch (err) {
-      setError('Server error occurred');
       console.error('Error deleting courses:', err);
+      setError(`Server error occurred: ${err.message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -89,7 +116,13 @@ const DeleteAllCoursesButton = () => {
           
           {error && (
             <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-md text-red-800">
-              {error}
+              <div className="font-semibold mb-1">Error:</div>
+              <div className="text-sm whitespace-pre-wrap overflow-auto max-h-40">
+                {error}
+              </div>
+              <div className="mt-2 text-sm">
+                <p>Try refreshing the page and attempting again. If the issue persists, please check the server logs.</p>
+              </div>
             </div>
           )}
         </div>

@@ -1,10 +1,9 @@
 // Import the mode mapper utility
 const { mapMode } = require('../utils/modeMapper');
 const Faculty = require('../model/Faculty.model');
-const Course = require('../model/Course.model');
 const mongoose = require('mongoose');
 
-// Unified course creation: supports both general and faculty courses, including hardcoded faculties/institutes
+// Faculty-only course creation: all courses must belong to a specific faculty
 exports.addCourseToFaculty = async (req, res) => {
   try {
     console.log('🎯 Course controller: addCourseToFaculty called');
@@ -29,65 +28,11 @@ exports.addCourseToFaculty = async (req, res) => {
 
     const posterUrl = req.file ? req.file.path : '';
 
-    // If facultySlug is missing, empty, or set to 'n/a', save as general course with N/A faculty
-    if (!facultySlug || facultySlug.trim() === '' || facultySlug.toLowerCase() === 'n/a') {
-      let parsedModeAttemptPricing = [];
-      try {
-        parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
-      } catch (e) {
-        parsedModeAttemptPricing = [];
-      }
-      
-      // Check if we need to create a default N/A faculty if it doesn't exist
-      let naFaculty = await Faculty.findOne({ slug: 'n-a' });
-      if (!naFaculty) {
-        console.log('Creating default N/A faculty');
-        naFaculty = new Faculty({
-          firstName: 'N/A',
-          lastName: '',
-          slug: 'n-a',
-          specialization: 'General Courses',
-          bio: 'General courses without specific faculty',
-          courses: []
-        });
-        await naFaculty.save();
-      }
-      
-      // Create course data for N/A faculty
-      const newCourse = {
-        category,
-        subcategory,
-        paperId,
-        paperName,
-        subject,
-        title: title || 'New Course',
-        facultyName: 'N/A',
-        institute: institute || 'N/A',
-        description,
-        noOfLecture,
-        books,
-        videoLanguage,
-        videoRunOn,
-        doubtSolving,
-        supportMail,
-        supportCall,
-        timing,
-        courseType,
-        modeAttemptPricing: parsedModeAttemptPricing,
-        posterUrl,
-        mode: 'Live Watching',
-        modes: parsedModeAttemptPricing.map(m => mapMode(m.mode)),
-        durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
-      };
-      // Add course to N/A faculty's courses array
-      naFaculty.courses.push(newCourse);
-      const savedFaculty = await naFaculty.save();
-      
-      console.log('✅ Course added to N/A faculty successfully');
-      return res.status(201).json({ 
-        success: true, 
-        message: 'Course added successfully to N/A faculty', 
-        course: newCourse 
+    // Faculty slug is now required
+    if (!facultySlug || facultySlug.trim() === '' || facultySlug.toLowerCase() === 'n-a') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Faculty selection is required. Please select a valid faculty.' 
       });
     }
 
@@ -317,7 +262,6 @@ exports.getCoursesByPaper = async (req, res) => {
     // Import required models at function level to avoid circular dependencies
     const Faculty = require('../model/Faculty.model');
     const Institute = require('../model/Institute.model');
-    const Course = require('../model/Course.model');
     
     const { category, subcategory, paperId } = req.params;
     // We always include all courses regardless of faculty status
@@ -337,8 +281,7 @@ exports.getCoursesByPaper = async (req, res) => {
         if (course) {
           allCourses.push({
             ...course.toObject(),
-            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
-            isStandalone: false
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
           });
         }
       });
@@ -351,60 +294,17 @@ exports.getCoursesByPaper = async (req, res) => {
         if (course) {
           allCourses.push({
             ...course.toObject(),
-            facultyName: '',
-            isStandalone: false
+            facultyName: ''
           });
         }
       });
     });
     
-      // Get all courses from the N/A faculty - these were previously "standalone" courses
-    if (includeAllCourses) {
-      console.log(`🔍 Searching for N/A faculty courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
-      
-      // Find N/A faculty
-      const naFaculty = await Faculty.findOne({ slug: 'n-a' });
-      let naCourses = [];
-      
-      if (naFaculty && naFaculty.courses && naFaculty.courses.length > 0) {
-        console.log(`🔎 Found ${naFaculty.courses.length} N/A faculty courses`);
-        naCourses = naFaculty.courses;
-      } else {
-        console.log(`⚠️ No N/A faculty found or no courses under N/A faculty`);
-      }
-      
-      // Filter courses manually to ensure we catch all variations
-      const filteredNACourses = naCourses.filter(course => {
-        // Convert all values to strings for comparison
-        const courseCategory = String(course.category || '').toUpperCase();
-        const courseSubcategory = String(course.subcategory || '').toLowerCase();
-        const coursePaperId = String(course.paperId || '');
-        
-        const requestedCategory = String(category || '').toUpperCase();
-        const requestedSubcategory = String(subcategory || '').toLowerCase();
-        const requestedPaperId = String(paperId || '');
-        
-        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
-        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
-        const paperIdMatch = coursePaperId === requestedPaperId || parseInt(coursePaperId) === parseInt(requestedPaperId);
-        
-        console.log(`Standalone course check: ${course._id}, ${course.subject || 'unnamed'}, matches: ${categoryMatch && subcategoryMatch && paperIdMatch}`);
-        
-        return categoryMatch && subcategoryMatch && paperIdMatch;
-      });    console.log(`🔎 Found ${filteredStandaloneCourses.length} matching standalone courses after filtering`);
+    // We no longer use N/A faculty - all courses must have a specific faculty
+    console.log(`🔍 Searching for courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
+    console.log(`💼 Using faculty-only model: ${allCourses.length} total courses found from all faculties`);
     
-    // Format N/A faculty courses to match the structure of regular faculty courses
-    const formattedNACourses = filteredNACourses.map(course => ({
-      ...course.toObject ? course.toObject() : course,
-      facultyName: 'N/A',
-      facultySlug: 'n-a'
-    }));
-    
-      // Add N/A faculty courses to allCourses array
-      allCourses = [...allCourses, ...formattedNACourses];
-    } else {
-      console.log('🚫 Skipping N/A faculty courses');
-    }
+    // N/A faculty has been removed - we only work with actual faculty courses now
     
     // Filter by category, subcategory, and paper - using looser comparison for all fields
     const filteredCourses = allCourses.filter(course => {
@@ -431,7 +331,7 @@ exports.getCoursesByPaper = async (req, res) => {
         
         const matches = categoryMatch && subcategoryMatch && paperIdMatch;
                      
-      console.log(`- Overall match: ${matches} (N/A Faculty: ${course.facultyName === 'N/A'})`);
+      console.log(`- Overall match: ${matches}`);
       
       return matches;
       } catch (filterError) {
@@ -456,8 +356,8 @@ exports.getCoursesByPaper = async (req, res) => {
         ...course,
         _id: course._id || new mongoose.Types.ObjectId(),
         subject: course.subject || course.title || 'Untitled Course',
-        facultyName: course.facultyName || 'N/A',
-        facultySlug: course.facultySlug || 'n-a',
+        facultyName: course.facultyName || '',
+        facultySlug: course.facultySlug || '',
         courseType: course.courseType || `${category} ${subcategory} - Paper ${paperId}`,
         modeAttemptPricing: course.modeAttemptPricing || []
       };

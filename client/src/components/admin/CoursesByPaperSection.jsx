@@ -178,7 +178,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse }) => {
         </div>
       </div>
       
-      <DeleteAllCoursesButton />
+      <DeleteAllCoursesButton onDeleteSuccess={loadCoursesByPaper} />
       
       {loading && <div className="text-blue-500">Loading courses...</div>}
       

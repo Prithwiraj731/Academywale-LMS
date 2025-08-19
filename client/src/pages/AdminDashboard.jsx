@@ -18,6 +18,16 @@ import {
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
 const TEACHES_OPTIONS = ['CA', 'CMA'];
+
+// Helper function to convert faculty name to slug
+const getSlugFromFacultyName = (name) => {
+  if (!name) return '';
+  return name.trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^\w-]/g, '') // Remove non-word chars except hyphens
+    .replace(/^(ca|cma|cs)-/, ''); // Remove leading CA/CMA/CS prefix if present
+};
 const COURSE_OPTIONS = [
   'CA Foundation', 'CMA Foundation',
   'CA Inter', 'CMA Inter',
@@ -434,19 +444,14 @@ export default function AdminDashboard() {
   // Fetch courses for a faculty or institute
   const fetchCourses = async (facultyName, instituteName) => {
     let url = '';
-    const isStandalone = (!facultyName || facultyName.trim() === '') &&
-      (!instituteName || instituteName.trim() === '');
-
-    if (isStandalone) {
-      // For standalone courses, use the special standalone endpoint
-      url = `${API_URL}/api/admin/courses/standalone`;
-      console.log('🎯 Fetching standalone courses from:', url);
-    } else if (facultyName) {
+    
+    // A valid faculty is always required now
+    if (facultyName && facultyName.trim() !== '') {
       // For faculty-based courses
-      const firstName = facultyName.split(' ')[0].toUpperCase();
-      url = `${API_URL}/api/courses/${firstName}`;
+      const slug = getSlugFromFacultyName(facultyName);
+      url = `${API_URL}/api/courses/${slug}`;
       console.log('🎯 Fetching faculty courses from:', url);
-    } else if (instituteName) {
+    } else if (instituteName && instituteName.trim() !== '') {
       // For institute-based courses
       url = `${API_URL}/api/institutes/${encodeURIComponent(instituteName)}/courses`;
       console.log('🎯 Fetching institute courses from:', url);
@@ -486,7 +491,7 @@ export default function AdminDashboard() {
     paperId: '', // Paper 1, Paper 2, etc. (required)
     paperName: '', // Auto-filled from paperId (required)
     subject: '', // Subject name (required)
-    facultySlug: '', // Faculty selection (OPTIONAL)
+    facultySlug: '', // Faculty selection (REQUIRED)
     institute: '', // Institute selection (OPTIONAL)
     description: '',
     noOfLecture: '',
@@ -724,10 +729,10 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
 
-    // Unified validation - faculty and institute are now OPTIONAL
+    // Unified validation - faculty is required, institute is optional
     if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId ||
-      !courseForm.title || !courseForm.subject || !courseForm.poster) {
-      setError('Please fill all required fields: Category, Subcategory, Paper, Title, Subject, and Poster are required');
+      !courseForm.title || !courseForm.subject || !courseForm.poster || !courseForm.facultySlug) {
+      setError('Please fill all required fields: Category, Subcategory, Paper, Title, Subject, Faculty, and Poster are required');
       return;
     }
 
@@ -754,18 +759,14 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
 
-      // Validate required fields
-      if (!courseForm.facultySlug) {
-        setError('Faculty is required. Select "N/A - No Faculty" if none.');
+      // Validate faculty is required
+      if (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') {
+        setError('Faculty is required. Please select a valid faculty.');
         setLoading(false);
         return;
       }
       
-      if (!courseForm.institute) {
-        setError('Institute is required. Select "N/A - No Institute" if none.');
-        setLoading(false);
-        return;
-      }
+      // Institute is optional, no validation needed
       
       // Always use the same endpoint for all courses - we no longer use standalone concept
       const apiEndpoint = `${API_URL}/api/admin/courses`;
@@ -782,19 +783,12 @@ export default function AdminDashboard() {
 
       // Faculty and institute are now required
       formData.append('facultySlug', courseForm.facultySlug);
-      if (courseForm.facultySlug !== 'n/a') {
-        formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
-      } else {
-        formData.append('facultyName', 'N/A');
-        console.log('👨‍🏫 Using N/A faculty');
-      }
+      formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
       console.log('👨‍🏫 Added faculty:', courseForm.facultySlug);
       
-      formData.append('institute', courseForm.institute);
-      console.log('🏫 Added institute:', courseForm.institute);
-
-      const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-      console.log('🎓 Course type:', hasFaculty ? 'With Faculty' : 'Without Faculty');
+      // Institute is optional
+      formData.append('institute', courseForm.institute || '');
+      console.log('🏫 Added institute:', courseForm.institute || '(none)');
 
 
       // Common fields for all courses
@@ -821,9 +815,7 @@ export default function AdminDashboard() {
       // Course type for backwards compatibility
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
 
-      // Mark as standalone course if no faculty and no institute
-      formData.append('isStandalone', isStandalone);
-      console.log('🚩 Is Standalone Course:', isStandalone);
+      // Faculty is always required - this is enforced by validation earlier
 
       // Mode and attempt pricing
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
@@ -868,8 +860,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
-        const hasFaculty = courseForm.facultySlug && courseForm.facultySlug.trim() !== '';
-        setSuccess(`Course added successfully! ${hasFaculty ? '(With Faculty: ' + courseForm.facultySlug + ')' : '(Without Faculty)'}`);
+        setSuccess(`Course added successfully to faculty: ${courseForm.facultySlug}`);
         // Reset form
         setCourseForm({
           title: '',
@@ -934,9 +925,6 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
 
-    // Remove validation that requires either faculty or institute - make both optional
-    // This allows standalone courses to work properly
-
     // Validate required fields
     for (const field of requiredFields) {
       if (!form[field.name] || (field.name === 'poster' && !form.poster)) {
@@ -945,25 +933,24 @@ export default function AdminDashboard() {
       }
     }
 
+    // Faculty is required - validate it
+    if (!form.facultySlug || form.facultySlug.trim() === '' || form.facultySlug.trim().toLowerCase() === 'n-a') {
+      setError('Please select a valid faculty. Faculty is required.');
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
-
-      // Determine if this is a standalone course (no faculty, no institute)
-      const isStandalone = (!form.facultySlug || form.facultySlug.trim() === '') &&
-        (!form.institute || form.institute.trim() === '');
-
-      // Select the appropriate endpoint based on standalone status
-      const apiEndpoint = isStandalone ?
-        `${API_URL}/api/admin/courses/standalone` :
-        `${API_URL}/api/admin/courses`;
+      
+      // Always use the faculty route - we no longer use standalone endpoints
+      const apiEndpoint = `${API_URL}/api/admin/courses`;
 
       console.log('🔗 Using API endpoint:', apiEndpoint);
 
-      if (form.facultySlug) {
-        formData.append('facultySlug', form.facultySlug);
-        formData.append('facultyName', form.facultySlug); // For backward compatibility
-      }
+      // Faculty is required
+      formData.append('facultySlug', form.facultySlug);
+      formData.append('facultyName', form.facultySlug); // For backward compatibility
 
       formData.append('subject', form.subject);
       formData.append('noOfLecture', form.noOfLecture);
@@ -982,9 +969,8 @@ export default function AdminDashboard() {
       formData.append('courseType', form.courseType);
       formData.append('institute', form.institute);
 
-      // Mark as standalone course if no faculty and no institute
-      formData.append('isStandalone', isStandalone);
-      console.log('🚩 Is Standalone Course:', isStandalone);
+      // We no longer use standalone flag - all courses go through the faculty system
+      // If not specified, we use the N/A faculty (already set above)
 
       // Add modes and durations as comma-separated strings
       formData.append('modes', modesText);

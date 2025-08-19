@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const { courseStorage } = require('../config/cloudinary.config');
-const upload = multer({ storage: courseStorage });
-const standaloneCourseController = require('../controllers/standaloneCourse.controller');
+
+// Import unified course controllers
+const courseController = require('../controllers/course.controller');
+const courseDetailController = require('../controllers/courseDetail.controller');
+
+/*
+ * IMPORTANT: This file contains redirects for all legacy standalone course routes.
+ * All standalone courses are now handled through the unified faculty system using "N/A" faculty.
+ * These redirects ensure backward compatibility for any clients still using the old APIs.
+ */
 
 // Explicitly handle OPTIONS requests for CORS preflight
 router.options('/api/admin/courses/standalone', (req, res) => {
@@ -28,13 +34,61 @@ router.options('/api/admin/courses/standalone', (req, res) => {
   res.sendStatus(200);
 });
 
-// Public routes
-router.get('/api/courses/standalone', standaloneCourseController.getAllStandaloneCourses);
-router.get('/api/courses/all', standaloneCourseController.getAllCourses);
-router.get('/api/courses/:id', standaloneCourseController.getCourseById);
+// Public routes redirects
+router.get('/api/courses/standalone', (req, res) => {
+  // Standalone courses are no longer supported
+  console.log('⚠️ Legacy route /api/courses/standalone called - standalone courses no longer supported');
+  
+  res.status(400).json({ 
+    success: false,
+    error: 'Standalone courses are no longer supported',
+    message: 'All courses must be associated with a specific faculty. Please use the faculty-based course endpoints.'
+  });
+});
+
+// Route for all courses - now redirects to get all courses from all faculties
+router.get('/api/courses/all', (req, res) => {
+  console.log('⚠️ Legacy route /api/courses/all called - retrieving courses from all faculties');
+  
+  const Faculty = require('../model/Faculty.model');
+  Faculty.find({ firstName: { $ne: 'N/A' }}) // Exclude N/A faculty
+    .then(faculties => {
+      // Collect all courses from all faculties
+      let allCourses = [];
+      faculties.forEach(faculty => {
+        if (faculty.courses && faculty.courses.length > 0) {
+          const facultyCourses = faculty.courses.map(course => ({
+            ...course.toObject(),
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug
+          }));
+          allCourses = [...allCourses, ...facultyCourses];
+        }
+      });
+      
+      res.status(200).json({ 
+        courses: allCourses,
+        notice: 'Using faculty-based course system'
+      });
+    })
+    .catch(err => {
+      console.error('Error in all courses redirect:', err);
+      res.status(500).json({ 
+        error: 'Error fetching all courses', 
+        message: err.message
+      });
+    });
+});
+
+// Individual course route - now redirects to courseDetail controller
+router.get('/api/courses/:id', (req, res) => {
+  console.log(`⚠️ Legacy route /api/courses/${req.params.id} called - redirecting to unified course system`);
+  // Use the unified course detail controller
+  courseDetailController.getCourseDetails(req, res);
+});
 
 // Admin routes with explicit CORS handling
-router.post('/api/admin/courses/standalone', (req, res, next) => {
+router.post('/api/admin/courses/standalone', (req, res) => {
   // Set CORS headers explicitly for this route
   const origin = req.headers.origin;
   const allowed = [
@@ -56,10 +110,37 @@ router.post('/api/admin/courses/standalone', (req, res, next) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
-  next();
-}, upload.single('poster'), standaloneCourseController.createStandaloneCourse);
+  
+  // Reject the request - standalone courses are no longer supported
+  res.status(400).json({
+    success: false,
+    error: 'Standalone courses are no longer supported',
+    message: 'All courses must be associated with a specific faculty. Please use the faculty-based course endpoints.'
+  });
+});
 
-router.put('/api/admin/courses/standalone/:id', upload.single('poster'), standaloneCourseController.updateStandaloneCourse);
-router.delete('/api/admin/courses/standalone/:id', standaloneCourseController.deleteStandaloneCourse);
+// Admin PUT route - reject standalone course updates
+router.put('/api/admin/courses/standalone/:id', (req, res) => {
+  console.log(`⚠️ Legacy route PUT /api/admin/courses/standalone/${req.params.id} called - standalone courses no longer supported`);
+  
+  // Reject the request
+  res.status(400).json({
+    success: false,
+    error: 'Standalone courses are no longer supported',
+    message: 'All courses must be associated with a specific faculty. Please use the faculty-based course endpoints.'
+  });
+});
+
+// Admin DELETE route - reject standalone course deletion
+router.delete('/api/admin/courses/standalone/:id', (req, res) => {
+  console.log(`⚠️ Legacy route DELETE /api/admin/courses/standalone/${req.params.id} called - standalone courses no longer supported`);
+  
+  // Reject the request
+  res.status(400).json({
+    success: false,
+    error: 'Standalone courses are no longer supported',
+    message: 'All courses must be associated with a specific faculty. Please use the faculty-based course endpoints.'
+  });
+});
 
 module.exports = router;
