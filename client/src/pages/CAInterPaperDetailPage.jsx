@@ -31,16 +31,14 @@ const CAInterPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        console.log(`Fetching CA inter courses from: ${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`);
+        console.log(`Fetching CA inter courses from: ${API_URL}/api/courses/CA/inter/${paperId}`);
         
-        // Define all the URL variations we'll try - ALWAYS include the standalone parameter
+        // Define all the URL variations we'll try
         const urlVariations = [
-          `${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/ca/inter/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CA/Inter/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CA/inter/${paperId}?includeStandalone=true`, // Added parameter to URL that was missing it
-          `${API_URL}/api/courses/ca/inter/${paperId}?includeStandalone=true`, // Added parameter to URL that was missing it
-          `${API_URL}/api/courses/CA/INTER/${paperId}?includeStandalone=true`,
+          `${API_URL}/api/courses/CA/inter/${paperId}`,
+          `${API_URL}/api/courses/ca/inter/${paperId}`,
+          `${API_URL}/api/courses/CA/Inter/${paperId}`,
+          `${API_URL}/api/courses/CA/INTER/${paperId}`,
         ];
         
         let coursesFound = false;
@@ -69,7 +67,6 @@ const CAInterPaperDetailPage = () => {
             
             if (data.courses && data.courses.length > 0) {
               console.log(`Found ${data.courses.length} courses using URL: ${url}`);
-              console.log('Standalone courses:', data.courses.filter(c => c.isStandalone).length || 0);
               setCourses(data.courses);
               coursesFound = true;
               break;
@@ -79,81 +76,11 @@ const CAInterPaperDetailPage = () => {
           }
         }
         
-        // If no courses found with any URL variation, create test courses
+        // If no courses found with any URL variation, show "no courses" message
         if (!coursesFound) {
-          console.log("⚠️ DEBUG MODE: Creating mock courses for testing");
-          
-          // Create two mock courses - one faculty-based and one standalone
-          const mockCourses = [
-            {
-              _id: "mock-faculty-course-1",
-              subject: "Accounting (Faculty Course)",
-              title: "Accounting Complete Course",
-              category: "CA",
-              subcategory: "inter",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "CA Rajat Sharma",
-              description: "Complete Accounting course by CA Rajat Sharma. Covers all concepts and practice questions.",
-              noOfLecture: "40",
-              books: "Study Material Provided",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp & Telegram",
-              timing: "Flexible",
-              courseType: "CA Inter Paper",
-              isStandalone: false,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 10999, sellingPrice: 7999 },
-                    { attempt: "2 Attempts", costPrice: 13999, sellingPrice: 10999 }
-                  ]
-                },
-                {
-                  mode: "Offline",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 12999, sellingPrice: 9999 },
-                    { attempt: "2 Attempts", costPrice: 15999, sellingPrice: 12999 }
-                  ]
-                }
-              ]
-            },
-            {
-              _id: "mock-standalone-course-1",
-              subject: "Accounting (Standalone Course)",
-              title: "Accounting Crash Course",
-              category: "CA",
-              subcategory: "inter",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "Standalone Course",
-              description: "Comprehensive crash course for Accounting. Focused on exam preparation.",
-              noOfLecture: "25",
-              books: "PDF Notes Included",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp",
-              timing: "Flexible",
-              courseType: "CA Inter Paper",
-              isStandalone: true,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 8999, sellingPrice: 6999 },
-                    { attempt: "2 Attempts", costPrice: 11999, sellingPrice: 8999 }
-                  ]
-                }
-              ]
-            }
-          ];
-          
-          setCourses(mockCourses);
-          console.log("📚 Mock courses created:", mockCourses.length);
-          // No error message since we're showing mock courses
-          setError("");
+          console.log("No courses found for this paper. Not creating mock courses anymore.");
+          setCourses([]);
+          setError("No courses available for this paper yet. Check back later.");
         }
       } catch (err) {
         console.error('Error fetching courses:', err);
@@ -253,11 +180,7 @@ const CAInterPaperDetailPage = () => {
                   {course.subject}
                 </h3>
                 
-                {course.isStandalone ? (
-                  <p className="text-sm text-gray-600 mb-3 font-medium">
-                    Standalone Course
-                  </p>
-                ) : course.facultyName && (
+                {course.facultyName && (
                   <p className="text-sm text-gray-600 mb-3">
                     by <span className="font-medium">{course.facultyName}</span>
                   </p>
