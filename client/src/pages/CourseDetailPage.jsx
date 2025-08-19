@@ -162,12 +162,23 @@ const CourseDetailPage = () => {
   };
 
   const handleBuyNow = () => {
+    // Validate mode and validity selection first
+    if (!selectedMode || !selectedValidity) {
+      alert('Please select both Mode and Validity before proceeding');
+      return;
+    }
+    
     if (!isAuthenticated) {
-      // Redirect to login
+      // Redirect to login with return path
       navigate('/login', { 
         state: { 
           from: `/course/${courseType}/${courseId}`,
-          message: 'Please log in to purchase this course'
+          message: 'Please log in to purchase this course',
+          courseData: {
+            selectedMode,
+            selectedValidity,
+            price: price.final
+          }
         } 
       });
       return;
@@ -279,24 +290,47 @@ const CourseDetailPage = () => {
         </button>
         
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
-          {/* Course header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 md:p-8">
-            <h1 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{course.title || course.subject}</h1>
-            <div className="flex flex-wrap gap-2 md:gap-4 items-center text-sm">
-              <div>
-                <span className="opacity-80">Category:</span> {course.category || 'N/A'}
-              </div>
-              <div>
-                <span className="opacity-80">Paper:</span> {course.paperName || 'N/A'}
-              </div>
-              <div>
-                <span className="opacity-80">Faculty:</span> {course.facultyName || 'N/A'}
-              </div>
-              {course.institute && (
-                <div>
-                  <span className="opacity-80">Institute:</span> {course.institute}
-                </div>
+          {/* Course header with hero image */}
+          <div className="relative">
+            {/* Banner image with overlay gradient */}
+            <div className="h-48 md:h-64 lg:h-80 w-full bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+              {course.posterUrl && (
+                <img 
+                  src={course.posterUrl.startsWith('http') 
+                    ? course.posterUrl 
+                    : course.posterUrl.startsWith('/uploads') 
+                      ? `${API_URL}${course.posterUrl}` 
+                      : '/logo.svg'
+                  }
+                  alt={course.title || course.subject}
+                  className="w-full h-full object-cover opacity-30"
+                  onError={(e) => { e.target.src = '/logo.svg' }}
+                />
               )}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
+            </div>
+            
+            {/* Course title and info overlaid */}
+            <div className="absolute bottom-0 left-0 right-0 text-white p-4 md:p-8">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 drop-shadow-lg">
+                {course.title || course.subject}
+              </h1>
+              <div className="flex flex-wrap gap-3 md:gap-5 items-center text-sm md:text-base">
+                <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
+                  <span className="opacity-80">Category:</span> {course.category || 'N/A'}
+                </div>
+                <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
+                  <span className="opacity-80">Paper:</span> {course.paperName || 'N/A'}
+                </div>
+                <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
+                  <span className="opacity-80">Faculty:</span> {course.facultyName || 'N/A'}
+                </div>
+                {course.institute && (
+                  <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
+                    <span className="opacity-80">Institute:</span> {course.institute}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
@@ -305,11 +339,15 @@ const CourseDetailPage = () => {
             {/* Mobile/Tablet - Purchase options first for smaller screens */}
             <div className="block lg:hidden mb-6">
               <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 md:p-6">
-                <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Course Options</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4 flex items-center">
+                  <MdModeEdit className="mr-2 text-teal-600" /> Course Options
+                </h3>
                 
-                {/* Mode selection */}
+                {/* Mode selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mode:</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                    <FaBook className="mr-1 text-teal-600" /> Mode:
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     {course.modeAttemptPricing 
                       ? course.modeAttemptPricing.map((modeData) => (
@@ -317,10 +355,10 @@ const CourseDetailPage = () => {
                             key={modeData.mode}
                             type="button"
                             onClick={() => handleModeChange(modeData.mode)}
-                            className={`py-2 px-3 rounded-md text-sm font-medium ${
+                            className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                               selectedMode === modeData.mode
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
                             }`}
                           >
                             {modeData.mode}
@@ -331,10 +369,10 @@ const CourseDetailPage = () => {
                             key={mode}
                             type="button"
                             onClick={() => handleModeChange(mode)}
-                            className={`py-2 px-3 rounded-md text-sm font-medium ${
+                            className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                               selectedMode === mode
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
                             }`}
                           >
                             {mode}
@@ -344,63 +382,89 @@ const CourseDetailPage = () => {
                   </div>
                 </div>
                 
-                {/* Validity selection */}
+                {/* Validity selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Views & Validity:</label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {selectedMode && course.modeAttemptPricing 
-                      ? course.modeAttemptPricing
-                          .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                    <FaRegClock className="mr-1 text-teal-600" /> Views & Validity:
+                  </label>
+                  
+                  {!selectedMode ? (
+                    <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-center text-sm">
+                      Please select a Mode first to view available plans
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2">
+                      {selectedMode && course.modeAttemptPricing 
+                        ? course.modeAttemptPricing
+                            .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
+                              <button
+                                key={attempt.attempt}
+                                type="button"
+                                onClick={() => handleValidityChange(attempt.attempt)}
+                                className={`py-3 px-4 rounded-lg text-sm font-medium relative ${
+                                  selectedValidity === attempt.attempt
+                                    ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span>{attempt.attempt}</span>
+                                  <span className="font-bold">₹{attempt.sellingPrice}</span>
+                                </div>
+                                
+                                {attempt.costPrice > attempt.sellingPrice && (
+                                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                    {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                  </div>
+                                )}
+                              </button>
+                            ))
+                        : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
                             <button
-                              key={attempt.attempt}
+                              key={validity}
                               type="button"
-                              onClick={() => handleValidityChange(attempt.attempt)}
-                              className={`py-2 px-3 rounded-md text-sm font-medium ${
-                                selectedValidity === attempt.attempt
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                              onClick={() => handleValidityChange(validity)}
+                              className={`py-3 px-4 rounded-lg text-sm font-medium ${
+                                selectedValidity === validity
+                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
                               }`}
                             >
-                              {attempt.attempt}
+                              {validity}
                             </button>
                           ))
-                      : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
-                          <button
-                            key={validity}
-                            type="button"
-                            onClick={() => handleValidityChange(validity)}
-                            className={`py-2 px-3 rounded-md text-sm font-medium ${
-                              selectedValidity === validity
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                            }`}
-                          >
-                            {validity}
-                          </button>
-                        ))
-                    }
-                  </div>
-                </div>
-                
-                {/* Price */}
-                <div className="flex items-baseline mb-4 md:mb-6">
-                  <span className="text-2xl md:text-3xl font-bold text-gray-900">₹{price.final}</span>
-                  {price.original > price.final && price.original > 0 && (
-                    <>
-                      <span className="text-sm md:text-lg text-gray-400 line-through ml-2">₹{price.original}</span>
-                      <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                        {Math.round(((price.original - price.final) / price.original) * 100)}% Off
-                      </span>
-                    </>
+                      }
+                    </div>
                   )}
                 </div>
                 
-                {/* Buy Now button */}
+                {/* Price - Enhanced UI */}
+                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mb-4 md:mb-6">
+                  <div>
+                    <p className="text-sm text-gray-500">Total Price:</p>
+                    <div className="flex items-baseline">
+                      <span className="text-2xl md:text-3xl font-bold text-gray-900">₹{price.final}</span>
+                      {price.original > price.final && price.original > 0 && (
+                        <span className="text-sm md:text-base text-gray-400 line-through ml-2">₹{price.original}</span>
+                      )}
+                    </div>
+                  </div>
+                  {price.original > price.final && price.original > 0 && (
+                    <div className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-bold">
+                      {Math.round(((price.original - price.final) / price.original) * 100)}% OFF
+                    </div>
+                  )}
+                </div>
+                
+                {/* Buy Now button - Enhanced UI */}
                 <button
                   onClick={handleBuyNow}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 md:py-3 px-4 rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+                  className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold py-3 md:py-4 px-4 rounded-lg shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-[1.02] flex items-center justify-center"
                 >
                   {isAuthenticated ? 'Buy Now' : 'Login to Purchase'}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -493,22 +557,26 @@ const CourseDetailPage = () => {
               {/* Right column - Purchase options (hidden on mobile/tablet, shown on desktop) */}
               <div className="hidden lg:block">
                 <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 sticky top-4">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Course Options</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <MdModeEdit className="mr-2 text-teal-600" /> Course Options
+                  </h3>
                   
-                  {/* Mode selection */}
+                  {/* Mode selection - Enhanced Desktop UI */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mode:</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                      <FaBook className="mr-1 text-teal-600" /> Mode:
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {course.modeAttemptPricing 
                         ? course.modeAttemptPricing.map((modeData) => (
                             <button
                               key={modeData.mode}
                               type="button"
                               onClick={() => handleModeChange(modeData.mode)}
-                              className={`py-2 px-3 rounded-md text-sm font-medium ${
+                              className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 selectedMode === modeData.mode
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
                               }`}
                             >
                               {modeData.mode}
@@ -519,10 +587,10 @@ const CourseDetailPage = () => {
                               key={mode}
                               type="button"
                               onClick={() => handleModeChange(mode)}
-                              className={`py-2 px-3 rounded-md text-sm font-medium ${
+                              className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 selectedMode === mode
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
                               }`}
                             >
                               {mode}
@@ -532,64 +600,108 @@ const CourseDetailPage = () => {
                     </div>
                   </div>
                   
-                  {/* Validity selection */}
+                  {/* Validity selection - Enhanced Desktop UI */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Views & Validity:</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {selectedMode && course.modeAttemptPricing 
-                        ? course.modeAttemptPricing
-                            .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
+                    <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                      <FaRegClock className="mr-1 text-teal-600" /> Views & Validity:
+                    </label>
+                    
+                    {!selectedMode ? (
+                      <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-center text-sm">
+                        Please select a Mode first to view available plans
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                        {selectedMode && course.modeAttemptPricing 
+                          ? course.modeAttemptPricing
+                              .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
+                                <button
+                                  key={attempt.attempt}
+                                  type="button"
+                                  onClick={() => handleValidityChange(attempt.attempt)}
+                                  className={`py-3 px-4 rounded-lg transition-all duration-200 relative ${
+                                    selectedValidity === attempt.attempt
+                                      ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                      : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-medium">{attempt.attempt}</span>
+                                    <span className="font-bold">₹{attempt.sellingPrice}</span>
+                                  </div>
+                                  
+                                  {attempt.costPrice > attempt.sellingPrice && selectedValidity !== attempt.attempt && (
+                                    <div className="text-xs text-gray-500 flex items-center justify-between mt-1">
+                                      <span className="line-through">₹{attempt.costPrice}</span>
+                                      <span className="text-green-600 font-medium">
+                                        {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {attempt.costPrice > attempt.sellingPrice && selectedValidity === attempt.attempt && (
+                                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                      {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                    </div>
+                                  )}
+                                </button>
+                              ))
+                          : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
                               <button
-                                key={attempt.attempt}
+                                key={validity}
                                 type="button"
-                                onClick={() => handleValidityChange(attempt.attempt)}
-                                className={`py-2 px-3 rounded-md text-sm font-medium ${
-                                  selectedValidity === attempt.attempt
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                onClick={() => handleValidityChange(validity)}
+                                className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                  selectedValidity === validity
+                                    ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                    : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
                                 }`}
                               >
-                                {attempt.attempt}
+                                {validity}
                               </button>
                             ))
-                        : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
-                            <button
-                              key={validity}
-                              type="button"
-                              onClick={() => handleValidityChange(validity)}
-                              className={`py-2 px-3 rounded-md text-sm font-medium ${
-                                selectedValidity === validity
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                              }`}
-                            >
-                              {validity}
-                            </button>
-                          ))
-                      }
-                    </div>
-                  </div>
-                  
-                  {/* Price */}
-                  <div className="flex items-baseline mb-6">
-                    <span className="text-3xl font-bold text-gray-900">₹{price.final}</span>
-                    {price.original > price.final && price.original > 0 && (
-                      <>
-                        <span className="text-lg text-gray-400 line-through ml-2">₹{price.original}</span>
-                        <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                          {Math.round(((price.original - price.final) / price.original) * 100)}% Off
-                        </span>
-                      </>
+                        }
+                      </div>
                     )}
                   </div>
                   
-                  {/* Buy Now button */}
+                  {/* Price - Enhanced UI */}
+                  <div className="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Total Price:</p>
+                      <div className="flex items-baseline">
+                        <span className="text-3xl font-bold text-gray-900">₹{price.final}</span>
+                        {price.original > price.final && price.original > 0 && (
+                          <span className="text-lg text-gray-400 line-through ml-2">₹{price.original}</span>
+                        )}
+                      </div>
+                    </div>
+                    {price.original > price.final && price.original > 0 && (
+                      <div className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-bold">
+                        {Math.round(((price.original - price.final) / price.original) * 100)}% OFF
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Buy Now button - Enhanced UI */}
                   <button
                     onClick={handleBuyNow}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+                    disabled={!selectedMode || !selectedValidity}
+                    className={`w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-[1.02] flex items-center justify-center ${
+                      (!selectedMode || !selectedValidity) ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
                   >
                     {isAuthenticated ? 'Buy Now' : 'Login to Purchase'}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
                   </button>
+                  
+                  {(!selectedMode || !selectedValidity) && (
+                    <p className="text-center text-xs text-amber-600 mt-2">
+                      Please select both Mode and Validity to proceed
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -597,66 +709,103 @@ const CourseDetailPage = () => {
         </div>
       </div>
 
-      {/* Checkout Modal */}
+      {/* Checkout Modal - Enhanced UI */}
       {showCheckoutModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 md:p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-4 md:p-6 max-w-sm md:max-w-md w-full mx-3">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">Complete Your Profile</h2>
-            <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Please verify your details before proceeding to payment</p>
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-3 md:p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-5 md:p-7 max-w-sm md:max-w-md w-full mx-3 animate-fadeIn">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Complete Your Profile</h2>
+              <button 
+                onClick={() => setShowCheckoutModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-5 text-sm text-blue-700">
+              Please verify your details before proceeding to payment
+            </div>
+            
+            {/* Course Summary */}
+            <div className="bg-gray-50 p-4 rounded-lg mb-5">
+              <div className="flex items-start mb-3">
+                <div className="bg-teal-100 p-2 rounded-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h4 className="font-medium text-gray-900">{course.subject || course.title}</h4>
+                  <div className="text-xs text-gray-500 mt-1">
+                    <span className="font-medium">{selectedMode}</span> • <span>{selectedValidity}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="text-xs text-gray-500">Total Price</div>
+                <div className="font-bold text-gray-900">₹{price.final}</div>
+              </div>
+            </div>
             
             <form>
-              <div className="mb-3 md:mb-4">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   name="fullName"
                   value={userDetails.fullName}
                   onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
                   required
                 />
               </div>
               
-              <div className="mb-3 md:mb-4">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={userDetails.email}
                   onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
                   required
                 />
               </div>
               
-              <div className="mb-4 md:mb-6">
+              <div className="mb-5">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
                   name="phone"
                   value={userDetails.phone}
                   onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
                   required
                   readOnly={!!userDetails.phone} // Make it readonly if already populated
                 />
                 <p className="mt-1 text-xs text-gray-500">You can only update your name and email. Create a new account if you want to update your phone number.</p>
               </div>
               
-              <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => setShowCheckoutModal(false)}
-                  className="md:flex-1 bg-gray-200 text-gray-800 font-medium py-2.5 rounded-md hover:bg-gray-300 order-2 md:order-1"
+                  className="bg-gray-100 text-gray-800 font-medium py-3 rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleProceedToPayment}
-                  className="md:flex-1 bg-blue-600 text-white font-medium py-2.5 rounded-md hover:bg-blue-700 order-1 md:order-2"
+                  className="bg-gradient-to-r from-teal-500 to-blue-500 text-white font-medium py-3 rounded-md hover:from-teal-600 hover:to-blue-600 transition-all flex items-center justify-center"
                 >
-                  Proceed to Payment
+                  <span>Proceed to Payment</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
                 </button>
               </div>
             </form>
