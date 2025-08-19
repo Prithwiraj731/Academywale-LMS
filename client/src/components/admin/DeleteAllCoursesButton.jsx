@@ -86,7 +86,7 @@ const DeleteAllCoursesButton = ({ onDeleteSuccess }) => {
         <div className="border border-red-300 bg-red-50 p-4 rounded-md">
           <h4 className="text-lg font-bold text-red-700 mb-2">Delete All Courses</h4>
           <p className="text-red-600 mb-4">
-            WARNING: This will delete ALL courses from the system, both standalone and faculty courses.
+            WARNING: This will delete ALL courses from the system.
             This action cannot be undone. Are you sure you want to proceed?
           </p>
           

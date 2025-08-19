@@ -29,14 +29,14 @@ const CMAFinalPaperDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        console.log(`Fetching CMA final courses from: ${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`);
+        console.log(`Fetching CMA final courses from: ${API_URL}/api/courses/CMA/final/${paperId}`);
         
-        // Only use URLs with includeStandalone=true
+        // Try different URL variations
         const urlVariations = [
           `${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`,
           `${API_URL}/api/courses/cma/final/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CMA/Final/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CMA/FINAL/${paperId}?includeStandalone=true`,
+          `${API_URL}/api/courses/CMA/Final/${paperId}`,
+          `${API_URL}/api/courses/CMA/FINAL/${paperId}`,
         ];
         
         let coursesFound = false;
@@ -65,7 +65,6 @@ const CMAFinalPaperDetailPage = () => {
             
             if (data.courses && data.courses.length > 0) {
               console.log(`Found ${data.courses.length} courses using URL: ${url}`);
-              console.log('Standalone courses:', data.courses.filter(c => c.isStandalone).length || 0);
               setCourses(data.courses);
               coursesFound = true;
               break;
@@ -75,7 +74,7 @@ const CMAFinalPaperDetailPage = () => {
           }
         }
         
-        // If no courses found with any URL variation, create test courses
+        // If no courses found with any URL variation, show "no courses" message
         if (!coursesFound) {
           console.log("No courses found for this paper. Not creating mock courses anymore.");
           setCourses([]);
@@ -132,13 +131,7 @@ const CMAFinalPaperDetailPage = () => {
                 <img src={getPosterUrl(course)} alt="Poster" className="object-cover w-full h-full" />
               </div>
               <div className="text-lg font-bold text-[#17817a] mb-1 text-center">{course.subject}</div>
-              {course.isStandalone ? (
-                <div className="text-sm text-teal-600 mb-2 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
-                  <span className="font-medium">✓ Standalone Course</span>
-                </div>
-              ) : (
-                <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName || 'N/A'}</div>
-              )}
+              <div className="text-sm text-gray-700 mb-2 text-center">Faculty: {course.facultyName}</div>
               <div className="flex flex-col gap-1 text-xs text-gray-500 mb-2 text-center">
                 <div>Lectures: {course.noOfLecture}</div>
                 <div>Books: {course.books}</div>
