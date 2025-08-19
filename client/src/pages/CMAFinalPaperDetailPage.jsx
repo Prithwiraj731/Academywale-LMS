@@ -77,79 +77,9 @@ const CMAFinalPaperDetailPage = () => {
         
         // If no courses found with any URL variation, create test courses
         if (!coursesFound) {
-          console.log("⚠️ DEBUG MODE: Creating mock courses for testing");
-          
-          // Create two mock courses - one faculty-based and one standalone
-          const mockCourses = [
-            {
-              _id: "mock-faculty-course-1",
-              subject: "Strategic Financial Management (Faculty Course)",
-              title: "Strategic Financial Management Complete Course",
-              category: "CMA",
-              subcategory: "final",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "CMA Vikram Singh",
-              description: "Complete Strategic Financial Management course by CMA Vikram Singh. Covers all concepts and practice questions.",
-              noOfLecture: "42",
-              books: "Study Material Provided",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp & Telegram",
-              timing: "Flexible",
-              courseType: "CMA Final Paper",
-              isStandalone: false,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 11999, sellingPrice: 8999 },
-                    { attempt: "2 Attempts", costPrice: 14999, sellingPrice: 11999 }
-                  ]
-                },
-                {
-                  mode: "Offline",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 13999, sellingPrice: 10999 },
-                    { attempt: "2 Attempts", costPrice: 16999, sellingPrice: 13999 }
-                  ]
-                }
-              ]
-            },
-            {
-              _id: "mock-standalone-course-1",
-              subject: "Strategic Financial Management (Standalone Course)",
-              title: "Strategic Financial Management Crash Course",
-              category: "CMA",
-              subcategory: "final",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "Standalone Course",
-              description: "Comprehensive crash course for Strategic Financial Management. Focused on exam preparation.",
-              noOfLecture: "28",
-              books: "PDF Notes Included",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp",
-              timing: "Flexible",
-              courseType: "CMA Final Paper",
-              isStandalone: true,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 9999, sellingPrice: 7999 },
-                    { attempt: "2 Attempts", costPrice: 12999, sellingPrice: 9999 }
-                  ]
-                }
-              ]
-            }
-          ];
-          
-          setCourses(mockCourses);
-          console.log("📚 Mock courses created:", mockCourses.length);
-          // No error message since we're showing mock courses
-          setError("");
+          console.log("No courses found for this paper. Not creating mock courses anymore.");
+          setCourses([]);
+          setError("No courses available for this paper yet. Check back later.");
         }
       } catch (err) {
         console.error('Error fetching courses:', err);

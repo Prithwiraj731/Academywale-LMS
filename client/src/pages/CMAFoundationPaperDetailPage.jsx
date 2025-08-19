@@ -78,79 +78,9 @@ const CMAFoundationPaperDetailPage = () => {
         
         // If no courses found with any URL variation, create test courses
         if (!coursesFound) {
-          console.log("⚠️ DEBUG MODE: Creating mock courses for testing");
-          
-          // Create two mock courses - one faculty-based and one standalone
-          const mockCourses = [
-            {
-              _id: "mock-faculty-course-1",
-              subject: "Fundamentals of Economics & Management (Faculty Course)",
-              title: "Economics & Management Complete Course",
-              category: "CMA",
-              subcategory: "foundation",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "CMA Suresh Jain",
-              description: "Complete Economics & Management course by CMA Suresh Jain. Covers all concepts and practice questions.",
-              noOfLecture: "35",
-              books: "Study Material Provided",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp & Telegram",
-              timing: "Flexible",
-              courseType: "CMA Foundation Paper",
-              isStandalone: false,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 7999, sellingPrice: 4999 },
-                    { attempt: "2 Attempts", costPrice: 9999, sellingPrice: 6999 }
-                  ]
-                },
-                {
-                  mode: "Offline",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 8999, sellingPrice: 5999 },
-                    { attempt: "2 Attempts", costPrice: 10999, sellingPrice: 7999 }
-                  ]
-                }
-              ]
-            },
-            {
-              _id: "mock-standalone-course-1",
-              subject: "Fundamentals of Economics & Management (Standalone Course)",
-              title: "Economics & Management Crash Course",
-              category: "CMA",
-              subcategory: "foundation",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "Standalone Course",
-              description: "Comprehensive crash course for Economics & Management. Focused on exam preparation.",
-              noOfLecture: "20",
-              books: "PDF Notes Included",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp",
-              timing: "Flexible",
-              courseType: "CMA Foundation Paper",
-              isStandalone: true,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 5999, sellingPrice: 3999 },
-                    { attempt: "2 Attempts", costPrice: 7999, sellingPrice: 5999 }
-                  ]
-                }
-              ]
-            }
-          ];
-          
-          setCourses(mockCourses);
-          console.log("📚 Mock courses created:", mockCourses.length);
-          // No error message since we're showing mock courses
-          setError("");
+          console.log("No courses found for this paper. Not creating mock courses anymore.");
+          setCourses([]);
+          setError("No courses available for this paper yet. Check back later.");
         }
       } catch (err) {
         console.error('Error fetching courses:', err);

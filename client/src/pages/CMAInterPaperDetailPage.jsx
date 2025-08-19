@@ -77,79 +77,9 @@ const CMAInterPaperDetailPage = () => {
         
         // If no courses found with any URL variation, create test courses
         if (!coursesFound) {
-          console.log("⚠️ DEBUG MODE: Creating mock courses for testing");
-          
-          // Create two mock courses - one faculty-based and one standalone
-          const mockCourses = [
-            {
-              _id: "mock-faculty-course-1",
-              subject: "Corporate Laws & Compliance (Faculty Course)",
-              title: "Corporate Laws Complete Course",
-              category: "CMA",
-              subcategory: "inter",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "CMA Ravi Kumar",
-              description: "Complete Corporate Laws & Compliance course by CMA Ravi Kumar. Covers all concepts and practice questions.",
-              noOfLecture: "38",
-              books: "Study Material Provided",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp & Telegram",
-              timing: "Flexible",
-              courseType: "CMA Inter Paper",
-              isStandalone: false,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 9999, sellingPrice: 6999 },
-                    { attempt: "2 Attempts", costPrice: 12999, sellingPrice: 8999 }
-                  ]
-                },
-                {
-                  mode: "Offline",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 10999, sellingPrice: 7999 },
-                    { attempt: "2 Attempts", costPrice: 14999, sellingPrice: 9999 }
-                  ]
-                }
-              ]
-            },
-            {
-              _id: "mock-standalone-course-1",
-              subject: "Corporate Laws & Compliance (Standalone Course)",
-              title: "Corporate Laws Crash Course",
-              category: "CMA",
-              subcategory: "inter",
-              paperId: paperId,
-              posterUrl: "/logo.svg",
-              facultyName: "Standalone Course",
-              description: "Comprehensive crash course for Corporate Laws. Focused on exam preparation.",
-              noOfLecture: "25",
-              books: "PDF Notes Included",
-              videoLanguage: "Hindi + English",
-              videoRunOn: "All Devices",
-              doubtSolving: "Whatsapp",
-              timing: "Flexible",
-              courseType: "CMA Inter Paper",
-              isStandalone: true,
-              modeAttemptPricing: [
-                {
-                  mode: "Online",
-                  attempts: [
-                    { attempt: "1 Attempt", costPrice: 7999, sellingPrice: 5999 },
-                    { attempt: "2 Attempts", costPrice: 10999, sellingPrice: 7999 }
-                  ]
-                }
-              ]
-            }
-          ];
-          
-          setCourses(mockCourses);
-          console.log("📚 Mock courses created:", mockCourses.length);
-          // No error message since we're showing mock courses
-          setError("");
+          console.log("No courses found for this paper. Not creating mock courses anymore.");
+          setCourses([]);
+          setError("No courses available for this paper yet. Check back later.");
         }
       } catch (err) {
         console.error('Error fetching courses:', err);
