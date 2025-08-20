@@ -48,16 +48,41 @@ const CourseCard = ({
 
   // Handle course click - either navigate or show modal
   const handleCourseClick = () => {
-    // Check if we have a valid course ID
-    if (!course._id && !course.id) {
-      console.error('Course has no ID, cannot navigate to details', course);
-      alert('Cannot view course details: Missing course ID');
-      return;
+    // Get a usable course ID with multiple fallbacks
+    let courseId = null;
+    
+    if (course._id) {
+      courseId = course._id;
+    } else if (course.id) {
+      courseId = course.id;
+    } else if (course.subject) {
+      // Use slugified subject as fallback ID
+      courseId = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      console.log('Using subject as fallback ID:', courseId);
+    } else if (course.title) {
+      // Use slugified title as another fallback
+      courseId = course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      console.log('Using title as fallback ID:', courseId);
     }
     
-    // Use _id or fallback to id if _id is missing
-    const courseId = course._id || course.id;
+    // If we still don't have an ID, generate one from course attributes
+    if (!courseId) {
+      if (course.facultyName && course.subject) {
+        courseId = `${course.facultyName}-${course.subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        console.log('Generated ID from faculty and subject:', courseId);
+      } else {
+        console.error('Course has no usable ID attributes, cannot navigate to details', course);
+        alert('Cannot view course details: Missing course ID');
+        return;
+      }
+    }
     
+    // Before navigation, ensure course has an ID property for future reference
+    if (!course._id && !course.id) {
+      course.id = courseId;
+      console.log('Added generated ID to course object:', courseId);
+    }
+
     if (showModal && onViewDetails) {
       onViewDetails(course);
     } else {

@@ -7,28 +7,53 @@ exports.getCourseDetails = async (req, res) => {
     const { courseId } = req.params;
     let course = null;
 
+    // Find all faculties - we no longer use "N/A" faculty
+    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
+    
+    // Check if it's a valid MongoDB ObjectId
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(courseId);
+    
     // Look for courses within faculties
-    if (mongoose.Types.ObjectId.isValid(courseId)) {
-      // Find all faculties - we no longer use "N/A" faculty
-      const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
+    for (const faculty of faculties) {
+      if (!faculty.courses) continue;
       
-      // Loop through all faculties and their courses
-      for (const faculty of faculties) {
-        if (!faculty.courses) continue;
-        
+      let foundCourse;
+      
+      if (isValidObjectId) {
         // Find course by its _id in the faculty's courses array
-        const foundCourse = faculty.courses.find(course => 
+        foundCourse = faculty.courses.find(course => 
           course._id && course._id.toString() === courseId);
+      }
+      
+      // If not found by ObjectId or if not a valid ObjectId, try alternative matching
+      if (!foundCourse && courseId.includes('-')) {
+        console.log('Attempting to find course by slug-like ID:', courseId);
         
-        if (foundCourse) {
-          course = {
-            ...foundCourse.toObject(),
-            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-            facultySlug: faculty.slug,
-            facultyId: faculty._id
-          };
-          break;
-        }
+        // Split the slugified ID and use parts for matching
+        const idParts = courseId.toLowerCase().split('-');
+        
+        // Try to find a matching course using various attributes
+        foundCourse = faculty.courses.find(course => {
+          if (!course.subject && !course.title) return false;
+          
+          const subjectMatch = course.subject && 
+            idParts.some(part => course.subject.toLowerCase().includes(part));
+          
+          const titleMatch = course.title && 
+            idParts.some(part => course.title.toLowerCase().includes(part));
+            
+          return subjectMatch || titleMatch;
+        });
+      }
+      
+      if (foundCourse) {
+        course = {
+          ...foundCourse.toObject(),
+          facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+          facultySlug: faculty.slug,
+          facultyId: faculty._id
+        };
+        break;
       }
     }
 

@@ -43,25 +43,74 @@ const CourseDetailPage = () => {
         
         console.log(`Fetching course details for courseId: ${courseId}`);
         
+        // Try to find the course in multiple ways
+        const isSlugifiedId = courseId.includes('-') && !courseId.match(/^[0-9a-f]{24}$/i);
+        
         // Log the full URL for debugging
         const apiUrl = `${API_URL}/api/courses/details/${courseId}`;
         console.log(`API URL: ${apiUrl}`);
         
-        const res = await fetch(apiUrl);
+        // If this appears to be a slugified ID (not a MongoDB ObjectId),
+        // we might need to use a different API endpoint or search by attributes
+        let alternativeSearchNeeded = isSlugifiedId;
         
-        if (!res.ok) {
+        let res = await fetch(apiUrl);
+        let data;
+        
+        // If the regular endpoint fails and we have a slugified ID, try searching for courses
+        if (!res.ok && alternativeSearchNeeded) {
+          console.log('Regular endpoint failed, trying course search...');
+          
+          // Try to decode parts from the slugified ID
+          const parts = courseId.split('-');
+          const searchParams = new URLSearchParams();
+          
+          if (parts.length > 0) {
+            // Add some search parameters based on the ID parts
+            searchParams.append('query', parts.join(' '));
+            if (courseType) {
+              searchParams.append('category', courseType);
+            }
+            
+            const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
+            console.log(`Trying search URL: ${searchUrl}`);
+            
+            const searchRes = await fetch(searchUrl);
+            if (searchRes.ok) {
+              const searchData = await searchRes.json();
+              if (searchData.courses && searchData.courses.length > 0) {
+                console.log(`Found ${searchData.courses.length} matching courses`);
+                // Use the first matching course
+                data = { course: searchData.courses[0] };
+                console.log('Using first match:', data.course);
+              } else {
+                console.error('No matching courses found in search');
+                setError('Could not find the requested course. Please try another course.');
+                setLoading(false);
+                return;
+              }
+            } else {
+              console.error('Course search API failed');
+            }
+          }
+        } else if (!res.ok) {
           console.error(`API returned status: ${res.status}`);
-          const errorData = await res.json();
+          let errorData;
+          try {
+            errorData = await res.json();
+          } catch (e) {
+            errorData = { message: 'Unknown server error' };
+          }
           console.error('Error data:', errorData);
           setError(`Failed to load course: ${errorData.message || 'Server error'}`);
           setLoading(false);
           return;
+        } else {
+          data = await res.json();
+          console.log('API Response:', data);
         }
         
-        const data = await res.json();
-        console.log('API Response:', data);
-        
-        if (data.course) {
+        if (data && data.course) {
           console.log('Course data received:', data.course);
           setCourse(data.course);
           
