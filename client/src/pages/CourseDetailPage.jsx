@@ -32,6 +32,15 @@ const CourseDetailPage = () => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
+        
+        // Validate courseId
+        if (!courseId) {
+          console.error('No courseId provided in URL parameters');
+          setError('Course ID is missing. Please go back and try again.');
+          setLoading(false);
+          return;
+        }
+        
         console.log(`Fetching course details for courseId: ${courseId}`);
         
         // Log the full URL for debugging
@@ -39,10 +48,20 @@ const CourseDetailPage = () => {
         console.log(`API URL: ${apiUrl}`);
         
         const res = await fetch(apiUrl);
+        
+        if (!res.ok) {
+          console.error(`API returned status: ${res.status}`);
+          const errorData = await res.json();
+          console.error('Error data:', errorData);
+          setError(`Failed to load course: ${errorData.message || 'Server error'}`);
+          setLoading(false);
+          return;
+        }
+        
         const data = await res.json();
         console.log('API Response:', data);
         
-        if (res.ok && data.course) {
+        if (data.course) {
           console.log('Course data received:', data.course);
           setCourse(data.course);
           
@@ -244,31 +263,60 @@ const CourseDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 flex flex-col items-center justify-center">
+        <div className="bg-white p-8 rounded-xl shadow-lg">
+          <LoadingSpinner size="lg" />
+          <div className="text-gray-600 mt-4 text-center">Loading course details...</div>
+          <div className="text-blue-500 mt-2 text-center text-sm animate-pulse">Please wait, this won't take long</div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-red-50 flex flex-col items-center justify-center p-4">
-        <div className="text-red-600 font-bold text-xl mb-4">Error: {error}</div>
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-        >
-          Go Back
-        </button>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-100 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+          <div className="text-red-500 text-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
+            We encountered an error
+          </h2>
+          <p className="text-gray-600 mb-6 text-center">{error}</p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Go Back
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="text-gray-600 font-bold text-xl mb-4">Course not found</div>
-        <button
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+          <div className="text-blue-500 text-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4M8 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
+            Course Not Found
+          </h2>
+          <p className="text-gray-600 mb-6 text-center">The course you're looking for might have been removed or doesn't exist.</p>
+          <div className="flex justify-center">
+            <button
           onClick={() => navigate(-1)}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >

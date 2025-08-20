@@ -105,7 +105,18 @@ const CAFoundationPaperDetailPage = () => {
   };
 
   const handleCourseClick = (course) => {
-    navigate(`/course/${encodeURIComponent(course.courseType)}/${course._id}`);
+    // Check if we have a valid course ID
+    if (!course._id && !course.id) {
+      console.error('Course has no ID, cannot navigate to details', course);
+      alert('Cannot view course details: Missing course ID');
+      return;
+    }
+    
+    // Use _id or fallback to id if _id is missing
+    const courseId = course._id || course.id;
+    
+    console.log(`Navigating to course details: /course/${encodeURIComponent(course.courseType || 'course')}/${courseId}`);
+    navigate(`/course/${encodeURIComponent(course.courseType || 'course')}/${courseId}`);
   };
 
   const handleModeChange = (mode) => {
