@@ -317,11 +317,13 @@ const CourseDetailPage = () => {
           <p className="text-gray-600 mb-6 text-center">The course you're looking for might have been removed or doesn't exist.</p>
           <div className="flex justify-center">
             <button
-          onClick={() => navigate(-1)}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-        >
-          Go Back
-        </button>
+              onClick={() => navigate(-1)}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
