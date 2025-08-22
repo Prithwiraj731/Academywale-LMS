@@ -57,12 +57,59 @@ exports.getCourseDetails = async (req, res) => {
 async function enhancedCourseLookup(req, res, courseId, courseType, startTime, debugMode = false) {
   try {
     let course = null;
-
-    // Find all faculties - we no longer use "N/A" faculty
-    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
     
     // Check if it's a valid MongoDB ObjectId
     const isValidObjectId = mongoose.Types.ObjectId.isValid(courseId);
+    
+    // First, try to find in standalone courses collection
+    try {
+      const Course = require('../model/Course.model');
+      if (isValidObjectId) {
+        const standaloneCourse = await Course.findById(courseId);
+        if (standaloneCourse) {
+          console.log('✅ Found course in standalone collection by ObjectId');
+          return res.status(200).json({ course: standaloneCourse, success: true });
+        }
+      }
+      
+      // If not found by ObjectId, try other matching for standalone courses
+      if (!isValidObjectId && courseId.includes('-')) {
+        const standaloneCourses = await Course.find({ isActive: true });
+        const matchedStandalone = standaloneCourses.find(course => {
+          // Try to match by subject, title, or courseType
+          const subjectSlug = course.subject ? 
+            course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          const titleSlug = course.title ? 
+            course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          const courseTypeSlug = course.courseType ? 
+            course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+            
+          return courseId === subjectSlug || 
+                 courseId === titleSlug || 
+                 courseId === courseTypeSlug ||
+                 courseId === `${courseTypeSlug}-${subjectSlug}`;
+        });
+        
+        if (matchedStandalone) {
+          console.log('✅ Found course in standalone collection by slug matching');
+          return res.status(200).json({ course: matchedStandalone, success: true });
+        }
+      }
+    } catch (standaloneError) {
+      console.log('⚠️ Standalone course lookup failed:', standaloneError.message);
+    }
+
+    // Find all faculties - including "N/A" faculty for broader search
+    const faculties = await Faculty.find({});
+    
+    // Log available courses for debugging
+    let totalCourses = 0;
+    faculties.forEach(faculty => {
+      if (faculty.courses) {
+        totalCourses += faculty.courses.length;
+      }
+    });
+    console.log(`🔍 Searching through ${faculties.length} faculties with ${totalCourses} total courses`);
     
     // Look for courses within faculties
     for (const faculty of faculties) {
@@ -110,9 +157,35 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
         const courseTypeFromUrl = courseType || '';
         console.log('Course type from URL query:', courseTypeFromUrl);
         
+        // Extract potential subject from courseId (assuming courseType-subject pattern)
+        let potentialSubject = null;
+        if (courseTypeFromUrl) {
+          // Remove course type parts from courseId to get potential subject
+          const courseTypeParts = courseTypeFromUrl.toLowerCase().split(' ');
+          let remainingId = courseId.toLowerCase();
+          
+          courseTypeParts.forEach(part => {
+            remainingId = remainingId.replace(part, '').replace(/-+/g, '-');
+          });
+          
+          potentialSubject = remainingId.replace(/^-+|-+$/g, ''); // Remove leading/trailing dashes
+          console.log(`🔍 Extracted potential subject from courseId: "${potentialSubject}"`);
+        }
+        
         // Try to find a matching course using various attributes
         foundCourse = faculty.courses.find(course => {
           if (!course.subject && !course.title) return false;
+          
+          // Direct subject match with extracted subject
+          if (potentialSubject && course.subject) {
+            const courseSubjectSlug = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            if (courseSubjectSlug === potentialSubject || 
+                course.subject.toLowerCase().includes(potentialSubject) ||
+                potentialSubject.includes(courseSubjectSlug)) {
+              console.log(`✅ Found match by extracted subject: ${course.subject}`);
+              return true;
+            }
+          }
           
           // Check for exact matches in slugified form first
           const subjectSlug = course.subject ? 
@@ -163,11 +236,37 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
             }
           }
           
-          // For courseType-subject pattern
-          if (course.courseType) {
+          // For courseType-subject pattern - Enhanced matching
+          if (course.courseType && course.subject) {
             const courseTypeSlug = course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            if (courseId === `${courseTypeSlug}-${subjectSlug}`) {
-              console.log(`Found exact match with courseType-subject: ${courseId}`);
+            const expectedId = `${courseTypeSlug}-${subjectSlug}`;
+            
+            if (courseId === expectedId) {
+              console.log(`✅ Found exact match with courseType-subject: ${courseId}`);
+              return true;
+            }
+            
+            // Also try reverse pattern (subject-courseType)
+            const reverseId = `${subjectSlug}-${courseTypeSlug}`;
+            if (courseId === reverseId) {
+              console.log(`✅ Found reverse match with subject-courseType: ${courseId}`);
+              return true;
+            }
+            
+            // Try partial matches - if courseId contains both course type and subject parts
+            const courseIdParts = courseId.split('-');
+            const courseTypeParts = courseTypeSlug.split('-');
+            const subjectParts = subjectSlug.split('-');
+            
+            const hasTypeMatch = courseTypeParts.some(typePart => 
+              courseIdParts.some(idPart => idPart === typePart && idPart.length > 2)
+            );
+            const hasSubjectMatch = subjectParts.some(subjectPart => 
+              courseIdParts.some(idPart => idPart === subjectPart && idPart.length > 2)
+            );
+            
+            if (hasTypeMatch && hasSubjectMatch) {
+              console.log(`✅ Found partial match with courseType and subject parts`);
               return true;
             }
           }
@@ -188,6 +287,27 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
             }
           }
           
+          // More flexible subject matching - check if any part of the courseId matches the subject
+          if (course.subject) {
+            const courseSubjectLower = course.subject.toLowerCase();
+            const courseIdLower = courseId.toLowerCase();
+            
+            // Check if courseId contains significant parts of the subject
+            const subjectWords = courseSubjectLower.split(/\s+/).filter(word => word.length > 2);
+            const idWords = courseIdLower.split('-').filter(word => word.length > 2);
+            
+            const hasSubjectMatch = subjectWords.some(subjectWord => 
+              idWords.some(idWord => 
+                subjectWord.includes(idWord) || idWord.includes(subjectWord)
+              )
+            );
+            
+            if (hasSubjectMatch) {
+              console.log(`✅ Found flexible subject match for: ${course.subject}`);
+              return true;
+            }
+          }
+          
           // Try more generic matching with individual parts
           const subjectMatch = course.subject && 
             idParts.some(part => part.length > 2 && course.subject.toLowerCase().includes(part));
@@ -198,6 +318,17 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
           // For faculty name matches
           const facultyNameMatch = faculty.firstName && idParts.some(part => 
             part.length > 2 && faculty.firstName.toLowerCase().includes(part));
+          
+          // Last resort: check if courseType matches the pattern
+          if (course.courseType && courseTypeFromUrl) {
+            const courseTypeLower = course.courseType.toLowerCase();
+            const courseTypeUrlLower = courseTypeFromUrl.toLowerCase();
+            if (courseTypeLower.includes(courseTypeUrlLower.replace(' ', '')) || 
+                courseTypeUrlLower.includes(courseTypeLower.replace(' ', ''))) {
+              console.log(`✅ Found match by course type similarity`);
+              return true;
+            }
+          }
             
           return subjectMatch || titleMatch || facultyNameMatch;
         });
@@ -214,11 +345,100 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
       }
     }
 
+    // If still no course found, try a broader search as last resort
+    if (!course && courseType) {
+      console.log('🔍 Attempting broader search as last resort...');
+      
+      // First try exact courseType match
+      for (const faculty of faculties) {
+        if (!faculty.courses) continue;
+        
+        const typeMatchedCourse = faculty.courses.find(course => {
+          if (!course.courseType) return false;
+          
+          const courseTypeLower = course.courseType.toLowerCase();
+          const searchTypeLower = courseType.toLowerCase();
+          
+          // Check if course type contains the search terms
+          return searchTypeLower.split(' ').every(word => 
+            courseTypeLower.includes(word.toLowerCase())
+          );
+        });
+        
+        if (typeMatchedCourse) {
+          console.log(`✅ Found course by broad courseType match: ${typeMatchedCourse.subject}`);
+          course = {
+            ...typeMatchedCourse.toObject(),
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug,
+            facultyId: faculty._id
+          };
+          break;
+        }
+      }
+      
+      // If still nothing, try to find any course with similar characteristics
+      if (!course) {
+        console.log('🔍 Attempting final fallback search...');
+        
+        for (const faculty of faculties) {
+          if (!faculty.courses || faculty.courses.length === 0) continue;
+          
+          // Look for any course that might be related
+          const fallbackCourse = faculty.courses.find(course => {
+            if (!course.subject) return false;
+            
+            // Check if any part of the courseId appears in the subject
+            const courseIdParts = courseId.toLowerCase().split('-');
+            const subjectLower = course.subject.toLowerCase();
+            
+            return courseIdParts.some(part => 
+              part.length > 3 && subjectLower.includes(part)
+            );
+          });
+          
+          if (fallbackCourse) {
+            console.log(`✅ Found course by fallback subject match: ${fallbackCourse.subject}`);
+            course = {
+              ...fallbackCourse.toObject(),
+              facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+              facultySlug: faculty.slug,
+              facultyId: faculty._id
+            };
+            break;
+          }
+        }
+      }
+    }
+
     if (!course) {
+      console.log(`❌ No course found for ID: ${courseId}, Type: ${courseType}`);
+      
+      // Get some sample courses for debugging
+      let sampleCourses = [];
+      faculties.forEach(faculty => {
+        if (faculty.courses && faculty.courses.length > 0) {
+          faculty.courses.slice(0, 2).forEach(course => {
+            sampleCourses.push({
+              id: course._id,
+              subject: course.subject,
+              courseType: course.courseType,
+              facultyName: faculty.firstName
+            });
+          });
+        }
+      });
+      
       return res.status(404).json({ 
-        error: 'Course not found', 
+        error: `Course not found: ${courseId}`, 
         success: false,
-        courseId: courseId || 'unknown'
+        courseId: courseId || 'unknown',
+        searchedType: courseType || 'none',
+        debug: {
+          totalFaculties: faculties.length,
+          totalCourses: totalCourses,
+          sampleCourses: sampleCourses.slice(0, 5)
+        }
       });
     }
 
