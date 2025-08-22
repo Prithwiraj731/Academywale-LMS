@@ -67,9 +67,24 @@ const CourseDetailPage = () => {
           
           if (parts.length > 0) {
             // Add some search parameters based on the ID parts
-            searchParams.append('query', parts.join(' '));
+            // For cases like "cma-final-paper-13", we want to search for "CMA Final paper 13"
+            const cleanedQuery = parts.join(' ')
+              .replace(/-/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            
+            searchParams.append('query', cleanedQuery);
+            
+            // If courseType is provided, use it to narrow down the search
             if (courseType) {
-              searchParams.append('category', courseType);
+              // Convert courseType to a proper category name if needed
+              // e.g., "cma-final" becomes "CMA Final"
+              const formattedCategory = courseType
+                .split('-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+              
+              searchParams.append('category', formattedCategory);
             }
             
             const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
@@ -77,20 +92,30 @@ const CourseDetailPage = () => {
             
             const searchRes = await fetch(searchUrl);
             if (searchRes.ok) {
-              const searchData = await searchRes.json();
-              if (searchData.courses && searchData.courses.length > 0) {
-                console.log(`Found ${searchData.courses.length} matching courses`);
-                // Use the first matching course
-                data = { course: searchData.courses[0] };
-                console.log('Using first match:', data.course);
-              } else {
-                console.error('No matching courses found in search');
-                setError('Could not find the requested course. Please try another course.');
+              try {
+                const searchData = await searchRes.json();
+                if (searchData && searchData.courses && searchData.courses.length > 0) {
+                  console.log(`Found ${searchData.courses.length} matching courses`);
+                  // Use the first matching course
+                  data = { course: searchData.courses[0] };
+                  console.log('Using first match:', data.course);
+                } else {
+                  console.error('No matching courses found in search');
+                  setError('Could not find the requested course. Please try another course.');
+                  setLoading(false);
+                  return;
+                }
+              } catch (parseError) {
+                console.error('Failed to parse search results:', parseError);
+                setError('Failed to process search results. Please try again later.');
                 setLoading(false);
                 return;
               }
             } else {
               console.error('Course search API failed');
+              setError('Course search failed. Please try another course or contact support.');
+              setLoading(false);
+              return;
             }
           }
         } else if (!res.ok) {
@@ -102,12 +127,19 @@ const CourseDetailPage = () => {
             errorData = { message: 'Unknown server error' };
           }
           console.error('Error data:', errorData);
-          setError(`Failed to load course: ${errorData.message || 'Server error'}`);
+          setError(`Failed to load course: ${errorData && errorData.message ? errorData.message : 'Server error'}`);
           setLoading(false);
           return;
         } else {
-          data = await res.json();
-          console.log('API Response:', data);
+          try {
+            data = await res.json();
+            console.log('API Response:', data);
+          } catch (e) {
+            console.error('Failed to parse API response:', e);
+            setError('Failed to parse course data. Please try again later.');
+            setLoading(false);
+            return;
+          }
         }
         
         if (data && data.course) {
@@ -155,7 +187,19 @@ const CourseDetailPage = () => {
           }
         } else {
           console.error('API Error:', data);
-          setError(data.error || data.message || 'Failed to fetch course details');
+          let errorMessage = 'Failed to fetch course details';
+          
+          if (data) {
+            if (data.error && typeof data.error === 'string') {
+              errorMessage = data.error;
+            } else if (data.message && typeof data.message === 'string') {
+              errorMessage = data.message;
+            } else if (data.error && data.error.message && typeof data.error.message === 'string') {
+              errorMessage = data.error.message;
+            }
+          }
+          
+          setError(errorMessage);
         }
       } catch (err) {
         setError('Server error while fetching course details');

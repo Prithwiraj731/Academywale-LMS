@@ -32,17 +32,48 @@ exports.getCourseDetails = async (req, res) => {
         // Split the slugified ID and use parts for matching
         const idParts = courseId.toLowerCase().split('-');
         
+        // Check if this might be a paper number reference
+        const paperNumberMatch = /paper-(\d+)/.exec(courseId);
+        const paperNumber = paperNumberMatch ? paperNumberMatch[1] : null;
+        
         // Try to find a matching course using various attributes
         foundCourse = faculty.courses.find(course => {
           if (!course.subject && !course.title) return false;
           
+          // Check for exact matches in slugified form first
+          const subjectSlug = course.subject ? 
+            course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          
+          const titleSlug = course.title ? 
+            course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          
+          // For paperNumber matches
+          if (paperNumber && course.paperNumber && course.paperNumber.toString() === paperNumber) {
+            console.log(`Found match by paper number: ${paperNumber}`);
+            return true;
+          }
+          
+          // For courseType-subject pattern
+          if (course.courseType) {
+            const courseTypeSlug = course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            if (courseId === `${courseTypeSlug}-${subjectSlug}`) {
+              console.log(`Found exact match with courseType-subject: ${courseId}`);
+              return true;
+            }
+          }
+          
+          // Try more generic matching with individual parts
           const subjectMatch = course.subject && 
-            idParts.some(part => course.subject.toLowerCase().includes(part));
+            idParts.some(part => part.length > 2 && course.subject.toLowerCase().includes(part));
           
           const titleMatch = course.title && 
-            idParts.some(part => course.title.toLowerCase().includes(part));
+            idParts.some(part => part.length > 2 && course.title.toLowerCase().includes(part));
+          
+          // For faculty name matches
+          const facultyNameMatch = faculty.firstName && idParts.some(part => 
+            part.length > 2 && faculty.firstName.toLowerCase().includes(part));
             
-          return subjectMatch || titleMatch;
+          return subjectMatch || titleMatch || facultyNameMatch;
         });
       }
       

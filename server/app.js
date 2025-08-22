@@ -102,6 +102,10 @@ app.use('/', courseControllerRoutes);
 const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
+// Mount course search routes
+const courseSearchRoutes = require('./src/routes/courseSearch.routes.js');
+app.use('/', courseSearchRoutes);
+
 // Standalone course routes removed - all courses now under faculty (including "N/A" faculty)
 
 // Mount purchase routes

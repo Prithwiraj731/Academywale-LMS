@@ -53,8 +53,16 @@ const CourseCard = ({
     
     if (course._id) {
       courseId = course._id;
+      console.log('Using MongoDB _id for course:', courseId);
     } else if (course.id) {
       courseId = course.id;
+      console.log('Using id property for course:', courseId);
+    } else if (course.courseType && course.subject) {
+      // Create a more specific ID combining course type and subject
+      const courseTypeSlug = course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const subjectSlug = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      courseId = `${courseTypeSlug}-${subjectSlug}`;
+      console.log('Using courseType-subject as ID:', courseId);
     } else if (course.subject) {
       // Use slugified subject as fallback ID
       courseId = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -70,6 +78,11 @@ const CourseCard = ({
       if (course.facultyName && course.subject) {
         courseId = `${course.facultyName}-${course.subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         console.log('Generated ID from faculty and subject:', courseId);
+      } else if (course.paperNumber) {
+        // Try to use paper number for more specific identification
+        const paperSlug = `paper-${course.paperNumber}`;
+        courseId = paperSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        console.log('Generated ID from paper number:', courseId);
       } else {
         console.error('Course has no usable ID attributes, cannot navigate to details', course);
         alert('Cannot view course details: Missing course ID');
@@ -81,6 +94,17 @@ const CourseCard = ({
     if (!course._id && !course.id) {
       course.id = courseId;
       console.log('Added generated ID to course object:', courseId);
+    }
+    
+    // Also store original data attributes to help with fallback search
+    if (!course._generatedFromData) {
+      course._generatedFromData = {
+        subject: course.subject || '',
+        title: course.title || '',
+        facultyName: course.facultyName || '',
+        courseType: course.courseType || 'course',
+        paperNumber: course.paperNumber || ''
+      };
     }
 
     if (showModal && onViewDetails) {
