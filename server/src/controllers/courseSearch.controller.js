@@ -2,12 +2,16 @@ const Faculty = require('../model/Faculty.model');
 
 // Search for courses with query parameters
 exports.searchCourses = async (req, res) => {
+  // Set content-type to ensure we always return JSON
+  res.setHeader('Content-Type', 'application/json');
+  
   try {
     const { query, category, limit = 10 } = req.query;
     
     if (!query || query.trim().length < 2) {
       return res.status(400).json({ 
-        error: 'Search query must be at least 2 characters long' 
+        error: 'Search query must be at least 2 characters long',
+        success: false
       });
     }
     

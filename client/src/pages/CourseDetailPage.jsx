@@ -74,11 +74,43 @@ const CourseDetailPage = () => {
         // we might need to use a different API endpoint or search by attributes
         let alternativeSearchNeeded = isSlugifiedId;
         
-        let res = await fetch(apiUrl);
-        let data;
+        let res, data;
+        
+        try {
+          res = await fetch(apiUrl);
+          
+          // Check if the response is OK before trying to parse JSON
+          if (res.ok) {
+            try {
+              const contentType = res.headers.get('content-type');
+              if (contentType && contentType.includes('application/json')) {
+                data = await res.json();
+                console.log('API Response:', data);
+              } else {
+                console.error('API did not return JSON, content type:', contentType);
+                throw new Error('API returned non-JSON response');
+              }
+            } catch (jsonError) {
+              console.error('Failed to parse API response as JSON:', jsonError);
+              throw new Error('Failed to parse course data as JSON');
+            }
+          } else {
+            console.log(`Regular API call failed with status: ${res.status}`);
+            // Don't try to parse JSON from error responses
+            if (res.status === 404) {
+              throw new Error(`Course not found: ${courseId}`);
+            } else {
+              throw new Error(`API returned status code: ${res.status}`);
+            }
+          }
+        } catch (fetchError) {
+          console.error('Fetch error:', fetchError);
+          // Set res.ok to false to trigger alternative search
+          res = { ok: false };
+        }
         
         // If the regular endpoint fails and we have a slugified ID, try searching for courses
-        if (!res.ok && alternativeSearchNeeded) {
+        if ((!res.ok || !data || !data.course) && alternativeSearchNeeded) {
           console.log('Regular endpoint failed, trying course search...');
           
           // Try to decode parts from the slugified ID
@@ -137,91 +169,93 @@ const CourseDetailPage = () => {
             const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
             console.log(`Trying search URL: ${searchUrl}`);
             
-            const searchRes = await fetch(searchUrl);
-            if (searchRes.ok) {
+            try {
+              const searchRes = await fetch(searchUrl);
+              
+              // First check if the response is OK
+              if (!searchRes.ok) {
+                const statusCode = searchRes.status;
+                console.error(`Search API returned status: ${statusCode}`);
+                
+                // For 404 errors, give a more specific message
+                if (statusCode === 404) {
+                  throw new Error(`Course not found: ${courseId}. The course might have been removed or renamed.`);
+                } else {
+                  throw new Error(`Search API returned error code: ${statusCode}`);
+                }
+              }
+              
+              // Try to parse the response as JSON
+              let searchData;
               try {
-                const searchData = await searchRes.json();
-                if (searchData && searchData.courses && searchData.courses.length > 0) {
-                  console.log(`Found ${searchData.courses.length} matching courses`);
+                const contentType = searchRes.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                  searchData = await searchRes.json();
+                } else {
+                  console.error('API did not return JSON, content type:', contentType);
+                  throw new Error('API returned non-JSON response');
+                }
+              } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                throw new Error('Failed to parse search results as JSON');
+              }
+              
+              // Check if we have valid search results
+              if (searchData && searchData.courses && searchData.courses.length > 0) {
+                console.log(`Found ${searchData.courses.length} matching courses`);
+                
+                // Log all found courses to help with debugging
+                if (searchData.courses.length > 1) {
+                  console.log('Multiple matches found:');
+                  searchData.courses.forEach((c, i) => {
+                    console.log(`[${i}] ${c.subject || c.title || 'Unknown'} - ${c.courseType || 'No type'}`);
+                  });
+                }
+                
+                // Try to find the best match, especially for paper-specific courses
+                let bestMatch = searchData.courses[0]; // Default to first result
+                
+                if (courseId.toLowerCase().includes('paper')) {
+                  // Extract paper number for better matching
+                  const paperMatch = courseId.match(/paper-(\d+)/i);
+                  const paperNumber = paperMatch ? paperMatch[1] : null;
                   
-                  // Log all found courses to help with debugging
-                  if (searchData.courses.length > 1) {
-                    console.log('Multiple matches found:');
-                    searchData.courses.forEach((c, i) => {
-                      console.log(`[${i}] ${c.subject || c.title || 'Unknown'} - ${c.courseType || 'No type'}`);
-                    });
-                  }
-                  
-                  // Try to find the best match, especially for paper-specific courses
-                  let bestMatch = searchData.courses[0]; // Default to first result
-                  
-                  if (courseId.toLowerCase().includes('paper')) {
-                    // Extract paper number for better matching
-                    const paperMatch = courseId.match(/paper-(\d+)/i);
-                    const paperNumber = paperMatch ? paperMatch[1] : null;
+                  if (paperNumber) {
+                    console.log(`Looking for best match for Paper ${paperNumber}`);
                     
-                    if (paperNumber) {
-                      console.log(`Looking for best match for Paper ${paperNumber}`);
-                      
-                      // Try to find a course with matching paper number
-                      const paperMatch = searchData.courses.find(c => 
-                        c.paperNumber === parseInt(paperNumber) || 
-                        (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
-                        (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
-                      );
-                      
-                      if (paperMatch) {
-                        console.log(`Found exact paper match: ${paperMatch.subject || paperMatch.title}`);
-                        bestMatch = paperMatch;
-                      }
+                    // Try to find a course with matching paper number
+                    const paperMatch = searchData.courses.find(c => 
+                      c.paperNumber === parseInt(paperNumber) || 
+                      (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
+                      (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
+                    );
+                    
+                    if (paperMatch) {
+                      console.log(`Found exact paper match: ${paperMatch.subject || paperMatch.title}`);
+                      bestMatch = paperMatch;
                     }
                   }
-                  
-                  // Use the best matching course
-                  data = { course: bestMatch };
-                  console.log('Using best match:', data.course.subject || data.course.title);
-                } else {
-                  console.error('No matching courses found in search');
-                  setError('Could not find the requested course. Please try another course.');
-                  setLoading(false);
-                  return;
                 }
-              } catch (parseError) {
-                console.error('Failed to parse search results:', parseError);
-                setError('Failed to process search results. Please try again later.');
+                
+                // Use the best matching course
+                data = { course: bestMatch };
+                console.log('Using best match:', data.course.subject || data.course.title);
+              } else {
+                console.error('No matching courses found in search');
+                setError(`Could not find course "${courseId}". Please try another course.`);
                 setLoading(false);
                 return;
               }
-            } else {
-              console.error('Course search API failed');
-              setError('Course search failed. Please try another course or contact support.');
+            } catch (error) {
+              console.error('Course search error:', error);
+              setError(`${error.message || 'Course search failed. Please try another course or contact support.'}`);
               setLoading(false);
               return;
             }
           }
-        } else if (!res.ok) {
-          console.error(`API returned status: ${res.status}`);
-          let errorData;
-          try {
-            errorData = await res.json();
-          } catch (e) {
-            errorData = { message: 'Unknown server error' };
-          }
-          console.error('Error data:', errorData);
-          setError(`Failed to load course: ${errorData && errorData.message ? errorData.message : 'Server error'}`);
-          setLoading(false);
-          return;
-        } else {
-          try {
-            data = await res.json();
-            console.log('API Response:', data);
-          } catch (e) {
-            console.error('Failed to parse API response:', e);
-            setError('Failed to parse course data. Please try again later.');
-            setLoading(false);
-            return;
-          }
-        }
+        } 
+        // The else if (!res.ok) block is now handled in the try-catch above
+        // And the else block for parsing JSON is also handled above
         
         if (data && data.course) {
           console.log('Course data received:', data.course);
@@ -447,6 +481,18 @@ const CourseDetailPage = () => {
     );
   }
 
+  // Set a timeout to automatically redirect after showing error for a brief time
+  useEffect(() => {
+    if (error && error.toLowerCase().includes('not found')) {
+      const timer = setTimeout(() => {
+        console.log('Auto-redirecting after course not found error');
+        navigate('/courses');
+      }, 5000); // Redirect after 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [error, navigate]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-100 flex flex-col items-center justify-center p-4">
@@ -460,7 +506,14 @@ const CourseDetailPage = () => {
             We encountered an error
           </h2>
           <p className="text-gray-600 mb-6 text-center">{error}</p>
-          <div className="flex justify-center">
+          
+          {error.toLowerCase().includes('not found') && (
+            <p className="text-blue-500 text-sm text-center mb-4 animate-pulse">
+              Redirecting to courses page in a few seconds...
+            </p>
+          )}
+          
+          <div className="flex justify-center space-x-4">
             <button
               onClick={() => navigate(-1)}
               className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all flex items-center"
@@ -469,6 +522,16 @@ const CourseDetailPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Go Back
+            </button>
+            
+            <button
+              onClick={() => navigate('/courses')}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Browse Courses
             </button>
           </div>
         </div>

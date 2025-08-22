@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 
 // Get course details by ID - Only for courses under actual faculties
 exports.getCourseDetails = async (req, res) => {
+  // Always set content type to JSON to ensure consistent responses
+  res.setHeader('Content-Type', 'application/json');
+  
   try {
     const { courseId } = req.params;
     let course = null;
