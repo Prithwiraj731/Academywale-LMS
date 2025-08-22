@@ -27,17 +27,24 @@ const CourseDetailPage = () => {
     phone: user?.phone || ''
   });
 
-  // Fetch the course details
+  // Fetch the course details - simplified version
   useEffect(() => {
+    // Define a safe way to set state
+    let isActive = true;
+    
+    const safeSetState = (stateSetter, value) => {
+      if (isActive) stateSetter(value);
+    };
+    
     const fetchCourse = async () => {
       try {
-        setLoading(true);
+        safeSetState(setLoading, true);
         
         // Validate courseId
         if (!courseId) {
           console.error('No courseId provided in URL parameters');
-          setError('Course ID is missing. Please go back and try again.');
-          setLoading(false);
+          safeSetState(setError, 'Course ID is missing. Please go back and try again.');
+          safeSetState(setLoading, false);
           return;
         }
         
@@ -195,45 +202,24 @@ const CourseDetailPage = () => {
                 const statusCode = searchRes.status;
                 console.error(`Search API returned status: ${statusCode}`);
                 
-                // Try to read the error message from response, but don't fail if it's not valid JSON
-                let errorMessage = `Course not found: ${courseId}. The course might have been removed or renamed.`;
+                // Use a simple error message that won't cause issues
+                const errorMessage = "Course not found. Please try another course.";
                 
-                try {
-                  // Get content type to determine if we should parse as JSON
-                  const contentType = searchRes.headers.get('content-type');
-                  
-                  if (contentType && contentType.includes('application/json')) {
-                    const errorData = await searchRes.json();
-                    if (errorData && errorData.error) {
-                      errorMessage = errorData.error;
-                    }
-                  }
-                } catch (parseError) {
-                  console.warn('Could not parse error response as JSON:', parseError);
-                  // Continue with default error message
-                }
-                
-                // For 404 errors, give a more specific message
-                if (statusCode === 404) {
-                  throw new Error(errorMessage);
-                } else {
-                  throw new Error(`Search API returned error code: ${statusCode}. ${errorMessage}`);
-                }
+                // Don't try to parse error responses which might not be valid JSON
+                safeSetState(setError, errorMessage);
+                safeSetState(setLoading, false);
+                return;
               }
               
-              // Try to parse the response as JSON
+              // Try to parse the response as JSON, with simplified error handling
               let searchData;
               try {
-                const contentType = searchRes.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                  searchData = await searchRes.json();
-                } else {
-                  console.error('API did not return JSON, content type:', contentType);
-                  throw new Error('API returned non-JSON response');
-                }
+                searchData = await searchRes.json();
               } catch (jsonError) {
                 console.error('JSON parse error:', jsonError);
-                throw new Error('Failed to parse search results as JSON');
+                safeSetState(setError, 'Error processing course data. Please try again.');
+                safeSetState(setLoading, false);
+                return;
               }
               
               // Check if we have valid search results
@@ -278,14 +264,14 @@ const CourseDetailPage = () => {
                 console.log('Using best match:', data.course.subject || data.course.title);
               } else {
                 console.error('No matching courses found in search');
-                setError(`Could not find course "${courseId}". Please try another course.`);
-                setLoading(false);
+                safeSetState(setError, `Could not find this course. Please try another one.`);
+                safeSetState(setLoading, false);
                 return;
               }
             } catch (error) {
               console.error('Course search error:', error);
-              setError(`${error.message || 'Course search failed. Please try another course or contact support.'}`);
-              setLoading(false);
+              safeSetState(setError, 'Course search failed. Please try again later.');
+              safeSetState(setLoading, false);
               return;
             }
           }
@@ -338,32 +324,27 @@ const CourseDetailPage = () => {
           }
         } else {
           console.error('API Error:', data);
-          let errorMessage = 'Failed to fetch course details';
-          
-          if (data) {
-            if (data.error && typeof data.error === 'string') {
-              errorMessage = data.error;
-            } else if (data.message && typeof data.message === 'string') {
-              errorMessage = data.message;
-            } else if (data.error && data.error.message && typeof data.error.message === 'string') {
-              errorMessage = data.error.message;
-            }
-          }
-          
-          setError(errorMessage);
+          // Use a simple, stable error message that won't cause issues
+          const errorMessage = 'Could not load course details. Please try again later.';
+          safeSetState(setError, errorMessage);
         }
       } catch (err) {
         const errorMsg = err?.message || 'Server error while fetching course details';
-        setError(errorMsg);
+        safeSetState(setError, errorMsg);
         console.error('Error in fetchCourse:', err);
       } finally {
-        setLoading(false);
+        safeSetState(setLoading, false);
       }
     };
 
     if (courseId) {
       fetchCourse();
     }
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isActive = false;
+    };
   }, [courseId]);
 
   // Fill user details if authenticated
@@ -518,31 +499,8 @@ const CourseDetailPage = () => {
     );
   }
 
-  // Set a timeout to automatically redirect after showing error for a brief time
-  useEffect(() => {
-    let timer;
-    if (error && typeof error === 'string' && error.toLowerCase().includes('not found')) {
-      // Store redirect state to prevent multiple redirects
-      const redirectKey = `redirect_${courseId}`;
-      const hasRedirected = sessionStorage.getItem(redirectKey);
-      
-      if (!hasRedirected) {
-        console.log('Setting up auto-redirect after course not found error');
-        timer = setTimeout(() => {
-          console.log('Auto-redirecting to courses page');
-          sessionStorage.setItem(redirectKey, 'true');
-          // Use window.location instead of navigate to avoid React issues
-          window.location.href = '/courses';
-        }, 5000); // Redirect after 5 seconds
-      }
-    }
-    
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [error, courseId]);
+  // Remove the automatic redirect since it's causing React errors
+  // We'll just show the error message without redirecting
 
   if (error) {
     return (
@@ -558,32 +516,26 @@ const CourseDetailPage = () => {
           </h2>
           <p className="text-gray-600 mb-6 text-center">{error}</p>
           
-          {error.toLowerCase().includes('not found') && (
-            <p className="text-blue-500 text-sm text-center mb-4 animate-pulse">
-              Redirecting to courses page in a few seconds...
-            </p>
-          )}
-          
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all flex items-center"
+          <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <a
+              href="javascript:history.back()"
+              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Go Back
-            </button>
+            </a>
             
-            <button
-              onClick={() => navigate('/courses')}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center"
+            <a
+              href="/courses"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               Browse Courses
-            </button>
+            </a>
           </div>
         </div>
       </div>
