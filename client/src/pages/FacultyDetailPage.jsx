@@ -331,7 +331,16 @@ export default function FacultyDetailPage() {
                   ) : (
                     <div className="mt-4 sm:mt-7 w-full sm:w-auto">
                       <button
-                        onClick={() => navigate(`/course/${facultyInfo.slug}/${idx}`, { state: { selectedAttempt: selectedDuration } })}
+                        onClick={() => {
+                          // Navigate to course detail page using proper course ID
+                          const courseId = course._id || course.id || `${facultyInfo.slug}-course-${idx}`;
+                          const courseType = course.courseType || course.category || 'course';
+                          
+                          console.log('Navigating to course details from faculty page:', courseId, courseType);
+                          navigate(`/course/${encodeURIComponent(courseType)}/${courseId}`, { 
+                            state: { selectedAttempt: selectedDuration } 
+                          });
+                        }}
                         className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-700 transition-all text-lg w-full sm:w-auto"
                       >
                         View Details

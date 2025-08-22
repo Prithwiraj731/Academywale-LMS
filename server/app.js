@@ -104,6 +104,120 @@ const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
 // Test endpoint for the specific failing course ID
+app.get('/api/diagnostic/course-lookup', async (req, res) => {
+  try {
+    const Faculty = require('./src/model/Faculty.model');
+
+    // Get all faculties and their courses
+    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
+
+    let totalCourses = 0;
+    let sampleCourses = [];
+
+    faculties.forEach(faculty => {
+      if (faculty.courses && faculty.courses.length > 0) {
+        totalCourses += faculty.courses.length;
+
+        // Add first few courses as samples
+        faculty.courses.slice(0, 2).forEach(course => {
+          sampleCourses.push({
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            courseId: course._id,
+            subject: course.subject,
+            courseType: course.courseType,
+            paperNumber: course.paperNumber,
+            description: course.description ? 'Has description' : 'No description'
+          });
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      totalFaculties: faculties.length,
+      totalCourses: totalCourses,
+      sampleCourses: sampleCourses.slice(0, 10),
+      message: 'Course lookup service is working'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      message: 'Course lookup service failed'
+    });
+  }
+});
+
+// Test endpoint for specific course ID patterns
+app.get('/api/diagnostic/test-course/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const courseType = req.query.courseType || null;
+
+    console.log(`🔍 Testing course lookup for: ${courseId}, type: ${courseType}`);
+
+    const Faculty = require('./src/model/Faculty.model');
+    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
+
+    let matchingCourses = [];
+
+    // Enhanced paper number extraction for testing
+    let paperNumber = null;
+    const testMatch = /test(\d+)/i.exec(courseId);
+    if (testMatch) {
+      paperNumber = testMatch[1];
+    }
+
+    faculties.forEach(faculty => {
+      if (!faculty.courses) return;
+
+      faculty.courses.forEach(course => {
+        let isMatch = false;
+        let matchReason = '';
+
+        // Test paper number matching
+        if (paperNumber && course.paperNumber && course.paperNumber.toString() === paperNumber) {
+          isMatch = true;
+          matchReason = `Paper number match: ${paperNumber}`;
+        }
+
+        // Test course type matching
+        if (courseType && course.courseType &&
+          course.courseType.toLowerCase().includes('cma') &&
+          course.courseType.toLowerCase().includes('final')) {
+          isMatch = true;
+          matchReason += (matchReason ? ' + ' : '') + 'Course type match: CMA Final';
+        }
+
+        if (isMatch) {
+          matchingCourses.push({
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            courseId: course._id,
+            subject: course.subject,
+            courseType: course.courseType,
+            paperNumber: course.paperNumber,
+            description: course.description ? course.description.substring(0, 100) + '...' : 'No description',
+            matchReason: matchReason
+          });
+        }
+      });
+    });
+
+    res.json({
+      success: true,
+      searchedFor: courseId,
+      courseType: courseType,
+      extractedPaperNumber: paperNumber,
+      matchingCourses: matchingCourses,
+      totalMatches: matchingCourses.length
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 // Diagnostic endpoint to check course lookup status
 app.get('/api/diagnostic/course-lookup', (req, res) => {
   try {

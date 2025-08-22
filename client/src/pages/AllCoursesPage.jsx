@@ -171,23 +171,16 @@ export default function AllCoursesPage() {
                   {/* Action Button */}
                   <button
                     onClick={() => {
-                      if (course.facultySlug) {
-                        navigate(`/faculty/${course.facultySlug}`);
-                      } else if (course.isStandalone) {
-                        // For standalone courses, navigate to the course's category/subcategory page if available
-                        if (course.category && course.subcategory) {
-                          if (course.category.toLowerCase() === 'ca') {
-                            navigate(`/ca/${course.subcategory.toLowerCase()}-papers`);
-                          } else if (course.category.toLowerCase() === 'cma') {
-                            navigate(`/cma/${course.subcategory.toLowerCase()}-papers`);
-                          } else {
-                            navigate(`/courses/all`); // Fallback to all courses
-                          }
-                        } else {
-                          navigate(`/courses/all`); // Fallback to all courses
-                        }
+                      // Navigate to course detail page to show full course description
+                      const courseId = course._id || course.id;
+                      const courseType = course.courseType || course.category || 'course';
+                      
+                      if (courseId) {
+                        console.log('Navigating to course details:', courseId, courseType);
+                        navigate(`/course/${encodeURIComponent(courseType)}/${courseId}`);
                       } else {
-                        navigate(`/courses/all`); // Fallback to all courses
+                        console.error('Course missing ID for navigation:', course);
+                        alert('Unable to view course details - missing course ID');
                       }
                     }}
                     className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
