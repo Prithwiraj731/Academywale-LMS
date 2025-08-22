@@ -104,30 +104,24 @@ const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
 // Test endpoint for the specific failing course ID
-app.get('/api/test/course-lookup/:courseId', async (req, res) => {
+// Diagnostic endpoint to check course lookup status
+app.get('/api/diagnostic/course-lookup', (req, res) => {
   try {
-    const { courseId } = req.params;
-    const courseType = req.query.courseType;
-
-    console.log(`🧪 Testing course lookup for: ${courseId}, type: ${courseType || 'none'}`);
-
     const CourseLookupService = require('./src/services/courseLookupService');
-    const lookupService = new CourseLookupService();
-
-    const result = await lookupService.findCourseById(courseId, courseType, true);
+    const service = new CourseLookupService();
 
     res.json({
-      testEndpoint: true,
-      courseId,
-      courseType,
-      result
+      status: 'Course lookup service is working',
+      timestamp: new Date().toISOString(),
+      serviceLoaded: true,
+      strategies: service.searchStrategies || ['objectId', 'slug', 'paperNumber', 'fuzzy', 'standalone']
     });
   } catch (error) {
-    console.error('Test endpoint error:', error);
-    res.status(500).json({
-      testEndpoint: true,
-      error: error.message,
-      courseId: req.params.courseId
+    res.json({
+      status: 'Course lookup service has issues',
+      timestamp: new Date().toISOString(),
+      serviceLoaded: false,
+      error: error.message
     });
   }
 });
@@ -201,15 +195,6 @@ const connectDB = async () => {
     const mongoURI = 'mongodb+srv://prithwi1016:4xtVi1z1uzyAdA7v@courses.znwo0tt.mongodb.net/?retryWrites=true&w=majority&appName=courses';
     await mongoose.connect(mongoURI);
     console.log('✅ MongoDB Connected');
-
-    // Create database indexes for course lookup optimization
-    try {
-      const { createCourseIndexes } = require('./src/utils/createIndexes');
-      await createCourseIndexes();
-    } catch (indexError) {
-      console.warn('⚠️ Index creation warning:', indexError.message);
-      // Don't fail the app if index creation fails
-    }
   } catch (error) {
     console.error('❌ MongoDB Error:', error.message);
   }
