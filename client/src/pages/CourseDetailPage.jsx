@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt } from 'react-icons/fa';
 import { MdVideoLibrary, MdModeEdit } from 'react-icons/md';
@@ -27,313 +27,277 @@ const CourseDetailPage = () => {
     phone: user?.phone || ''
   });
 
-  // Fetch the course details - simplified version
+  // Safe state update function to prevent React errors after unmount
+  const safeSetState = useCallback((setter, value) => {
+    setter(value);
+  }, []);
+  
+  // Fetch the course details with proper error handling
   useEffect(() => {
-    // Define a safe way to set state
-    let isActive = true;
-    
-    const safeSetState = (stateSetter, value) => {
-      if (isActive) stateSetter(value);
-    };
+    // Flag to prevent state updates after component unmounts
+    let isMounted = true;
     
     const fetchCourse = async () => {
+      // Safe state setter that only works if component is still mounted
+      const setSafeState = (stateSetter, value) => {
+        if (isMounted) stateSetter(value);
+      };
+      
       try {
-        safeSetState(setLoading, true);
+        // Set loading state
+        setSafeState(setLoading, true);
+        setSafeState(setError, '');
         
         // Validate courseId
         if (!courseId) {
           console.error('No courseId provided in URL parameters');
-          safeSetState(setError, 'Course ID is missing. Please go back and try again.');
-          safeSetState(setLoading, false);
+          setSafeState(setError, 'Course ID is missing. Please go back and try again.');
+          setSafeState(setLoading, false);
           return;
         }
         
-        console.log(`Fetching course details for courseId: ${courseId}, courseType: ${courseType}`);
+        console.log(`Fetching course details for courseId: ${courseId}, courseType: ${courseType || 'none'}`);
         
-        // Special handling for URL patterns like /courses/cma/final/paper-13
-        let finalCourseId = courseId;
-        if (courseType && courseType.includes('/')) {
-          // This means we have a multi-part path like "cma/final"
-          // We'll construct a more specific search query
-          console.log('Detected multi-part course type path:', courseType);
-          
-          // The courseId might be something like "paper-13"
-          // Let's try to extract paper number if present
-          const paperMatch = courseId.match(/paper-(\d+)/i);
-          if (paperMatch) {
-            console.log('Detected paper number:', paperMatch[1]);
-          }
-        }
-        
-        // Try to find the course in multiple ways
+        // Determine if this is a MongoDB ObjectId or a slugified ID
         const isSlugifiedId = courseId.includes('-') && !courseId.match(/^[0-9a-f]{24}$/i);
         
-        // Log the full URL for debugging
-        // Pass courseType in the API request to help with matching
-        let apiUrl = `${API_URL}/api/courses/details/${finalCourseId}`;
+        // Build the API URL with courseType as a query parameter if available
+        let apiUrl = `${API_URL}/api/courses/details/${courseId}`;
         if (courseType) {
-          // Add courseType as a query parameter to help backend with matching
           apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
         }
+        
         console.log(`API URL: ${apiUrl}`);
         
-        // If this appears to be a slugified ID (not a MongoDB ObjectId),
-        // we might need to use a different API endpoint or search by attributes
-        let alternativeSearchNeeded = isSlugifiedId;
-        
-        let res, data;
+        // Primary API call for course details
+        let response;
+        let data;
+        let isError = false;
         
         try {
-          res = await fetch(apiUrl);
+          // Fetch with timeout to prevent hanging
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
           
-          // Check if the response is OK before trying to parse JSON
-          if (res.ok) {
-            try {
-              const contentType = res.headers.get('content-type');
-              if (contentType && contentType.includes('application/json')) {
-                data = await res.json();
-                console.log('API Response:', data);
-              } else {
-                console.error('API did not return JSON, content type:', contentType);
-                throw new Error('API returned non-JSON response');
+          response = await fetch(apiUrl, {
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          // Check if response is OK
+          if (response.ok) {
+            // Check content type to ensure we're getting JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              try {
+                data = await response.json();
+                console.log('API returned valid JSON:', data);
+              } catch (jsonError) {
+                console.error('Failed to parse JSON from successful response:', jsonError);
+                throw new Error('Server returned invalid data format');
               }
-            } catch (jsonError) {
-              console.error('Failed to parse API response as JSON:', jsonError);
-              throw new Error('Failed to parse course data as JSON');
+            } else {
+              console.error('Response content-type is not JSON:', contentType);
+              throw new Error('Server returned non-JSON response');
             }
           } else {
-            console.log(`Regular API call failed with status: ${res.status}`);
+            console.log(`API call failed with status: ${response.status}`);
             
-            // Try to get error details from the response
+            // Try to get JSON error details if possible
             let errorMessage = `Course not found: ${courseId}`;
             
             try {
-              // Check if we can get any JSON error information
-              const contentType = res.headers.get('content-type');
+              const contentType = response.headers.get('content-type');
               if (contentType && contentType.includes('application/json')) {
-                const errorData = await res.json();
+                const errorData = await response.json();
                 if (errorData && errorData.error) {
                   errorMessage = errorData.error;
                 }
               }
             } catch (errorParseError) {
-              // If we can't parse the error, just use the default message
-              console.warn('Could not parse error response:', errorParseError);
+              console.warn('Failed to parse error response:', errorParseError);
             }
             
-            // Don't try to parse JSON from error responses
-            if (res.status === 404) {
-              throw new Error(errorMessage);
-            } else {
-              throw new Error(`API returned status code: ${res.status}. ${errorMessage}`);
-            }
+            // Set error flag to try alternative search
+            isError = true;
+            throw new Error(errorMessage);
           }
         } catch (fetchError) {
-          console.error('Fetch error:', fetchError);
-          // Set res.ok to false to trigger alternative search
-          res = { ok: false };
+          console.error('Primary API call error:', fetchError);
+          isError = true;
+          
+          // If this isn't an AbortController error (timeout), try the alternative search
+          if (fetchError.name !== 'AbortError') {
+            throw fetchError;
+          } else {
+            throw new Error('Request timed out. Please try again later.');
+          }
         }
         
-        // If the regular endpoint fails and we have a slugified ID, try searching for courses
-        if ((!res.ok || !data || !data.course) && alternativeSearchNeeded) {
-          console.log('Regular endpoint failed, trying course search...');
+        // If we need to try an alternative search method
+        if (isError && isSlugifiedId) {
+          console.log('Falling back to course search API...');
           
-          // Try to decode parts from the slugified ID
-          const parts = courseId.split('-');
-          const searchParams = new URLSearchParams();
-          
-          if (parts.length > 0) {
-            // Handle special case for course URLs like /courses/cma/final/paper-13
-            if (courseType && courseId.toLowerCase().includes('paper')) {
-              // Extract paper number if present
+          try {
+            // Parse the slugified ID and construct a search query
+            const parts = courseId.split('-');
+            const searchParams = new URLSearchParams();
+            
+            // Construct an appropriate search query
+            let searchQuery = '';
+            
+            // Special case for paper-X format
+            if (courseId.toLowerCase().includes('paper')) {
               const paperMatch = courseId.match(/paper-(\d+)/i);
               const paperNumber = paperMatch ? paperMatch[1] : null;
               
-              console.log(`Extracted paper number: ${paperNumber}`);
-              
-              // For paths like "cma/final" we need to construct a proper search query
-              let courseCategory = courseType;
-              
-              // Handle multi-part paths by replacing / with spaces
-              if (courseType.includes('/')) {
-                courseCategory = courseType.split('/')
-                  .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-                  .join(' ');
+              if (paperNumber && courseType) {
+                // Format like "CMA Final Paper 13"
+                let courseCategory = courseType;
+                
+                // Handle courseType with slashes like "cma/final"
+                if (courseType.includes('/')) {
+                  courseCategory = courseType.split('/')
+                    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                    .join(' ');
+                }
+                
+                searchQuery = `${courseCategory} Paper ${paperNumber}`;
+              } else if (paperNumber) {
+                searchQuery = `Paper ${paperNumber}`;
               }
-              
-              // Create a complete search query like "CMA Final Paper 13"
-              let fullSearchQuery = courseCategory;
-              if (paperNumber) {
-                fullSearchQuery += ` Paper ${paperNumber}`;
-              }
-              
-              console.log(`Using constructed search query: "${fullSearchQuery}"`);
-              searchParams.append('query', fullSearchQuery);
-            } else {
-              // Regular case - process the courseId parts
-              const cleanedQuery = parts.join(' ')
+            }
+            
+            // If we couldn't construct a specific paper query, use a general one
+            if (!searchQuery) {
+              searchQuery = parts.join(' ')
                 .replace(/-/g, ' ')
                 .replace(/\s+/g, ' ')
                 .trim();
               
-              searchParams.append('query', cleanedQuery);
-              
-              // If courseType is provided, use it to narrow down the search
+              // Add category filter if available
               if (courseType) {
-                // Convert courseType to a proper category name if needed
-                // e.g., "cma-final" becomes "CMA Final"
-                const formattedCategory = courseType
-                  .split('-')
+                searchParams.append('category', courseType
+                  .replace(/-/g, ' ')
+                  .replace(/\//g, ' ')
+                  .split(' ')
                   .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                  .join(' ');
-                
-                searchParams.append('category', formattedCategory);
+                  .join(' ')
+                );
               }
             }
+            
+            searchParams.append('query', searchQuery);
             
             const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
-            console.log(`Trying search URL: ${searchUrl}`);
+            console.log(`Search URL: ${searchUrl}`);
             
-            try {
-              const searchRes = await fetch(searchUrl);
+            // Make the search API call
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
+            const searchResponse = await fetch(searchUrl, {
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!searchResponse.ok) {
+              throw new Error(`Search failed with status: ${searchResponse.status}`);
+            }
+            
+            // Parse the JSON response
+            const searchData = await searchResponse.json();
+            
+            // Find the best matching course
+            if (searchData && searchData.courses && searchData.courses.length > 0) {
+              console.log(`Found ${searchData.courses.length} matching courses`);
               
-              // First check if the response is OK
-              if (!searchRes.ok) {
-                const statusCode = searchRes.status;
-                console.error(`Search API returned status: ${statusCode}`);
-                
-                // Use a simple error message that won't cause issues
-                const errorMessage = "Course not found. Please try another course.";
-                
-                // Don't try to parse error responses which might not be valid JSON
-                safeSetState(setError, errorMessage);
-                safeSetState(setLoading, false);
-                return;
-              }
+              let bestMatch = searchData.courses[0];
               
-              // Try to parse the response as JSON, with simplified error handling
-              let searchData;
-              try {
-                searchData = await searchRes.json();
-              } catch (jsonError) {
-                console.error('JSON parse error:', jsonError);
-                safeSetState(setError, 'Error processing course data. Please try again.');
-                safeSetState(setLoading, false);
-                return;
-              }
-              
-              // Check if we have valid search results
-              if (searchData && searchData.courses && searchData.courses.length > 0) {
-                console.log(`Found ${searchData.courses.length} matching courses`);
+              // Try to find a better match for paper-specific searches
+              if (courseId.toLowerCase().includes('paper')) {
+                const paperMatch = courseId.match(/paper-(\d+)/i);
+                const paperNumber = paperMatch ? parseInt(paperMatch[1]) : null;
                 
-                // Log all found courses to help with debugging
-                if (searchData.courses.length > 1) {
-                  console.log('Multiple matches found:');
-                  searchData.courses.forEach((c, i) => {
-                    console.log(`[${i}] ${c.subject || c.title || 'Unknown'} - ${c.courseType || 'No type'}`);
-                  });
-                }
-                
-                // Try to find the best match, especially for paper-specific courses
-                let bestMatch = searchData.courses[0]; // Default to first result
-                
-                if (courseId.toLowerCase().includes('paper')) {
-                  // Extract paper number for better matching
-                  const paperMatch = courseId.match(/paper-(\d+)/i);
-                  const paperNumber = paperMatch ? paperMatch[1] : null;
+                if (paperNumber) {
+                  // Find a course with matching paper number
+                  const exactPaperMatch = searchData.courses.find(c => 
+                    c.paperNumber === paperNumber || 
+                    (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
+                    (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
+                  );
                   
-                  if (paperNumber) {
-                    console.log(`Looking for best match for Paper ${paperNumber}`);
-                    
-                    // Try to find a course with matching paper number
-                    const paperMatch = searchData.courses.find(c => 
-                      c.paperNumber === parseInt(paperNumber) || 
-                      (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
-                      (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
-                    );
-                    
-                    if (paperMatch) {
-                      console.log(`Found exact paper match: ${paperMatch.subject || paperMatch.title}`);
-                      bestMatch = paperMatch;
-                    }
+                  if (exactPaperMatch) {
+                    console.log(`Found exact paper match: ${exactPaperMatch.subject || exactPaperMatch.title}`);
+                    bestMatch = exactPaperMatch;
                   }
                 }
-                
-                // Use the best matching course
-                data = { course: bestMatch };
-                console.log('Using best match:', data.course.subject || data.course.title);
-              } else {
-                console.error('No matching courses found in search');
-                safeSetState(setError, `Could not find this course. Please try another one.`);
-                safeSetState(setLoading, false);
-                return;
               }
-            } catch (error) {
-              console.error('Course search error:', error);
-              safeSetState(setError, 'Course search failed. Please try again later.');
-              safeSetState(setLoading, false);
-              return;
+              
+              data = { course: bestMatch };
+            } else {
+              throw new Error('No matching courses found');
             }
+          } catch (searchError) {
+            console.error('Search API error:', searchError);
+            throw searchError;
           }
-        } 
-        // The else if (!res.ok) block is now handled in the try-catch above
-        // And the else block for parsing JSON is also handled above
+        }
         
+        // Process the course data once we have it
         if (data && data.course) {
-          console.log('Course data received:', data.course);
-          setCourse(data.course);
+          console.log('Successfully retrieved course data');
+          
+          // Update course state
+          setSafeState(setCourse, data.course);
           
           // Set default mode and validity if available
           if (data.course.modeAttemptPricing && data.course.modeAttemptPricing.length > 0) {
-            // Set default mode from modeAttemptPricing
+            // Set default mode
             const firstMode = data.course.modeAttemptPricing[0].mode;
-            setSelectedMode(firstMode);
-            console.log('Setting default mode:', firstMode);
+            setSafeState(setSelectedMode, firstMode);
             
-            // Set default attempt/validity
+            // Set default validity option
             if (data.course.modeAttemptPricing[0].attempts && 
                 data.course.modeAttemptPricing[0].attempts.length > 0) {
               const firstAttempt = data.course.modeAttemptPricing[0].attempts[0].attempt;
-              setSelectedValidity(firstAttempt);
-              console.log('Setting default validity:', firstAttempt);
+              setSafeState(setSelectedValidity, firstAttempt);
               
               // Set initial price
-              setPrice({
+              setSafeState(setPrice, {
                 original: data.course.modeAttemptPricing[0].attempts[0].costPrice || 0,
                 final: data.course.modeAttemptPricing[0].attempts[0].sellingPrice || 0
               });
-              console.log('Setting initial price:', {
-                original: data.course.modeAttemptPricing[0].attempts[0].costPrice,
-                final: data.course.modeAttemptPricing[0].attempts[0].sellingPrice
-              });
             }
           } else {
-            console.warn('Course has no modeAttemptPricing data');
             // Fallback to old structure
             if (data.course.modes && data.course.modes.length > 0) {
-              setSelectedMode(data.course.modes[0]);
+              setSafeState(setSelectedMode, data.course.modes[0]);
             }
             if (data.course.durations && data.course.durations.length > 0) {
-              setSelectedValidity(data.course.durations[0]);
+              setSafeState(setSelectedValidity, data.course.durations[0]);
             }
-            // Set initial price
-            setPrice({
+            
+            // Set fallback price
+            setSafeState(setPrice, {
               original: data.course.costPrice || 0,
               final: data.course.sellingPrice || 0
             });
           }
         } else {
-          console.error('API Error:', data);
-          // Use a simple, stable error message that won't cause issues
-          const errorMessage = 'Could not load course details. Please try again later.';
-          safeSetState(setError, errorMessage);
+          throw new Error('Invalid or missing course data');
         }
-      } catch (err) {
-        const errorMsg = err?.message || 'Server error while fetching course details';
-        safeSetState(setError, errorMsg);
-        console.error('Error in fetchCourse:', err);
+      } catch (error) {
+        // Create a user-friendly error message
+        console.error('Error fetching course details:', error);
+        
+        const errorMessage = error?.message || 'Could not load the course. Please try again later.';
+        setSafeState(setError, errorMessage);
       } finally {
-        safeSetState(setLoading, false);
+        // Always turn off loading indicator
+        setSafeState(setLoading, false);
       }
     };
 
@@ -341,13 +305,13 @@ const CourseDetailPage = () => {
       fetchCourse();
     }
     
-    // Cleanup function to prevent state updates after unmount
+    // Cleanup function
     return () => {
-      isActive = false;
+      isMounted = false; // Prevent state updates after unmount
     };
-  }, [courseId]);
+  }, [courseId, courseType, safeSetState]);
 
-  // Fill user details if authenticated
+  // Fill user details when user data is available
   useEffect(() => {
     if (user) {
       setUserDetails({
@@ -358,55 +322,78 @@ const CourseDetailPage = () => {
     }
   }, [user]);
 
-  const handleModeChange = (mode) => {
+  // Safe mode selection handler
+  const handleModeChange = useCallback((mode) => {
+    if (!course) return;
+    
     setSelectedMode(mode);
     
     // Reset validity selection when mode changes
-    setSelectedValidity(null);
+    setSelectedValidity('');
     
-    // Set default validity if available for this mode
-    if (course?.modeAttemptPricing) {
-      const modeData = course.modeAttemptPricing.find(m => m.mode === mode);
-      if (modeData && modeData.attempts && modeData.attempts.length > 0) {
-        setSelectedValidity(modeData.attempts[0].attempt);
+    try {
+      // Set default validity if available for this mode
+      if (course.modeAttemptPricing && Array.isArray(course.modeAttemptPricing)) {
+        const modeData = course.modeAttemptPricing.find(m => m.mode === mode);
         
-        // Update price based on the selected mode and first validity option
+        if (modeData && modeData.attempts && modeData.attempts.length > 0) {
+          // Set first attempt as default
+          const firstAttempt = modeData.attempts[0].attempt;
+          setSelectedValidity(firstAttempt);
+          
+          // Update price based on the selected mode and first validity option
+          setPrice({
+            original: modeData.attempts[0].costPrice || 0,
+            final: modeData.attempts[0].sellingPrice || 0
+          });
+        } else {
+          // Reset price if no valid attempts found
+          setPrice({ original: 0, final: 0 });
+        }
+      } else if (course.sellingPrice) {
+        // Fallback to course level pricing
         setPrice({
-          original: modeData.attempts[0].costPrice || 0,
-          final: modeData.attempts[0].sellingPrice || 0
+          original: course.costPrice || 0,
+          final: course.sellingPrice || 0
         });
-      } else {
-        // Reset price if no valid attempts found
-        setPrice({ original: 0, final: 0 });
       }
-    } else if (course.sellingPrice) {
-      // Fallback to course level pricing
-      setPrice({
-        original: course.costPrice || 0,
-        final: course.sellingPrice || 0
-      });
+    } catch (error) {
+      console.error('Error in handleModeChange:', error);
+      // Reset to safe values on error
+      setPrice({ original: 0, final: 0 });
     }
-  };
+  }, [course]);
 
-  const handleValidityChange = (validity) => {
+  // Safe validity selection handler
+  const handleValidityChange = useCallback((validity) => {
+    if (!course || !selectedMode) return;
+    
     setSelectedValidity(validity);
     
-    // Update price based on selected validity
-    if (course?.modeAttemptPricing && selectedMode) {
-      const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-      if (modeData) {
-        const attemptData = modeData.attempts.find(a => a.attempt === validity);
-        if (attemptData) {
-          setPrice({
-            original: attemptData.costPrice || 0,
-            final: attemptData.sellingPrice || 0
-          });
+    try {
+      // Update price based on selected validity
+      if (course.modeAttemptPricing && Array.isArray(course.modeAttemptPricing)) {
+        const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
+        
+        if (modeData && modeData.attempts && Array.isArray(modeData.attempts)) {
+          const attemptData = modeData.attempts.find(a => a.attempt === validity);
+          
+          if (attemptData) {
+            setPrice({
+              original: attemptData.costPrice || 0,
+              final: attemptData.sellingPrice || 0
+            });
+          }
         }
       }
+    } catch (error) {
+      console.error('Error in handleValidityChange:', error);
+      // Keep existing price on error
     }
-  };
+  }, [course, selectedMode]);
 
-  const handleBuyNow = () => {
+  // Handle Buy Now button click
+  const handleBuyNow = useCallback(() => {
     // Validate mode and validity selection first
     if (!selectedMode || !selectedValidity) {
       alert('Please select both Mode and Validity before proceeding');
@@ -417,7 +404,7 @@ const CourseDetailPage = () => {
       // Redirect to login with return path
       navigate('/login', { 
         state: { 
-          from: `/course/${courseType}/${courseId}`,
+          from: courseType ? `/course/${courseType}/${courseId}` : `/course/${courseId}`,
           message: 'Please log in to purchase this course',
           courseData: {
             selectedMode,
@@ -431,47 +418,72 @@ const CourseDetailPage = () => {
     
     // Show checkout modal
     setShowCheckoutModal(true);
-  };
+  }, [selectedMode, selectedValidity, isAuthenticated, courseType, courseId, price.final, navigate]);
 
-  const handleUserDetailsChange = (e) => {
+  // Handle form input changes
+  const handleUserDetailsChange = useCallback((e) => {
     const { name, value } = e.target;
     setUserDetails(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleProceedToPayment = () => {
+  // Handle payment button click
+  const handleProceedToPayment = useCallback(() => {
     // Validate user details
     if (!userDetails.fullName || !userDetails.email || !userDetails.phone) {
       alert('Please fill in all required fields');
       return;
     }
     
-    // Send user details to backend (API call to save in database)
-    saveUserDetails().then(() => {
-      // Navigate to payment page with course info
-      navigate(`/payment/${courseType}/${courseId}`, { 
-        state: { 
-          selectedMode,
-          selectedValidity,
-          price: price.final,
-          userDetails
+    // Ensure we have course data
+    if (!course) {
+      alert('Course information is missing. Please try again.');
+      setShowCheckoutModal(false);
+      return;
+    }
+    
+    // Send user details to backend and navigate to payment
+    saveUserDetails()
+      .then(success => {
+        if (success) {
+          // Navigate to payment page with course info
+          navigate(courseType ? 
+            `/payment/${courseType}/${courseId}` : 
+            `/payment/${courseId}`, 
+          { 
+            state: { 
+              selectedMode,
+              selectedValidity,
+              price: price.final,
+              userDetails,
+              courseName: course.title || course.subject
+            }
+          });
+        } else {
+          alert('There was a problem saving your details. Please try again.');
         }
+      })
+      .catch(error => {
+        console.error('Error in payment process:', error);
+        alert('Unable to process your request at this time. Please try again later.');
       });
-    });
-  };
+  }, [userDetails, course, courseType, courseId, selectedMode, selectedValidity, price.final, navigate]);
   
-  const saveUserDetails = async () => {
+  // Save user details to backend
+  const saveUserDetails = useCallback(async () => {
+    if (!course) return false;
+    
     try {
-      // Send email notification
-      await fetch(`${API_URL}/api/notify/course-interest`, {
+      // Send API request with error handling
+      const response = await fetch(`${API_URL}/api/notify/course-interest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          courseName: course.title,
+          courseName: course.title || course.subject || 'Unknown Course',
           courseId: courseId,
           userDetails: userDetails,
           selectedMode,
@@ -480,12 +492,17 @@ const CourseDetailPage = () => {
         }),
       });
       
+      if (!response.ok) {
+        console.error('API error:', response.status);
+        return false;
+      }
+      
       return true;
     } catch (error) {
       console.error('Failed to save user details:', error);
       return false;
     }
-  };
+  }, [course, courseId, userDetails, selectedMode, selectedValidity, price.final]);
 
   if (loading) {
     return (
@@ -499,9 +516,7 @@ const CourseDetailPage = () => {
     );
   }
 
-  // Remove the automatic redirect since it's causing React errors
-  // We'll just show the error message without redirecting
-
+  // Show error state with user-friendly message and navigation options
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-100 flex flex-col items-center justify-center p-4">
@@ -512,37 +527,40 @@ const CourseDetailPage = () => {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
-            We encountered an error
+            Course Not Available
           </h2>
           <p className="text-gray-600 mb-6 text-center">{error}</p>
           
           <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <a
-              href="javascript:history.back()"
+            {/* Safe back button using React Router */}
+            <button
+              onClick={() => navigate(-1)}
               className="bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               Go Back
-            </a>
+            </button>
             
-            <a
-              href="/courses"
+            {/* Safe navigation using React Router */}
+            <button
+              onClick={() => navigate('/courses')}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               Browse Courses
-            </a>
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  if (!course) {
+  // Show course not found state when no error but no course either
+  if (!course && !loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
@@ -554,7 +572,9 @@ const CourseDetailPage = () => {
           <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
             Course Not Found
           </h2>
-          <p className="text-gray-600 mb-6 text-center">The course you're looking for might have been removed or doesn't exist.</p>
+          <p className="text-gray-600 mb-6 text-center">
+            The course you're looking for might have been removed or doesn't exist.
+          </p>
           <div className="flex justify-center">
             <button
               onClick={() => navigate(-1)}
