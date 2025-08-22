@@ -48,6 +48,28 @@ exports.searchCourses = async (req, res) => {
         return false;
       }
       
+      // Check for paper number specific search
+      const paperNumberRegex = /\bpaper\s+(\d+)\b/i;
+      const paperNumberMatch = query.match(paperNumberRegex);
+      
+      if (paperNumberMatch) {
+        const requestedPaperNumber = parseInt(paperNumberMatch[1]);
+        console.log(`Detected paper number search: ${requestedPaperNumber}`);
+        
+        // If we have an exact paper number match, this takes priority
+        if (course.paperNumber === requestedPaperNumber) {
+          console.log(`Found exact paper number match: ${course.subject || course.title}`);
+          return true;
+        }
+        
+        // Also check paper number in subject or paperName
+        if ((course.subject && course.subject.toLowerCase().includes(`paper ${requestedPaperNumber}`)) ||
+            (course.paperName && course.paperName.toLowerCase().includes(`paper ${requestedPaperNumber}`))) {
+          console.log(`Found paper number in subject/paperName: ${course.subject || course.title}`);
+          return true;
+        }
+      }
+      
       // Match based on searchable fields
       const subjectMatch = course.subject && searchTerms.some(term => 
         course.subject.toLowerCase().includes(term));

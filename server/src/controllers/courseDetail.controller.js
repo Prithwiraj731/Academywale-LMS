@@ -36,6 +36,10 @@ exports.getCourseDetails = async (req, res) => {
         const paperNumberMatch = /paper-(\d+)/.exec(courseId);
         const paperNumber = paperNumberMatch ? paperNumberMatch[1] : null;
         
+        // If the URL contains 'cma/final/paper-13', extract the course type components
+        const courseTypeFromUrl = req.query.courseType || '';
+        console.log('Course type from URL query:', courseTypeFromUrl);
+        
         // Try to find a matching course using various attributes
         foundCourse = faculty.courses.find(course => {
           if (!course.subject && !course.title) return false;
@@ -47,10 +51,41 @@ exports.getCourseDetails = async (req, res) => {
           const titleSlug = course.title ? 
             course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
           
-          // For paperNumber matches
+          // For paperNumber matches - highest priority match
           if (paperNumber && course.paperNumber && course.paperNumber.toString() === paperNumber) {
-            console.log(`Found match by paper number: ${paperNumber}`);
-            return true;
+            // If courseType is provided, check if it matches
+            if (courseTypeFromUrl) {
+              const courseTypeWords = courseTypeFromUrl.replace('/', ' ').split(' ');
+              
+              // Check if course type includes all these words
+              const courseTypeMatches = course.courseType && 
+                courseTypeWords.every(word => 
+                  course.courseType.toLowerCase().includes(word.toLowerCase())
+                );
+              
+              if (courseTypeMatches) {
+                console.log(`Found match by paper number ${paperNumber} with matching course type`);
+                return true;
+              }
+            } else {
+              // Without course type specified, just match paper number
+              console.log(`Found match by paper number: ${paperNumber}`);
+              return true;
+            }
+          }
+          
+          // Look for paper number in subject or paperName
+          if (paperNumber) {
+            const paperNameMatch = course.paperName && 
+              course.paperName.toLowerCase().includes(`paper ${paperNumber}`);
+              
+            const subjectPaperMatch = course.subject && 
+              course.subject.toLowerCase().includes(`paper ${paperNumber}`);
+              
+            if (paperNameMatch || subjectPaperMatch) {
+              console.log(`Found paper number ${paperNumber} in subject/paperName`);
+              return true;
+            }
           }
           
           // For courseType-subject pattern

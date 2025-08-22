@@ -41,13 +41,33 @@ const CourseDetailPage = () => {
           return;
         }
         
-        console.log(`Fetching course details for courseId: ${courseId}`);
+        console.log(`Fetching course details for courseId: ${courseId}, courseType: ${courseType}`);
+        
+        // Special handling for URL patterns like /courses/cma/final/paper-13
+        let finalCourseId = courseId;
+        if (courseType && courseType.includes('/')) {
+          // This means we have a multi-part path like "cma/final"
+          // We'll construct a more specific search query
+          console.log('Detected multi-part course type path:', courseType);
+          
+          // The courseId might be something like "paper-13"
+          // Let's try to extract paper number if present
+          const paperMatch = courseId.match(/paper-(\d+)/i);
+          if (paperMatch) {
+            console.log('Detected paper number:', paperMatch[1]);
+          }
+        }
         
         // Try to find the course in multiple ways
         const isSlugifiedId = courseId.includes('-') && !courseId.match(/^[0-9a-f]{24}$/i);
         
         // Log the full URL for debugging
-        const apiUrl = `${API_URL}/api/courses/details/${courseId}`;
+        // Pass courseType in the API request to help with matching
+        let apiUrl = `${API_URL}/api/courses/details/${finalCourseId}`;
+        if (courseType) {
+          // Add courseType as a query parameter to help backend with matching
+          apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
+        }
         console.log(`API URL: ${apiUrl}`);
         
         // If this appears to be a slugified ID (not a MongoDB ObjectId),
@@ -66,25 +86,52 @@ const CourseDetailPage = () => {
           const searchParams = new URLSearchParams();
           
           if (parts.length > 0) {
-            // Add some search parameters based on the ID parts
-            // For cases like "cma-final-paper-13", we want to search for "CMA Final paper 13"
-            const cleanedQuery = parts.join(' ')
-              .replace(/-/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim();
-            
-            searchParams.append('query', cleanedQuery);
-            
-            // If courseType is provided, use it to narrow down the search
-            if (courseType) {
-              // Convert courseType to a proper category name if needed
-              // e.g., "cma-final" becomes "CMA Final"
-              const formattedCategory = courseType
-                .split('-')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ');
+            // Handle special case for course URLs like /courses/cma/final/paper-13
+            if (courseType && courseId.toLowerCase().includes('paper')) {
+              // Extract paper number if present
+              const paperMatch = courseId.match(/paper-(\d+)/i);
+              const paperNumber = paperMatch ? paperMatch[1] : null;
               
-              searchParams.append('category', formattedCategory);
+              console.log(`Extracted paper number: ${paperNumber}`);
+              
+              // For paths like "cma/final" we need to construct a proper search query
+              let courseCategory = courseType;
+              
+              // Handle multi-part paths by replacing / with spaces
+              if (courseType.includes('/')) {
+                courseCategory = courseType.split('/')
+                  .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                  .join(' ');
+              }
+              
+              // Create a complete search query like "CMA Final Paper 13"
+              let fullSearchQuery = courseCategory;
+              if (paperNumber) {
+                fullSearchQuery += ` Paper ${paperNumber}`;
+              }
+              
+              console.log(`Using constructed search query: "${fullSearchQuery}"`);
+              searchParams.append('query', fullSearchQuery);
+            } else {
+              // Regular case - process the courseId parts
+              const cleanedQuery = parts.join(' ')
+                .replace(/-/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+              
+              searchParams.append('query', cleanedQuery);
+              
+              // If courseType is provided, use it to narrow down the search
+              if (courseType) {
+                // Convert courseType to a proper category name if needed
+                // e.g., "cma-final" becomes "CMA Final"
+                const formattedCategory = courseType
+                  .split('-')
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                  .join(' ');
+                
+                searchParams.append('category', formattedCategory);
+              }
             }
             
             const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
@@ -96,9 +143,43 @@ const CourseDetailPage = () => {
                 const searchData = await searchRes.json();
                 if (searchData && searchData.courses && searchData.courses.length > 0) {
                   console.log(`Found ${searchData.courses.length} matching courses`);
-                  // Use the first matching course
-                  data = { course: searchData.courses[0] };
-                  console.log('Using first match:', data.course);
+                  
+                  // Log all found courses to help with debugging
+                  if (searchData.courses.length > 1) {
+                    console.log('Multiple matches found:');
+                    searchData.courses.forEach((c, i) => {
+                      console.log(`[${i}] ${c.subject || c.title || 'Unknown'} - ${c.courseType || 'No type'}`);
+                    });
+                  }
+                  
+                  // Try to find the best match, especially for paper-specific courses
+                  let bestMatch = searchData.courses[0]; // Default to first result
+                  
+                  if (courseId.toLowerCase().includes('paper')) {
+                    // Extract paper number for better matching
+                    const paperMatch = courseId.match(/paper-(\d+)/i);
+                    const paperNumber = paperMatch ? paperMatch[1] : null;
+                    
+                    if (paperNumber) {
+                      console.log(`Looking for best match for Paper ${paperNumber}`);
+                      
+                      // Try to find a course with matching paper number
+                      const paperMatch = searchData.courses.find(c => 
+                        c.paperNumber === parseInt(paperNumber) || 
+                        (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
+                        (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
+                      );
+                      
+                      if (paperMatch) {
+                        console.log(`Found exact paper match: ${paperMatch.subject || paperMatch.title}`);
+                        bestMatch = paperMatch;
+                      }
+                    }
+                  }
+                  
+                  // Use the best matching course
+                  data = { course: bestMatch };
+                  console.log('Using best match:', data.course.subject || data.course.title);
                 } else {
                   console.error('No matching courses found in search');
                   setError('Could not find the requested course. Please try another course.');
