@@ -1,147 +1,103 @@
 const Faculty = require('../model/Faculty.model');
 const mongoose = require('mongoose');
+const CourseLookupService = require('../services/courseLookupService');
 
-// Get course details by ID - Only for courses under actual faculties
+// Initialize the course lookup service
+const courseLookupService = new CourseLookupService();
+
+// Get course details by ID - Enhanced with comprehensive lookup strategies
 exports.getCourseDetails = async (req, res) => {
   // Always set content type to JSON to ensure consistent responses
   res.setHeader('Content-Type', 'application/json');
   
+  const startTime = Date.now();
+  const { courseId } = req.params;
+  const courseType = req.query.courseType || null;
+  const debugMode = req.query.debug === 'true';
+  
+  // Log the incoming request
+  console.log(`🌐 Course details request: ID=${courseId}, Type=${courseType || 'none'}, Debug=${debugMode}`);
+  
   try {
-    const { courseId } = req.params;
-    let course = null;
-
-    // Find all faculties - we no longer use "N/A" faculty
-    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
-    
-    // Check if it's a valid MongoDB ObjectId
-    const isValidObjectId = mongoose.Types.ObjectId.isValid(courseId);
-    
-    // Look for courses within faculties
-    for (const faculty of faculties) {
-      if (!faculty.courses) continue;
-      
-      let foundCourse;
-      
-      if (isValidObjectId) {
-        // Find course by its _id in the faculty's courses array
-        foundCourse = faculty.courses.find(course => 
-          course._id && course._id.toString() === courseId);
-      }
-      
-      // If not found by ObjectId or if not a valid ObjectId, try alternative matching
-      if (!foundCourse && courseId.includes('-')) {
-        console.log('Attempting to find course by slug-like ID:', courseId);
-        
-        // Split the slugified ID and use parts for matching
-        const idParts = courseId.toLowerCase().split('-');
-        
-        // Check if this might be a paper number reference
-        const paperNumberMatch = /paper-(\d+)/.exec(courseId);
-        const paperNumber = paperNumberMatch ? paperNumberMatch[1] : null;
-        
-        // If the URL contains 'cma/final/paper-13', extract the course type components
-        const courseTypeFromUrl = req.query.courseType || '';
-        console.log('Course type from URL query:', courseTypeFromUrl);
-        
-        // Try to find a matching course using various attributes
-        foundCourse = faculty.courses.find(course => {
-          if (!course.subject && !course.title) return false;
-          
-          // Check for exact matches in slugified form first
-          const subjectSlug = course.subject ? 
-            course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
-          
-          const titleSlug = course.title ? 
-            course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
-          
-          // For paperNumber matches - highest priority match
-          if (paperNumber && course.paperNumber && course.paperNumber.toString() === paperNumber) {
-            // If courseType is provided, check if it matches
-            if (courseTypeFromUrl) {
-              const courseTypeWords = courseTypeFromUrl.replace('/', ' ').split(' ');
-              
-              // Check if course type includes all these words
-              const courseTypeMatches = course.courseType && 
-                courseTypeWords.every(word => 
-                  course.courseType.toLowerCase().includes(word.toLowerCase())
-                );
-              
-              if (courseTypeMatches) {
-                console.log(`Found match by paper number ${paperNumber} with matching course type`);
-                return true;
-              }
-            } else {
-              // Without course type specified, just match paper number
-              console.log(`Found match by paper number: ${paperNumber}`);
-              return true;
-            }
-          }
-          
-          // Look for paper number in subject or paperName
-          if (paperNumber) {
-            const paperNameMatch = course.paperName && 
-              course.paperName.toLowerCase().includes(`paper ${paperNumber}`);
-              
-            const subjectPaperMatch = course.subject && 
-              course.subject.toLowerCase().includes(`paper ${paperNumber}`);
-              
-            if (paperNameMatch || subjectPaperMatch) {
-              console.log(`Found paper number ${paperNumber} in subject/paperName`);
-              return true;
-            }
-          }
-          
-          // For courseType-subject pattern
-          if (course.courseType) {
-            const courseTypeSlug = course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            if (courseId === `${courseTypeSlug}-${subjectSlug}`) {
-              console.log(`Found exact match with courseType-subject: ${courseId}`);
-              return true;
-            }
-          }
-          
-          // Try more generic matching with individual parts
-          const subjectMatch = course.subject && 
-            idParts.some(part => part.length > 2 && course.subject.toLowerCase().includes(part));
-          
-          const titleMatch = course.title && 
-            idParts.some(part => part.length > 2 && course.title.toLowerCase().includes(part));
-          
-          // For faculty name matches
-          const facultyNameMatch = faculty.firstName && idParts.some(part => 
-            part.length > 2 && faculty.firstName.toLowerCase().includes(part));
-            
-          return subjectMatch || titleMatch || facultyNameMatch;
-        });
-      }
-      
-      if (foundCourse) {
-        course = {
-          ...foundCourse.toObject(),
-          facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-          facultySlug: faculty.slug,
-          facultyId: faculty._id
-        };
-        break;
-      }
-    }
-
-    if (!course) {
-      return res.status(404).json({ 
-        error: 'Course not found', 
+    // Validate courseId parameter
+    if (!courseId) {
+      console.error('❌ No courseId provided in request parameters');
+      return res.status(400).json({
         success: false,
-        courseId: req.params.courseId || 'unknown'
+        error: 'Course ID is required',
+        courseId: 'missing',
+        duration: Date.now() - startTime
       });
     }
 
-    return res.status(200).json({ course, success: true });
+    // Use the enhanced course lookup service
+    const lookupResult = await courseLookupService.findCourseById(courseId, courseType, debugMode);
+    
+    if (lookupResult.success) {
+      console.log(`✅ Course found successfully using strategy: ${lookupResult.matchStrategy}`);
+      
+      // Return successful response
+      const response = {
+        success: true,
+        course: lookupResult.course,
+        duration: Date.now() - startTime
+      };
+
+      // Add debug information if requested
+      if (debugMode) {
+        response.matchStrategy = lookupResult.matchStrategy;
+        response.searchAttempts = lookupResult.searchAttempts;
+        response.debugInfo = lookupResult.debugInfo;
+      }
+
+      return res.status(200).json(response);
+    } else {
+      console.log(`❌ Course not found after trying all strategies`);
+      
+      // Return comprehensive error response
+      const errorResponse = {
+        success: false,
+        error: lookupResult.error || 'Course not found',
+        courseId: courseId,
+        duration: Date.now() - startTime
+      };
+
+      // Add debug information if requested
+      if (debugMode) {
+        errorResponse.searchAttempts = lookupResult.searchAttempts;
+        errorResponse.debugInfo = lookupResult.debugInfo;
+      }
+
+      // Add suggestions if available
+      if (lookupResult.suggestions && lookupResult.suggestions.length > 0) {
+        errorResponse.suggestions = lookupResult.suggestions;
+        errorResponse.message = 'Course not found, but here are some similar courses you might be looking for:';
+      }
+
+      return res.status(404).json(errorResponse);
+    }
+
   } catch (error) {
-    console.error('Error getting course details:', error);
-    return res.status(500).json({ 
-      error: error.message || 'Server error while fetching course details',
+    console.error('💥 Unexpected error in getCourseDetails:', error);
+    
+    // Return comprehensive error response
+    const errorResponse = {
       success: false,
-      courseId: req.params.courseId || 'unknown'
-    });
+      error: 'Internal server error while fetching course details',
+      courseId: courseId || 'unknown',
+      duration: Date.now() - startTime
+    };
+
+    // Add debug information if requested
+    if (debugMode) {
+      errorResponse.debugInfo = {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    return res.status(500).json(errorResponse);
   }
 };
 

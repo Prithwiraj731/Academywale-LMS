@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 // Import models
 const Faculty = require('./src/model/Faculty.model');
 const User = require('./src/model/User.model');
+const Course = require('./src/model/Course.model');
 
 // Import validation bypass middleware early to avoid reference errors
 const { removeValidationMiddleware, directSaveMiddleware } = require('./src/middleware/forceValidationBypass');
@@ -22,7 +23,7 @@ try {
   const applyMonkeyPatch = require('./src/utils/directFacultyMonkeyPatch');
   const patchResult = applyMonkeyPatch();
   console.log('🔧 Faculty model monkey patch result:', patchResult ? 'SUCCESS' : 'FAILED');
-  
+
   // Attach models to app object for middleware access
   app.models = { Faculty, User };
 } catch (patchError) {
@@ -102,6 +103,35 @@ app.use('/', courseControllerRoutes);
 const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
+// Test endpoint for the specific failing course ID
+app.get('/api/test/course-lookup/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const courseType = req.query.courseType;
+
+    console.log(`🧪 Testing course lookup for: ${courseId}, type: ${courseType || 'none'}`);
+
+    const CourseLookupService = require('./src/services/courseLookupService');
+    const lookupService = new CourseLookupService();
+
+    const result = await lookupService.findCourseById(courseId, courseType, true);
+
+    res.json({
+      testEndpoint: true,
+      courseId,
+      courseType,
+      result
+    });
+  } catch (error) {
+    console.error('Test endpoint error:', error);
+    res.status(500).json({
+      testEndpoint: true,
+      error: error.message,
+      courseId: req.params.courseId
+    });
+  }
+});
+
 // Mount course search routes
 const courseSearchRoutes = require('./src/routes/courseSearch.routes.js');
 app.use('/', courseSearchRoutes);
@@ -171,6 +201,15 @@ const connectDB = async () => {
     const mongoURI = 'mongodb+srv://prithwi1016:4xtVi1z1uzyAdA7v@courses.znwo0tt.mongodb.net/?retryWrites=true&w=majority&appName=courses';
     await mongoose.connect(mongoURI);
     console.log('✅ MongoDB Connected');
+
+    // Create database indexes for course lookup optimization
+    try {
+      const { createCourseIndexes } = require('./src/utils/createIndexes');
+      await createCourseIndexes();
+    } catch (indexError) {
+      console.warn('⚠️ Index creation warning:', indexError.message);
+      // Don't fail the app if index creation fails
+    }
   } catch (error) {
     console.error('❌ MongoDB Error:', error.message);
   }
@@ -179,9 +218,17 @@ const connectDB = async () => {
 // Import Institute model
 const Institute = require('./src/model/Institute.model');
 
+// Initialize database connection
+connectDB();
+
 // Routes
 app.get('/', (req, res) => {
-  res.json({ message: 'AcademyWale Backend Running!' });
+  res.json({
+    message: 'AcademyWale Backend Running!',
+    courseLookupFix: 'ACTIVE',
+    version: '2024-01-15-course-lookup-fix',
+    testEndpoint: '/api/test/course-lookup/cma-final-test5mP?courseType=CMA Final'
+  });
 });
 
 app.get('/health', (req, res) => {
@@ -1166,27 +1213,27 @@ app.post('/api/admin/courses', [removeValidationMiddleware, directSaveMiddleware
       // Validate and fix course mode before adding to faculty
       const validatedCourseData = validateCourseMode(courseData);
       console.log('✅ Course mode validated and fixed if needed');
-      
+
       // Double-check mode value is valid
       validatedCourseData.mode = 'Live Watching'; // Force valid mode
-      
+
       // Add to faculty courses array
       faculty.courses.push(validatedCourseData);
-      
+
       try {
         // Try to save with potential retry
         await faculty.save();
       } catch (saveError) {
         // If save fails and it's a validation error for mode, try a direct fix
-        if (saveError.name === 'ValidationError' && 
-            saveError.errors && 
-            saveError.errors['courses.0.mode']) {
+        if (saveError.name === 'ValidationError' &&
+          saveError.errors &&
+          saveError.errors['courses.0.mode']) {
           console.log('⚠️ Mode validation error occurred despite fixes, applying emergency fix...');
-          
+
           // Force valid mode value for the newly added course
           const lastIndex = faculty.courses.length - 1;
           faculty.courses[lastIndex].mode = 'Live Watching';
-          
+
           // Try saving again without validation
           await faculty.collection.updateOne(
             { _id: faculty._id },
@@ -1647,10 +1694,10 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
     console.log('🔥 Delete all courses operation started...');
     const Faculty = require('./src/model/Faculty.model');
     const Course = require('./src/model/Course.model');
-    
+
     let totalDeleted = 0;
     let facultyErrors = [];
-    
+
     // Delete standalone courses
     console.log('📦 Deleting standalone courses...');
     try {
@@ -1664,7 +1711,7 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
         error: courseError.message
       });
     }
-    
+
     // Delete courses from all faculties
     console.log('👩‍🏫 Finding faculties to delete courses...');
     let faculties = [];
@@ -1678,20 +1725,20 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
         error: findError.message
       });
     }
-    
+
     // Process each faculty using direct database update instead of validation
     for (const faculty of faculties) {
       try {
         if (faculty.courses && faculty.courses.length > 0) {
           console.log(`📚 Processing faculty: ${faculty.firstName} ${faculty.lastName} with ${faculty.courses.length} courses`);
           const courseCount = faculty.courses.length;
-          
+
           // Use direct update instead of save to bypass validation
           const updateResult = await Faculty.updateOne(
             { _id: faculty._id },
             { $set: { courses: [] } }
           );
-          
+
           if (updateResult.modifiedCount === 1) {
             totalDeleted += courseCount;
             console.log(`✅ Removed ${courseCount} courses from faculty via direct update`);
@@ -1715,13 +1762,13 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
         });
       }
     }
-    
+
     console.log(`✅ Delete all courses operation completed. Total deleted: ${totalDeleted}`);
-    
+
     // If we have errors but also deleted some courses, it's a partial success
     if (facultyErrors.length > 0) {
       console.error(`⚠️ Some errors occurred during deletion: ${JSON.stringify(facultyErrors)}`);
-      
+
       // If we failed to delete ANY courses, try one more desperate approach
       if (totalDeleted === 0) {
         console.log('🔥 Zero courses deleted with standard method. Trying direct database approach...');
@@ -1731,11 +1778,11 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
             {}, // Match all faculties
             { $set: { courses: [] } } // Set courses to empty array
           );
-          
+
           console.log(`📊 Bulk update result: ${JSON.stringify(bulkUpdateResult)}`);
           if (bulkUpdateResult.modifiedCount > 0) {
             return res.json({
-              success: true, 
+              success: true,
               deletedCount: -1, // We can't know exact count, use -1 to indicate "all"
               message: "Successfully removed all courses using direct database update. Please refresh to see changes."
             });
@@ -1748,7 +1795,7 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
           });
         }
       }
-      
+
       return res.status(207).json({
         success: true,
         partial: true,
@@ -1757,7 +1804,7 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
         message: `Partially deleted ${totalDeleted} courses. Some errors occurred.`
       });
     }
-    
+
     res.json({
       success: true,
       deletedCount: totalDeleted,
@@ -1767,8 +1814,8 @@ app.delete('/api/admin/courses/delete-all', async (req, res) => {
     console.error('❌ Major error deleting all courses:', error);
     // Add stack trace for more debugging info
     console.error('Stack trace:', error.stack);
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       success: false,
       error: error.message || 'An error occurred while deleting courses.',
       details: error.stack ? error.stack.split('\n').slice(0, 3).join('\n') : 'No stack trace available'
@@ -1869,13 +1916,13 @@ app.use((error, req, res, next) => {
   // Special handling for Mongoose validation errors
   if (error.name === 'ValidationError') {
     console.error('❌ Mongoose validation error:', error.errors);
-    
+
     // Check if it's a mode validation error
     const modeError = error.errors?.['courses.0.mode'];
     if (modeError && modeError.kind === 'enum') {
       const invalidMode = modeError.value;
       console.error(`❌ Invalid mode value detected: "${invalidMode}"`);
-      
+
       return res.status(400).json({
         success: false,
         error: 'Validation error with course mode',
@@ -1885,7 +1932,7 @@ app.use((error, req, res, next) => {
         suggestion: 'Please use one of these modes: "Live Watching", "Recorded Videos", "Live at Home With Hard Copy", "Self Study"'
       });
     }
-    
+
     // Handle other validation errors
     return res.status(400).json({
       success: false,
