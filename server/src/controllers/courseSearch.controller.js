@@ -114,15 +114,23 @@ exports.searchCourses = async (req, res) => {
       })
       .slice(0, parseInt(limit));
     
-    res.status(200).json({ 
+    // Always return valid JSON
+    return res.status(200).json({ 
       courses: sortedCourses,
       total: matchedCourses.length,
       query,
-      category: category || 'any'
+      category: category || 'any',
+      success: true
     });
   } catch (error) {
     console.error('Error searching courses:', error);
-    res.status(500).json({ error: error.message });
+    // Even for 404 errors, always return valid JSON format
+    return res.status(404).json({ 
+      error: error.message || 'Course not found',
+      success: false,
+      query: query || '',
+      courses: []
+    });
   }
 };
 

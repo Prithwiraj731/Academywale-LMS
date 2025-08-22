@@ -127,13 +127,21 @@ exports.getCourseDetails = async (req, res) => {
     }
 
     if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+      return res.status(404).json({ 
+        error: 'Course not found', 
+        success: false,
+        courseId: req.params.courseId || 'unknown'
+      });
     }
 
-    res.status(200).json({ course });
+    return res.status(200).json({ course, success: true });
   } catch (error) {
     console.error('Error getting course details:', error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: error.message || 'Server error while fetching course details',
+      success: false,
+      courseId: req.params.courseId || 'unknown'
+    });
   }
 };
 

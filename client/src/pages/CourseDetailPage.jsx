@@ -96,11 +96,29 @@ const CourseDetailPage = () => {
             }
           } else {
             console.log(`Regular API call failed with status: ${res.status}`);
+            
+            // Try to get error details from the response
+            let errorMessage = `Course not found: ${courseId}`;
+            
+            try {
+              // Check if we can get any JSON error information
+              const contentType = res.headers.get('content-type');
+              if (contentType && contentType.includes('application/json')) {
+                const errorData = await res.json();
+                if (errorData && errorData.error) {
+                  errorMessage = errorData.error;
+                }
+              }
+            } catch (errorParseError) {
+              // If we can't parse the error, just use the default message
+              console.warn('Could not parse error response:', errorParseError);
+            }
+            
             // Don't try to parse JSON from error responses
             if (res.status === 404) {
-              throw new Error(`Course not found: ${courseId}`);
+              throw new Error(errorMessage);
             } else {
-              throw new Error(`API returned status code: ${res.status}`);
+              throw new Error(`API returned status code: ${res.status}. ${errorMessage}`);
             }
           }
         } catch (fetchError) {
@@ -177,11 +195,29 @@ const CourseDetailPage = () => {
                 const statusCode = searchRes.status;
                 console.error(`Search API returned status: ${statusCode}`);
                 
+                // Try to read the error message from response, but don't fail if it's not valid JSON
+                let errorMessage = `Course not found: ${courseId}. The course might have been removed or renamed.`;
+                
+                try {
+                  // Get content type to determine if we should parse as JSON
+                  const contentType = searchRes.headers.get('content-type');
+                  
+                  if (contentType && contentType.includes('application/json')) {
+                    const errorData = await searchRes.json();
+                    if (errorData && errorData.error) {
+                      errorMessage = errorData.error;
+                    }
+                  }
+                } catch (parseError) {
+                  console.warn('Could not parse error response as JSON:', parseError);
+                  // Continue with default error message
+                }
+                
                 // For 404 errors, give a more specific message
                 if (statusCode === 404) {
-                  throw new Error(`Course not found: ${courseId}. The course might have been removed or renamed.`);
+                  throw new Error(errorMessage);
                 } else {
-                  throw new Error(`Search API returned error code: ${statusCode}`);
+                  throw new Error(`Search API returned error code: ${statusCode}. ${errorMessage}`);
                 }
               }
               
@@ -317,8 +353,9 @@ const CourseDetailPage = () => {
           setError(errorMessage);
         }
       } catch (err) {
-        setError('Server error while fetching course details');
-        console.error(err);
+        const errorMsg = err?.message || 'Server error while fetching course details';
+        setError(errorMsg);
+        console.error('Error in fetchCourse:', err);
       } finally {
         setLoading(false);
       }
@@ -483,15 +520,29 @@ const CourseDetailPage = () => {
 
   // Set a timeout to automatically redirect after showing error for a brief time
   useEffect(() => {
-    if (error && error.toLowerCase().includes('not found')) {
-      const timer = setTimeout(() => {
-        console.log('Auto-redirecting after course not found error');
-        navigate('/courses');
-      }, 5000); // Redirect after 5 seconds
+    let timer;
+    if (error && typeof error === 'string' && error.toLowerCase().includes('not found')) {
+      // Store redirect state to prevent multiple redirects
+      const redirectKey = `redirect_${courseId}`;
+      const hasRedirected = sessionStorage.getItem(redirectKey);
       
-      return () => clearTimeout(timer);
+      if (!hasRedirected) {
+        console.log('Setting up auto-redirect after course not found error');
+        timer = setTimeout(() => {
+          console.log('Auto-redirecting to courses page');
+          sessionStorage.setItem(redirectKey, 'true');
+          // Use window.location instead of navigate to avoid React issues
+          window.location.href = '/courses';
+        }, 5000); // Redirect after 5 seconds
+      }
     }
-  }, [error, navigate]);
+    
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [error, courseId]);
 
   if (error) {
     return (
