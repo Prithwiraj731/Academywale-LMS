@@ -106,8 +106,19 @@ exports.addCourseToFaculty = async (req, res) => {
     
     // No need for complex validation - we've already mapped to allowed values
     
-    // Make absolutely sure mode is a valid value
-    newCourse.mode = 'Live Watching';
+    // Make absolutely sure mode is a valid value from allowed list
+    const VALID_MODES = ['Live Watching', 'Recorded Video', 'Live Class', 'Hybrid'];
+    newCourse.mode = VALID_MODES.includes(parsedModeAttemptPricing[0]?.mode) 
+      ? parsedModeAttemptPricing[0]?.mode 
+      : 'Live Watching';
+    
+    // Ensure isActive flag is set to true for the course
+    newCourse.isActive = true;
+
+    // Make sure the course has all required fields for proper display
+    if (!newCourse.title) newCourse.title = newCourse.subject;
+    if (!newCourse.sellingPrice) newCourse.sellingPrice = 0;
+    if (!newCourse.costPrice) newCourse.costPrice = 0;
     
     // Add course to faculty
     faculty.courses.push(newCourse);
@@ -116,24 +127,56 @@ exports.addCourseToFaculty = async (req, res) => {
       // Try normal save
       await faculty.save();
       console.log('✅ Course controller: Course added successfully to faculty');
+      
+      // Also create a standalone course for better visibility
+      try {
+        const Course = require('../model/Course.model');
+        const standaloneCourse = new Course({
+          ...newCourse,
+          facultyId: faculty._id,
+          facultySlug: faculty.slug,
+          isActive: true
+        });
+        await standaloneCourse.save();
+        console.log('✅ Course also saved as standalone course for better visibility');
+      } catch (standaloneError) {
+        console.error('⚠️ Could not save as standalone course:', standaloneError.message);
+        // Continue even if standalone save fails
+      }
+      
       res.status(201).json({ success: true, message: 'Course added successfully', course: newCourse });
     } catch (saveError) {
       // Check if it's a mode validation error
-      if (saveError.name === 'ValidationError' && 
-          saveError.errors && 
-          saveError.errors['courses.0.mode']) {
+      if (saveError.name === 'ValidationError') {
         
-        console.log('⚠️ Mode validation error detected, attempting direct database update');
+        console.log('⚠️ Validation error detected, attempting direct database update');
         
         try {
           // Use direct MongoDB update to bypass validation
           const mongoose = require('mongoose');
           await mongoose.model('Faculty').updateOne(
             { _id: faculty._id },
-            { $set: { courses: faculty.courses } }
+            { $push: { courses: newCourse } }
           );
           
           console.log('✅ Course saved successfully using direct database update');
+          
+          // Also create a standalone course for better visibility
+          try {
+            const Course = require('../model/Course.model');
+            const standaloneCourse = new Course({
+              ...newCourse,
+              facultyId: faculty._id,
+              facultySlug: faculty.slug,
+              isActive: true
+            });
+            await standaloneCourse.save();
+            console.log('✅ Course also saved as standalone course for better visibility');
+          } catch (standaloneError) {
+            console.error('⚠️ Could not save as standalone course:', standaloneError.message);
+            // Continue even if standalone save fails
+          }
+          
           res.status(201).json({
             success: true,
             message: 'Course added successfully (using direct database update)',

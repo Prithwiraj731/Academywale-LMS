@@ -147,7 +147,7 @@ export default function CoursesPage() {
                 </div>
                 
                 <button
-                  onClick={() => navigate(`/course/${encodeURIComponent(type)}/${course._id}`)}
+                  onClick={() => navigate(`/course-details/${encodeURIComponent(type)}/${course._id}`)}
                   className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
                 >
                   View Details
