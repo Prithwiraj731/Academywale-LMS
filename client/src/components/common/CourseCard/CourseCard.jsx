@@ -48,25 +48,16 @@ const CourseCard = ({
 
   // Handle course click - either navigate or show modal
   const handleCourseClick = () => {
-    // SIMPLIFIED APPROACH: Always try to use the actual _id first, then use a simple fallback
-    let courseId = null;
-    
-    if (course._id) {
-      courseId = course._id;
-      console.log('✅ Using MongoDB _id for course:', courseId);
-    } else if (course.id) {
-      courseId = course.id;
-      console.log('✅ Using id property for course:', courseId);
-    } else {
-      // FALLBACK: Use a simple pattern that the backend can handle
-      console.warn('⚠️ Course missing _id, using fallback approach');
-      
-      // Use a simple fallback that tells the backend to find any course with this courseType
-      const courseTypeForUrl = course.courseType || 'course';
-      courseId = 'fallback-course-lookup';
-      
-      console.log('🔄 Using fallback courseId with courseType:', courseTypeForUrl);
+    // EMERGENCY FIX: If course has no _id, don't navigate - show alert instead
+    if (!course._id && !course.id) {
+      console.error('❌ Course missing _id - cannot navigate to details', course);
+      alert(`Course "${course.subject || course.title || 'Unknown'}" is missing proper ID. Please contact support or try refreshing the page.`);
+      return;
     }
+    
+    // Use the actual course ID
+    const courseId = course._id || course.id;
+    console.log('✅ Using course ID for navigation:', courseId);
     
     // Before navigation, ensure course has an ID property for future reference
     if (!course._id && !course.id) {

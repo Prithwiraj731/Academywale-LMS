@@ -198,8 +198,6 @@ exports.addCourseToFaculty = async (req, res) => {
     });
   }
 };
-const Faculty = require('../model/Faculty.model');
-const Institute = require('../model/Institute.model');
 
 // Import hardcoded faculties
 const hardcodedFaculties = [

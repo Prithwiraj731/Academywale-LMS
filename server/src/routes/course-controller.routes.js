@@ -29,14 +29,49 @@ router.post('/api/admin/courses/controller', [
   upload.single('poster')
 ], courseController.addCourseToFaculty);
 
-// Get all courses
+// Get all courses (both standalone and faculty-based)
 router.get('/api/courses/all', async (req, res) => {
   try {
     const Course = require('../model/Course.model');
-    const courses = await Course.find({ isActive: true });
-    res.json({ success: true, courses });
+    const Faculty = require('../model/Faculty.model');
+    
+    let allCourses = [];
+    
+    // Get standalone courses
+    try {
+      const standaloneCourses = await Course.find({ isActive: true });
+      allCourses = [...standaloneCourses];
+      console.log(`Found ${standaloneCourses.length} standalone courses`);
+    } catch (standaloneError) {
+      console.log('No standalone courses found or error:', standaloneError.message);
+    }
+    
+    // Get faculty-based courses
+    try {
+      const faculties = await Faculty.find({});
+      faculties.forEach(faculty => {
+        if (faculty.courses && faculty.courses.length > 0) {
+          faculty.courses.forEach(course => {
+            // Add faculty information to the course
+            const courseWithFaculty = {
+              ...course.toObject(),
+              facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+              facultySlug: faculty.slug,
+              facultyId: faculty._id,
+              isStandalone: false
+            };
+            allCourses.push(courseWithFaculty);
+          });
+        }
+      });
+      console.log(`Total courses after adding faculty courses: ${allCourses.length}`);
+    } catch (facultyError) {
+      console.log('Error fetching faculty courses:', facultyError.message);
+    }
+    
+    res.json({ success: true, courses: allCourses });
   } catch (error) {
-    console.error('Error fetching courses:', error);
+    console.error('Error fetching all courses:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
