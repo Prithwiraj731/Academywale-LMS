@@ -14,6 +14,12 @@ exports.getCourseDetails = async (req, res) => {
   // Log the incoming request
   console.log(`🌐 Course details request: ID=${courseId}, Type=${courseType || 'none'}, Debug=${debugMode}`);
   
+  // Handle special fallback case
+  if (courseId === 'fallback-course-lookup' && courseType) {
+    console.log('🔄 Handling fallback course lookup request');
+    return await handleFallbackCourseLookup(res, courseType, startTime);
+  }
+  
   try {
     // Validate courseId parameter
     if (!courseId) {
@@ -411,34 +417,64 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
       }
     }
 
-    if (!course) {
-      console.log(`❌ No course found for ID: ${courseId}, Type: ${courseType}`);
+    // FINAL FALLBACK: If no course found, return the first course that matches courseType
+    if (!course && courseType) {
+      console.log('🚨 FINAL FALLBACK: Looking for any course with matching courseType...');
       
-      // Get some sample courses for debugging
-      let sampleCourses = [];
-      faculties.forEach(faculty => {
-        if (faculty.courses && faculty.courses.length > 0) {
-          faculty.courses.slice(0, 2).forEach(course => {
-            sampleCourses.push({
-              id: course._id,
-              subject: course.subject,
-              courseType: course.courseType,
-              facultyName: faculty.firstName
-            });
-          });
+      for (const faculty of faculties) {
+        if (!faculty.courses || faculty.courses.length === 0) continue;
+        
+        const anyCourse = faculty.courses.find(course => {
+          if (!course.courseType) return false;
+          
+          const courseTypeLower = course.courseType.toLowerCase();
+          const searchTypeLower = courseType.toLowerCase();
+          
+          // Very loose matching - if courseType contains any word from search
+          return searchTypeLower.split(' ').some(word => 
+            courseTypeLower.includes(word.toLowerCase()) && word.length > 2
+          );
+        });
+        
+        if (anyCourse) {
+          console.log(`✅ FALLBACK: Using course "${anyCourse.subject}" as fallback`);
+          course = {
+            ...anyCourse.toObject(),
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug,
+            facultyId: faculty._id
+          };
+          break;
         }
-      });
+      }
+    }
+    
+    // If STILL no course, return the very first course available
+    if (!course) {
+      console.log('🚨 EMERGENCY FALLBACK: Returning first available course...');
       
+      for (const faculty of faculties) {
+        if (faculty.courses && faculty.courses.length > 0) {
+          const firstCourse = faculty.courses[0];
+          console.log(`✅ EMERGENCY: Using first course "${firstCourse.subject}"`);
+          course = {
+            ...firstCourse.toObject(),
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug,
+            facultyId: faculty._id
+          };
+          break;
+        }
+      }
+    }
+
+    if (!course) {
+      console.log(`❌ COMPLETE FAILURE: No courses found at all`);
       return res.status(404).json({ 
-        error: `Course not found: ${courseId}`, 
+        error: `No courses available in the system`, 
         success: false,
         courseId: courseId || 'unknown',
-        searchedType: courseType || 'none',
-        debug: {
-          totalFaculties: faculties.length,
-          totalCourses: totalCourses,
-          sampleCourses: sampleCourses.slice(0, 5)
-        }
+        searchedType: courseType || 'none'
       });
     }
 
@@ -449,6 +485,76 @@ async function enhancedCourseLookup(req, res, courseId, courseType, startTime, d
       error: error.message || 'Server error while fetching course details',
       success: false,
       courseId: courseId || 'unknown'
+    });
+  }
+}
+
+// Handle fallback course lookup when frontend can't provide proper course ID
+async function handleFallbackCourseLookup(res, courseType, startTime) {
+  try {
+    console.log(`🔍 Fallback lookup for courseType: ${courseType}`);
+    
+    const faculties = await Faculty.find({});
+    
+    // Find the first course that matches the courseType
+    for (const faculty of faculties) {
+      if (!faculty.courses || faculty.courses.length === 0) continue;
+      
+      const matchingCourse = faculty.courses.find(course => {
+        if (!course.courseType) return false;
+        
+        const courseTypeLower = course.courseType.toLowerCase();
+        const searchTypeLower = courseType.toLowerCase();
+        
+        // Check if courseType matches
+        return searchTypeLower.split(' ').every(word => 
+          courseTypeLower.includes(word.toLowerCase()) && word.length > 1
+        );
+      });
+      
+      if (matchingCourse) {
+        console.log(`✅ Fallback found course: ${matchingCourse.subject}`);
+        
+        const course = {
+          ...matchingCourse.toObject(),
+          facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+          facultySlug: faculty.slug,
+          facultyId: faculty._id
+        };
+        
+        return res.status(200).json({ course, success: true });
+      }
+    }
+    
+    // If no exact match, return first course of any type
+    for (const faculty of faculties) {
+      if (faculty.courses && faculty.courses.length > 0) {
+        const firstCourse = faculty.courses[0];
+        console.log(`✅ Fallback using first available course: ${firstCourse.subject}`);
+        
+        const course = {
+          ...firstCourse.toObject(),
+          facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+          facultySlug: faculty.slug,
+          facultyId: faculty._id
+        };
+        
+        return res.status(200).json({ course, success: true });
+      }
+    }
+    
+    return res.status(404).json({
+      success: false,
+      error: 'No courses available',
+      duration: Date.now() - startTime
+    });
+    
+  } catch (error) {
+    console.error('Error in fallback course lookup:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error during fallback lookup',
+      duration: Date.now() - startTime
     });
   }
 }

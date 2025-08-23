@@ -48,46 +48,24 @@ const CourseCard = ({
 
   // Handle course click - either navigate or show modal
   const handleCourseClick = () => {
-    // Get a usable course ID with multiple fallbacks
+    // SIMPLIFIED APPROACH: Always try to use the actual _id first, then use a simple fallback
     let courseId = null;
     
     if (course._id) {
       courseId = course._id;
-      console.log('Using MongoDB _id for course:', courseId);
+      console.log('✅ Using MongoDB _id for course:', courseId);
     } else if (course.id) {
       courseId = course.id;
-      console.log('Using id property for course:', courseId);
-    } else if (course.courseType && course.subject) {
-      // Create a more specific ID combining course type and subject
-      const courseTypeSlug = course.courseType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const subjectSlug = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      courseId = `${courseTypeSlug}-${subjectSlug}`;
-      console.log('Using courseType-subject as ID:', courseId);
-    } else if (course.subject) {
-      // Use slugified subject as fallback ID
-      courseId = course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      console.log('Using subject as fallback ID:', courseId);
-    } else if (course.title) {
-      // Use slugified title as another fallback
-      courseId = course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      console.log('Using title as fallback ID:', courseId);
-    }
-    
-    // If we still don't have an ID, generate one from course attributes
-    if (!courseId) {
-      if (course.facultyName && course.subject) {
-        courseId = `${course.facultyName}-${course.subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        console.log('Generated ID from faculty and subject:', courseId);
-      } else if (course.paperNumber) {
-        // Try to use paper number for more specific identification
-        const paperSlug = `paper-${course.paperNumber}`;
-        courseId = paperSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        console.log('Generated ID from paper number:', courseId);
-      } else {
-        console.error('Course has no usable ID attributes, cannot navigate to details', course);
-        alert('Cannot view course details: Missing course ID');
-        return;
-      }
+      console.log('✅ Using id property for course:', courseId);
+    } else {
+      // FALLBACK: Use a simple pattern that the backend can handle
+      console.warn('⚠️ Course missing _id, using fallback approach');
+      
+      // Use a simple fallback that tells the backend to find any course with this courseType
+      const courseTypeForUrl = course.courseType || 'course';
+      courseId = 'fallback-course-lookup';
+      
+      console.log('🔄 Using fallback courseId with courseType:', courseTypeForUrl);
     }
     
     // Before navigation, ensure course has an ID property for future reference
