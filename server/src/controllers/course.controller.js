@@ -67,6 +67,10 @@ exports.addCourseToFaculty = async (req, res) => {
     }
 
     const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
+    // Normalize category and subcategory for consistent filtering
+    const normalizedCategory = category ? category.toUpperCase() : '';
+    const normalizedSubcategory = subcategory ? subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
+    
     let newCourse = {
       facultyName,
       subject,
@@ -80,10 +84,10 @@ exports.addCourseToFaculty = async (req, res) => {
       posterUrl,
       timing,
       description,
-      courseType: courseType || `${category} ${subcategory}`,
+      courseType: courseType || `${normalizedCategory} ${normalizedSubcategory}`,
       institute,
-      category,
-      subcategory,
+      category: normalizedCategory,
+      subcategory: normalizedSubcategory,
       paperId: parseInt(paperId),
       paperName,
       modeAttemptPricing: parsedModeAttemptPricing,
@@ -94,6 +98,8 @@ exports.addCourseToFaculty = async (req, res) => {
       modes: parsedModeAttemptPricing.map(m => mapMode(m.mode)),
       durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
     };
+    
+    console.log(`📝 Normalized course data: category="${normalizedCategory}", subcategory="${normalizedSubcategory}", paperId=${paperId}`);
     
     console.log('⚠️ Original mode value:', parsedModeAttemptPricing[0]?.mode);
     console.log('✅ Mapped mode value:', newCourse.mode);
@@ -260,12 +266,14 @@ exports.getCoursesByPaper = async (req, res) => {
     // Import required models at function level to avoid circular dependencies
     const Faculty = require('../model/Faculty.model');
     const Institute = require('../model/Institute.model');
+    const Course = require('../model/Course.model');
     
     const { category, subcategory, paperId } = req.params;
-    // We always include all courses regardless of faculty status
-    const includeAllCourses = true;
+    const includeStandalone = req.query.includeStandalone === 'true';
     
-    console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}`);
+    console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}, includeStandalone=${includeStandalone}`);
+    console.log(`🔍 Request URL: ${req.originalUrl}`);
+    console.log(`🔍 Query params:`, req.query);
     
     const faculties = await Faculty.find({});
     const institutes = await Institute.find({});
@@ -279,7 +287,9 @@ exports.getCoursesByPaper = async (req, res) => {
         if (course) {
           allCourses.push({
             ...course.toObject(),
-            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+            facultySlug: faculty.slug,
+            isStandalone: false
           });
         }
       });
@@ -292,15 +302,37 @@ exports.getCoursesByPaper = async (req, res) => {
         if (course) {
           allCourses.push({
             ...course.toObject(),
-            facultyName: ''
+            facultyName: '',
+            isStandalone: false
           });
         }
       });
     });
     
-    // We no longer use N/A faculty - all courses must have a specific faculty
+    // Get standalone courses if requested
+    if (includeStandalone) {
+      try {
+        const standaloneCourses = await Course.find({ isActive: true });
+        standaloneCourses.forEach(course => {
+          allCourses.push({
+            ...course.toObject(),
+            isStandalone: true
+          });
+        });
+        console.log(`📚 Added ${standaloneCourses.length} standalone courses`);
+      } catch (standaloneError) {
+        console.log('⚠️ Error fetching standalone courses:', standaloneError.message);
+      }
+    }
+    
     console.log(`🔍 Searching for courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
-    console.log(`💼 Using faculty-only model: ${allCourses.length} total courses found from all faculties`);
+    console.log(`💼 Total courses found: ${allCourses.length}`);
+    
+    // Debug: Log all courses with their category/subcategory/paperId
+    console.log('📋 All courses in database:');
+    allCourses.forEach((course, index) => {
+      console.log(`  ${index + 1}. Subject: "${course.subject || 'N/A'}", Category: "${course.category || 'N/A'}", Subcategory: "${course.subcategory || 'N/A'}", PaperId: "${course.paperId || 'N/A'}", Faculty: "${course.facultyName || 'N/A'}"`);
+    });
     
     // N/A faculty has been removed - we only work with actual faculty courses now
     
@@ -308,32 +340,51 @@ exports.getCoursesByPaper = async (req, res) => {
     const filteredCourses = allCourses.filter(course => {
       try {
         // Handle different formats and data types that might be stored in MongoDB
-        const courseCategory = String(course.category || '').toUpperCase();
-        const courseSubcategory = String(course.subcategory || '').toLowerCase();
+        const courseCategory = String(course.category || '').toUpperCase().trim();
+        const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
         const coursePaperId = String(course.paperId || '').replace(/\D/g, ''); // Extract numeric part only
         
-        const requestedCategory = String(category || '').toUpperCase();
-        const requestedSubcategory = String(subcategory || '').toLowerCase();
+        const requestedCategory = String(category || '').toUpperCase().trim();
+        const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
         const requestedPaperId = String(paperId || '').replace(/\D/g, ''); // Extract numeric part only
         
-        // Very lenient comparisons for debugging
-        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
-        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
-        const paperIdMatch = coursePaperId === requestedPaperId;
+        // More flexible matching with comprehensive case handling
+        let categoryMatch = false;
+        let subcategoryMatch = false;
+        let paperIdMatch = false;
+        
+        // Category matching - exact match (case insensitive)
+        categoryMatch = courseCategory === requestedCategory;
+        
+        // Subcategory matching - normalize common variations
+        const normalizeSubcategory = (sub) => {
+          const normalized = sub.toLowerCase();
+          if (normalized === 'inter' || normalized === 'intermediate') return 'inter';
+          if (normalized === 'final') return 'final';
+          if (normalized === 'foundation') return 'foundation';
+          return normalized;
+        };
+        
+        const normalizedCourseSubcategory = normalizeSubcategory(courseSubcategory);
+        const normalizedRequestedSubcategory = normalizeSubcategory(requestedSubcategory);
+        
+        subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
+        
+        // Paper ID matching - exact numeric match
+        paperIdMatch = coursePaperId === requestedPaperId;
         
         // Log detailed comparison for debugging
-        console.log(`Course comparison: ${course._id || 'unknown'}, Subject: ${course.subject || 'unknown'}`);
-        console.log(`- Category: "${courseCategory}" vs "${requestedCategory}", match: ${categoryMatch}`);
-        console.log(`- Subcategory: "${courseSubcategory}" vs "${requestedSubcategory}", match: ${subcategoryMatch}`);
-        console.log(`- PaperId: "${coursePaperId}" vs "${requestedPaperId}", match: ${paperIdMatch}`);
+        console.log(`🔍 Course comparison: ${course._id || 'unknown'}, Subject: ${course.subject || 'unknown'}`);
+        console.log(`  - Category: "${courseCategory}" vs "${requestedCategory}", match: ${categoryMatch}`);
+        console.log(`  - Subcategory: "${courseSubcategory}" vs "${requestedSubcategory}", match: ${subcategoryMatch}`);
+        console.log(`  - PaperId: "${coursePaperId}" vs "${requestedPaperId}", match: ${paperIdMatch}`);
         
         const matches = categoryMatch && subcategoryMatch && paperIdMatch;
-                     
-      console.log(`- Overall match: ${matches}`);
-      
-      return matches;
+        console.log(`  - Overall match: ${matches}`);
+        
+        return matches;
       } catch (filterError) {
-        console.error(`Error filtering course: ${filterError.message}`);
+        console.error(`❌ Error filtering course: ${filterError.message}`);
         // Skip this course if there was an error
         return false;
       }
@@ -362,6 +413,47 @@ exports.getCoursesByPaper = async (req, res) => {
     });
     
     console.log(`Returning ${sanitizedCourses.length} sanitized filtered courses`);
+    
+    // If no courses found, try a more lenient search
+    if (sanitizedCourses.length === 0) {
+      console.log('🔄 No courses found with strict filtering, trying lenient search...');
+      
+      const lenientCourses = allCourses.filter(course => {
+        const courseCategory = String(course.category || '').toUpperCase().trim();
+        const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
+        const coursePaperId = String(course.paperId || '').replace(/\D/g, '');
+        
+        const requestedCategory = String(category || '').toUpperCase().trim();
+        const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
+        const requestedPaperId = String(paperId || '').replace(/\D/g, '');
+        
+        // Very lenient matching
+        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
+        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
+        const paperIdMatch = coursePaperId === requestedPaperId;
+        
+        return categoryMatch && subcategoryMatch && paperIdMatch;
+      }).filter(course => {
+        return course && course._id && (course.subject || course.title);
+      }).map(course => {
+        return {
+          ...course,
+          _id: course._id || new mongoose.Types.ObjectId(),
+          subject: course.subject || course.title || 'Untitled Course',
+          facultyName: course.facultyName || '',
+          facultySlug: course.facultySlug || '',
+          courseType: course.courseType || `${category} ${subcategory} - Paper ${paperId}`,
+          modeAttemptPricing: course.modeAttemptPricing || []
+        };
+      });
+      
+      console.log(`🔄 Lenient search found ${lenientCourses.length} courses`);
+      
+      if (lenientCourses.length > 0) {
+        return res.status(200).json({ courses: lenientCourses });
+      }
+    }
+    
     res.status(200).json({ courses: sanitizedCourses });
   } catch (error) {
     res.status(500).json({ error: error.message });
