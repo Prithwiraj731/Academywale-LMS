@@ -84,14 +84,14 @@ exports.searchCourses = async (req, res) => {
       const paperMatch = course.paperName && searchTerms.some(term => 
         course.paperName.toLowerCase().includes(term));
       
-      const paperNumberMatch = course.paperNumber && searchTerms.some(term => 
+      const courseNumberMatch = course.paperNumber && searchTerms.some(term => 
         term.includes(course.paperNumber.toString()));
         
       const courseTypeMatch = course.courseType && searchTerms.some(term => 
         course.courseType.toLowerCase().includes(term));
       
       // Consider a course matched if any searchable field contains the query
-      return subjectMatch || titleMatch || paperMatch || paperNumberMatch || courseTypeMatch;
+      return subjectMatch || titleMatch || paperMatch || courseNumberMatch || courseTypeMatch;
     });
     
     console.log(`🎯 Found ${matchedCourses.length} matching courses`);
