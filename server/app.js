@@ -1,5 +1,4 @@
-// EMERGENCY CLOUDINARY FIX - APPLIED ON TOP
-const cloudinaryEmergency = require('./cloudinary-emergency-fix');
+
 
 const express = require('express');
 const app = express();
@@ -14,21 +13,9 @@ const Faculty = require('./src/model/Faculty.model');
 const User = require('./src/model/User.model');
 const Course = require('./src/model/Course.model');
 
-// Import validation bypass middleware early to avoid reference errors
-const { removeValidationMiddleware, directSaveMiddleware } = require('./src/middleware/forceValidationBypass');
 
-// Apply aggressive direct monkey patch to Faculty model to completely fix mode validation
-try {
-  console.log('🔧 Applying aggressive direct monkey patch to Faculty model...');
-  const applyMonkeyPatch = require('./src/utils/directFacultyMonkeyPatch');
-  const patchResult = applyMonkeyPatch();
-  console.log('🔧 Faculty model monkey patch result:', patchResult ? 'SUCCESS' : 'FAILED');
 
-  // Attach models to app object for middleware access
-  app.models = { Faculty, User };
-} catch (patchError) {
-  console.error('❌ Faculty model monkey patch error:', patchError);
-}
+
 
 // CORS configuration moved below with other middleware
 const bcrypt = require('bcryptjs');
@@ -37,23 +24,19 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const path = require('path');
 
-// Import Cloudinary configuration but use the emergency cloudinary instance
-// const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
-// Use emergency cloudinary instance instead:
-const cloudinary = cloudinaryEmergency; // Use emergency fix
-const { storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
+// Import Cloudinary configuration
+const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
 
 // --- CORS MUST COME BEFORE ANY ROUTES ---
 app.use(cors({
-  origin: '*', // Allow all origins for now to fix immediate issue
-  /*origin: [
+  origin: [
     'https://academywale.com',
     'https://www.academywale.com',
     'https://academywale-lms.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
-  ],*/
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Content-Length'],
@@ -69,8 +52,18 @@ app.options('*', cors());
 // Ensure CORS headers even when an error happens later
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  // Allow all origins for now to fix immediate issue
-  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  const allowedOrigins = [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+  ];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
@@ -87,13 +80,9 @@ app.use('/', courseRoutes);
 const facultyRoutes = require('./src/routes/faculty.routes.js');
 app.use('/', facultyRoutes);
 
-// Mount Cloudinary test routes
-const cloudinaryTestRoutes = require('./src/routes/cloudinary-test.routes.js');
-app.use('/', cloudinaryTestRoutes);
 
-// Mount debug course routes
-const debugCourseRoutes = require('./src/routes/debug-courses.routes.js');
-app.use('/', debugCourseRoutes);
+
+
 
 // Mount course controller routes
 const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
@@ -103,142 +92,10 @@ app.use('/', courseControllerRoutes);
 const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
 
-// Test endpoint for the specific failing course ID
-app.get('/api/diagnostic/course-lookup', async (req, res) => {
-  try {
-    const Faculty = require('./src/model/Faculty.model');
 
-    // Get all faculties and their courses
-    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
 
-    let totalCourses = 0;
-    let sampleCourses = [];
 
-    faculties.forEach(faculty => {
-      if (faculty.courses && faculty.courses.length > 0) {
-        totalCourses += faculty.courses.length;
 
-        // Add first few courses as samples
-        faculty.courses.slice(0, 2).forEach(course => {
-          sampleCourses.push({
-            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-            courseId: course._id,
-            subject: course.subject,
-            courseType: course.courseType,
-            paperNumber: course.paperNumber,
-            description: course.description ? 'Has description' : 'No description'
-          });
-        });
-      }
-    });
-
-    res.json({
-      success: true,
-      totalFaculties: faculties.length,
-      totalCourses: totalCourses,
-      sampleCourses: sampleCourses.slice(0, 10),
-      message: 'Course lookup service is working'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      message: 'Course lookup service failed'
-    });
-  }
-});
-
-// Test endpoint for specific course ID patterns
-app.get('/api/diagnostic/test-course/:courseId', async (req, res) => {
-  try {
-    const { courseId } = req.params;
-    const courseType = req.query.courseType || null;
-
-    console.log(`🔍 Testing course lookup for: ${courseId}, type: ${courseType}`);
-
-    const Faculty = require('./src/model/Faculty.model');
-    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
-
-    let matchingCourses = [];
-
-    // Enhanced paper number extraction for testing
-    let paperNumber = null;
-    const testMatch = /test(\d+)/i.exec(courseId);
-    if (testMatch) {
-      paperNumber = testMatch[1];
-    }
-
-    faculties.forEach(faculty => {
-      if (!faculty.courses) return;
-
-      faculty.courses.forEach(course => {
-        let isMatch = false;
-        let matchReason = '';
-
-        // Test paper number matching
-        if (paperNumber && course.paperNumber && course.paperNumber.toString() === paperNumber) {
-          isMatch = true;
-          matchReason = `Paper number match: ${paperNumber}`;
-        }
-
-        // Test course type matching
-        if (courseType && course.courseType &&
-          course.courseType.toLowerCase().includes('cma') &&
-          course.courseType.toLowerCase().includes('final')) {
-          isMatch = true;
-          matchReason += (matchReason ? ' + ' : '') + 'Course type match: CMA Final';
-        }
-
-        if (isMatch) {
-          matchingCourses.push({
-            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-            courseId: course._id,
-            subject: course.subject,
-            courseType: course.courseType,
-            paperNumber: course.paperNumber,
-            description: course.description ? course.description.substring(0, 100) + '...' : 'No description',
-            matchReason: matchReason
-          });
-        }
-      });
-    });
-
-    res.json({
-      success: true,
-      searchedFor: courseId,
-      courseType: courseType,
-      extractedPaperNumber: paperNumber,
-      matchingCourses: matchingCourses,
-      totalMatches: matchingCourses.length
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-// Diagnostic endpoint to check course lookup status
-app.get('/api/diagnostic/course-lookup', (req, res) => {
-  try {
-    const CourseLookupService = require('./src/services/courseLookupService');
-    const service = new CourseLookupService();
-
-    res.json({
-      status: 'Course lookup service is working',
-      timestamp: new Date().toISOString(),
-      serviceLoaded: true,
-      strategies: service.searchStrategies || ['objectId', 'slug', 'paperNumber', 'fuzzy', 'standalone']
-    });
-  } catch (error) {
-    res.json({
-      status: 'Course lookup service has issues',
-      timestamp: new Date().toISOString(),
-      serviceLoaded: false,
-      error: error.message
-    });
-  }
-});
 
 // Mount course search routes
 const courseSearchRoutes = require('./src/routes/courseSearch.routes.js');
@@ -288,12 +145,7 @@ const facultyUpload = multer({ storage: cloudinaryFacultyStorage });
 
 // Remove route-specific wildcard CORS and rely on global CORS above
 
-// Log all CORS requests for debugging
-app.use((req, res, next) => {
-  console.log(`🌐 ${req.method} request from origin: ${req.headers.origin || 'unknown'} to ${req.path}`);
-  console.log(`🌐 User-Agent: ${req.headers['user-agent'] || 'unknown'}`);
-  next();
-});
+
 
 app.use(express.json());
 
@@ -324,9 +176,8 @@ connectDB();
 app.get('/', (req, res) => {
   res.json({
     message: 'AcademyWale Backend Running!',
-    courseLookupFix: 'ACTIVE',
-    version: '2024-01-15-course-lookup-fix',
-    testEndpoint: '/api/test/course-lookup/cma-final-test5mP?courseType=CMA Final'
+    status: 'healthy',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -334,170 +185,21 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    version: '2024-01-15-15:30', // Deployment tracker
-    endpoints: {
-      testCourse: '/api/test/course',
-      courses: '/api/courses',
-      faculties: '/api/faculties',
-      institutes: '/api/institutes'
-    }
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
-// Simple GET test endpoint
-app.get('/test', (req, res) => {
-  res.json({ message: 'Basic test endpoint working', timestamp: new Date().toISOString() });
-});
 
-// Simple test endpoint for course creation
-app.post('/api/test/course', async (req, res) => {
-  try {
-    console.log('🧪 Test course endpoint hit');
-    console.log('📋 Request body:', req.body);
 
-    res.json({
-      success: true,
-      message: 'Test endpoint working',
-      receivedData: req.body,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('❌ Test endpoint error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
 
-// Course creation health check endpoint
-app.get('/api/admin/courses/health', async (req, res) => {
-  try {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Content-Type', 'application/json');
 
-    console.log('🏥 Course creation health check');
 
-    // Test database connection
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
 
-    // Test model imports
-    let modelsStatus = 'OK';
-    try {
-      const courseCount = await Course.countDocuments();
-      const facultyCount = await Faculty.countDocuments();
-      modelsStatus = 'OK';
-    } catch (modelError) {
-      modelsStatus = 'ERROR: ' + modelError.message;
-    }
 
-    res.json({
-      success: true,
-      message: 'Course creation endpoint is healthy',
-      timestamp: new Date().toISOString(),
-      database: dbStatus,
-      models: modelsStatus,
-      cloudinary: 'configured',
-      multer: 'configured',
-      cors: 'enabled'
-    });
-  } catch (error) {
-    console.error('❌ Health check error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Health check failed',
-      message: error.message
-    });
-  }
-});
 
-// SIMPLE FALLBACK COURSE CREATION ENDPOINT (bulletproof)
-app.post('/api/admin/courses/simple', async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
 
-  try {
-    console.log('🎯 Simple course creation request received');
-    console.log('📋 Request body:', req.body);
 
-    // Create a minimal course object
-    const courseData = {
-      title: req.body.title || 'New Course',
-      subject: req.body.subject || 'General Subject',
-      description: req.body.description || '',
-      isStandalone: true,
-      isActive: true,
-      createdAt: new Date()
-    };
 
-    console.log('📝 Creating simple course:', courseData);
-
-    // Try to save to Course model
-    try {
-      const newCourse = new Course(courseData);
-      const savedCourse = await newCourse.save();
-
-      console.log('✅ Simple course saved successfully:', savedCourse._id);
-
-      return res.status(201).json({
-        success: true,
-        message: 'Simple course created successfully',
-        course: savedCourse
-      });
-    } catch (saveError) {
-      console.error('❌ Course save error:', saveError);
-
-      // If Course model fails, return success anyway for testing
-      return res.status(201).json({
-        success: true,
-        message: 'Course creation simulated successfully (save failed but endpoint working)',
-        course: courseData,
-        note: 'This is a test response - actual database save failed'
-      });
-    }
-
-  } catch (error) {
-    console.error('❌ Simple course creation error:', error);
-
-    return res.status(500).json({
-      success: false,
-      error: 'Simple course creation failed',
-      message: error.message || 'Internal Server Error',
-      details: error.name || 'UnknownError'
-    });
-  }
-});
-
-app.get('/api/health/db', async (req, res) => {
-  try {
-    // Test database connection by counting documents
-    const courseCount = await Course.countDocuments();
-    const facultyCount = await Faculty.countDocuments();
-    const userCount = await User.countDocuments();
-
-    res.json({
-      status: 'OK',
-      database: 'connected',
-      collections: {
-        courses: courseCount,
-        faculties: facultyCount,
-        users: userCount
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      database: 'disconnected',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-app.get('/api/auth/test', (req, res) => {
-  res.json({ message: 'Auth routes working' });
-});
 
 app.post('/api/auth/signup', async (req, res) => {
   try {

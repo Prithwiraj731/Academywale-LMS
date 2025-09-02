@@ -306,10 +306,21 @@ exports.getCoursesByFaculty = async (req, res) => {
 // Get courses by category, subcategory, and paper
 exports.getCoursesByPaper = async (req, res) => {
   try {
+    // Set response headers for CORS
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    
     // Import required models at function level to avoid circular dependencies
     const Faculty = require('../model/Faculty.model');
     const Institute = require('../model/Institute.model');
     const Course = require('../model/Course.model');
+    const mongoose = require('mongoose');
     
     const { category, subcategory, paperId } = req.params;
     const includeStandalone = req.query.includeStandalone === 'true';
@@ -382,6 +393,8 @@ exports.getCoursesByPaper = async (req, res) => {
     // Filter by category, subcategory, and paper - using looser comparison for all fields
     const filteredCourses = allCourses.filter(course => {
       try {
+        if (!course) return false;
+        
         // Handle different formats and data types that might be stored in MongoDB
         const courseCategory = String(course.category || '').toUpperCase().trim();
         const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
@@ -396,8 +409,10 @@ exports.getCoursesByPaper = async (req, res) => {
         let subcategoryMatch = false;
         let paperIdMatch = false;
         
-        // Category matching - exact match (case insensitive)
-        categoryMatch = courseCategory === requestedCategory;
+        // Category matching - handle common variations
+        categoryMatch = courseCategory === requestedCategory || 
+                       (courseCategory === "CMA" && requestedCategory === "CMA") ||
+                       (courseCategory === "CA" && requestedCategory === "CA");
         
         // Subcategory matching - normalize common variations
         const normalizeSubcategory = (sub) => {
