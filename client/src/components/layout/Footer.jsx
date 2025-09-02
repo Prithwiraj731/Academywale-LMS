@@ -52,18 +52,18 @@ export default function Footer() {
       <div className="absolute inset-0 w-full h-full">
         <VenomBeam />
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 xs:py-8 sm:py-12 lg:py-16">
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8 lg:gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-3 xs:px-4 sm:px-4 py-6 xs:py-7 sm:py-8 lg:py-12 xl:py-16">
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-7 sm:gap-8 lg:gap-10 xl:gap-12">
           {/* Company info */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-              <img src="/FooterLogo.svg" alt="Academywale Footer Logo" className="h-16 sm:h-20 w-auto object-contain" />
+          <div className="sm:col-span-2 lg:col-span-1 mb-6 xs:mb-7 sm:mb-0">
+            <div className="flex items-center space-x-3 mb-3 xs:mb-4 sm:mb-6">
+              <img src="/FooterLogo.svg" alt="Academywale Footer Logo" className="h-14 xs:h-16 sm:h-18 lg:h-20 w-auto object-contain" />
             </div>
-            <p className="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
+            <p className="text-gray-300 mb-4 xs:mb-5 sm:mb-6 leading-relaxed text-sm xs:text-sm sm:text-base">
               Academywale is India's most reliable platform for CA & CMA aspirants to access high-quality exam preparation resources. 
               We offer online video lectures, pendrive classes, test series, and study materials from some of the best faculties across the country.
             </p>
-            <div className="flex space-x-4 mt-4 sm:mt-6">
+            <div className="flex space-x-3 xs:space-x-4 mt-3 xs:mt-4 sm:mt-6">
               <a href="https://chat.whatsapp.com/HmUSCs1IguT7Tew1z82JwO" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition">
                 {/* Official WhatsApp Logo */}
                 <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,47 +83,47 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Quick Links</h4>
-            <ul className="space-y-2 sm:space-y-3">
-              <li><a href="/about" className="text-gray-300 hover:text-white transition text-sm sm:text-base">About Us</a></li>
-              <li><a href="/faculties" className="text-gray-300 hover:text-white transition text-sm sm:text-base">Our Faculties</a></li>
-              <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition text-sm sm:text-base">Privacy Policy</a></li>
+          <div className="mb-6 xs:mb-7 sm:mb-0">
+            <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6">Quick Links</h4>
+            <ul className="space-y-2 xs:space-y-2.5 sm:space-y-3">
+              <li><a href="/about" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">About Us</a></li>
+              <li><a href="/faculties" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">Our Faculties</a></li>
+              <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">Privacy Policy</a></li>
             </ul>
           </div>
 
           {/* Contact Info */}
-          <div>
-            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Contact Us</h4>
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex items-center space-x-3">
-                <svg className="w-5 h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mb-6 xs:mb-7 sm:mb-0">
+            <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6">Contact Us</h4>
+            <div className="space-y-3 xs:space-y-3.5 sm:space-y-4">
+              <div className="flex items-center space-x-2 xs:space-x-3">
+                <svg className="w-4 h-4 xs:w-5 xs:h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                <span className="text-gray-300 text-sm sm:text-base">+91 9693320108</span>
+                <span className="text-gray-300 text-sm xs:text-sm sm:text-base">+91 9693320108</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <svg className="w-5 h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center space-x-2 xs:space-x-3">
+                <svg className="w-4 h-4 xs:w-5 xs:h-5 text-[#20b2aa] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                <span className="text-gray-300 text-sm sm:text-base break-all">support@academywale.com</span>
+                <span className="text-gray-300 text-sm xs:text-sm sm:text-base break-all">support@academywale.com</span>
               </div>
             </div>
           </div>
 
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h4 className="font-heading font-semibold text-lg mb-4 sm:mb-6">Get In Touch</h4>
-            <p className="text-gray-300 mb-4 text-sm sm:text-base">
+            <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6">Get In Touch</h4>
+            <p className="text-gray-300 mb-3 xs:mb-4 sm:mb-4 text-sm xs:text-sm sm:text-base">
               Simply fill out the form to request a callback from one of our team members.
             </p>
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-2.5 xs:space-y-3 sm:space-y-3">
               <input 
                 type="text" 
                 name="fullName" 
                 placeholder="Full Name" 
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
@@ -132,7 +132,7 @@ export default function Footer() {
                 type="text" 
                 name="phoneNumber" 
                 placeholder="Phone Number" 
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 required
@@ -141,14 +141,14 @@ export default function Footer() {
                 type="text" 
                 name="city" 
                 placeholder="City" 
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm sm:text-base"
+                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
                 value={formData.city}
                 onChange={handleChange}
                 required
               />
               <button 
                 type="submit" 
-                className="w-full bg-[#20b2aa] text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-[#17817a] transition text-sm sm:text-base"
+                className="w-full bg-[#20b2aa] text-white py-2 xs:py-2.5 sm:py-3 px-3 xs:px-3.5 sm:px-4 rounded-lg font-semibold hover:bg-[#17817a] transition text-sm xs:text-sm sm:text-base"
               >
                 Request a Call Back
               </button>
@@ -164,12 +164,12 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-gray-800 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 xs:py-5 sm:py-6">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-4 py-3 xs:py-4 sm:py-5 lg:py-6">
           <div className="flex flex-col xs:flex-row justify-between items-center">
-            <div className="text-gray-300 text-xs xs:text-sm mb-2 xs:mb-0 font-medium">
+            <div className="text-gray-300 text-xs xs:text-xs sm:text-sm mb-2 xs:mb-0 font-medium text-center xs:text-left">
               ©2025 Academywale. All Rights Reserved.
             </div>
-            <div className="text-gray-300 text-xs xs:text-sm font-medium">
+            <div className="text-gray-300 text-xs xs:text-xs sm:text-sm font-medium text-center xs:text-right">
               Designed and developed by <a href="https://www.linkedin.com/in/prithwiraj-mazumdar-963086291/" className="hover:text-[#20b2aa] transition-colors">Prithwiraj</a>
             </div>
           </div>

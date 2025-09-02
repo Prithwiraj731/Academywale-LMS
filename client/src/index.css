@@ -65,6 +65,36 @@ body {
   -webkit-line-clamp: 3;
 }
 
+/* Mobile-optimized grid utilities */
+@media (max-width: 640px) {
+  .grid-mobile-1 {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  
+  .grid-mobile-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .gap-mobile-1 {
+    gap: 0.25rem;
+  }
+  
+  .gap-mobile-2 {
+    gap: 0.5rem;
+  }
+  
+  .gap-mobile-3 {
+    gap: 0.75rem;
+  }
+}
+
+/* Touch-friendly hover states */
+@media (hover: hover) {
+  .hover-mobile-safe:hover {
+    transform: translateY(-2px);
+  }
+}
+
 /* Mobile-first responsive design improvements */
 @media (max-width: 640px) {
   /* Reduce padding and margins on mobile */
@@ -92,6 +122,67 @@ body {
   
   .text-mobile-base {
     font-size: 0.875rem;
+  }
+  
+  /* Mobile-specific spacing */
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  
+  .mobile-p-3 {
+    padding: 0.75rem;
+  }
+  
+  .mobile-m-2 {
+    margin: 0.5rem;
+  }
+  
+  .mobile-m-3 {
+    margin: 0.75rem;
+  }
+  
+  /* Mobile touch targets */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile-friendly inputs */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Better mobile focus states */
+  button:focus, a:focus, input:focus, textarea:focus {
+    outline: 2px solid #20b2aa;
+    outline-offset: 2px;
+  }
+}
+
+/* Extra small devices (portrait phones) */
+@media (max-width: 480px) {
+  .text-xs-mobile {
+    font-size: 0.7rem;
+  }
+  
+  .p-xs-mobile {
+    padding: 0.25rem;
+  }
+  
+  .container-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Very small devices */
+@media (max-width: 360px) {
+  .text-xxs-mobile {
+    font-size: 0.625rem;
+  }
+  
+  .p-xxs-mobile {
+    padding: 0.125rem;
   }
 }
 

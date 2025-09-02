@@ -42,7 +42,7 @@ const Categories = () => {
   }, []);
 
   return (
-    <section className="timeline-section-premium bg-gray-900 text-white py-10 xs:py-12 sm:py-16 rounded-lg shadow-lg animate-fadeIn">
+    <section className="timeline-section-premium bg-gray-900 text-white py-8 xs:py-10 sm:py-12 md:py-16 rounded-lg shadow-lg animate-fadeIn">
       <div className="timeline-heading-container px-0 py-0 full-width-banner" style={{ overflow: 'visible' }}>
         <img
           src={banner4}
@@ -51,7 +51,7 @@ const Categories = () => {
           style={{ maxHeight: 'none' }}
         />
       </div>
-      <div className="max-w-7xl mx-auto px-4 text-center text-sm sm:text-base mt-6">
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-4 text-center text-xs xs:text-sm sm:text-base mt-4 xs:mt-5 sm:mt-6">
       </div>
       <div className="timeline-scroll-wrapper">
         <div className="timeline-scroll-fade left" />
