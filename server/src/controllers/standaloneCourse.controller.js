@@ -103,7 +103,7 @@ exports.createStandaloneCourse = async (req, res) => {
       // Format category and subcategory consistently for all course types (CA, CMA, etc.)
       const formattedCategory = category ? category.toUpperCase() : '';
       const formattedSubcategory = subcategory ? 
-        subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
+        subcategory.toLowerCase() : '';
       
       console.log(`Creating standalone course: ${formattedCategory}/${formattedSubcategory}/Paper-${paperId}`);
       console.log(`- Original values: category=${category}, subcategory=${subcategory}, paperId=${paperId}`);
@@ -114,7 +114,7 @@ exports.createStandaloneCourse = async (req, res) => {
         description: description || '',
         category: formattedCategory,
         subcategory: formattedSubcategory,
-        paperId: paperId ? parseInt(paperId) : '',
+        paperId: paperId ? String(paperId) : '',
         paperName: paperName || '',
         courseType: courseType || 'General Course',
         noOfLecture: noOfLecture || '',

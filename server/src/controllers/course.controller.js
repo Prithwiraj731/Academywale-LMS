@@ -3,6 +3,23 @@ const { mapMode } = require('../utils/modeMapper');
 const Faculty = require('../model/Faculty.model');
 const mongoose = require('mongoose');
 
+// Data normalization function to fix existing course data
+const normalizeCourseData = (course) => {
+  // Normalize paperId to string
+  if (course.paperId && typeof course.paperId === 'number') {
+    course.paperId = String(course.paperId);
+  }
+  // Normalize subcategory to lowercase
+  if (course.subcategory) {
+    course.subcategory = course.subcategory.toLowerCase();
+  }
+  // Normalize category to uppercase
+  if (course.category) {
+    course.category = course.category.toUpperCase();
+  }
+  return course;
+};
+
 // Faculty-only course creation: all courses must belong to a specific faculty
 exports.addCourseToFaculty = async (req, res) => {
   try {
@@ -69,7 +86,7 @@ exports.addCourseToFaculty = async (req, res) => {
     const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
     // Normalize category and subcategory for consistent filtering
     const normalizedCategory = category ? category.toUpperCase() : '';
-    const normalizedSubcategory = subcategory ? subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
+    const normalizedSubcategory = subcategory ? subcategory.toLowerCase() : '';
     
     let newCourse = {
       facultyName,
@@ -88,7 +105,7 @@ exports.addCourseToFaculty = async (req, res) => {
       institute,
       category: normalizedCategory,
       subcategory: normalizedSubcategory,
-      paperId: parseInt(paperId),
+      paperId: String(paperId), // Store as string for consistent filtering
       paperName,
       modeAttemptPricing: parsedModeAttemptPricing,
       costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
@@ -339,8 +356,10 @@ exports.getCoursesByPaper = async (req, res) => {
       (faculty.courses || []).forEach(course => {
         // Only add if course has required fields
         if (course) {
+          // Normalize course data before adding to results
+          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
           allCourses.push({
-            ...course.toObject(),
+            ...normalizedCourse,
             facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
             facultySlug: faculty.slug,
             isStandalone: false
@@ -354,8 +373,10 @@ exports.getCoursesByPaper = async (req, res) => {
       (institute.courses || []).forEach(course => {
         // Only add if course has required fields
         if (course) {
+          // Normalize institute course data
+          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
           allCourses.push({
-            ...course.toObject(),
+            ...normalizedCourse,
             facultyName: '',
             isStandalone: false
           });
@@ -368,8 +389,10 @@ exports.getCoursesByPaper = async (req, res) => {
       try {
         const standaloneCourses = await Course.find({ isActive: true });
         standaloneCourses.forEach(course => {
+          // Normalize standalone course data
+          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
           allCourses.push({
-            ...course.toObject(),
+            ...normalizedCourse,
             isStandalone: true
           });
         });
@@ -398,11 +421,20 @@ exports.getCoursesByPaper = async (req, res) => {
         // Handle different formats and data types that might be stored in MongoDB
         const courseCategory = String(course.category || '').toUpperCase().trim();
         const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
-        const coursePaperId = String(course.paperId || '').replace(/\D/g, ''); // Extract numeric part only
+        // Handle paperId as both string and number - be more flexible
+        let coursePaperId = '';
+        if (course.paperId !== null && course.paperId !== undefined) {
+          coursePaperId = String(course.paperId).replace(/\D/g, ''); // Extract numeric part only
+        }
         
         const requestedCategory = String(category || '').toUpperCase().trim();
         const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
         const requestedPaperId = String(paperId || '').replace(/\D/g, ''); // Extract numeric part only
+        
+        console.log(`🔍 Course "${course.subject || course.title || 'unknown'}" filtering:`);
+        console.log(`  - Saved: cat="${course.category}", sub="${course.subcategory}", paper="${course.paperId}" (${typeof course.paperId})`);
+        console.log(`  - Normalized: cat="${courseCategory}", sub="${courseSubcategory}", paper="${coursePaperId}"`);
+        console.log(`  - Requested: cat="${requestedCategory}", sub="${requestedSubcategory}", paper="${requestedPaperId}"`);
         
         // More flexible matching with comprehensive case handling
         let categoryMatch = false;
@@ -410,13 +442,11 @@ exports.getCoursesByPaper = async (req, res) => {
         let paperIdMatch = false;
         
         // Category matching - handle common variations
-        categoryMatch = courseCategory === requestedCategory || 
-                       (courseCategory === "CMA" && requestedCategory === "CMA") ||
-                       (courseCategory === "CA" && requestedCategory === "CA");
+        categoryMatch = courseCategory === requestedCategory;
         
-        // Subcategory matching - normalize common variations
+        // Subcategory matching - be more flexible with normalization
         const normalizeSubcategory = (sub) => {
-          const normalized = sub.toLowerCase();
+          const normalized = sub.toLowerCase().trim();
           if (normalized === 'inter' || normalized === 'intermediate') return 'inter';
           if (normalized === 'final') return 'final';
           if (normalized === 'foundation') return 'foundation';
@@ -428,8 +458,8 @@ exports.getCoursesByPaper = async (req, res) => {
         
         subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
         
-        // Paper ID matching - exact numeric match
-        paperIdMatch = coursePaperId === requestedPaperId;
+        // Paper ID matching - exact numeric match, but handle empty/null cases
+        paperIdMatch = coursePaperId === requestedPaperId && coursePaperId !== '';
         
         // Log detailed comparison for debugging
         console.log(`🔍 Course comparison: ${course._id || 'unknown'}, Subject: ${course.subject || 'unknown'}`);

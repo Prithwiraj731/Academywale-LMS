@@ -19,15 +19,10 @@ router.get('/api/courses/test', (req, res) => {
   });
 });
 
-// Import validation bypass middleware
-const { removeValidationMiddleware, directSaveMiddleware } = require('../middleware/forceValidationBypass');
-
-// Create a new course (using the controller)
-router.post('/api/admin/courses/controller', [
-  removeValidationMiddleware, 
-  directSaveMiddleware,
-  upload.single('poster')
-], courseController.addCourseToFaculty);
+// Create a new course (using the controller) - DISABLED FOR NOW
+// router.post('/api/admin/courses/controller', [
+//   upload.single('poster')
+// ], courseController.addCourseToFaculty);
 
 // Get all courses (both standalone and faculty-based)
 router.get('/api/courses/all', async (req, res) => {

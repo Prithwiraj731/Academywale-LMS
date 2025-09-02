@@ -771,7 +771,7 @@ app.post('/api/admin/courses/new', courseUpload.single('poster'), async (req, re
 });
 
 // FACULTY-BASED COURSE CREATION ENDPOINT
-app.post('/api/admin/courses/faculty', [removeValidationMiddleware, directSaveMiddleware, courseUpload.single('poster')], async (req, res) => {
+app.post('/api/admin/courses/faculty', [courseUpload.single('poster')], async (req, res) => {
   try {
     console.log('🎯 Faculty course creation request received');
     console.log('📋 Request body:', req.body);
@@ -906,8 +906,7 @@ app.post('/api/admin/courses/faculty', [removeValidationMiddleware, directSaveMi
 });
 
 // MAIN COURSE CREATION ENDPOINT - SIMPLE AND WORKING
-// Apply validation bypass middleware to course creation routes
-app.post('/api/admin/courses', [removeValidationMiddleware, directSaveMiddleware, courseUpload.single('poster')], async (req, res) => {
+app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res) => {
   // Set CORS headers
   if (req.headers.origin) {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
