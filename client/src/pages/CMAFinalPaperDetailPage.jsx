@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
@@ -32,54 +32,40 @@ const CMAFinalPaperDetailPage = () => {
       try {
         console.log(`Fetching CMA final courses from: ${API_URL}/api/courses/CMA/final/${paperId}`);
         
-        // Try different URL variations
-        const urlVariations = [
-          `${API_URL}/api/courses/CMA/final/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/cma/final/${paperId}?includeStandalone=true`,
-          `${API_URL}/api/courses/CMA/Final/${paperId}`,
-          `${API_URL}/api/courses/CMA/FINAL/${paperId}`,
-        ];
+        // Use the primary endpoint - courses by category, subcategory, and paper ID
+        const primaryUrl = `${API_URL}/api/courses/CMA/final/${paperId}`;
         
-        let coursesFound = false;
-        
-        // Try each URL variation
-        for (const url of urlVariations) {
-          if (coursesFound) break;
+        try {
+          console.log(`Trying primary URL: ${primaryUrl}`);
+          const res = await fetch(primaryUrl, {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            cache: 'no-cache',
+            mode: 'cors',
+          });
           
-          try {
-            console.log(`Trying URL: ${url}`);
-            const res = await fetch(url, {
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              cache: 'no-cache',
-              mode: 'cors',
-            });
-            
-            if (!res.ok) {
-              console.log(`URL ${url} returned status: ${res.status}`);
-              continue;
-            }
-            
+          if (res.ok) {
             const data = await res.json();
             
             if (data.courses && data.courses.length > 0) {
-              console.log(`Found ${data.courses.length} courses using URL: ${url}`);
+              console.log(`Found ${data.courses.length} courses using primary URL`);
               setCourses(data.courses);
-              coursesFound = true;
-              break;
+            } else {
+              console.log("No courses found with primary URL");
+              setCourses([]);
+              setError("No courses available for this paper yet. Check back later.");
             }
-          } catch (urlError) {
-            console.error(`Error with URL ${url}:`, urlError);
+          } else {
+            console.log(`Primary URL returned status: ${res.status}`);
+            setCourses([]);
+            setError("No courses available for this paper yet. Check back later.");
           }
-        }
-        
-        // If no courses found with any URL variation, show 'no courses' message
-        if (!coursesFound) {
-          console.log('No courses found for this paper. Not creating mock courses anymore.');
+        } catch (urlError) {
+          console.error(`Error with primary URL:`, urlError);
           setCourses([]);
-          setError('No courses available for this paper yet. Check back later.');
+          setError("No courses available for this paper yet. Check back later.");
         }
       } catch (err) {
         console.error('Error fetching courses:', err);

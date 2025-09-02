@@ -53,13 +53,9 @@ const CMAFoundationPaperDetailPage = () => {
       try {
         console.log(`Fetching CMA foundation courses for paper: ${paperId}`);
         
-        // Add timeout to prevent hanging requests
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-        
         try {
-          // Main request with improved error handling
-          const apiUrl = `${API_URL}/api/courses/cma/foundation/${paperId}?includeStandalone=true`;
+          // Use the primary endpoint - courses by category, subcategory, and paper ID
+          const apiUrl = `${API_URL}/api/courses/CMA/foundation/${paperId}`;
           console.log(`Trying URL: ${apiUrl}`);
           
           const res = await fetch(apiUrl, {
@@ -67,11 +63,8 @@ const CMAFoundationPaperDetailPage = () => {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
             },
-            signal: controller.signal,
             cache: 'no-cache',
           });
-          
-          clearTimeout(timeoutId);
           
           if (!res.ok) {
             console.log(`API request failed with status: ${res.status}`);

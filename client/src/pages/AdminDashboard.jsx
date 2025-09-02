@@ -1606,22 +1606,22 @@ export default function AdminDashboard() {
       </div>
       {/* Panel Switcher */}
       {activePanel === 'course' && (
-        <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-8 border border-blue-100 mb-8">
-          <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add New Course</h2>
+        <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-blue-100 mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-4 sm:mb-6 text-center">Add New Course</h2>
 
-          <form onSubmit={handleNewCourseSubmit} className="space-y-6" encType="multipart/form-data">
+          <form onSubmit={handleNewCourseSubmit} className="space-y-4 sm:space-y-6" encType="multipart/form-data">
 
             {/* Step 1: Course Information */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200">
-              <h3 className="text-xl font-semibold text-blue-800 mb-4">Step 1: Course Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl border-2 border-blue-200">
+              <h3 className="text-lg sm:text-xl font-semibold text-blue-800 mb-3 sm:mb-4">Step 1: Course Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                   <select
                     name="category"
                     value={courseForm.category}
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
                     required
                   >
                     <option value="">Select Category</option>
@@ -1631,13 +1631,13 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
                   <select
                     name="subcategory"
                     value={courseForm.subcategory}
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
                     required
                     disabled={!courseForm.category}
                   >
@@ -1648,13 +1648,13 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div>
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
                   <select
                     name="paperId"
                     value={courseForm.paperId}
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
                     required
                     disabled={!courseForm.subcategory}
                   >
@@ -1670,10 +1670,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Step 2: Course Details */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border-2 border-green-200">
-              <h3 className="text-xl font-semibold text-green-800 mb-4">Step 2: Course Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-lg sm:text-xl font-semibold text-green-800 mb-3 sm:mb-4">Step 2: Course Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                   <input
                     type="text"
@@ -1681,12 +1681,12 @@ export default function AdminDashboard() {
                     value={courseForm.title}
                     onChange={handleCourseFormChange}
                     placeholder="Enter course title"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                     required
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
                   <input
                     type="text"
@@ -1694,18 +1694,18 @@ export default function AdminDashboard() {
                     value={courseForm.subject}
                     onChange={handleCourseFormChange}
                     placeholder="Enter subject"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                     required
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Required)</label>
                   <select
                     name="facultySlug"
                     value={courseForm.facultySlug}
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                     required
                   >
                     <option value="">Select Faculty</option>
@@ -1718,16 +1718,15 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Required)</label>
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Optional)</label>
                   <select
                     name="institute"
                     value={courseForm.institute}
                     onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    required
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   >
-                    <option value="">Select Institute</option>
+                    <option value="">Select Institute (Optional)</option>
                     <option value="N/A">N/A - No Institute</option>
                     {institutes.map(inst => (
                       <option key={inst._id} value={inst.name}>{inst.name}</option>
@@ -1735,119 +1734,119 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
+                <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={courseForm.description}
                     onChange={handleCourseFormChange}
                     placeholder="Course description"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                     rows={3}
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Number of Lectures</label>
                   <input
                     name="noOfLecture"
                     value={courseForm.noOfLecture}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 65 Lectures"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Books</label>
                   <input
                     name="books"
                     value={courseForm.books}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Main Book, Practice Manual"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Video Language</label>
                   <input
                     name="videoLanguage"
                     value={courseForm.videoLanguage}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Hindi + English Mix"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Video Run On</label>
                   <input
                     name="videoRunOn"
                     value={courseForm.videoRunOn}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. Windows Laptop, Android Mobile"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Doubt Solving</label>
                   <input
                     name="doubtSolving"
                     value={courseForm.doubtSolving}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. WhatsApp / Telegram"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Support Mail</label>
                   <input
                     name="supportMail"
                     value={courseForm.supportMail}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. support@academywale.com"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Support Call</label>
                   <input
                     name="supportCall"
                     value={courseForm.supportCall}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 8910416751"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Timing</label>
                   <input
                     name="timing"
                     value={courseForm.timing}
                     onChange={handleCourseFormChange}
                     placeholder="e.g. 120 Hours"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
-                  <div className="flex gap-4 items-center">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
                     <input
                       name="poster"
                       type="file"
                       accept="image/*"
                       onChange={handleCourseFormChange}
-                      className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                       required
                     />
                     {posterPreviewNew && (
-                      <img src={posterPreviewNew} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200" />
+                      <img src={posterPreviewNew} alt="Preview" className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border-2 border-green-200" />
                     )}
                   </div>
                 </div>
@@ -1887,45 +1886,45 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing:</h5>
                     {modeData.attempts.map((attempt, attemptIndex) => (
-                      <div key={attemptIndex} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-purple-50 rounded-lg">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Attempt *</label>
+                      <div key={attemptIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3 sm:p-4 bg-purple-50 rounded-lg">
+                        <div className="sm:col-span-2 lg:col-span-1">
+                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Attempt *</label>
                           <input
                             value={attempt.attempt}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value)}
                             placeholder="e.g. 1.5 Views & 12 Months"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Cost Price *</label>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Cost Price *</label>
                           <input
                             type="number"
                             value={attempt.costPrice}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0)}
                             placeholder="15999"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Selling Price *</label>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Selling Price *</label>
                           <input
                             type="number"
                             value={attempt.sellingPrice}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0)}
                             placeholder="13999"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
                             required
                           />
                         </div>
-                        <div className="flex items-end">
+                        <div className="flex items-end sm:col-span-2 lg:col-span-1">
                           {modeData.attempts.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex)}
-                              className="text-red-600 hover:text-red-800 text-sm font-semibold"
+                              className="text-red-600 hover:text-red-800 text-sm sm:text-base font-semibold py-2 sm:py-3 px-3 sm:px-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors mobile-touch-target w-full lg:w-auto"
                             >
                               Remove
                             </button>
@@ -1937,7 +1936,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => addAttemptToPricing(modeIndex)}
-                      className="text-purple-600 hover:text-purple-800 text-sm font-semibold"
+                      className="text-purple-600 hover:text-purple-800 text-sm sm:text-base font-semibold py-2 px-3 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors mobile-touch-target"
                     >
                       + Add Another Attempt
                     </button>
@@ -1948,7 +1947,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={addModeAttemptPricing}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+                className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold text-sm sm:text-base mobile-touch-target w-full sm:w-auto"
               >
                 + Add Another Mode
               </button>
@@ -1958,7 +1957,7 @@ export default function AdminDashboard() {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all text-lg flex items-center justify-center gap-3 mx-auto"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 sm:px-12 rounded-xl shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all text-base sm:text-lg flex items-center justify-center gap-3 mx-auto w-full sm:w-auto mobile-touch-target"
                 disabled={loading}
               >
                 {loading && <span className="loader border-2 border-t-2 border-blue-300 border-t-transparent rounded-full w-5 h-5 animate-spin"></span>}
