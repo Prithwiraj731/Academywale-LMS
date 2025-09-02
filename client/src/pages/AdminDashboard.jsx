@@ -37,9 +37,27 @@ const modalStyles = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  if (localStorage.getItem('isAdmin') !== 'true') {
-    navigate('/admin');
-    return null;
+  
+  // Check admin access - but show loading state instead of blank page
+  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  
+  // If not admin, redirect but show loading state during redirect
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/admin');
+    }
+  }, [isAdmin, navigate]);
+  
+  // Show loading background during redirect
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking admin access...</p>
+        </div>
+      </div>
+    );
   }
 
   // UI state for which panel is active
@@ -86,9 +104,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const faculties = getAllFaculties();
     console.log('📚 Loading hardcoded faculties:', faculties);
-    const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
-    console.log('📝 Faculties with updates:', facultiesWithUpdates);
-    setHardcodedFaculties(facultiesWithUpdates);
+    setHardcodedFaculties(faculties);
   }, []);
 
   // Fetch faculty info when firstName changes (for update panel)
