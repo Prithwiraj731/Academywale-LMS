@@ -5,24 +5,21 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { PinContainer } from '../components/ui/3d-pin';
 import { getAllFaculties } from '../data/hardcodedFaculties';
-import { getAllFacultiesWithUpdates } from '../data/facultyUpdates';
 
 export default function FacultiesPage() {
   const [faculties, setFaculties] = useState([]);
 
-  // Load faculties with updates on component mount
+  // Load faculties on component mount
   useEffect(() => {
     const baseFaculties = getAllFaculties();
-    const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
-    setFaculties(facultiesWithUpdates);
+    setFaculties(baseFaculties);
   }, []);
 
   // Listen for faculty updates
   useEffect(() => {
     const handleFacultyUpdate = () => {
       const baseFaculties = getAllFaculties();
-      const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
-      setFaculties(facultiesWithUpdates);
+      setFaculties(baseFaculties);
     };
 
     window.addEventListener('facultyUpdated', handleFacultyUpdate);

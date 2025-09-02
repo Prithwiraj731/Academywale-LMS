@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
 import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
-import { getAllFacultiesWithUpdates } from '../data/facultyUpdates';
 import InstitutesPage from './InstitutesPage';
 import sjcCert from '../assets/sjcCert.jpg';
 
@@ -25,19 +24,17 @@ export default function Home() {
   const navigate = useNavigate();
   const [topFaculties, setTopFaculties] = useState([]);
 
-  // Load faculties with updates on component mount
+  // Load faculties on component mount
   useEffect(() => {
     const baseFaculties = getHomepageFaculties();
-    const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
-    setTopFaculties(facultiesWithUpdates);
+    setTopFaculties(baseFaculties);
   }, []);
 
   // Listen for faculty updates
   useEffect(() => {
     const handleFacultyUpdate = () => {
       const baseFaculties = getHomepageFaculties();
-      const facultiesWithUpdates = getAllFacultiesWithUpdates(baseFaculties);
-      setTopFaculties(facultiesWithUpdates);
+      setTopFaculties(baseFaculties);
     };
 
     window.addEventListener('facultyUpdated', handleFacultyUpdate);

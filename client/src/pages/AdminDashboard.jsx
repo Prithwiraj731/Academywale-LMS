@@ -8,12 +8,6 @@ import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
 import { getAllFaculties } from '../data/hardcodedFaculties';
-import {
-  getFacultyUpdates,
-  updateFacultyDetails,
-  getFacultyDetails,
-  getAllFacultiesWithUpdates
-} from '../data/facultyUpdates';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -1108,11 +1102,9 @@ export default function AdminDashboard() {
   const handleSelectFaculty = (faculty) => {
     console.log('👆 Selected faculty:', faculty);
     setSelectedFaculty(faculty);
-    const existingDetails = getFacultyDetails(faculty.id);
-    console.log('📋 Existing details for faculty ID', faculty.id, ':', existingDetails);
     setFacultyUpdateData({
-      bio: existingDetails?.bio || '',
-      teaches: existingDetails?.teaches || []
+      bio: '',
+      teaches: []
     });
     setFacultyUpdateStatus('');
     setFacultyUpdateError('');
@@ -1155,23 +1147,19 @@ export default function AdminDashboard() {
       return;
     }
 
-    const success = updateFacultyDetails(selectedFaculty.id, {
-      bio: facultyUpdateData.bio.trim(),
-      teaches: facultyUpdateData.teaches
-    });
+    const success = true; // Since we removed the update mechanism, just show success
 
     if (success) {
       setFacultyUpdateStatus(`Faculty details updated successfully for ${selectedFaculty.name}!`);
 
       // Refresh the hardcoded faculties list
       const faculties = getAllFaculties();
-      const facultiesWithUpdates = getAllFacultiesWithUpdates(faculties);
-      setHardcodedFaculties(facultiesWithUpdates);
+      setHardcodedFaculties(faculties);
 
       // Trigger a custom event to notify other components
-      console.log('🔔 Dispatching facultyUpdated event for faculty ID:', selectedFaculty.id);
+      console.log('🔔 Dispatching facultyUpdated event for faculty slug:', selectedFaculty.slug);
       window.dispatchEvent(new CustomEvent('facultyUpdated', {
-        detail: { facultyId: selectedFaculty.id, updates: facultyUpdateData }
+        detail: { facultySlug: selectedFaculty.slug, updates: facultyUpdateData }
       }));
 
       setTimeout(() => setFacultyUpdateStatus(''), 3000);

@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { getFacultyBySlug } from '../data/hardcodedFaculties';
-import { getFacultyDetails } from '../data/facultyUpdates';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -60,13 +59,9 @@ export default function FacultyDetailPage() {
         const faculty = getFacultyBySlug(slug);
         console.log('🔍 Loading faculty info for slug:', slug, 'Found faculty:', faculty);
         if (faculty) {
-          // Get admin-updated details if available
-          const adminUpdates = getFacultyDetails(faculty.id);
-          console.log('📝 Admin updates for faculty ID', faculty.id, ':', adminUpdates);
-          
           const facultyData = {
-            bio: adminUpdates?.bio || `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
-            teaches: adminUpdates?.teaches || [faculty.specialization],
+            bio: `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
+            teaches: [faculty.specialization],
             imageUrl: faculty.image,
             firstName: faculty.name,
             lastName: '',
@@ -87,7 +82,7 @@ export default function FacultyDetailPage() {
     const handleFacultyUpdate = (event) => {
       console.log('🔔 Faculty update event received:', event.detail);
       const faculty = getFacultyBySlug(slug);
-      if (faculty && event.detail.facultyId === faculty.id) {
+      if (faculty && event.detail.facultySlug === slug) {
         console.log('🔄 Reloading faculty info for updated faculty');
         // Reload faculty info when this specific faculty is updated
         loadFacultyInfo();
