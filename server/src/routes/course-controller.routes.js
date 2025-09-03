@@ -19,11 +19,6 @@ router.get('/api/courses/test', (req, res) => {
   });
 });
 
-// Create a new course (using the controller) - DISABLED FOR NOW
-// router.post('/api/admin/courses/controller', [
-//   upload.single('poster')
-// ], courseController.addCourseToFaculty);
-
 // Get all courses (both standalone and faculty-based)
 router.get('/api/courses/all', async (req, res) => {
   try {
