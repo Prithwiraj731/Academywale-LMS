@@ -976,14 +976,14 @@ app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res)
         });
       }
 
-      // Create simple course data - Use available fields
+      // Create simple course data - Use available fields with proper normalization
       const courseData = {
         title: req.body.title || req.body.paperName || 'Course Title',
         subject: req.body.subject || req.body.category || 'Course Subject',
         description: req.body.description || '',
-        category: req.body.category || '',
-        subcategory: req.body.subcategory || '',
-        paperId: req.body.paperId || '',
+        category: req.body.category ? req.body.category.toUpperCase() : '',
+        subcategory: req.body.subcategory ? req.body.subcategory.toLowerCase() : '',
+        paperId: req.body.paperId ? String(req.body.paperId) : '',
         paperName: req.body.paperName || req.body.title || '',
         courseType: req.body.courseType || 'General Course',
         noOfLecture: req.body.noOfLecture || '',
@@ -1013,6 +1013,15 @@ app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res)
       // Validate and fix course mode before adding to faculty
       const validatedCourseData = validateCourseMode(courseData);
       console.log('✅ Course mode validated and fixed if needed');
+      
+      // Log the normalized course data for debugging
+      console.log('📝 Final course data being saved:');
+      console.log(`   Category: "${validatedCourseData.category}" (${typeof validatedCourseData.category})`);
+      console.log(`   Subcategory: "${validatedCourseData.subcategory}" (${typeof validatedCourseData.subcategory})`);
+      console.log(`   PaperId: "${validatedCourseData.paperId}" (${typeof validatedCourseData.paperId})`);
+      console.log(`   Subject: "${validatedCourseData.subject}"`);
+      console.log(`   Title: "${validatedCourseData.title}"`);
+      console.log(`   Faculty: "${validatedCourseData.facultyName}" (${validatedCourseData.facultySlug})`);
 
       // Double-check mode value is valid
       validatedCourseData.mode = 'Live Watching'; // Force valid mode
@@ -1061,14 +1070,14 @@ app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res)
       // STANDALONE COURSE - Save to Course collection
       console.log('📍 Processing as standalone course');
 
-      // Create simple course data - Use available fields
+      // Create simple course data - Use available fields with proper normalization
       const courseData = {
         title: req.body.title || req.body.paperName || 'Course Title',
         subject: req.body.subject || req.body.category || 'Course Subject',
         description: req.body.description || '',
-        category: req.body.category || '',
-        subcategory: req.body.subcategory || '',
-        paperId: req.body.paperId || '',
+        category: req.body.category ? req.body.category.toUpperCase() : '',
+        subcategory: req.body.subcategory ? req.body.subcategory.toLowerCase() : '',
+        paperId: req.body.paperId ? String(req.body.paperId) : '',
         paperName: req.body.paperName || req.body.title || '',
         courseType: req.body.courseType || 'General Course',
         noOfLecture: req.body.noOfLecture || '',
@@ -1088,10 +1097,19 @@ app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res)
         modeAttemptPricing: [],
         costPrice: req.body.costPrice ? Number(req.body.costPrice) : 0,
         sellingPrice: req.body.sellingPrice ? Number(req.body.sellingPrice) : 0,
+        mode: 'Live Watching', // Force valid mode
         isStandalone: true,
         isActive: true,
         createdAt: new Date()
       };
+
+      // Log the normalized course data for debugging
+      console.log('📝 Final standalone course data being saved:');
+      console.log(`   Category: "${courseData.category}" (${typeof courseData.category})`);
+      console.log(`   Subcategory: "${courseData.subcategory}" (${typeof courseData.subcategory})`);
+      console.log(`   PaperId: "${courseData.paperId}" (${typeof courseData.paperId})`);
+      console.log(`   Subject: "${courseData.subject}"`);
+      console.log(`   Title: "${courseData.title}"`);
 
       // Create and save course
       const newCourse = new Course(courseData);

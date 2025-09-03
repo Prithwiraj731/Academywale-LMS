@@ -340,54 +340,88 @@ exports.getCoursesByPaper = async (req, res) => {
     const mongoose = require('mongoose');
     
     const { category, subcategory, paperId } = req.params;
-    const includeStandalone = req.query.includeStandalone === 'true';
+    const includeStandalone = req.query.includeStandalone !== 'false'; // Default to true now
     
     console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}, includeStandalone=${includeStandalone}`);
     console.log(`🔍 Request URL: ${req.originalUrl}`);
     console.log(`🔍 Query params:`, req.query);
+    console.log(`🔍 Expected filtering criteria:`);
+    console.log(`   • Category: "${category}" -> normalized: "${category.toUpperCase()}"`);
+    console.log(`   • Subcategory: "${subcategory}" -> normalized: "${subcategory.toLowerCase()}"`);
+    console.log(`   • PaperId: "${paperId}" -> numeric: "${String(paperId).replace(/\D/g, '')}"`);
+    console.log(`🔍 Starting course retrieval from database...`);
+    console.log(`📚 Include standalone courses: ${includeStandalone}`);
     
     const faculties = await Faculty.find({});
     const institutes = await Institute.find({});
     
+    console.log(`👨‍🏫 Found ${faculties.length} faculties in database`);
+    console.log(`🏫 Found ${institutes.length} institutes in database`);
+    
     let allCourses = [];
+    let facultyCoursesCount = 0;
+    let instituteCoursesCount = 0;
+    let standaloneCoursesCount = 0;
     
     // Get courses from faculties
     faculties.forEach(faculty => {
-      (faculty.courses || []).forEach(course => {
-        // Only add if course has required fields
-        if (course) {
-          // Normalize course data before adding to results
-          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
-          allCourses.push({
-            ...normalizedCourse,
-            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
-            facultySlug: faculty.slug,
-            isStandalone: false
-          });
-        }
-      });
+      if (faculty.courses && faculty.courses.length > 0) {
+        console.log(`👨‍🏫 Faculty "${faculty.firstName} ${faculty.lastName || ''}" has ${faculty.courses.length} courses`);
+        facultyCoursesCount += faculty.courses.length;
+        
+        (faculty.courses || []).forEach(course => {
+          // Only add if course has required fields
+          if (course) {
+            // Normalize course data before adding to results
+            const normalizedCourse = normalizeCourseData({ ...course.toObject() });
+            allCourses.push({
+              ...normalizedCourse,
+              facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+              facultySlug: faculty.slug,
+              isStandalone: false
+            });
+          }
+        });
+      } else {
+        console.log(`👨‍🏫 Faculty "${faculty.firstName} ${faculty.lastName || ''}" has no courses`);
+      }
     });
+    
+    console.log(`📚 Added ${facultyCoursesCount} courses from faculties`);
     
     // Get courses from institutes
     institutes.forEach(institute => {
-      (institute.courses || []).forEach(course => {
-        // Only add if course has required fields
-        if (course) {
-          // Normalize institute course data
-          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
-          allCourses.push({
-            ...normalizedCourse,
-            facultyName: '',
-            isStandalone: false
-          });
-        }
-      });
+      if (institute.courses && institute.courses.length > 0) {
+        console.log(`🏫 Institute "${institute.name}" has ${institute.courses.length} courses`);
+        instituteCoursesCount += institute.courses.length;
+        
+        (institute.courses || []).forEach(course => {
+          // Only add if course has required fields
+          if (course) {
+            // Normalize institute course data
+            const normalizedCourse = normalizeCourseData({ ...course.toObject() });
+            allCourses.push({
+              ...normalizedCourse,
+              facultyName: '',
+              isStandalone: false
+            });
+          }
+        });
+      } else {
+        console.log(`🏫 Institute "${institute.name}" has no courses`);
+      }
     });
+    
+    console.log(`🏫 Added ${instituteCoursesCount} courses from institutes`);
     
     // Get standalone courses if requested
     if (includeStandalone) {
+      console.log(`📚 Fetching standalone courses...`);
       try {
         const standaloneCourses = await Course.find({ isActive: true });
+        standaloneCoursesCount = standaloneCourses.length;
+        console.log(`📚 Found ${standaloneCoursesCount} standalone courses in database`);
+        
         standaloneCourses.forEach(course => {
           // Normalize standalone course data
           const normalizedCourse = normalizeCourseData({ ...course.toObject() });
@@ -400,16 +434,23 @@ exports.getCoursesByPaper = async (req, res) => {
       } catch (standaloneError) {
         console.log('⚠️ Error fetching standalone courses:', standaloneError.message);
       }
+    } else {
+      console.log(`📚 Skipping standalone courses (includeStandalone=false)`);
     }
     
     console.log(`🔍 Searching for courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
-    console.log(`💼 Total courses found: ${allCourses.length}`);
+    console.log(`💼 Total courses retrieved: ${allCourses.length} (${facultyCoursesCount} faculty + ${instituteCoursesCount} institute + ${standaloneCoursesCount} standalone)`);
     
     // Debug: Log all courses with their category/subcategory/paperId
-    console.log('📋 All courses in database:');
-    allCourses.forEach((course, index) => {
-      console.log(`  ${index + 1}. Subject: "${course.subject || 'N/A'}", Category: "${course.category || 'N/A'}", Subcategory: "${course.subcategory || 'N/A'}", PaperId: "${course.paperId || 'N/A'}", Faculty: "${course.facultyName || 'N/A'}"`);
-    });
+    if (allCourses.length > 0) {
+      console.log('📋 All courses in database:');
+      allCourses.forEach((course, index) => {
+        console.log(`  ${index + 1}. Subject: "${course.subject || 'N/A'}", Category: "${course.category || 'N/A'}", Subcategory: "${course.subcategory || 'N/A'}", PaperId: "${course.paperId || 'N/A'}", Faculty: "${course.facultyName || 'N/A'}", Standalone: ${course.isStandalone}`);
+      });
+    } else {
+      console.log('⚠️ No courses found in database at all!');
+      return res.status(200).json({ courses: [], message: 'No courses found in database' });
+    }
     
     // N/A faculty has been removed - we only work with actual faculty courses now
     
@@ -502,11 +543,12 @@ exports.getCoursesByPaper = async (req, res) => {
     
     console.log(`Returning ${sanitizedCourses.length} sanitized filtered courses`);
     
-    // If no courses found, try a more lenient search
+    // If no courses found, try multiple fallback searches
     if (sanitizedCourses.length === 0) {
-      console.log('🔄 No courses found with strict filtering, trying lenient search...');
+      console.log('🔄 No courses found with strict filtering, trying fallback searches...');
       
-      const lenientCourses = allCourses.filter(course => {
+      // Try 1: Lenient category/subcategory matching with exact paperId
+      let fallbackCourses = allCourses.filter(course => {
         const courseCategory = String(course.category || '').toUpperCase().trim();
         const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
         const coursePaperId = String(course.paperId || '').replace(/\D/g, '');
@@ -515,13 +557,68 @@ exports.getCoursesByPaper = async (req, res) => {
         const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
         const requestedPaperId = String(paperId || '').replace(/\D/g, '');
         
-        // Very lenient matching
+        // Flexible category matching
         const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
+        // Flexible subcategory matching
         const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
+        // Exact paperId match
         const paperIdMatch = coursePaperId === requestedPaperId;
         
         return categoryMatch && subcategoryMatch && paperIdMatch;
-      }).filter(course => {
+      });
+      
+      console.log(`🔄 Fallback 1 (lenient cat/sub, exact paper): ${fallbackCourses.length} courses`);
+      
+      // Try 2: If still no matches, try with any paperId normalization issues
+      if (fallbackCourses.length === 0) {
+        fallbackCourses = allCourses.filter(course => {
+          const courseCategory = String(course.category || '').toUpperCase().trim();
+          const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
+          let coursePaperId = String(course.paperId || '').trim();
+          
+          const requestedCategory = String(category || '').toUpperCase().trim();
+          const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
+          let requestedPaperId = String(paperId || '').trim();
+          
+          // Try different paperId formats
+          const paperIdMatches = (
+            coursePaperId === requestedPaperId ||
+            coursePaperId.replace(/\D/g, '') === requestedPaperId.replace(/\D/g, '') ||
+            parseInt(coursePaperId) === parseInt(requestedPaperId)
+          );
+          
+          const categoryMatch = courseCategory === requestedCategory;
+          const subcategoryMatch = courseSubcategory === requestedSubcategory;
+          
+          return categoryMatch && subcategoryMatch && paperIdMatches;
+        });
+        console.log(`🔄 Fallback 2 (flexible paperId): ${fallbackCourses.length} courses`);
+      }
+      
+      // Try 3: If still no matches, try broader search (might catch data inconsistencies)
+      if (fallbackCourses.length === 0) {
+        fallbackCourses = allCourses.filter(course => {
+          const courseCategory = String(course.category || '').toUpperCase().trim();
+          const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
+          
+          const requestedCategory = String(category || '').toUpperCase().trim();
+          const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
+          
+          // Just match category and subcategory, log paperId issues
+          const categoryMatch = courseCategory === requestedCategory;
+          const subcategoryMatch = courseSubcategory === requestedSubcategory;
+          
+          if (categoryMatch && subcategoryMatch) {
+            console.log(`🔍 Found course with matching cat/sub but different paperId: "${course.subject}" (stored paperId: "${course.paperId}", requested: "${paperId}")`);
+          }
+          
+          return categoryMatch && subcategoryMatch;
+        });
+        console.log(`🔄 Fallback 3 (cat/sub only): ${fallbackCourses.length} courses`);
+      }
+      
+      // Sanitize fallback results
+      const sanitizedFallbackCourses = fallbackCourses.filter(course => {
         return course && course._id && (course.subject || course.title);
       }).map(course => {
         return {
@@ -535,10 +632,10 @@ exports.getCoursesByPaper = async (req, res) => {
         };
       });
       
-      console.log(`🔄 Lenient search found ${lenientCourses.length} courses`);
+      console.log(`🔄 Final fallback results: ${sanitizedFallbackCourses.length} courses`);
       
-      if (lenientCourses.length > 0) {
-        return res.status(200).json({ courses: lenientCourses });
+      if (sanitizedFallbackCourses.length > 0) {
+        return res.status(200).json({ courses: sanitizedFallbackCourses });
       }
     }
     
