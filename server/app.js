@@ -905,6 +905,338 @@ app.post('/api/admin/courses/faculty', [courseUpload.single('poster')], async (r
   }
 });
 
+// Debug endpoint specifically for CMA Final courses
+app.get('/api/courses/debug/cma/final', async (req, res) => {
+  try {
+    console.log('🔍 CMA Final Debug Endpoint Called');
+    
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    const Faculty = require('./src/model/Faculty.model');
+    const Course = require('./src/model/Course.model');
+    
+    let debugInfo = {
+      totalFaculties: 0,
+      totalCourses: 0,
+      cmaFinalCourses: [],
+      allCMACourses: [],
+      allFinalCourses: [],
+      coursesByPaperId: {},
+      rawCourseData: []
+    };
+    
+    // Get all faculties and their courses
+    const faculties = await Faculty.find({});
+    debugInfo.totalFaculties = faculties.length;
+    
+    console.log(`👨‍🏫 Found ${faculties.length} faculties`);
+    
+    faculties.forEach(faculty => {
+      if (faculty.courses && faculty.courses.length > 0) {
+        faculty.courses.forEach(course => {
+          debugInfo.totalCourses++;
+          
+          // Store raw course data for debugging
+          debugInfo.rawCourseData.push({
+            subject: course.subject,
+            category: course.category,
+            subcategory: course.subcategory,
+            paperId: course.paperId,
+            paperIdType: typeof course.paperId,
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug
+          });
+          
+          // Check for CMA courses
+          if (course.category && course.category.toString().toUpperCase().includes('CMA')) {
+            debugInfo.allCMACourses.push({
+              subject: course.subject,
+              subcategory: course.subcategory,
+              paperId: course.paperId,
+              facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim()
+            });
+            
+            // Check for CMA Final courses
+            if (course.subcategory && course.subcategory.toString().toLowerCase().includes('final')) {
+              const cmaFinalCourse = {
+                subject: course.subject,
+                category: course.category,
+                subcategory: course.subcategory,
+                paperId: course.paperId,
+                paperIdType: typeof course.paperId,
+                facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+                facultySlug: faculty.slug
+              };
+              
+              debugInfo.cmaFinalCourses.push(cmaFinalCourse);
+              
+              // Group by paper ID
+              const pid = String(course.paperId);
+              if (!debugInfo.coursesByPaperId[pid]) {
+                debugInfo.coursesByPaperId[pid] = [];
+              }
+              debugInfo.coursesByPaperId[pid].push(cmaFinalCourse);
+            }
+          }
+          
+          // Check for any Final courses
+          if (course.subcategory && course.subcategory.toString().toLowerCase().includes('final')) {
+            debugInfo.allFinalCourses.push({
+              subject: course.subject,
+              category: course.category,
+              subcategory: course.subcategory,
+              paperId: course.paperId,
+              facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim()
+            });
+          }
+        });
+      }
+    });
+    
+    // Also check standalone courses
+    try {
+      const standaloneCourses = await Course.find({ isActive: true });
+      console.log(`📚 Found ${standaloneCourses.length} standalone courses`);
+      
+      standaloneCourses.forEach(course => {
+        debugInfo.totalCourses++;
+        
+        debugInfo.rawCourseData.push({
+          subject: course.subject,
+          category: course.category,
+          subcategory: course.subcategory,
+          paperId: course.paperId,
+          paperIdType: typeof course.paperId,
+          isStandalone: true
+        });
+        
+        if (course.category && course.category.toString().toUpperCase().includes('CMA')) {
+          debugInfo.allCMACourses.push({
+            subject: course.subject,
+            subcategory: course.subcategory,
+            paperId: course.paperId,
+            isStandalone: true
+          });
+          
+          if (course.subcategory && course.subcategory.toString().toLowerCase().includes('final')) {
+            const cmaFinalCourse = {
+              subject: course.subject,
+              category: course.category,
+              subcategory: course.subcategory,
+              paperId: course.paperId,
+              paperIdType: typeof course.paperId,
+              isStandalone: true
+            };
+            
+            debugInfo.cmaFinalCourses.push(cmaFinalCourse);
+            
+            const pid = String(course.paperId);
+            if (!debugInfo.coursesByPaperId[pid]) {
+              debugInfo.coursesByPaperId[pid] = [];
+            }
+            debugInfo.coursesByPaperId[pid].push(cmaFinalCourse);
+          }
+        }
+      });
+    } catch (standaloneError) {
+      console.log('⚠️ Error fetching standalone courses:', standaloneError.message);
+      debugInfo.standaloneError = standaloneError.message;
+    }
+    
+    console.log(`📊 Debug Summary:`);
+    console.log(`   Total courses: ${debugInfo.totalCourses}`);
+    console.log(`   CMA courses: ${debugInfo.allCMACourses.length}`);
+    console.log(`   CMA Final courses: ${debugInfo.cmaFinalCourses.length}`);
+    console.log(`   Paper IDs with courses: ${Object.keys(debugInfo.coursesByPaperId).join(', ')}`);
+    
+    // Add summary
+    debugInfo.summary = {
+      totalCourses: debugInfo.totalCourses,
+      cmaCoursesCount: debugInfo.allCMACourses.length,
+      cmaFinalCoursesCount: debugInfo.cmaFinalCourses.length,
+      paperIdsWithCourses: Object.keys(debugInfo.coursesByPaperId),
+      availablePaperIds: Object.keys(debugInfo.coursesByPaperId).map(id => ({ paperId: id, courseCount: debugInfo.coursesByPaperId[id].length }))
+    };
+    
+    res.status(200).json({
+      success: true,
+      debug: debugInfo,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ CMA Final debug error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Universal debug endpoint for all CA/CMA courses by category and subcategory
+app.get('/api/courses/debug/:category/:subcategory', async (req, res) => {
+  try {
+    const { category, subcategory } = req.params;
+    console.log(`🔍 Universal Debug Endpoint Called for ${category}/${subcategory}`);
+    
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    const Faculty = require('./src/model/Faculty.model');
+    const Course = require('./src/model/Course.model');
+    
+    let debugInfo = {
+      searchCriteria: {
+        category: category.toUpperCase(),
+        subcategory: subcategory.toLowerCase()
+      },
+      totalFaculties: 0,
+      totalCourses: 0,
+      matchingCourses: [],
+      coursesByPaperId: {},
+      rawCourseData: []
+    };
+    
+    // Get all faculties and their courses
+    const faculties = await Faculty.find({});
+    debugInfo.totalFaculties = faculties.length;
+    
+    console.log(`👨‍🏫 Found ${faculties.length} faculties`);
+    
+    faculties.forEach(faculty => {
+      if (faculty.courses && faculty.courses.length > 0) {
+        faculty.courses.forEach(course => {
+          debugInfo.totalCourses++;
+          
+          // Store raw course data for debugging
+          debugInfo.rawCourseData.push({
+            subject: course.subject,
+            category: course.category,
+            subcategory: course.subcategory,
+            paperId: course.paperId,
+            paperIdType: typeof course.paperId,
+            facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+            facultySlug: faculty.slug,
+            isStandalone: false
+          });
+          
+          // Check for matching courses
+          const courseCategory = course.category ? course.category.toString().toUpperCase() : '';
+          const courseSubcategory = course.subcategory ? course.subcategory.toString().toLowerCase() : '';
+          
+          const categoryMatch = courseCategory.includes(debugInfo.searchCriteria.category);
+          const subcategoryMatch = courseSubcategory.includes(debugInfo.searchCriteria.subcategory) ||
+                                  (debugInfo.searchCriteria.subcategory === 'inter' && courseSubcategory.includes('intermediate'));
+          
+          if (categoryMatch && subcategoryMatch) {
+            const matchingCourse = {
+              subject: course.subject,
+              category: course.category,
+              subcategory: course.subcategory,
+              paperId: course.paperId,
+              paperIdType: typeof course.paperId,
+              facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
+              facultySlug: faculty.slug,
+              isStandalone: false
+            };
+            
+            debugInfo.matchingCourses.push(matchingCourse);
+            
+            // Group by paper ID
+            const pid = String(course.paperId);
+            if (!debugInfo.coursesByPaperId[pid]) {
+              debugInfo.coursesByPaperId[pid] = [];
+            }
+            debugInfo.coursesByPaperId[pid].push(matchingCourse);
+          }
+        });
+      }
+    });
+    
+    // Also check standalone courses
+    try {
+      const standaloneCourses = await Course.find({ isActive: true });
+      console.log(`📚 Found ${standaloneCourses.length} standalone courses`);
+      
+      standaloneCourses.forEach(course => {
+        debugInfo.totalCourses++;
+        
+        debugInfo.rawCourseData.push({
+          subject: course.subject,
+          category: course.category,
+          subcategory: course.subcategory,
+          paperId: course.paperId,
+          paperIdType: typeof course.paperId,
+          isStandalone: true
+        });
+        
+        // Check for matching courses
+        const courseCategory = course.category ? course.category.toString().toUpperCase() : '';
+        const courseSubcategory = course.subcategory ? course.subcategory.toString().toLowerCase() : '';
+        
+        const categoryMatch = courseCategory.includes(debugInfo.searchCriteria.category);
+        const subcategoryMatch = courseSubcategory.includes(debugInfo.searchCriteria.subcategory) ||
+                                (debugInfo.searchCriteria.subcategory === 'inter' && courseSubcategory.includes('intermediate'));
+        
+        if (categoryMatch && subcategoryMatch) {
+          const matchingCourse = {
+            subject: course.subject,
+            category: course.category,
+            subcategory: course.subcategory,
+            paperId: course.paperId,
+            paperIdType: typeof course.paperId,
+            isStandalone: true
+          };
+          
+          debugInfo.matchingCourses.push(matchingCourse);
+          
+          const pid = String(course.paperId);
+          if (!debugInfo.coursesByPaperId[pid]) {
+            debugInfo.coursesByPaperId[pid] = [];
+          }
+          debugInfo.coursesByPaperId[pid].push(matchingCourse);
+        }
+      });
+    } catch (standaloneError) {
+      console.log('⚠️ Error fetching standalone courses:', standaloneError.message);
+      debugInfo.standaloneError = standaloneError.message;
+    }
+    
+    console.log(`📊 Debug Summary for ${category}/${subcategory}:`);
+    console.log(`   Total courses: ${debugInfo.totalCourses}`);
+    console.log(`   Matching courses: ${debugInfo.matchingCourses.length}`);
+    console.log(`   Paper IDs with courses: ${Object.keys(debugInfo.coursesByPaperId).join(', ')}`);
+    
+    // Add summary
+    debugInfo.summary = {
+      totalCourses: debugInfo.totalCourses,
+      matchingCoursesCount: debugInfo.matchingCourses.length,
+      paperIdsWithCourses: Object.keys(debugInfo.coursesByPaperId),
+      availablePaperIds: Object.keys(debugInfo.coursesByPaperId).map(id => ({ paperId: id, courseCount: debugInfo.coursesByPaperId[id].length }))
+    };
+    
+    res.status(200).json({
+      success: true,
+      debug: debugInfo,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error(`❌ ${req.params.category}/${req.params.subcategory} debug error:`, error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // MAIN COURSE CREATION ENDPOINT - SIMPLE AND WORKING
 app.post('/api/admin/courses', [courseUpload.single('poster')], async (req, res) => {
   // Set CORS headers

@@ -1,4 +1,4 @@
-﻿﻿import React, { useEffect, useState } from 'react';
+﻿﻿﻿﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
@@ -24,14 +24,20 @@ const CMAInterPaperDetailPage = () => {
     async function fetchCourses() {
       setLoading(true);
       setError('');
+      
+      console.log(`🔍 Fetching CMA Inter courses for Paper ${paperId}`);
+      console.log(`📍 Paper slug: ${paperSlug}`);
+      console.log(`📋 Current paper:`, currentPaper);
+      
       try {
-        console.log(`Fetching CMA intermediate courses from: ${API_URL}/api/courses/CMA/inter/${paperId}`);
+        let foundCourses = [];
         
-        // Use the primary endpoint - courses by category, subcategory, and paper ID
+        // Strategy 1: Try exact paper ID match
+        console.log(`📡 Strategy 1: Trying exact match for CMA Inter Paper ${paperId}`);
         const primaryUrl = `${API_URL}/api/courses/CMA/inter/${paperId}`;
         
         try {
-          console.log(`Trying primary URL: ${primaryUrl}`);
+          console.log(`🔗 Trying URL: ${primaryUrl}`);
           const res = await fetch(primaryUrl, {
             headers: {
               'Accept': 'application/json',
@@ -43,34 +49,214 @@ const CMAInterPaperDetailPage = () => {
           
           if (res.ok) {
             const data = await res.json();
-            
             if (data.courses && data.courses.length > 0) {
-              console.log(`Found ${data.courses.length} courses using primary URL`);
-              setCourses(data.courses);
-            } else {
-              console.log("No courses found with primary URL");
-              setCourses([]);
-              setError("No courses available for this paper yet. Check back later.");
+              console.log(`✅ Strategy 1 SUCCESS: Found ${data.courses.length} courses`);
+              foundCourses = data.courses;
             }
-          } else {
-            console.log(`Primary URL returned status: ${res.status}`);
-            setCourses([]);
-            setError("No courses available for this paper yet. Check back later.");
           }
-        } catch (urlError) {
-          console.error(`Error with primary URL:`, urlError);
+        } catch (error) {
+          console.log(`❌ Strategy 1 failed:`, error.message);
+        }
+        
+        // Strategy 2: Try case variations
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 2: Trying case variations`);
+          
+          const variations = [
+            `${API_URL}/api/courses/cma/inter/${paperId}`,
+            `${API_URL}/api/courses/CMA/Inter/${paperId}`,
+            `${API_URL}/api/courses/cma/Inter/${paperId}`,
+            `${API_URL}/api/courses/CMA/intermediate/${paperId}`,
+            `${API_URL}/api/courses/cma/intermediate/${paperId}`
+          ];
+          
+          for (const url of variations) {
+            try {
+              console.log(`🔗 Trying variation: ${url}`);
+              const res = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                cache: 'no-cache',
+                mode: 'cors',
+              });
+              
+              if (res.ok) {
+                const data = await res.json();
+                if (data.courses && data.courses.length > 0) {
+                  console.log(`✅ Strategy 2 SUCCESS: Found ${data.courses.length} courses with ${url}`);
+                  foundCourses = data.courses;
+                  break;
+                }
+              }
+            } catch (error) {
+              console.log(`❌ Variation failed: ${url}`, error.message);
+            }
+          }
+        }
+        
+        // Strategy 3: Try alternative paper ID formats
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 3: Trying alternative paper ID formats`);
+          
+          const alternativeIds = [
+            paperId.toString(),
+            parseInt(paperId).toString(),
+            `0${paperId}`,
+            `paper${paperId}`,
+            paperId.replace('paper-', '')
+          ];
+          
+          for (const altId of alternativeIds) {
+            if (altId !== paperId) {
+              try {
+                const url = `${API_URL}/api/courses/CMA/inter/${altId}`;
+                console.log(`🔗 Trying alternative ID: ${url}`);
+                const res = await fetch(url, {
+                  headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                  cache: 'no-cache',
+                  mode: 'cors',
+                });
+                
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.courses && data.courses.length > 0) {
+                    console.log(`✅ Strategy 3 SUCCESS: Found ${data.courses.length} courses with ID ${altId}`);
+                    foundCourses = data.courses;
+                    break;
+                  }
+                }
+              } catch (error) {
+                console.log(`❌ Alternative ID ${altId} failed:`, error.message);
+              }
+            }
+          }
+        }
+        
+        // Strategy 4: Get all courses and filter client-side
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 4: Fetching all courses and filtering client-side`);
+          
+          try {
+            const allCoursesUrl = `${API_URL}/api/courses/all`;
+            console.log(`🔗 Fetching all courses: ${allCoursesUrl}`);
+            const res = await fetch(allCoursesUrl, {
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data.courses && data.courses.length > 0) {
+                console.log(`📊 Got ${data.courses.length} total courses, filtering for CMA Inter Paper ${paperId}`);
+                
+                const filteredCourses = data.courses.filter(course => {
+                  const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                  const isInter = course.subcategory && (course.subcategory.toLowerCase().includes('inter') || course.subcategory.toLowerCase().includes('intermediate'));
+                  
+                  const paperMatches = (
+                    course.paperId == paperId ||
+                    course.paperId == parseInt(paperId) ||
+                    String(course.paperId) === paperId ||
+                    String(course.paperId) === String(paperId)
+                  );
+                  
+                  const matches = isCMA && isInter && paperMatches;
+                  
+                  if (matches) {
+                    console.log(`🎯 Found matching course: ${course.subject} (Category: ${course.category}, Subcategory: ${course.subcategory}, PaperId: ${course.paperId})`);
+                  }
+                  
+                  return matches;
+                });
+                
+                if (filteredCourses.length > 0) {
+                  console.log(`✅ Strategy 4 SUCCESS: Found ${filteredCourses.length} courses after client-side filtering`);
+                  foundCourses = filteredCourses;
+                } else {
+                  console.log(`📋 No CMA Inter Paper ${paperId} courses found in ${data.courses.length} total courses`);
+                  
+                  // Debug: show what CMA Inter courses exist
+                  const allCMAInter = data.courses.filter(course => {
+                    const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                    const isInter = course.subcategory && (course.subcategory.toLowerCase().includes('inter') || course.subcategory.toLowerCase().includes('intermediate'));
+                    return isCMA && isInter;
+                  });
+                  
+                  console.log(`🔍 Available CMA Inter courses:`);
+                  allCMAInter.forEach(course => {
+                    console.log(`   - ${course.subject} (Paper ${course.paperId})`);
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.log(`❌ Strategy 4 failed:`, error.message);
+          }
+        }
+        
+        // Strategy 5: Show any CMA Inter courses as fallback
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 5: Showing any available CMA Inter courses as fallback`);
+          
+          try {
+            const allCoursesUrl = `${API_URL}/api/courses/all`;
+            const res = await fetch(allCoursesUrl, {
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data.courses) {
+                const cmaInterCourses = data.courses.filter(course => {
+                  const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                  const isInter = course.subcategory && (course.subcategory.toLowerCase().includes('inter') || course.subcategory.toLowerCase().includes('intermediate'));
+                  return isCMA && isInter;
+                });
+                
+                if (cmaInterCourses.length > 0) {
+                  console.log(`✅ Strategy 5 SUCCESS: Showing ${cmaInterCourses.length} CMA Inter courses as fallback`);
+                  foundCourses = cmaInterCourses;
+                  setError(`No courses found for Paper ${paperId} specifically, but showing all available CMA Inter courses:`);
+                }
+              }
+            }
+          } catch (error) {
+            console.log(`❌ Strategy 5 failed:`, error.message);
+          }
+        }
+        
+        // Set final results
+        if (foundCourses.length > 0) {
+          console.log(`🎉 FINAL RESULT: Setting ${foundCourses.length} courses`);
+          setCourses(foundCourses);
+          if (!error) {
+            setError('');
+          }
+        } else {
+          console.log(`❌ FINAL RESULT: No courses found at all`);
           setCourses([]);
           setError("No courses available for this paper yet. Check back later.");
         }
+        
       } catch (err) {
-        console.error('Error fetching courses:', err);
+        console.error('❌ Overall error fetching courses:', err);
         setError('Server error');
+        setCourses([]);
       }
+      
       setLoading(false);
     }
     
-    if (currentPaper) fetchCourses();
-  }, [paperSlug, currentPaper]);
+    if (currentPaper) {
+      fetchCourses();
+    } else {
+      console.log(`❌ No current paper found for slug: ${paperSlug}`);
+      setLoading(false);
+      setError('Paper not found');
+    }
+  }, [paperSlug, currentPaper, paperId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">

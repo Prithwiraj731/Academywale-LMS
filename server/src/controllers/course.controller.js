@@ -609,7 +609,17 @@ exports.getCoursesByPaper = async (req, res) => {
           const subcategoryMatch = courseSubcategory === requestedSubcategory;
           
           if (categoryMatch && subcategoryMatch) {
-            console.log(`🔍 Found course with matching cat/sub but different paperId: "${course.subject}" (stored paperId: "${course.paperId}", requested: "${paperId}")`);
+            console.log(`🔍 Found course with matching cat/sub but different paperId: "${course.subject}" (stored paperId: "${course.paperId}" [${typeof course.paperId}], requested: "${paperId}")`);
+            
+            // Log more details for Paper 20 specifically
+            if (String(paperId) === '20' || String(course.paperId) === '20') {
+              console.log(`🎯 PAPER 20 DEBUG:`);
+              console.log(`   Course paperId: "${course.paperId}" (type: ${typeof course.paperId})`);
+              console.log(`   Requested paperId: "${paperId}" (type: ${typeof paperId})`);
+              console.log(`   String comparison: "${String(course.paperId)}" === "${String(paperId)}" = ${String(course.paperId) === String(paperId)}`);
+              console.log(`   Loose comparison: ${course.paperId} == ${paperId} = ${course.paperId == paperId}`);
+              console.log(`   Numeric comparison: ${parseInt(course.paperId)} === ${parseInt(paperId)} = ${parseInt(course.paperId) === parseInt(paperId)}`);
+            }
           }
           
           return categoryMatch && subcategoryMatch;
