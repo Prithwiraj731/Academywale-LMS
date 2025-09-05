@@ -82,7 +82,23 @@ const CMAFoundationPaperDetailPage = () => {
           
           if (data.courses && data.courses.length > 0) {
             console.log(`Found ${data.courses.length} courses from API`);
-            setCourses(data.courses);
+            // Normalize for all CA, CMA, and any other courses
+            const normalizedCourses = data.courses.map(course => {
+              let normalizedCategory = course.category ? String(course.category).toUpperCase().trim() : '';
+              let normalizedSubcategory = course.subcategory ? String(course.subcategory).toLowerCase().trim() : '';
+              let normalizedPaperId = '';
+              if (course.paperId !== undefined && course.paperId !== null) {
+                // If paperId is a number or string, extract numeric part only
+                normalizedPaperId = String(course.paperId).replace(/\D/g, '');
+              }
+              return {
+                ...course,
+                category: normalizedCategory,
+                subcategory: normalizedSubcategory,
+                paperId: normalizedPaperId,
+              };
+            });
+            setCourses(normalizedCourses);
           } else {
             console.log("No courses found from API, creating mock courses");
             

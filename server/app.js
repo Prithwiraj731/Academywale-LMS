@@ -1,4 +1,4 @@
-
+ 
 
 // Load required modules
 const path = require('path');
@@ -18,7 +18,6 @@ const mongoose = require('mongoose');
 const Faculty = require('./src/model/Faculty.model');
 const User = require('./src/model/User.model');
 const Course = require('./src/model/Course.model');
-
 
 
 
@@ -81,10 +80,99 @@ app.use((req, res, next) => {
 const courseRoutes = require('./src/routes/course.routes.js');
 app.use('/', courseRoutes);
 
+// Explicit route handler for /api/courses/:category/:subcategory/:paperId
+// This is added to ensure proper CORS handling, logging and error handling
+const courseControllerDirect = require('./src/controllers/course.controller');
+
+app.options('/api/courses/:category/:subcategory/:paperId', (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://academywale.com',
+    'https://www.academywale.com',
+    'https://academywale-lms.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+  ];
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  return res.sendStatus(200);
+});
+
+app.get('/api/courses/:category/:subcategory/:paperId', async (req, res) => {
+  try {
+    // Explicit CORS headers for this endpoint
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      'https://academywale.com',
+      'https://www.academywale.com',
+      'https://academywale-lms.onrender.com',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000'
+    ];
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Log request for debugging
+    console.log('🔔 Explicit route handler invoked: GET /api/courses/:category/:subcategory/:paperId');
+    console.log('   • URL:', req.originalUrl);
+    console.log('   • Params:', req.params);
+    console.log('   • Query:', req.query);
+    console.log('   • Headers (origin):', req.headers.origin);
+
+    // Delegate to the existing controller method which contains the retrieval logic
+    // Controller handles preflight, headers and error responses internally as well.
+    await courseControllerDirect.getCoursesByPaper(req, res);
+  } catch (error) {
+    // Comprehensive error handling
+    console.error('❌ Error in explicit /api/courses/:category/:subcategory/:paperId handler:', error);
+    if (!res.headersSent) {
+      const origin = req.headers.origin;
+      const allowedOrigins = [
+        'https://academywale.com',
+        'https://www.academywale.com',
+        'https://academywale-lms.onrender.com',
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:3000'
+      ];
+      if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      }
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve courses',
+        message: error.message || 'Internal Server Error'
+      });
+    }
+  }
+});
+
 // Mount faculty routes
 const facultyRoutes = require('./src/routes/faculty.routes.js');
 app.use('/', facultyRoutes);
-
 
 
 
@@ -96,7 +184,6 @@ app.use('/', courseControllerRoutes);
 // Mount course detail routes
 const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
 app.use('/', courseDetailRoutes);
-
 
 
 
@@ -193,6 +280,10 @@ app.get('/health', (req, res) => {
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
+
+
+
+
 
 
 
