@@ -88,7 +88,6 @@ const CMAFoundationPaperDetailPage = () => {
               let normalizedSubcategory = course.subcategory ? String(course.subcategory).toLowerCase().trim() : '';
               let normalizedPaperId = '';
               if (course.paperId !== undefined && course.paperId !== null) {
-                // If paperId is a number or string, extract numeric part only
                 normalizedPaperId = String(course.paperId).replace(/\D/g, '');
               }
               return {
@@ -98,7 +97,21 @@ const CMAFoundationPaperDetailPage = () => {
                 paperId: normalizedPaperId,
               };
             });
-            setCourses(normalizedCourses);
+
+            // Fallback: If no course matches the current paperId, show all courses for the same category/subcategory
+            let filteredCourses = normalizedCourses.filter(c =>
+              c.category === (currentPaper?.category?.toUpperCase() || 'CA') &&
+              c.subcategory === (currentPaper?.subcategory?.toLowerCase() || 'foundation') &&
+              (c.paperId === paperId || c.paperId === String(paperId) || c.paperId === String(Number(paperId)))
+            );
+            if (filteredCourses.length === 0) {
+              // Show all courses for the same category/subcategory if no exact paper match
+              filteredCourses = normalizedCourses.filter(c =>
+                c.category === (currentPaper?.category?.toUpperCase() || 'CA') &&
+                c.subcategory === (currentPaper?.subcategory?.toLowerCase() || 'foundation')
+              );
+            }
+            setCourses(filteredCourses);
           } else {
             console.log("No courses found from API, creating mock courses");
             
