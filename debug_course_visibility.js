@@ -6,64 +6,64 @@
 // Test endpoints to verify course saving and visibility for ALL CA and CMA papers
 const testEndpoints = [
   // CA Foundation Papers (1-4)
-  'http://localhost:3000/api/courses/CA/foundation/1',
-  'http://localhost:3000/api/courses/CA/foundation/2',
-  'http://localhost:3000/api/courses/CA/foundation/3',
-  'http://localhost:3000/api/courses/CA/foundation/4',
+  'http://localhost:5000/api/courses/CA/foundation/1',
+  'http://localhost:5000/api/courses/CA/foundation/2',
+  'http://localhost:5000/api/courses/CA/foundation/3',
+  'http://localhost:5000/api/courses/CA/foundation/4',
   
   // CA Inter Papers (5-8)
-  'http://localhost:3000/api/courses/CA/inter/5',
-  'http://localhost:3000/api/courses/CA/inter/6',
-  'http://localhost:3000/api/courses/CA/inter/7',
-  'http://localhost:3000/api/courses/CA/inter/8',
+  'http://localhost:5000/api/courses/CA/inter/5',
+  'http://localhost:5000/api/courses/CA/inter/6',
+  'http://localhost:5000/api/courses/CA/inter/7',
+  'http://localhost:5000/api/courses/CA/inter/8',
   
   // CA Final Papers (13-20)
-  'http://localhost:3000/api/courses/CA/final/13',
-  'http://localhost:3000/api/courses/CA/final/14',
-  'http://localhost:3000/api/courses/CA/final/15',
-  'http://localhost:3000/api/courses/CA/final/16',
-  'http://localhost:3000/api/courses/CA/final/17',
-  'http://localhost:3000/api/courses/CA/final/18',
-  'http://localhost:3000/api/courses/CA/final/19',
-  'http://localhost:3000/api/courses/CA/final/20',
+  'http://localhost:5000/api/courses/CA/final/13',
+  'http://localhost:5000/api/courses/CA/final/14',
+  'http://localhost:5000/api/courses/CA/final/15',
+  'http://localhost:5000/api/courses/CA/final/16',
+  'http://localhost:5000/api/courses/CA/final/17',
+  'http://localhost:5000/api/courses/CA/final/18',
+  'http://localhost:5000/api/courses/CA/final/19',
+  'http://localhost:5000/api/courses/CA/final/20',
   
   // CMA Foundation Papers (1-4)
-  'http://localhost:3000/api/courses/CMA/foundation/1',
-  'http://localhost:3000/api/courses/CMA/foundation/2',
-  'http://localhost:3000/api/courses/CMA/foundation/3',
-  'http://localhost:3000/api/courses/CMA/foundation/4',
+  'http://localhost:5000/api/courses/CMA/foundation/1',
+  'http://localhost:5000/api/courses/CMA/foundation/2',
+  'http://localhost:5000/api/courses/CMA/foundation/3',
+  'http://localhost:5000/api/courses/CMA/foundation/4',
   
   // CMA Inter Papers (5-12)
-  'http://localhost:3000/api/courses/CMA/inter/5',
-  'http://localhost:3000/api/courses/CMA/inter/6',
-  'http://localhost:3000/api/courses/CMA/inter/7',
-  'http://localhost:3000/api/courses/CMA/inter/8',
-  'http://localhost:3000/api/courses/CMA/inter/9',
-  'http://localhost:3000/api/courses/CMA/inter/10',
-  'http://localhost:3000/api/courses/CMA/inter/11',
-  'http://localhost:3000/api/courses/CMA/inter/12',
+  'http://localhost:5000/api/courses/CMA/inter/5',
+  'http://localhost:5000/api/courses/CMA/inter/6',
+  'http://localhost:5000/api/courses/CMA/inter/7',
+  'http://localhost:5000/api/courses/CMA/inter/8',
+  'http://localhost:5000/api/courses/CMA/inter/9',
+  'http://localhost:5000/api/courses/CMA/inter/10',
+  'http://localhost:5000/api/courses/CMA/inter/11',
+  'http://localhost:5000/api/courses/CMA/inter/12',
   
   // CMA Final Papers (13-20)
-  'http://localhost:3000/api/courses/CMA/final/13',
-  'http://localhost:3000/api/courses/CMA/final/14',
-  'http://localhost:3000/api/courses/CMA/final/15',
-  'http://localhost:3000/api/courses/CMA/final/16',
-  'http://localhost:3000/api/courses/CMA/final/17',
-  'http://localhost:3000/api/courses/CMA/final/18',
-  'http://localhost:3000/api/courses/CMA/final/19',
-  'http://localhost:3000/api/courses/CMA/final/20'
+  'http://localhost:5000/api/courses/CMA/final/13',
+  'http://localhost:5000/api/courses/CMA/final/14',
+  'http://localhost:5000/api/courses/CMA/final/15',
+  'http://localhost:5000/api/courses/CMA/final/16',
+  'http://localhost:5000/api/courses/CMA/final/17',
+  'http://localhost:5000/api/courses/CMA/final/18',
+  'http://localhost:5000/api/courses/CMA/final/19',
+  'http://localhost:5000/api/courses/CMA/final/20'
 ];
 
 const debugEndpoints = [
-  'http://localhost:3000/api/courses/debug',
-  'http://localhost:3000/api/courses/simple-test',
-  'http://localhost:3000/api/courses/all',
-  'http://localhost:3000/api/courses/debug/CA/foundation',
-  'http://localhost:3000/api/courses/debug/CA/inter',
-  'http://localhost:3000/api/courses/debug/CA/final',
-  'http://localhost:3000/api/courses/debug/CMA/foundation',
-  'http://localhost:3000/api/courses/debug/CMA/inter',
-  'http://localhost:3000/api/courses/debug/CMA/final'
+  'http://localhost:5000/api/courses/debug',
+  'http://localhost:5000/api/courses/simple-test',
+  'http://localhost:5000/api/courses/all',
+  'http://localhost:5000/api/courses/debug/CA/foundation',
+  'http://localhost:5000/api/courses/debug/CA/inter',
+  'http://localhost:5000/api/courses/debug/CA/final',
+  'http://localhost:5000/api/courses/debug/CMA/foundation',
+  'http://localhost:5000/api/courses/debug/CMA/inter',
+  'http://localhost:5000/api/courses/debug/CMA/final'
 ];
 
 // Function to test course retrieval
@@ -182,7 +182,7 @@ async function createTestCourse() {
   testCourseData.append('institute', 'Test Institute');
   
   try {
-    const response = await fetch('http://localhost:3000/api/admin/courses', {
+    const response = await fetch('http://localhost:5000/api/admin/courses', {
       method: 'POST',
       body: testCourseData
     });

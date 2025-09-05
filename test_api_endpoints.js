@@ -5,10 +5,10 @@
 
 // Test the API endpoints that paper detail pages use
 const testEndpoints = [
-  'http://localhost:3000/api/courses/CA/foundation/1',
-  'http://localhost:3000/api/courses/CA/inter/1', 
-  'http://localhost:3000/api/courses/CA/final/1',
-  'http://localhost:3000/api/courses/CMA/foundation/1'
+  'http://localhost:5000/api/courses/CA/foundation/1',
+  'http://localhost:5000/api/courses/CA/inter/1', 
+  'http://localhost:5000/api/courses/CA/final/1',
+  'http://localhost:5000/api/courses/CMA/foundation/1'
 ];
 
 async function testCourseVisibility() {

@@ -1,5 +1,11 @@
 
 
+// Load required modules
+const path = require('path');
+
+// Load environment variables
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const express = require('express');
 const app = express();
 
@@ -22,7 +28,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const path = require('path');
 
 // Import Cloudinary configuration
 const { cloudinary, storage: cloudinaryFacultyStorage } = require('./src/config/cloudinary.config');
@@ -158,7 +163,7 @@ app.use('/api/*', (req, res, next) => {
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    const mongoURI = 'mongodb+srv://prithwi1016:4xtVi1z1uzyAdA7v@courses.znwo0tt.mongodb.net/?retryWrites=true&w=majority&appName=courses';
+    const mongoURI = process.env.DB_URL || 'mongodb+srv://prithwi1016:4xtVi1z1uzyAdA7v@courses.znwo0tt.mongodb.net/?retryWrites=true&w=majority&appName=courses';
     await mongoose.connect(mongoURI);
     console.log('✅ MongoDB Connected');
   } catch (error) {

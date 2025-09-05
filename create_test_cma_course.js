@@ -6,7 +6,7 @@
 async function createTestCMAFinalCourse() {
   console.log('🧪 Creating Test CMA Final Paper 20 Course...\n');
   
-  const API_URL = 'http://localhost:3000'; // Change if your server runs on different port
+  const API_URL = 'http://localhost:5000'; // Change if your server runs on different port
   
   // Test course data for CMA Final Paper 20
   const testCourseData = new FormData();
