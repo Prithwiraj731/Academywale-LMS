@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿import React, { useState, useEffect } from 'react';
+﻿﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
@@ -262,7 +262,7 @@ const CMAFinalPaperDetailPage = () => {
         
       } catch (err) {
         console.error('❌ Overall error fetching courses:', err);
-        setError('Server error');
+        setError('Server error: ' + err.message);
         setCourses([]);
       }
       

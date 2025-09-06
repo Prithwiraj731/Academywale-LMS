@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
-require('dotenv').config({ path: './.env' });
+require('dotenv').config({ path: __dirname + '/.env' });
 
 async function testDBConnection() {
   try {
     console.log('Testing MongoDB connection...');
     console.log('DB_URL:', process.env.DB_URL);
+    
+    // Check if DB_URL is defined
+    if (!process.env.DB_URL) {
+      console.error('❌ DB_URL is not defined in .env file');
+      return;
+    }
     
     // Connect to MongoDB
     await mongoose.connect(process.env.DB_URL, {

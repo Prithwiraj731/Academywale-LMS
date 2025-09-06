@@ -240,7 +240,7 @@ const CMAFoundationPaperDetailPage = () => {
         
       } catch (err) {
         console.error('❌ Overall error fetching courses:', err);
-        setError('Server error');
+        setError('Server error: ' + err.message);
         setCourses([]);
       }
       
