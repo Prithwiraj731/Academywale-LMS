@@ -279,4 +279,100 @@ router.get('/api/courses/simple-test', async (req, res) => {
   }
 });
 
+// Specific test for CMA Final Paper 5 (or any paper)
+router.get('/api/courses/test-filter/:category/:subcategory/:paperId', async (req, res) => {
+  try {
+    const { category, subcategory, paperId } = req.params;
+    const Faculty = require('../model/Faculty.model');
+    const Course = require('../model/Course.model');
+    
+    console.log(`🧪 Testing filter for ${category}/${subcategory}/${paperId}`);
+    
+    let allCourses = [];
+    
+    // Get faculty courses
+    const faculties = await Faculty.find({});
+    faculties.forEach(faculty => {
+      (faculty.courses || []).forEach(course => {
+        if (course) {
+          allCourses.push({
+            ...course.toObject(),
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+            facultySlug: faculty.slug,
+            source: 'faculty'
+          });
+        }
+      });
+    });
+    
+    // Get standalone courses
+    const standaloneCourses = await Course.find({ isActive: true });
+    standaloneCourses.forEach(course => {
+      allCourses.push({
+        ...course.toObject(),
+        source: 'standalone'
+      });
+    });
+    
+    console.log(`Found ${allCourses.length} total courses`);
+    
+    // Apply the same filtering logic as the main endpoint
+    const requestedCategory = String(category || '').toUpperCase().trim();
+    const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
+    const requestedPaperId = String(paperId || '').replace(/\D/g, '');
+    
+    const filteredCourses = allCourses.filter(course => {
+      const courseCategory = String(course.category || '').toUpperCase().trim();
+      const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
+      const coursePaperId = String(course.paperId || '').replace(/\D/g, '');
+      
+      // Normalize subcategories
+      const normalizeSubcategory = (sub) => {
+        const normalized = sub.toLowerCase().trim();
+        if (normalized === 'inter' || normalized === 'intermediate') return 'inter';
+        if (normalized === 'final') return 'final';
+        if (normalized === 'foundation') return 'foundation';
+        return normalized;
+      };
+      
+      const normalizedCourseSubcategory = normalizeSubcategory(courseSubcategory);
+      const normalizedRequestedSubcategory = normalizeSubcategory(requestedSubcategory);
+      
+      const categoryMatch = courseCategory === requestedCategory;
+      const subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
+      const paperIdMatch = coursePaperId === requestedPaperId;
+      
+      return categoryMatch && subcategoryMatch && paperIdMatch;
+    });
+    
+    res.json({
+      success: true,
+      test: {
+        requestedFilters: { category: requestedCategory, subcategory: requestedSubcategory, paperId: requestedPaperId },
+        totalCourses: allCourses.length,
+        filteredCount: filteredCourses.length,
+        allCourses: allCourses.map(c => ({
+          subject: c.subject,
+          category: c.category,
+          subcategory: c.subcategory,
+          paperId: c.paperId,
+          source: c.source,
+          facultyName: c.facultyName || 'N/A'
+        })),
+        filteredCourses: filteredCourses.map(c => ({
+          subject: c.subject,
+          category: c.category,
+          subcategory: c.subcategory,
+          paperId: c.paperId,
+          source: c.source,
+          facultyName: c.facultyName || 'N/A'
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error in test filter endpoint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;

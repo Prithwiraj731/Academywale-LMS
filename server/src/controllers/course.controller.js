@@ -9,9 +9,10 @@ const normalizeCourseData = (course) => {
   if (course.paperId && typeof course.paperId === 'number') {
     course.paperId = String(course.paperId);
   }
-  // Normalize subcategory to lowercase
+  // Normalize subcategory to proper case (capitalize first letter, rest lowercase)
   if (course.subcategory) {
-    course.subcategory = course.subcategory.toLowerCase();
+    const sub = course.subcategory.toLowerCase().trim();
+    course.subcategory = sub.charAt(0).toUpperCase() + sub.slice(1);
   }
   // Normalize category to uppercase
   if (course.category) {
@@ -86,7 +87,8 @@ exports.addCourseToFaculty = async (req, res) => {
     const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
     // Normalize category and subcategory for consistent filtering
     const normalizedCategory = category ? category.toUpperCase() : '';
-    const normalizedSubcategory = subcategory ? subcategory.toLowerCase() : '';
+    const normalizedSubcategory = subcategory ? 
+      subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
     
     let newCourse = {
       facultyName,
@@ -454,7 +456,7 @@ exports.getCoursesByPaper = async (req, res) => {
     
     // N/A faculty has been removed - we only work with actual faculty courses now
     
-    // Filter by category, subcategory, and paper - using looser comparison for all fields
+    // Filter by category, subcategory, and paper - using flexible matching
     const filteredCourses = allCourses.filter(course => {
       try {
         if (!course) return false;
@@ -482,10 +484,10 @@ exports.getCoursesByPaper = async (req, res) => {
         let subcategoryMatch = false;
         let paperIdMatch = false;
         
-        // Category matching - handle common variations
+        // Category matching - exact match (case insensitive)
         categoryMatch = courseCategory === requestedCategory;
         
-        // Subcategory matching - be more flexible with normalization
+        // Subcategory matching - normalize common variations
         const normalizeSubcategory = (sub) => {
           const normalized = sub.toLowerCase().trim();
           if (normalized === 'inter' || normalized === 'intermediate') return 'inter';
@@ -499,7 +501,7 @@ exports.getCoursesByPaper = async (req, res) => {
         
         subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
         
-        // Paper ID matching - exact numeric match, but handle empty/null cases
+        // Paper ID matching - exact numeric match
         paperIdMatch = coursePaperId === requestedPaperId && coursePaperId !== '';
         
         // Log detailed comparison for debugging
