@@ -12,9 +12,9 @@ router.put('/api/admin/courses/:facultySlug/:courseIndex', upload.single('poster
 router.delete('/api/admin/courses/:facultySlug/:courseIndex', courseController.deleteCourse);
 router.delete('/api/admin/courses/deleteAll/confirm', courseController.deleteAllCourses);
 
-// Public course routes
-router.get('/api/courses/:facultySlug', courseController.getCoursesByFaculty);
-router.get('/api/institutes/:instituteName/courses', courseController.getCoursesByInstitute);
+// Public course routes - Order matters! More specific routes first
 router.get('/api/courses/:category/:subcategory/:paperId', courseController.getCoursesByPaper);
+router.get('/api/institutes/:instituteName/courses', courseController.getCoursesByInstitute);
+router.get('/api/courses/:facultySlug', courseController.getCoursesByFaculty);
 
 module.exports = router;

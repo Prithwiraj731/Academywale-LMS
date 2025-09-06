@@ -279,6 +279,77 @@ router.get('/api/courses/simple-test', async (req, res) => {
   }
 });
 
+// Quick test for CA Foundation Paper 1 specifically
+router.get('/api/courses/test-ca-foundation-1', async (req, res) => {
+  try {
+    const Faculty = require('../model/Faculty.model');
+    const Course = require('../model/Course.model');
+    
+    console.log(`🧪 Testing CA Foundation Paper 1 specifically`);
+    
+    let allCourses = [];
+    
+    // Get faculty courses
+    const faculties = await Faculty.find({});
+    faculties.forEach(faculty => {
+      (faculty.courses || []).forEach(course => {
+        if (course) {
+          allCourses.push({
+            ...course.toObject(),
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+            facultySlug: faculty.slug,
+            source: 'faculty'
+          });
+        }
+      });
+    });
+    
+    // Get standalone courses
+    const standaloneCourses = await Course.find({ isActive: true });
+    standaloneCourses.forEach(course => {
+      allCourses.push({
+        ...course.toObject(),
+        source: 'standalone'
+      });
+    });
+    
+    console.log(`Found ${allCourses.length} total courses`);
+    
+    // Filter for CA Foundation Paper 1
+    const caFoundationPaper1 = allCourses.filter(course => {
+      const isCA = course.category && course.category.toUpperCase() === 'CA';
+      const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+      const isPaper1 = String(course.paperId) === '1';
+      
+      return isCA && isFoundation && isPaper1;
+    });
+    
+    res.json({
+      success: true,
+      totalCourses: allCourses.length,
+      caFoundationPaper1Count: caFoundationPaper1.length,
+      caFoundationPaper1Courses: caFoundationPaper1.map(c => ({
+        subject: c.subject,
+        category: c.category,
+        subcategory: c.subcategory,
+        paperId: c.paperId,
+        source: c.source,
+        facultyName: c.facultyName || 'N/A'
+      })),
+      allCoursesSample: allCourses.slice(0, 5).map(c => ({
+        subject: c.subject,
+        category: c.category,
+        subcategory: c.subcategory,
+        paperId: c.paperId,
+        source: c.source
+      }))
+    });
+  } catch (error) {
+    console.error('Error in CA Foundation Paper 1 test:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Specific test for CMA Final Paper 5 (or any paper)
 router.get('/api/courses/test-filter/:category/:subcategory/:paperId', async (req, res) => {
   try {

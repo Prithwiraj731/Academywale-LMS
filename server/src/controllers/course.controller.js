@@ -354,6 +354,9 @@ exports.getCoursesByPaper = async (req, res) => {
     console.log(`🔍 Starting course retrieval from database...`);
     console.log(`📚 Include standalone courses: ${includeStandalone}`);
     
+    // Add route confirmation
+    console.log(`✅ ROUTE CONFIRMATION: This is the getCoursesByPaper endpoint, not faculty endpoint`);
+    
     const faculties = await Faculty.find({});
     const institutes = await Institute.find({});
     
