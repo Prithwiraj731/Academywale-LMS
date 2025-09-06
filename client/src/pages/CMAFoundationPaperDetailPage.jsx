@@ -22,150 +22,235 @@ const CMAFoundationPaperDetailPage = () => {
 
   useEffect(() => {
     async function fetchCourses() {
-      if (!currentPaper || !paperId) {
-        setLoading(false);
-        return;
-      }
-      
       setLoading(true);
       setError('');
       
-      // Create a mock course for demonstration if needed
-      const createMockCourse = (id) => ({
-        _id: `mock-course-${id}`,
-        subject: `CMA Foundation Paper ${paperId} - Comprehensive Course`,
-        description: "This course covers all essential topics for CMA Foundation Paper 1, including Business Mathematics & Statistics, and Business Economics. Comprehensive study materials with practice questions are included.",
-        category: "CMA",
-        subcategory: "Foundation",
-        paperId: paperId,
-        facultyName: "Prof. Rajesh Kumar",
-        courseType: "CMA Foundation",
-        noOfLecture: "60+ lectures",
-        timing: "60+ hours",
-        videoLanguage: "Hindi & English",
-        sellingPrice: 5999,
-        costPrice: 7999,
-        mode: "Recorded Video",
-        isActive: true,
-        posterUrl: "https://res.cloudinary.com/drlqhsjgm/image/upload/v1682170936/academywale/faculty/default-course-poster.jpg"
-      });
+      console.log(`🔍 Fetching CMA Foundation courses for Paper ${paperId}`);
+      console.log(`📍 Paper slug: ${paperSlug}`);
+      console.log(`📋 Current paper:`, currentPaper);
       
       try {
-        console.log(`Fetching CMA foundation courses for paper: ${paperId}`);
+        let foundCourses = [];
         
-        // Add timeout to prevent hanging requests
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        // Strategy 1: Try exact paper ID match
+        console.log(`📡 Strategy 1: Trying exact match for CMA Foundation Paper ${paperId}`);
+        const primaryUrl = `${API_URL}/api/courses/CMA/foundation/${paperId}`;
         
         try {
-          // Main request with improved error handling
-          const apiUrl = `${API_URL}/api/courses/cma/foundation/${paperId}?includeStandalone=true`;
-          console.log(`Trying URL: ${apiUrl}`);
-          
-          const res = await fetch(apiUrl, {
+          console.log(`🔗 Trying URL: ${primaryUrl}`);
+          const res = await fetch(primaryUrl, {
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
             },
-            signal: controller.signal,
             cache: 'no-cache',
+            mode: 'cors',
           });
           
-          clearTimeout(timeoutId);
-          
-          if (!res.ok) {
-            console.log(`API request failed with status: ${res.status}`);
-            throw new Error(`Server returned status: ${res.status}`);
-          }
-          
-          const data = await res.json();
-          
-          if (data.courses && data.courses.length > 0) {
-            console.log(`Found ${data.courses.length} courses from API`);
-            // Normalize for all CA, CMA, and any other courses
-            const normalizedCourses = data.courses.map(course => {
-              let normalizedCategory = course.category ? String(course.category).toUpperCase().trim() : '';
-              let normalizedSubcategory = course.subcategory ? String(course.subcategory).toLowerCase().trim() : '';
-              let normalizedPaperId = '';
-              if (course.paperId !== undefined && course.paperId !== null) {
-                normalizedPaperId = String(course.paperId).replace(/\D/g, '');
-              }
-              return {
-                ...course,
-                category: normalizedCategory,
-                subcategory: normalizedSubcategory,
-                paperId: normalizedPaperId,
-              };
-            });
-
-            // Fallback: If no course matches the current paperId, show all courses for the same category/subcategory
-            let filteredCourses = normalizedCourses.filter(c =>
-              c.category === (currentPaper?.category?.toUpperCase() || 'CA') &&
-              c.subcategory === (currentPaper?.subcategory?.toLowerCase() || 'foundation') &&
-              (c.paperId === paperId || c.paperId === String(paperId) || c.paperId === String(Number(paperId)))
-            );
-            if (filteredCourses.length === 0) {
-              // Show all courses for the same category/subcategory if no exact paper match
-              filteredCourses = normalizedCourses.filter(c =>
-                c.category === (currentPaper?.category?.toUpperCase() || 'CA') &&
-                c.subcategory === (currentPaper?.subcategory?.toLowerCase() || 'foundation')
-              );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.courses && data.courses.length > 0) {
+              console.log(`✅ Strategy 1 SUCCESS: Found ${data.courses.length} courses`);
+              foundCourses = data.courses;
             }
-            setCourses(filteredCourses);
-          } else {
-            console.log("No courses found from API, creating mock courses");
-            
-            // Create mock courses for demonstration
-            const mockCourses = [
-              createMockCourse(1),
-              {
-                ...createMockCourse(2),
-                subject: `CMA Foundation Paper ${paperId} - Fast Track Course`,
-                noOfLecture: "30+ lectures",
-                timing: "30+ hours",
-                sellingPrice: 3999,
-                costPrice: 5999,
-                mode: "Live Watching"
-              }
-            ];
-            
-            console.log(`Created ${mockCourses.length} mock courses for demo`);
-            setCourses(mockCourses);
           }
-        } catch (fetchError) {
-          console.error('Fetch error:', fetchError);
+        } catch (error) {
+          console.log(`❌ Strategy 1 failed:`, error.message);
+        }
+        
+        // Strategy 2: Try case variations
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 2: Trying case variations`);
           
-          // Create mock data when API fails
-          console.log("API request failed, using mock data instead");
-          
-          // Create mock courses for demonstration
-          const mockCourses = [
-            createMockCourse(1),
-            {
-              ...createMockCourse(2),
-              subject: `CMA Foundation Paper ${paperId} - Fast Track Course`,
-              noOfLecture: "30+ lectures",
-              timing: "30+ hours",
-              sellingPrice: 3999,
-              costPrice: 5999,
-              mode: "Live Watching"
-            }
+          const variations = [
+            `${API_URL}/api/courses/cma/foundation/${paperId}`,
+            `${API_URL}/api/courses/CMA/Foundation/${paperId}`,
+            `${API_URL}/api/courses/cma/Foundation/${paperId}`
           ];
           
-          console.log(`Created ${mockCourses.length} mock courses for demo`);
-          setCourses(mockCourses);
+          for (const url of variations) {
+            try {
+              console.log(`🔗 Trying variation: ${url}`);
+              const res = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                cache: 'no-cache',
+                mode: 'cors',
+              });
+              
+              if (res.ok) {
+                const data = await res.json();
+                if (data.courses && data.courses.length > 0) {
+                  console.log(`✅ Strategy 2 SUCCESS: Found ${data.courses.length} courses with ${url}`);
+                  foundCourses = data.courses;
+                  break;
+                }
+              }
+            } catch (error) {
+              console.log(`❌ Variation failed: ${url}`, error.message);
+            }
+          }
         }
+        
+        // Strategy 3: Try alternative paper ID formats
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 3: Trying alternative paper ID formats`);
+          
+          const alternativeIds = [
+            paperId.toString(),
+            parseInt(paperId).toString(),
+            `0${paperId}`,
+            `paper${paperId}`,
+            paperId.replace('paper-', '')
+          ];
+          
+          for (const altId of alternativeIds) {
+            if (altId !== paperId) {
+              try {
+                const url = `${API_URL}/api/courses/CMA/foundation/${altId}`;
+                console.log(`🔗 Trying alternative ID: ${url}`);
+                const res = await fetch(url, {
+                  headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                  cache: 'no-cache',
+                  mode: 'cors',
+                });
+                
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.courses && data.courses.length > 0) {
+                    console.log(`✅ Strategy 3 SUCCESS: Found ${data.courses.length} courses with ID ${altId}`);
+                    foundCourses = data.courses;
+                    break;
+                  }
+                }
+              } catch (error) {
+                console.log(`❌ Alternative ID ${altId} failed:`, error.message);
+              }
+            }
+          }
+        }
+        
+        // Strategy 4: Get all courses and filter client-side
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 4: Fetching all courses and filtering client-side`);
+          
+          try {
+            const allCoursesUrl = `${API_URL}/api/courses/all`;
+            console.log(`🔗 Fetching all courses: ${allCoursesUrl}`);
+            const res = await fetch(allCoursesUrl, {
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data.courses && data.courses.length > 0) {
+                console.log(`📊 Got ${data.courses.length} total courses, filtering for CMA Foundation Paper ${paperId}`);
+                
+                const filteredCourses = data.courses.filter(course => {
+                  const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                  const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+                  
+                  const paperMatches = (
+                    course.paperId == paperId ||
+                    course.paperId == parseInt(paperId) ||
+                    String(course.paperId) === paperId ||
+                    String(course.paperId) === String(paperId)
+                  );
+                  
+                  const matches = isCMA && isFoundation && paperMatches;
+                  
+                  if (matches) {
+                    console.log(`🎯 Found matching course: ${course.subject} (Category: ${course.category}, Subcategory: ${course.subcategory}, PaperId: ${course.paperId})`);
+                  }
+                  
+                  return matches;
+                });
+                
+                if (filteredCourses.length > 0) {
+                  console.log(`✅ Strategy 4 SUCCESS: Found ${filteredCourses.length} courses after client-side filtering`);
+                  foundCourses = filteredCourses;
+                } else {
+                  console.log(`📋 No CMA Foundation Paper ${paperId} courses found in ${data.courses.length} total courses`);
+                  
+                  // Debug: show what CMA Foundation courses exist
+                  const allCMAFoundation = data.courses.filter(course => {
+                    const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                    const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+                    return isCMA && isFoundation;
+                  });
+                  
+                  console.log(`🔍 Available CMA Foundation courses:`);
+                  allCMAFoundation.forEach(course => {
+                    console.log(`   - ${course.subject} (Paper ${course.paperId})`);
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.log(`❌ Strategy 4 failed:`, error.message);
+          }
+        }
+        
+        // Strategy 5: Show any CMA Foundation courses as fallback
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 5: Showing any available CMA Foundation courses as fallback`);
+          
+          try {
+            const allCoursesUrl = `${API_URL}/api/courses/all`;
+            const res = await fetch(allCoursesUrl, {
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data.courses) {
+                const cmaFoundationCourses = data.courses.filter(course => {
+                  const isCMA = course.category && course.category.toUpperCase().includes('CMA');
+                  const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+                  return isCMA && isFoundation;
+                });
+                
+                if (cmaFoundationCourses.length > 0) {
+                  console.log(`✅ Strategy 5 SUCCESS: Showing ${cmaFoundationCourses.length} CMA Foundation courses as fallback`);
+                  foundCourses = cmaFoundationCourses;
+                  setError(`No courses found for Paper ${paperId} specifically, but showing all available CMA Foundation courses:`);
+                }
+              }
+            }
+          } catch (error) {
+            console.log(`❌ Strategy 5 failed:`, error.message);
+          }
+        }
+        
+        // Set final results
+        if (foundCourses.length > 0) {
+          console.log(`🎉 FINAL RESULT: Setting ${foundCourses.length} courses`);
+          setCourses(foundCourses);
+          if (!error) {
+            setError('');
+          }
+        } else {
+          console.log(`❌ FINAL RESULT: No courses found at all`);
+          setCourses([]);
+          setError("No courses available for this paper yet. Check back later.");
+        }
+        
       } catch (err) {
-        console.error('Error fetching courses:', err);
-        setError('Failed to load courses. Please try again later.');
+        console.error('❌ Overall error fetching courses:', err);
+        setError('Server error');
         setCourses([]);
-      } finally {
-        setLoading(false);
       }
+      
+      setLoading(false);
     }
     
-    fetchCourses();
-  }, [paperId, currentPaper]);
+    if (paperId) {
+      fetchCourses();
+    }
+  }, [paperId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-4">
@@ -175,7 +260,7 @@ const CMAFoundationPaperDetailPage = () => {
         {currentPaper && (
           <div className="mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-              CMA Foundation Paper {paperId} - {currentPaper.name}
+              CMA Foundation Paper {paperId} - {currentPaper.title}
             </h1>
             <div className="bg-white p-6 rounded-xl shadow-md">
               <p className="text-gray-700 mb-4">{currentPaper.description}</p>
@@ -204,11 +289,11 @@ const CMAFoundationPaperDetailPage = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-6">Available Courses</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map(course => (
+              {courses.map((course, index) => (
                 <CourseCard 
-                  key={course._id} 
+                  key={course._id || index} 
                   course={course}
-                  onViewDetails={() => navigate(`/course-details/cma/${course._id}`)}
+                  onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id}`)}
                 />
               ))}
             </div>

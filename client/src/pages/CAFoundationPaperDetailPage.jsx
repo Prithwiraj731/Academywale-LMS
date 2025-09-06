@@ -1,4 +1,4 @@
-﻿﻿﻿﻿import React, { useEffect, useState } from 'react';
+﻿﻿﻿﻿﻿﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
@@ -283,10 +283,9 @@ const CAFoundationPaperDetailPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 mb-8">
           {courses.map((course, idx) => (
             <CourseCard 
-              key={idx}
+              key={course._id || idx}
               course={course}
-              apiUrl={API_URL}
-              showModal={false}
+              onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id}`)}
             />
           ))}
         </div>
