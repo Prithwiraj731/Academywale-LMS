@@ -279,6 +279,149 @@ router.get('/api/courses/simple-test', async (req, res) => {
   }
 });
 
+// Show all CA Foundation courses for debugging
+router.get('/api/courses/debug/ca-foundation', async (req, res) => {
+  try {
+    const Faculty = require('../model/Faculty.model');
+    const Course = require('../model/Course.model');
+    
+    console.log(`🔍 DEBUG: Showing all CA Foundation courses`);
+    
+    let allCourses = [];
+    let caFoundationCourses = [];
+    
+    // Get all faculty courses
+    const faculties = await Faculty.find({});
+    faculties.forEach(faculty => {
+      (faculty.courses || []).forEach(course => {
+        if (course) {
+          allCourses.push({
+            ...course.toObject(),
+            facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+            facultySlug: faculty.slug,
+            source: 'faculty'
+          });
+          
+          // Check if it's CA Foundation
+          const isCA = course.category && course.category.toUpperCase().includes('CA');
+          const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+          
+          if (isCA && isFoundation) {
+            caFoundationCourses.push({
+              ...course.toObject(),
+              facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+              facultySlug: faculty.slug,
+              source: 'faculty'
+            });
+          }
+        }
+      });
+    });
+    
+    // Get standalone courses
+    const standaloneCourses = await Course.find({ isActive: true });
+    standaloneCourses.forEach(course => {
+      allCourses.push({
+        ...course.toObject(),
+        source: 'standalone'
+      });
+      
+      const isCA = course.category && course.category.toUpperCase().includes('CA');
+      const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+      
+      if (isCA && isFoundation) {
+        caFoundationCourses.push({
+          ...course.toObject(),
+          source: 'standalone'
+        });
+      }
+    });
+    
+    console.log(`🔍 DEBUG: Found ${allCourses.length} total courses, ${caFoundationCourses.length} CA Foundation courses`);
+    
+    res.json({
+      success: true,
+      totalCourses: allCourses.length,
+      caFoundationCourses: caFoundationCourses.length,
+      caFoundationDetails: caFoundationCourses.map(c => ({
+        subject: c.subject,
+        category: c.category,
+        subcategory: c.subcategory,
+        paperId: c.paperId,
+        paperIdType: typeof c.paperId,
+        facultyName: c.facultyName || 'N/A',
+        source: c.source
+      })),
+      allCoursesSample: allCourses.slice(0, 10).map(c => ({
+        subject: c.subject,
+        category: c.category,
+        subcategory: c.subcategory,
+        paperId: c.paperId,
+        source: c.source
+      }))
+    });
+  } catch (error) {
+    console.error('Error in CA Foundation debug endpoint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Direct endpoint for CA Foundation Paper 1 (bypass complex filtering)
+router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
+  try {
+    const Faculty = require('../model/Faculty.model');
+    const Course = require('../model/Course.model');
+    
+    console.log(`🎯 DIRECT CA Foundation Paper 1 endpoint called`);
+    
+    let foundCourses = [];
+    
+    // Get all faculty courses
+    const faculties = await Faculty.find({});
+    faculties.forEach(faculty => {
+      (faculty.courses || []).forEach(course => {
+        if (course) {
+          // Very lenient matching for CA Foundation Paper 1
+          const isCA = course.category && course.category.toUpperCase().includes('CA');
+          const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+          const isPaper1 = String(course.paperId) === '1' || course.paperId === 1;
+          
+          if (isCA && isFoundation && isPaper1) {
+            foundCourses.push({
+              ...course.toObject(),
+              facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
+              facultySlug: faculty.slug,
+              isStandalone: false
+            });
+          }
+        }
+      });
+    });
+    
+    // Get standalone courses
+    const standaloneCourses = await Course.find({ isActive: true });
+    standaloneCourses.forEach(course => {
+      const isCA = course.category && course.category.toUpperCase().includes('CA');
+      const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
+      const isPaper1 = String(course.paperId) === '1' || course.paperId === 1;
+      
+      if (isCA && isFoundation && isPaper1) {
+        foundCourses.push({
+          ...course.toObject(),
+          isStandalone: true
+        });
+      }
+    });
+    
+    console.log(`🎯 DIRECT: Found ${foundCourses.length} CA Foundation Paper 1 courses`);
+    
+    res.json({ success: true, courses: foundCourses });
+  } catch (error) {
+    console.error('Error in direct CA Foundation Paper 1 endpoint:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Quick test for CA Foundation Paper 1 specifically
 router.get('/api/courses/test-ca-foundation-1', async (req, res) => {
   try {

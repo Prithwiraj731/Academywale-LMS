@@ -32,37 +32,74 @@ const CAFoundationPaperDetailPage = () => {
       try {
         let foundCourses = [];
         
-        // Strategy 1: Try exact paper ID match with includeStandalone parameter
-        console.log(`📡 Strategy 1: Trying exact match for CA Foundation Paper ${paperId}`);
-        const primaryUrl = `${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`;
-        
-        try {
-          console.log(`🔗 Trying URL: ${primaryUrl}`);
-          const res = await fetch(primaryUrl, {
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            cache: 'no-cache',
-            mode: 'cors',
-          });
+        // Strategy 0: Try direct endpoint for CA Foundation Paper 1 (bypass complex filtering)
+        if (paperId === '1') {
+          console.log(`📡 Strategy 0: Trying direct CA Foundation Paper 1 endpoint`);
+          const directUrl = `${API_URL}/api/courses/CA/foundation/1/direct`;
           
-          console.log(`📊 Response status: ${res.status}`);
-          
-          if (res.ok) {
-            const data = await res.json();
-            console.log(`📋 Response data:`, data);
-            if (data.courses && data.courses.length > 0) {
-              console.log(`✅ Strategy 1 SUCCESS: Found ${data.courses.length} courses`);
-              foundCourses = data.courses;
+          try {
+            console.log(`🔗 Trying direct URL: ${directUrl}`);
+            const res = await fetch(directUrl, {
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            console.log(`📊 Direct response status: ${res.status}`);
+            
+            if (res.ok) {
+              const data = await res.json();
+              console.log(`📋 Direct response data:`, data);
+              if (data.courses && data.courses.length > 0) {
+                console.log(`✅ Strategy 0 SUCCESS: Found ${data.courses.length} courses via direct endpoint`);
+                foundCourses = data.courses;
+              } else {
+                console.log(`⚠️ Strategy 0: Got response but no courses found`);
+              }
             } else {
-              console.log(`⚠️ Strategy 1: Got response but no courses found`);
+              console.log(`❌ Strategy 0: HTTP error ${res.status}`);
             }
-          } else {
-            console.log(`❌ Strategy 1: HTTP error ${res.status}`);
+          } catch (error) {
+            console.log(`❌ Strategy 0 failed:`, error.message);
           }
-        } catch (error) {
-          console.log(`❌ Strategy 1 failed:`, error.message);
+        }
+        
+        // Strategy 1: Try exact paper ID match with includeStandalone parameter
+        if (foundCourses.length === 0) {
+          console.log(`📡 Strategy 1: Trying exact match for CA Foundation Paper ${paperId}`);
+          const primaryUrl = `${API_URL}/api/courses/CA/foundation/${paperId}?includeStandalone=true`;
+          
+          try {
+            console.log(`🔗 Trying URL: ${primaryUrl}`);
+            const res = await fetch(primaryUrl, {
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            console.log(`📊 Response status: ${res.status}`);
+            
+            if (res.ok) {
+              const data = await res.json();
+              console.log(`📋 Response data:`, data);
+              if (data.courses && data.courses.length > 0) {
+                console.log(`✅ Strategy 1 SUCCESS: Found ${data.courses.length} courses`);
+                foundCourses = data.courses;
+              } else {
+                console.log(`⚠️ Strategy 1: Got response but no courses found`);
+              }
+            } else {
+              console.log(`❌ Strategy 1: HTTP error ${res.status}`);
+            }
+          } catch (error) {
+            console.log(`❌ Strategy 1 failed:`, error.message);
+          }
         }
         
         // Strategy 2: Try case variations with includeStandalone parameter
@@ -147,30 +184,31 @@ const CAFoundationPaperDetailPage = () => {
         if (foundCourses.length === 0) {
           console.log(`📡 Strategy 4: Checking database contents with debug endpoint`);
           
-          // Special test for CA Foundation Paper 1
-          if (paperId === '1') {
-            try {
-              const caFoundation1TestUrl = `${API_URL}/api/courses/test-ca-foundation-1`;
-              console.log(`🔗 Testing CA Foundation Paper 1 specifically: ${caFoundation1TestUrl}`);
-              const res = await fetch(caFoundation1TestUrl, {
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-                cache: 'no-cache',
-                mode: 'cors',
-              });
+          // Debug all CA Foundation courses
+          try {
+            const caFoundationDebugUrl = `${API_URL}/api/courses/debug/ca-foundation`;
+            console.log(`🔗 Debugging all CA Foundation courses: ${caFoundationDebugUrl}`);
+            const res = await fetch(caFoundationDebugUrl, {
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              cache: 'no-cache',
+              mode: 'cors',
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              console.log(`🔍 CA Foundation debug results:`, data);
               
-              if (res.ok) {
-                const data = await res.json();
-                console.log(`🧪 CA Foundation Paper 1 test results:`, data);
-                
-                if (data.caFoundationPaper1Courses && data.caFoundationPaper1Courses.length > 0) {
-                  console.log(`✅ Found ${data.caFoundationPaper1Courses.length} CA Foundation Paper 1 courses in database!`);
-                } else {
-                  console.log(`❌ No CA Foundation Paper 1 courses found in database`);
-                }
+              if (data.caFoundationDetails && data.caFoundationDetails.length > 0) {
+                console.log(`✅ Found ${data.caFoundationDetails.length} CA Foundation courses in database!`);
+                data.caFoundationDetails.forEach((course, index) => {
+                  console.log(`   ${index + 1}. "${course.subject}" - Category: "${course.category}", Subcategory: "${course.subcategory}", PaperId: "${course.paperId}" (${course.paperIdType}), Faculty: "${course.facultyName}"`);
+                });
+              } else {
+                console.log(`❌ No CA Foundation courses found in database`);
               }
-            } catch (error) {
-              console.log(`❌ CA Foundation Paper 1 test failed:`, error.message);
             }
+          } catch (error) {
+            console.log(`❌ CA Foundation debug failed:`, error.message);
           }
           
           try {

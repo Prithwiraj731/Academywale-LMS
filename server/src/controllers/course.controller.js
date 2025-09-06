@@ -504,6 +504,16 @@ exports.getCoursesByPaper = async (req, res) => {
         
         subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
         
+        // Additional fallback for common case mismatches
+        if (!subcategoryMatch) {
+          // Handle "Foundation" vs "foundation" directly
+          if (courseSubcategory.toLowerCase() === requestedSubcategory.toLowerCase()) {
+            subcategoryMatch = true;
+          }
+        }
+        
+        console.log(`  - Subcategory normalization: "${courseSubcategory}" -> "${normalizedCourseSubcategory}", "${requestedSubcategory}" -> "${normalizedRequestedSubcategory}", match: ${subcategoryMatch}`);
+        
         // Paper ID matching - exact numeric match
         paperIdMatch = coursePaperId === requestedPaperId && coursePaperId !== '';
         
