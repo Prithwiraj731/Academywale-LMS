@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const { requireAdminCookie } = require('../middlewares/auth.middleware');
 
-// Import the enhanced Cloudinary config
-const { facultyStorage } = require('../config/cloudinary.config');
-
-// Use the enhanced faculty storage
-const upload = multer({ storage: facultyStorage });
+// Use memory storage for uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Import controller normally
 const facultyController = require('../controllers/faculty.controller');
@@ -51,12 +49,16 @@ router.post('/api/admin/faculty/test-multer', upload.single('image'), (req, res)
   });
 });
 
-router.post('/api/admin/faculty', upload.single('image'), facultyController.createFaculty);
+router.post('/api/admin/faculty', requireAdminCookie, upload.single('image'), facultyController.createFaculty);
 
 // I am assuming your other faculty routes look something like this
 router.get('/api/faculties', facultyController.getAllFaculties);
 router.get('/api/faculties/:slug', facultyController.getFacultyBySlug);
-router.put('/api/admin/faculty/:slug', upload.single('image'), facultyController.updateFaculty);
-router.delete('/api/admin/faculty/:slug', facultyController.deleteFaculty);
+router.put('/api/admin/faculty/:slug', requireAdminCookie, upload.single('image'), facultyController.updateFaculty);
+router.delete('/api/admin/faculty/:slug', requireAdminCookie, facultyController.deleteFaculty);
+
+// Legacy faculty-info routes
+router.get('/api/faculty-info/:firstName', facultyController.getFacultyInfo);
+router.post('/api/admin/faculty-info', requireAdminCookie, facultyController.updateFacultyInfo);
 
 module.exports = router;

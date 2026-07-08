@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../model/User.model.js');
+const { supabaseAdmin } = require('../config/supabase.config');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
@@ -7,10 +7,10 @@ const protect = async (req, res, next) => {
   try {
     // 1) Getting token and check if it's there
     let token;
-    
+
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.jwt) {
+    } else if (req.cookies && req.cookies.jwt) {
       token = req.cookies.jwt;
     }
 
@@ -25,8 +25,13 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
+    const { data: currentUser, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', decoded.id)
+      .maybeSingle();
+
+    if (error || !currentUser) {
       return res.status(401).json({
         status: 'error',
         message: 'The user belonging to this token does no longer exist.'
@@ -34,7 +39,7 @@ const protect = async (req, res, next) => {
     }
 
     // 4) Check if user is active
-    if (!currentUser.isActive) {
+    if (!currentUser.is_active) {
       return res.status(401).json({
         status: 'error',
         message: 'Your account has been deactivated. Please contact support.'
@@ -84,5 +89,36 @@ const requireAuth = protect;
 module.exports = {
   protect,
   restrictTo,
-  requireAuth
+  requireAuth,
+  requireAdminCookie: async (req, res, next) => {
+    try {
+      let token;
+      if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+      } else if (req.cookies && req.cookies.jwt) {
+        token = req.cookies.jwt;
+      }
+
+      if (!token) {
+        return res.status(401).json({ status: 'error', message: 'Admin authentication required' });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const { data: user, error } = await supabaseAdmin
+        .from('users')
+        .select('id, role, is_active')
+        .eq('id', decoded.id)
+        .maybeSingle();
+
+      if (error || !user || user.role !== 'admin' || !user.is_active) {
+        return res.status(403).json({ status: 'error', message: 'You do not have permission to perform this action' });
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      console.error('Admin authentication middleware error:', error);
+      return res.status(401).json({ status: 'error', message: 'Admin authentication required' });
+    }
+  }
 };

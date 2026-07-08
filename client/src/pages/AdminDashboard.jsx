@@ -37,17 +37,17 @@ const modalStyles = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  
+
   // Check admin access - but show loading state instead of blank page
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
-  
+
   // If not admin, redirect but show loading state during redirect
   useEffect(() => {
     if (!isAdmin) {
       navigate('/admin');
     }
   }, [isAdmin, navigate]);
-  
+
   // Show loading background during redirect
   if (!isAdmin) {
     return (
@@ -454,7 +454,7 @@ export default function AdminDashboard() {
   // Fetch courses for a faculty or institute
   const fetchCourses = async (facultyName, instituteName) => {
     let url = '';
-    
+
     // A valid faculty is always required now
     if (facultyName && facultyName.trim() !== '') {
       // For faculty-based courses
@@ -775,9 +775,9 @@ export default function AdminDashboard() {
         setLoading(false);
         return;
       }
-      
+
       // Institute is optional, no validation needed
-      
+
       // Always use the same endpoint for all courses - we no longer use standalone concept
       const apiEndpoint = `${API_URL}/api/admin/courses`;
 
@@ -795,7 +795,7 @@ export default function AdminDashboard() {
       formData.append('facultySlug', courseForm.facultySlug);
       formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
       console.log('👨‍🏫 Added faculty:', courseForm.facultySlug);
-      
+
       // Institute is optional
       formData.append('institute', courseForm.institute || '');
       console.log('🏫 Added institute:', courseForm.institute || '(none)');
@@ -952,7 +952,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const formData = new FormData();
-      
+
       // Always use the faculty route - we no longer use standalone endpoints
       const apiEndpoint = `${API_URL}/api/admin/courses`;
 
@@ -2154,8 +2154,8 @@ export default function AdminDashboard() {
                       key={faculty.id}
                       onClick={() => handleSelectFaculty(faculty)}
                       className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${selectedFaculty?.id === faculty.id
-                          ? 'border-purple-500 bg-purple-100 shadow-lg'
-                          : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
+                        ? 'border-purple-500 bg-purple-100 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
                         }`}
                     >
                       <img
@@ -2296,67 +2296,10 @@ export default function AdminDashboard() {
               {instituteAddError && <div className="text-red-600 text-center font-semibold">{instituteAddError}</div>}
             </form>
           </div>
-          {/* Manage Testimonials Section */}
+          {/* Manage Testimonials Section (disabled) */}
           <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-300 mb-8">
             <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Testimonials</h2>
-            <form onSubmit={handleTestimonialAddSubmit} className="flex flex-col gap-4" encType="multipart/form-data">
-              <input name="name" value={testimonialAdd.name} onChange={handleTestimonialAddChange} placeholder="Name" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-              <select name="role" value={testimonialAdd.role} onChange={handleTestimonialAddChange} className="rounded-lg border border-gray-300 px-4 py-2 text-base">
-                <option value="teacher">Teacher</option>
-                <option value="student">Student</option>
-              </select>
-              <textarea name="text" value={testimonialAdd.text} onChange={handleTestimonialAddChange} placeholder="What they say..." className="rounded-lg border border-gray-300 px-4 py-2 text-base" required />
-              <input name="image" type="file" accept="image/*" onChange={handleTestimonialAddChange} className="rounded-lg border border-gray-300 px-3 py-2 text-base" />
-              <small className="text-gray-500">Image is optional</small>
-              {testimonialAdd.imagePreview && (
-                <img src={testimonialAdd.imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />
-              )}
-              <button type="submit" className="bg-green-500 text-white font-bold py-2 rounded-xl shadow-lg hover:bg-green-600 transition-all text-lg flex items-center justify-center gap-2">Add Testimonial</button>
-              {testimonialStatus && <div className="text-green-600 text-center font-semibold">{testimonialStatus}</div>}
-              {testimonialError && <div className="text-red-600 text-center font-semibold">{testimonialError}</div>}
-            </form>
-            <h3 className="text-xl font-bold text-purple-700 mt-8 mb-4">All Testimonials</h3>
-            <div className="grid grid-cols-1 gap-4">
-              {testimonials.map(t => (
-                <div key={t._id} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-green-100">
-                  <div className="flex items-center gap-4">
-                    {t.image && <AdvancedImage cldImg={cld.image(t.image)} alt={t.name} className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />}
-                    <div>
-                      <div className="font-bold text-green-700">{t.name} <span className="text-xs text-gray-500">({t.role})</span></div>
-                      <div className="text-gray-700 text-sm">{t.text}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-2 md:mt-0 md:ml-auto">
-                    <button onClick={() => openEditTestimonialModal(t)} className="px-3 py-1 rounded bg-yellow-200 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition">✏️ Edit</button>
-                    <button onClick={() => handleDeleteTestimonial(t._id)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition">🗑️ Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Edit Testimonial Modal */}
-            <Modal
-              isOpen={editTestimonialModalOpen}
-              onRequestClose={() => setEditTestimonialModalOpen(false)}
-              style={modalStyles}
-              ariaHideApp={false}
-            >
-              <h2 className="text-xl font-bold mb-4">Edit Testimonial</h2>
-              <form onSubmit={handleEditTestimonialSubmit} className="flex flex-col gap-3">
-                <input name="name" value={editTestimonialData.name || ''} onChange={handleEditTestimonialChange} placeholder="Name" className="rounded border px-3 py-2" required />
-                <select name="role" value={editTestimonialData.role || 'teacher'} onChange={handleEditTestimonialChange} className="rounded border px-3 py-2">
-                  <option value="teacher">Teacher</option>
-                  <option value="student">Student</option>
-                </select>
-                <textarea name="text" value={editTestimonialData.text || ''} onChange={handleEditTestimonialChange} placeholder="What they say..." className="rounded border px-3 py-2" required />
-                <input name="image" type="file" accept="image/*" onChange={handleEditTestimonialChange} className="rounded border px-3 py-2" />
-                {editTestimonialImagePreview && <img src={editTestimonialImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-green-200 mt-2" />}
-                {editTestimonialError && <div className="text-red-600 text-center font-semibold">{editTestimonialError}</div>}
-                <div className="flex gap-2 mt-2">
-                  <button type="button" onClick={() => setEditTestimonialModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold">Cancel</button>
-                  <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold" disabled={editTestimonialLoading}>{editTestimonialLoading ? 'Saving...' : 'Save'}</button>
-                </div>
-              </form>
-            </Modal>
+            <div className="text-gray-700">Testimonials are now hardcoded. Admin editing is disabled.</div>
           </div>
         </div>
       )}
@@ -2384,7 +2327,7 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div className="w-full max-w-3xl">
-        <CoursesByPaperSection 
+        <CoursesByPaperSection
           onEditCourse={openEditModal}
           onDeleteCourse={handleDeleteCourse}
         />

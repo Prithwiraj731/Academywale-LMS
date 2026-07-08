@@ -1,0 +1,32 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+    darkMode: 'class',
+    content: [
+        "./index.html",
+        "./src/**/*.{js,ts,jsx,tsx}",
+        "../../client/src/**/*.{js,ts,jsx,tsx}",
+    ],
+    theme: {
+        extend: {
+            screens: {
+                'xs': '480px',
+            },
+            animation: {
+                'scroll-up': 'scroll-up-smooth linear infinite',
+                'scroll-down': 'scroll-down-smooth linear infinite',
+                'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+                'scroll-up-smooth': {
+                    '0%': { transform: 'translateY(0%)' },
+                    '100%': { transform: 'translateY(-50%)' },
+                },
+                'scroll-down-smooth': {
+                    '0%': { transform: 'translateY(-50%)' },
+                    '100%': { transform: 'translateY(0%)' },
+                },
+            },
+        },
+    },
+    plugins: [],
+};

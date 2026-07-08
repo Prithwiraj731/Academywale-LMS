@@ -1,8 +1,9 @@
-const Faculty = require('../model/Faculty.model');
+const { supabaseAdmin } = require('../config/supabase.config');
 
-// Search for courses with query parameters
+// @desc    Search for courses
+// @route   GET /api/courses/search
+// @access  Public
 exports.searchCourses = async (req, res) => {
-  // Set content-type to ensure we always return JSON
   res.setHeader('Content-Type', 'application/json');
   
   try {
@@ -15,118 +16,86 @@ exports.searchCourses = async (req, res) => {
       });
     }
     
-    console.log(`🔍 Searching for courses with query: "${query}", category: "${category || 'any'}"`);
+    console.log(`🔍 Searching for courses in Supabase with query: "${query}", category: "${category || 'any'}"`);
     
-    // Find all faculties (excluding N/A faculty)
-    const faculties = await Faculty.find({ firstName: { $ne: 'N/A' } });
-    
-    // Collect all courses from all faculties
-    const allCourses = [];
-    faculties.forEach(faculty => {
-      if (!faculty.courses || faculty.courses.length === 0) return;
-      
-      const coursesWithFacultyInfo = faculty.courses.map(course => ({
-        ...course.toObject(),
-        facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-        facultySlug: faculty.slug,
-        facultyId: faculty._id
-      }));
-      
-      allCourses.push(...coursesWithFacultyInfo);
-    });
-    
-    console.log(`📚 Found ${allCourses.length} total courses to search through`);
-    
-    // Convert query to lowercase for case-insensitive comparison
+    // Split the query into terms for matching
     const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 1);
-    console.log(`🔤 Search terms:`, searchTerms);
     
-    // Filter courses based on search criteria
-    const matchedCourses = allCourses.filter(course => {
-      // Skip courses without basic info
-      if (!course.subject && !course.title) return false;
+    let dbQuery = supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('is_active', true);
       
-      // Apply category filter if provided
-      if (category && course.courseType && 
-          !course.courseType.toLowerCase().includes(category.toLowerCase())) {
-        return false;
-      }
-      
-      // Check for paper number specific search
-      const paperNumberRegex = /\bpaper\s+(\d+)\b/i;
-      const paperNumberMatch = query.match(paperNumberRegex);
-      
-      if (paperNumberMatch) {
-        const requestedPaperNumber = parseInt(paperNumberMatch[1]);
-        console.log(`Detected paper number search: ${requestedPaperNumber}`);
-        
-        // If we have an exact paper number match, this takes priority
-        if (course.paperNumber === requestedPaperNumber) {
-          console.log(`Found exact paper number match: ${course.subject || course.title}`);
-          return true;
-        }
-        
-        // Also check paper number in subject or paperName
-        if ((course.subject && course.subject.toLowerCase().includes(`paper ${requestedPaperNumber}`)) ||
-            (course.paperName && course.paperName.toLowerCase().includes(`paper ${requestedPaperNumber}`))) {
-          console.log(`Found paper number in subject/paperName: ${course.subject || course.title}`);
-          return true;
-        }
-      }
-      
-      // Match based on searchable fields
-      const subjectMatch = course.subject && searchTerms.some(term => 
-        course.subject.toLowerCase().includes(term));
-      
-      const titleMatch = course.title && searchTerms.some(term => 
-        course.title.toLowerCase().includes(term));
-      
-      const paperMatch = course.paperName && searchTerms.some(term => 
-        course.paperName.toLowerCase().includes(term));
-      
-      const courseNumberMatch = course.paperNumber && searchTerms.some(term => 
-        term.includes(course.paperNumber.toString()));
-        
-      const courseTypeMatch = course.courseType && searchTerms.some(term => 
-        course.courseType.toLowerCase().includes(term));
-      
-      // Consider a course matched if any searchable field contains the query
-      return subjectMatch || titleMatch || paperMatch || courseNumberMatch || courseTypeMatch;
+    // Apply category filter if specified
+    if (category) {
+      dbQuery = dbQuery.eq('category', category.toUpperCase().trim());
+    }
+    
+    // Build OR filters for matching terms
+    // We match against title, subject, description, paper_name, course_type
+    const filterConditions = [];
+    searchTerms.forEach(term => {
+      filterConditions.push(
+        `title.ilike.%${term}%`,
+        `subject.ilike.%${term}%`,
+        `description.ilike.%${term}%`,
+        `paper_name.ilike.%${term}%`,
+        `course_type.ilike.%${term}%`
+      );
     });
     
-    console.log(`🎯 Found ${matchedCourses.length} matching courses`);
+    // Also support exact match for paper number (e.g., if user searches "paper 1")
+    const paperNumberRegex = /\bpaper\s+(\d+)\b/i;
+    const paperNumberMatch = query.match(paperNumberRegex);
+    if (paperNumberMatch) {
+      filterConditions.push(`paper_id.eq.${paperNumberMatch[1]}`);
+    } else {
+      // Check if query is just a number
+      const numberOnlyMatch = /^(\d+)$/.exec(query.trim());
+      if (numberOnlyMatch) {
+        filterConditions.push(`paper_id.eq.${numberOnlyMatch[1]}`);
+      }
+    }
     
-    // Sort by relevance and limit the results
-    const sortedCourses = matchedCourses
-      .sort((a, b) => {
-        // Give priority to courses with exact matches in subject or title
-        const aExactMatch = a.subject?.toLowerCase().includes(query.toLowerCase()) || 
-                            a.title?.toLowerCase().includes(query.toLowerCase());
-        
-        const bExactMatch = b.subject?.toLowerCase().includes(query.toLowerCase()) || 
-                            b.title?.toLowerCase().includes(query.toLowerCase());
-        
-        if (aExactMatch && !bExactMatch) return -1;
-        if (!aExactMatch && bExactMatch) return 1;
-        
-        // If both have exact matches or neither has, sort by recency (assuming _id has timestamp)
-        return b._id > a._id ? 1 : -1;
-      })
-      .slice(0, parseInt(limit));
+    if (filterConditions.length > 0) {
+      dbQuery = dbQuery.or(filterConditions.join(','));
+    }
     
-    // Always return valid JSON
+    const { data: matchedCourses, error } = await dbQuery
+      .limit(parseInt(limit));
+      
+    if (error) throw error;
+    
+    // Map response keys for Mongo compatibility
+    const mapped = (matchedCourses || []).map(c => ({
+      ...c,
+      _id: c.id
+    }));
+    
+    // Sort results to prioritize exact subject/title matches
+    const sorted = mapped.sort((a, b) => {
+      const aExact = (a.subject && a.subject.toLowerCase().includes(query.toLowerCase())) || 
+                     (a.title && a.title.toLowerCase().includes(query.toLowerCase()));
+      const bExact = (b.subject && b.subject.toLowerCase().includes(query.toLowerCase())) || 
+                     (b.title && b.title.toLowerCase().includes(query.toLowerCase()));
+                     
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+      return 0;
+    });
+    
     return res.status(200).json({ 
-      courses: sortedCourses,
-      total: matchedCourses.length,
+      courses: sorted,
+      total: sorted.length,
       query,
       category: category || 'any',
       success: true
     });
+    
   } catch (error) {
-    console.error('Error searching courses:', error);
-    // Even for 404 errors, always return valid JSON format
+    console.error('Error searching courses in Supabase:', error);
     return res.status(404).json({ 
-      error: error.message || 'Course not found',
+      error: error.message || 'Error occurred during search',
       success: false,
       query: query || '',
       courses: []

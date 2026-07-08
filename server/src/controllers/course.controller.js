@@ -1,273 +1,7 @@
-// Import the mode mapper utility
+const { supabaseAdmin } = require('../config/supabase.config');
 const { mapMode } = require('../utils/modeMapper');
-const Faculty = require('../model/Faculty.model');
-const mongoose = require('mongoose');
 
-// Data normalization function to fix existing course data
-const normalizeCourseData = (course) => {
-  // Normalize paperId to string
-  if (course.paperId && typeof course.paperId === 'number') {
-    course.paperId = String(course.paperId);
-  }
-  // Normalize subcategory to proper case (capitalize first letter, rest lowercase)
-  if (course.subcategory) {
-    const sub = course.subcategory.toLowerCase().trim();
-    course.subcategory = sub.charAt(0).toUpperCase() + sub.slice(1);
-  }
-  // Normalize category to uppercase
-  if (course.category) {
-    course.category = course.category.toUpperCase();
-  }
-  return course;
-};
-
-// Faculty-only course creation: all courses must belong to a specific faculty
-exports.addCourseToFaculty = async (req, res) => {
-  try {
-    console.log('🎯 Course controller: addCourseToFaculty called');
-    console.log('📋 Request body:', req.body);
-    console.log('📎 File received:', req.file ? 'Yes' : 'No');
-    
-    if (req.file) {
-      console.log('📄 File details:', {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        path: req.file.path
-      });
-    }
-    
-    const {
-      category, subcategory, paperId, paperName, subject, facultySlug,
-      institute, description, noOfLecture, books, videoLanguage,
-      videoRunOn, doubtSolving, supportMail, supportCall, timing,
-      courseType, modeAttemptPricing, title
-    } = req.body;
-
-    const posterUrl = req.file ? req.file.path : '';
-
-    // Faculty slug is now required
-    if (!facultySlug || facultySlug.trim() === '' || facultySlug.toLowerCase() === 'n-a') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Faculty selection is required. Please select a valid faculty.' 
-      });
-    }
-
-    // Otherwise, add to faculty (supports hardcoded)
-    if (!category || !subcategory || !paperId || !subject) {
-      return res.status(400).json({ error: 'Required fields are missing' });
-    }
-
-    let faculty = await Faculty.findOne({ slug: facultySlug });
-    if (!faculty) {
-      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
-      if (hardcodedFaculty) {
-        faculty = new Faculty({
-          firstName: hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, ''),
-          lastName: '',
-          slug: hardcodedFaculty.slug,
-          specialization: hardcodedFaculty.specialization,
-          bio: `Expert ${hardcodedFaculty.specialization} faculty with years of professional experience.`,
-          courses: []
-        });
-        await faculty.save();
-      } else {
-        return res.status(404).json({ error: 'Faculty not found' });
-      }
-    }
-
-    let parsedModeAttemptPricing = [];
-    try {
-      parsedModeAttemptPricing = JSON.parse(modeAttemptPricing);
-    } catch (e) {
-      return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
-    }
-
-    const facultyName = faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : '');
-    // Normalize category and subcategory for consistent filtering
-    const normalizedCategory = category ? category.toUpperCase() : '';
-    const normalizedSubcategory = subcategory ? 
-      subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase() : '';
-    
-    let newCourse = {
-      facultyName,
-      subject,
-      noOfLecture,
-      books,
-      videoLanguage,
-      videoRunOn,
-      doubtSolving,
-      supportMail,
-      supportCall,
-      posterUrl,
-      timing,
-      description,
-      courseType: courseType || `${normalizedCategory} ${normalizedSubcategory}`,
-      institute,
-      category: normalizedCategory,
-      subcategory: normalizedSubcategory,
-      paperId: String(paperId), // Store as string for consistent filtering
-      paperName,
-      modeAttemptPricing: parsedModeAttemptPricing,
-      costPrice: parsedModeAttemptPricing[0]?.attempts[0]?.costPrice || 0,
-      sellingPrice: parsedModeAttemptPricing[0]?.attempts[0]?.sellingPrice || 0,
-      // Map the mode to only allowed values
-      mode: mapMode(parsedModeAttemptPricing[0]?.mode),
-      modes: parsedModeAttemptPricing.map(m => mapMode(m.mode)),
-      durations: parsedModeAttemptPricing.flatMap(m => m.attempts.map(a => a.attempt))
-    };
-    
-    console.log(`📝 Normalized course data: category="${normalizedCategory}", subcategory="${normalizedSubcategory}", paperId=${paperId}`);
-    
-    console.log('⚠️ Original mode value:', parsedModeAttemptPricing[0]?.mode);
-    console.log('✅ Mapped mode value:', newCourse.mode);
-    
-    // No need for complex validation - we've already mapped to allowed values
-    
-    // Make absolutely sure mode is a valid value from allowed list
-    const VALID_MODES = ['Live Watching', 'Recorded Video', 'Live Class', 'Hybrid'];
-    newCourse.mode = VALID_MODES.includes(parsedModeAttemptPricing[0]?.mode) 
-      ? parsedModeAttemptPricing[0]?.mode 
-      : 'Live Watching';
-    
-    // Ensure isActive flag is set to true for the course
-    newCourse.isActive = true;
-
-    // Make sure the course has all required fields for proper display
-    if (!newCourse.title) newCourse.title = newCourse.subject;
-    if (!newCourse.sellingPrice) newCourse.sellingPrice = 0;
-    if (!newCourse.costPrice) newCourse.costPrice = 0;
-    
-    // Add course to faculty
-    faculty.courses.push(newCourse);
-    
-    try {
-      // Try normal save
-      await faculty.save();
-      console.log('✅ Course controller: Course added successfully to faculty');
-      
-      // Also create a standalone course for better visibility
-      try {
-        const Course = require('../model/Course.model');
-        const standaloneCourse = new Course({
-          ...newCourse,
-          facultyId: faculty._id,
-          facultySlug: faculty.slug,
-          isActive: true
-        });
-        await standaloneCourse.save();
-        console.log('✅ Course also saved as standalone course for better visibility');
-      } catch (standaloneError) {
-        console.error('⚠️ Could not save as standalone course:', standaloneError.message);
-        // Continue even if standalone save fails
-      }
-      
-      res.status(201).json({ success: true, message: 'Course added successfully', course: newCourse });
-    } catch (saveError) {
-      // Check if it's a mode validation error
-      if (saveError.name === 'ValidationError') {
-        
-        console.log('⚠️ Validation error detected, attempting direct database update');
-        
-        try {
-          // Use direct MongoDB update to bypass validation
-          const mongoose = require('mongoose');
-          await mongoose.model('Faculty').updateOne(
-            { _id: faculty._id },
-            { $push: { courses: newCourse } }
-          );
-          
-          console.log('✅ Course saved successfully using direct database update');
-          
-          // Also create a standalone course for better visibility
-          try {
-            const Course = require('../model/Course.model');
-            const standaloneCourse = new Course({
-              ...newCourse,
-              facultyId: faculty._id,
-              facultySlug: faculty.slug,
-              isActive: true
-            });
-            await standaloneCourse.save();
-            console.log('✅ Course also saved as standalone course for better visibility');
-          } catch (standaloneError) {
-            console.error('⚠️ Could not save as standalone course:', standaloneError.message);
-            // Continue even if standalone save fails
-          }
-          
-          res.status(201).json({
-            success: true,
-            message: 'Course added successfully (using direct database update)',
-            course: newCourse
-          });
-        } catch (directUpdateError) {
-          console.error('❌ Direct database update failed:', directUpdateError);
-          throw directUpdateError;
-        }
-      } else {
-        // Not a mode validation error, rethrow
-        throw saveError;
-      }
-    }
-  } catch (error) {
-    console.error('❌ Course controller error:', error);
-    console.error('❌ Error stack:', error.stack);
-    
-    if (error.name === 'ValidationError') {
-      console.error('❌ Mongoose validation error:', error.errors);
-      
-      // Check if it's a mode validation error
-      const modeError = error.errors?.['courses.0.mode'];
-      if (modeError && modeError.kind === 'enum') {
-        const invalidMode = modeError.value;
-        console.error(`❌ Invalid mode value: "${invalidMode}"`);
-        
-        // Try to fix the mode value
-        try {
-          // If we can find the faculty
-          if (faculty && faculty.courses && faculty.courses.length > 0) {
-            // Get the last course (the one that failed validation)
-            const lastCourseIndex = faculty.courses.length - 1;
-            
-            // Update the mode to a valid enum value
-            faculty.courses[lastCourseIndex].mode = 'Live Watching';
-            
-            // Save again
-            await faculty.save();
-            
-            console.log('✅ Course saved successfully after fixing mode value');
-            return res.status(201).json({ 
-              success: true, 
-              message: 'Course added successfully (mode fixed automatically)', 
-              course: faculty.courses[lastCourseIndex],
-              warning: `Mode "${invalidMode}" was changed to "Live Watching"` 
-            });
-          }
-        } catch (retryError) {
-          console.error('❌ Failed to retry saving with fixed mode:', retryError);
-        }
-      }
-      
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        details: error.errors,
-        message: error.message,
-        suggestion: 'This may be due to an invalid mode value. Try using "Live Watching" or "Recorded Videos".'
-      });
-    }
-    
-    res.status(500).json({ 
-      success: false,
-      error: 'Course creation failed', 
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
-  }
-};
-
-// Import hardcoded faculties
+// Hardcoded faculties database fallback
 const hardcodedFaculties = [
   { id: 1, name: "CA Ranjan Periwal", specialization: "Corporate & Allied Laws", slug: "ca-ranjan-periwal" },
   { id: 2, name: "CA Satish Jalan", specialization: "Advanced Accounting & Audit", slug: "ca-satish-jalan" },
@@ -295,467 +29,454 @@ const hardcodedFaculties = [
   { id: 24, name: "CS Arjun Chhabra", specialization: "Company Secretarial Practice", slug: "cs-arjun-chhabra" },
 ];
 
-// Get all courses by faculty slug (supports both database and hardcoded faculties)
+/**
+ * Upload Image Helper to Supabase Storage
+ */
+async function uploadToSupabaseStorage(file, folder) {
+  if (!file) return { url: '', publicId: '' };
+  
+  const fileName = `${folder}/${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const { data, error } = await supabaseAdmin.storage
+    .from('academywale-media')
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true
+    });
+    
+  if (error) {
+    console.error('❌ Supabase storage upload error:', error.message);
+    throw error;
+  }
+  
+  const { data: { publicUrl } } = supabaseAdmin.storage
+    .from('academywale-media')
+    .getPublicUrl(fileName);
+    
+  return { url: publicUrl, publicId: fileName };
+}
+
+// @desc    Add course to faculty
+// @route   POST /api/admin/courses
+// @access  Private/Admin
+exports.addCourseToFaculty = async (req, res) => {
+  try {
+    console.log('🎯 Course controller: addCourseToFaculty called');
+    console.log('📋 Request body:', req.body);
+    
+    const {
+      category, subcategory, paperId, paperName, subject, facultySlug,
+      institute, description, noOfLecture, books, videoLanguage,
+      videoRunOn, doubtSolving, supportMail, supportCall, timing,
+      courseType, modeAttemptPricing, title
+    } = req.body;
+
+    // Faculty slug is required
+    if (!facultySlug || facultySlug.trim() === '' || facultySlug.toLowerCase() === 'n-a') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Faculty selection is required. Please select a valid faculty.' 
+      });
+    }
+
+    if (!category || !subcategory || !paperId || !subject) {
+      return res.status(400).json({ error: 'Required fields are missing' });
+    }
+
+    // 1. Resolve Faculty in Supabase
+    let { data: faculty, error: facultyError } = await supabaseAdmin
+      .from('faculties')
+      .select('*')
+      .eq('slug', facultySlug)
+      .maybeSingle();
+
+    if (facultyError) throw facultyError;
+
+    // If not found in DB, check hardcoded faculties list
+    if (!faculty) {
+      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
+      if (hardcodedFaculty) {
+        // Auto-provision faculty in PostgreSQL
+        const facultyNameParts = hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, '').split(' ');
+        const firstName = facultyNameParts[0];
+        const lastName = facultyNameParts.slice(1).join(' ') || '';
+        
+        const { data: newFac, error: createFacError } = await supabaseAdmin
+          .from('faculties')
+          .insert({
+            first_name: firstName,
+            last_name: lastName,
+            slug: hardcodedFaculty.slug,
+            bio: `Expert faculty in ${hardcodedFaculty.specialization}`,
+            teaches: [category.toUpperCase()]
+          })
+          .select('*')
+          .single();
+
+        if (createFacError) throw createFacError;
+        faculty = newFac;
+      } else {
+        return res.status(404).json({ error: 'Faculty not found' });
+      }
+    }
+
+    // 2. Parse pricing
+    let parsedPricing = [];
+    try {
+      parsedPricing = JSON.parse(modeAttemptPricing);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid mode attempt pricing format' });
+    }
+
+    // Flat pricing conversion helper (nested attempts structure mapped to JSONB array)
+    const flatPricing = [];
+    if (Array.isArray(parsedPricing)) {
+      parsedPricing.forEach(modeGroup => {
+        const modeVal = modeGroup.mode || '';
+        if (modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
+          modeGroup.attempts.forEach(attemptData => {
+            flatPricing.push({
+              mode: modeVal,
+              attempt: attemptData.attempt || '',
+              costPrice: Number(attemptData.costPrice) || 0,
+              sellingPrice: Number(attemptData.sellingPrice) || 0
+            });
+          });
+        } else if (modeGroup.attempt) {
+          flatPricing.push({
+            mode: modeVal,
+            attempt: modeGroup.attempt,
+            costPrice: Number(modeGroup.costPrice) || 0,
+            sellingPrice: Number(modeGroup.sellingPrice) || 0
+          });
+        }
+      });
+    }
+
+    // Upload poster image if present
+    let posterUrl = '';
+    let posterPath = '';
+    if (req.file) {
+      const uploadResult = await uploadToSupabaseStorage(req.file, 'courses');
+      posterUrl = uploadResult.url;
+      posterPath = uploadResult.publicId;
+    }
+
+    // 3. Resolve Institute ID if present
+    let instituteId = null;
+    if (institute) {
+      const { data: inst } = await supabaseAdmin
+        .from('institutes')
+        .select('id')
+        .eq('name', institute)
+        .maybeSingle();
+      if (inst) {
+        instituteId = inst.id;
+      }
+    }
+
+    const facultyFullName = faculty.first_name + (faculty.last_name ? ' ' + faculty.last_name : '');
+    const normalizedCategory = category.toUpperCase();
+    const normalizedSubcategory = subcategory.charAt(0).toUpperCase() + subcategory.slice(1).toLowerCase();
+
+    // 4. Save Course to Supabase
+    const { data: savedCourse, error: insertError } = await supabaseAdmin
+      .from('courses')
+      .insert({
+        title: title || subject || 'Untitled Course',
+        subject,
+        description: description || '',
+        category: normalizedCategory,
+        subcategory: normalizedSubcategory,
+        paper_id: String(paperId),
+        paper_name: paperName || '',
+        course_type: courseType || `${normalizedCategory} ${normalizedSubcategory}`,
+        no_of_lecture: noOfLecture || '',
+        books: books || '',
+        video_language: videoLanguage || 'Hindi',
+        video_run_on: videoRunOn || '',
+        timing: timing || '',
+        doubt_solving: doubtSolving || '',
+        support_mail: supportMail || '',
+        support_call: supportCall || '',
+        validity_start_from: validityStartFrom || '',
+        faculty_id: faculty.id,
+        faculty_name: facultyFullName,
+        faculty_slug: faculty.slug,
+        institute_id: instituteId,
+        institute_name: institute || '',
+        poster_url: posterUrl,
+        poster_public_id: posterPath,
+        mode_attempt_pricing: flatPricing,
+        cost_price: flatPricing[0]?.costPrice || 0,
+        selling_price: flatPricing[0]?.sellingPrice || 0,
+        is_active: true
+      })
+      .select('*')
+      .single();
+
+    if (insertError) throw insertError;
+
+    console.log('✅ Course added successfully in Supabase!');
+    
+    // Map response model keys to mimic Mongo course schema for client compatibility
+    const responseCourse = {
+      ...savedCourse,
+      _id: savedCourse.id, // compatibility mapping
+    };
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Course added successfully', 
+      course: responseCourse 
+    });
+
+  } catch (error) {
+    console.error('❌ Course creation error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Course creation failed', 
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get all courses by faculty slug
+// @route   GET /api/courses/faculty/:facultySlug
+// @access  Public
 exports.getCoursesByFaculty = async (req, res) => {
   try {
     const { facultySlug } = req.params;
     
-    // First, try to find in database
-    let faculty = await Faculty.findOne({ slug: facultySlug });
+    const { data: courses, error } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('faculty_slug', facultySlug)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    // Map `id` to `_id` for backward compatibility
+    const mappedCourses = (courses || []).map(c => ({
+      ...c,
+      _id: c.id
+    }));
     
-    // If not found in database, check hardcoded faculties
-    if (!faculty) {
-      const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
-      if (hardcodedFaculty) {
-        // For hardcoded faculties, we need to create a database entry if courses are added
-        // For now, return empty courses array
-        return res.status(200).json({ courses: [] });
-      }
-      return res.status(404).json({ error: 'Faculty not found' });
-    }
-    
-    res.status(200).json({ courses: faculty.courses || [] });
+    res.status(200).json({ courses: mappedCourses });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Add new structured course to faculty (supports both database and hardcoded faculties)
-
-// Get courses by category, subcategory, and paper
+// @desc    Get courses by category, subcategory, and paper
+// @route   GET /api/courses/:category/:subcategory/:paperId
+// @access  Public
 exports.getCoursesByPaper = async (req, res) => {
   try {
-    // Set response headers for CORS
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
-    // Handle preflight request
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
     
-    // Import required models at function level to avoid circular dependencies
-    const Faculty = require('../model/Faculty.model');
-    const Institute = require('../model/Institute.model');
-    const Course = require('../model/Course.model');
-    const mongoose = require('mongoose');
-    
     const { category, subcategory, paperId } = req.params;
-    const includeStandalone = req.query.includeStandalone !== 'false'; // Default to true now
-    
-    console.log(`🔍 getCoursesByPaper called with category=${category}, subcategory=${subcategory}, paperId=${paperId}, includeStandalone=${includeStandalone}`);
-    console.log(`🔍 Request URL: ${req.originalUrl}`);
-    console.log(`🔍 Query params:`, req.query);
-    console.log(`🔍 Expected filtering criteria:`);
-    console.log(`   • Category: "${category}" -> normalized: "${category.toUpperCase()}"`);
-    console.log(`   • Subcategory: "${subcategory}" -> normalized: "${subcategory.toLowerCase()}"`);
-    console.log(`   • PaperId: "${paperId}" -> numeric: "${String(paperId).replace(/\D/g, '')}"`);
-    console.log(`🔍 Starting course retrieval from database...`);
-    console.log(`📚 Include standalone courses: ${includeStandalone}`);
-    
-    // Add route confirmation
-    console.log(`✅ ROUTE CONFIRMATION: This is the getCoursesByPaper endpoint, not faculty endpoint`);
-    
-    const faculties = await Faculty.find({});
-    const institutes = await Institute.find({});
-    
-    console.log(`👨‍🏫 Found ${faculties.length} faculties in database`);
-    console.log(`🏫 Found ${institutes.length} institutes in database`);
-    
-    let allCourses = [];
-    let facultyCoursesCount = 0;
-    let instituteCoursesCount = 0;
-    let standaloneCoursesCount = 0;
-    
-    // Get courses from faculties
-    faculties.forEach(faculty => {
-      if (faculty.courses && faculty.courses.length > 0) {
-        console.log(`👨‍🏫 Faculty "${faculty.firstName} ${faculty.lastName || ''}" has ${faculty.courses.length} courses`);
-        facultyCoursesCount += faculty.courses.length;
-        
-        (faculty.courses || []).forEach(course => {
-          // Only add if course has required fields
-          if (course) {
-            // Normalize course data before adding to results
-            const normalizedCourse = normalizeCourseData({ ...course.toObject() });
-            allCourses.push({
-              ...normalizedCourse,
-              facultyName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`,
-              facultySlug: faculty.slug,
-              isStandalone: false
-            });
-          }
-        });
-      } else {
-        console.log(`👨‍🏫 Faculty "${faculty.firstName} ${faculty.lastName || ''}" has no courses`);
-      }
-    });
-    
-    console.log(`📚 Added ${facultyCoursesCount} courses from faculties`);
-    
-    // Get courses from institutes
-    institutes.forEach(institute => {
-      if (institute.courses && institute.courses.length > 0) {
-        console.log(`🏫 Institute "${institute.name}" has ${institute.courses.length} courses`);
-        instituteCoursesCount += institute.courses.length;
-        
-        (institute.courses || []).forEach(course => {
-          // Only add if course has required fields
-          if (course) {
-            // Normalize institute course data
-            const normalizedCourse = normalizeCourseData({ ...course.toObject() });
-            allCourses.push({
-              ...normalizedCourse,
-              facultyName: '',
-              isStandalone: false
-            });
-          }
-        });
-      } else {
-        console.log(`🏫 Institute "${institute.name}" has no courses`);
-      }
-    });
-    
-    console.log(`🏫 Added ${instituteCoursesCount} courses from institutes`);
-    
-    // Get standalone courses if requested
-    if (includeStandalone) {
-      console.log(`📚 Fetching standalone courses...`);
-      try {
-        const standaloneCourses = await Course.find({ isActive: true });
-        standaloneCoursesCount = standaloneCourses.length;
-        console.log(`📚 Found ${standaloneCoursesCount} standalone courses in database`);
-        
-        standaloneCourses.forEach(course => {
-          // Normalize standalone course data
-          const normalizedCourse = normalizeCourseData({ ...course.toObject() });
-          allCourses.push({
-            ...normalizedCourse,
-            isStandalone: true
-          });
-        });
-        console.log(`📚 Added ${standaloneCourses.length} standalone courses`);
-      } catch (standaloneError) {
-        console.log('⚠️ Error fetching standalone courses:', standaloneError.message);
-      }
-    } else {
-      console.log(`📚 Skipping standalone courses (includeStandalone=false)`);
+    console.log(`🔍 Querying Supabase courses for Category=${category}, Subcategory=${subcategory}, Paper=${paperId}`);
+
+    const requestedCategory = category.toUpperCase().trim();
+    const requestedSubcategory = subcategory.toLowerCase().trim();
+    const requestedPaperId = paperId.replace(/\D/g, ''); // Numeric part only
+
+    // PostgreSQL subcategory normalization mapping
+    let subquery = requestedSubcategory;
+    if (subquery === 'inter' || subquery === 'intermediate') {
+      subquery = 'Inter';
+    } else if (subquery === 'final') {
+      subquery = 'Final';
+    } else if (subquery === 'foundation') {
+      subquery = 'Foundation';
     }
-    
-    console.log(`🔍 Searching for courses with: category=${category.toUpperCase()}, subcategory=${subcategory.toLowerCase()}, paperId=${paperId}`);
-    console.log(`💼 Total courses retrieved: ${allCourses.length} (${facultyCoursesCount} faculty + ${instituteCoursesCount} institute + ${standaloneCoursesCount} standalone)`);
-    
-    // Debug: Log all courses with their category/subcategory/paperId
-    if (allCourses.length > 0) {
-      console.log('📋 All courses in database:');
-      allCourses.forEach((course, index) => {
-        console.log(`  ${index + 1}. Subject: "${course.subject || 'N/A'}", Category: "${course.category || 'N/A'}", Subcategory: "${course.subcategory || 'N/A'}", PaperId: "${course.paperId || 'N/A'}", Faculty: "${course.facultyName || 'N/A'}", Standalone: ${course.isStandalone}`);
-      });
-    } else {
-      console.log('⚠️ No courses found in database at all!');
-      return res.status(200).json({ courses: [], message: 'No courses found in database' });
-    }
-    
-    // N/A faculty has been removed - we only work with actual faculty courses now
-    
-    // Filter by category, subcategory, and paper - using flexible matching
-    const filteredCourses = allCourses.filter(course => {
-      try {
-        if (!course) return false;
-        
-        // Handle different formats and data types that might be stored in MongoDB
-        const courseCategory = String(course.category || '').toUpperCase().trim();
-        const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
-        // Handle paperId as both string and number - be more flexible
-        let coursePaperId = '';
-        if (course.paperId !== null && course.paperId !== undefined) {
-          coursePaperId = String(course.paperId).replace(/\D/g, ''); // Extract numeric part only
-        }
-        
-        const requestedCategory = String(category || '').toUpperCase().trim();
-        const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
-        const requestedPaperId = String(paperId || '').replace(/\D/g, ''); // Extract numeric part only
-        
-        console.log(`🔍 Course "${course.subject || course.title || 'unknown'}" filtering:`);
-        console.log(`  - Saved: cat="${course.category}", sub="${course.subcategory}", paper="${course.paperId}" (${typeof course.paperId})`);
-        console.log(`  - Normalized: cat="${courseCategory}", sub="${courseSubcategory}", paper="${coursePaperId}"`);
-        console.log(`  - Requested: cat="${requestedCategory}", sub="${requestedSubcategory}", paper="${requestedPaperId}"`);
-        
-        // More flexible matching with comprehensive case handling
-        let categoryMatch = false;
-        let subcategoryMatch = false;
-        let paperIdMatch = false;
-        
-        // Category matching - exact match (case insensitive)
-        categoryMatch = courseCategory === requestedCategory;
-        
-        // Subcategory matching - normalize common variations
-        const normalizeSubcategory = (sub) => {
-          const normalized = sub.toLowerCase().trim();
-          if (normalized === 'inter' || normalized === 'intermediate') return 'inter';
-          if (normalized === 'final') return 'final';
-          if (normalized === 'foundation') return 'foundation';
-          return normalized;
-        };
-        
-        const normalizedCourseSubcategory = normalizeSubcategory(courseSubcategory);
-        const normalizedRequestedSubcategory = normalizeSubcategory(requestedSubcategory);
-        
-        subcategoryMatch = normalizedCourseSubcategory === normalizedRequestedSubcategory;
-        
-        // Additional fallback for common case mismatches
-        if (!subcategoryMatch) {
-          // Handle "Foundation" vs "foundation" directly
-          if (courseSubcategory.toLowerCase() === requestedSubcategory.toLowerCase()) {
-            subcategoryMatch = true;
-          }
-        }
-        
-        console.log(`  - Subcategory normalization: "${courseSubcategory}" -> "${normalizedCourseSubcategory}", "${requestedSubcategory}" -> "${normalizedRequestedSubcategory}", match: ${subcategoryMatch}`);
-        
-        // Paper ID matching - exact numeric match
-        paperIdMatch = coursePaperId === requestedPaperId && coursePaperId !== '';
-        
-        // Log detailed comparison for debugging
-        console.log(`🔍 Course comparison: ${course._id || 'unknown'}, Subject: ${course.subject || 'unknown'}`);
-        console.log(`  - Category: "${courseCategory}" vs "${requestedCategory}", match: ${categoryMatch}`);
-        console.log(`  - Subcategory: "${courseSubcategory}" vs "${requestedSubcategory}", match: ${subcategoryMatch}`);
-        console.log(`  - PaperId: "${coursePaperId}" vs "${requestedPaperId}", match: ${paperIdMatch}`);
-        
-        const matches = categoryMatch && subcategoryMatch && paperIdMatch;
-        console.log(`  - Overall match: ${matches}`);
-        
-        return matches;
-      } catch (filterError) {
-        console.error(`❌ Error filtering course: ${filterError.message}`);
-        // Skip this course if there was an error
-        return false;
-      }
-    });
-    
-    console.log(`Returning ${filteredCourses.length} total filtered courses`);
-    
-    // Make sure we're returning valid data by checking each course
-    const sanitizedCourses = filteredCourses.filter(course => {
-      // Filter out any null or undefined courses
-      if (!course) return false;
-      
-      // Ensure all courses have required fields
-      return course._id && (course.subject || course.title);
-    }).map(course => {
-      // Make sure all courses have these minimum fields
-      return {
-        ...course,
-        _id: course._id || new mongoose.Types.ObjectId(),
-        subject: course.subject || course.title || 'Untitled Course',
-        facultyName: course.facultyName || '',
-        facultySlug: course.facultySlug || '',
-        courseType: course.courseType || `${category} ${subcategory} - Paper ${paperId}`,
-        modeAttemptPricing: course.modeAttemptPricing || []
-      };
-    });
-    
-    console.log(`Returning ${sanitizedCourses.length} sanitized filtered courses`);
-    
-    // If no courses found, try multiple fallback searches
-    if (sanitizedCourses.length === 0) {
-      console.log('🔄 No courses found with strict filtering, trying fallback searches...');
-      
-      // Try 1: Lenient category/subcategory matching with exact paperId
-      let fallbackCourses = allCourses.filter(course => {
-        const courseCategory = String(course.category || '').toUpperCase().trim();
-        const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
-        const coursePaperId = String(course.paperId || '').replace(/\D/g, '');
-        
-        const requestedCategory = String(category || '').toUpperCase().trim();
-        const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
-        const requestedPaperId = String(paperId || '').replace(/\D/g, '');
-        
-        // Flexible category matching
-        const categoryMatch = courseCategory.includes(requestedCategory) || requestedCategory.includes(courseCategory);
-        // Flexible subcategory matching
-        const subcategoryMatch = courseSubcategory.includes(requestedSubcategory) || requestedSubcategory.includes(courseSubcategory);
-        // Exact paperId match
-        const paperIdMatch = coursePaperId === requestedPaperId;
-        
-        return categoryMatch && subcategoryMatch && paperIdMatch;
-      });
-      
-      console.log(`🔄 Fallback 1 (lenient cat/sub, exact paper): ${fallbackCourses.length} courses`);
-      
-      // Try 2: If still no matches, try with any paperId normalization issues
-      if (fallbackCourses.length === 0) {
-        fallbackCourses = allCourses.filter(course => {
-          const courseCategory = String(course.category || '').toUpperCase().trim();
-          const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
-          let coursePaperId = String(course.paperId || '').trim();
-          
-          const requestedCategory = String(category || '').toUpperCase().trim();
-          const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
-          let requestedPaperId = String(paperId || '').trim();
-          
-          // Try different paperId formats
-          const paperIdMatches = (
-            coursePaperId === requestedPaperId ||
-            coursePaperId.replace(/\D/g, '') === requestedPaperId.replace(/\D/g, '') ||
-            parseInt(coursePaperId) === parseInt(requestedPaperId)
-          );
-          
-          const categoryMatch = courseCategory === requestedCategory;
-          const subcategoryMatch = courseSubcategory === requestedSubcategory;
-          
-          return categoryMatch && subcategoryMatch && paperIdMatches;
-        });
-        console.log(`🔄 Fallback 2 (flexible paperId): ${fallbackCourses.length} courses`);
-      }
-      
-      // Try 3: If still no matches, try broader search (might catch data inconsistencies)
-      if (fallbackCourses.length === 0) {
-        fallbackCourses = allCourses.filter(course => {
-          const courseCategory = String(course.category || '').toUpperCase().trim();
-          const courseSubcategory = String(course.subcategory || '').toLowerCase().trim();
-          
-          const requestedCategory = String(category || '').toUpperCase().trim();
-          const requestedSubcategory = String(subcategory || '').toLowerCase().trim();
-          
-          // Just match category and subcategory, log paperId issues
-          const categoryMatch = courseCategory === requestedCategory;
-          const subcategoryMatch = courseSubcategory === requestedSubcategory;
-          
-          if (categoryMatch && subcategoryMatch) {
-            console.log(`🔍 Found course with matching cat/sub but different paperId: "${course.subject}" (stored paperId: "${course.paperId}" [${typeof course.paperId}], requested: "${paperId}")`);
-            
-            // Log more details for Paper 20 specifically
-            if (String(paperId) === '20' || String(course.paperId) === '20') {
-              console.log(`🎯 PAPER 20 DEBUG:`);
-              console.log(`   Course paperId: "${course.paperId}" (type: ${typeof course.paperId})`);
-              console.log(`   Requested paperId: "${paperId}" (type: ${typeof paperId})`);
-              console.log(`   String comparison: "${String(course.paperId)}" === "${String(paperId)}" = ${String(course.paperId) === String(paperId)}`);
-              console.log(`   Loose comparison: ${course.paperId} == ${paperId} = ${course.paperId == paperId}`);
-              console.log(`   Numeric comparison: ${parseInt(course.paperId)} === ${parseInt(paperId)} = ${parseInt(course.paperId) === parseInt(paperId)}`);
-            }
-          }
-          
-          return categoryMatch && subcategoryMatch;
-        });
-        console.log(`🔄 Fallback 3 (cat/sub only): ${fallbackCourses.length} courses`);
-      }
-      
-      // Sanitize fallback results
-      const sanitizedFallbackCourses = fallbackCourses.filter(course => {
-        return course && course._id && (course.subject || course.title);
-      }).map(course => {
-        return {
-          ...course,
-          _id: course._id || new mongoose.Types.ObjectId(),
-          subject: course.subject || course.title || 'Untitled Course',
-          facultyName: course.facultyName || '',
-          facultySlug: course.facultySlug || '',
-          courseType: course.courseType || `${category} ${subcategory} - Paper ${paperId}`,
-          modeAttemptPricing: course.modeAttemptPricing || []
-        };
-      });
-      
-      console.log(`🔄 Final fallback results: ${sanitizedFallbackCourses.length} courses`);
-      
-      if (sanitizedFallbackCourses.length > 0) {
-        return res.status(200).json({ courses: sanitizedFallbackCourses });
-      }
-    }
-    
-    res.status(200).json({ courses: sanitizedCourses });
+
+    // Direct database query with filters - no full-collection scans needed!
+    const { data: courses, error } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('category', requestedCategory)
+      .ilike('subcategory', `%${subquery}%`)
+      .eq('paper_id', requestedPaperId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    const mapped = (courses || []).map(c => ({
+      ...c,
+      _id: c.id, // Mongo compatibility key
+      subject: c.subject || c.title
+    }));
+
+    console.log(`✅ Supabase query complete: Found ${mapped.length} matching courses`);
+    res.status(200).json({ courses: mapped });
+
   } catch (error) {
+    console.error('❌ Error fetching courses by paper:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-
-// Update course
+// @desc    Update course (relies on legacy array index routing - resolved to UUID internally)
+// @route   PUT /api/courses/:facultySlug/:courseIndex
+// @access  Private/Admin
 exports.updateCourse = async (req, res) => {
   try {
     const { facultySlug, courseIndex } = req.params;
     const updateData = req.body;
-
-    const faculty = await Faculty.findOne({ slug: facultySlug });
-    if (!faculty) {
-      return res.status(404).json({ error: 'Faculty not found' });
-    }
-
     const idx = parseInt(courseIndex);
-    if (idx < 0 || idx >= faculty.courses.length) {
-      return res.status(404).json({ error: 'Course not found' });
+
+    // Get courses for faculty, sorted by created_at
+    const { data: courses, error: fetchErr } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('faculty_slug', facultySlug)
+      .order('created_at', { ascending: true });
+
+    if (fetchErr) throw fetchErr;
+
+    if (!courses || idx < 0 || idx >= courses.length) {
+      return res.status(404).json({ error: 'Course not found at this index' });
     }
 
-    // Update course with new data
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] !== undefined && key !== 'posterUrl') {
-        faculty.courses[idx][key] = updateData[key];
-      }
-    });
+    const targetCourse = courses[idx];
 
-    // Update poster if provided
+    // Handle poster file upload if present
+    let posterUrl = targetCourse.poster_url;
+    let posterPath = targetCourse.poster_public_id;
     if (req.file) {
-      faculty.courses[idx].posterUrl = req.file.path;
+      const uploadResult = await uploadToSupabaseStorage(req.file, 'courses');
+      posterUrl = uploadResult.url;
+      posterPath = uploadResult.publicId;
     }
 
-    await faculty.save();
+    // Map properties from body
+    const sqlData = {
+      title: updateData.title || targetCourse.title,
+      subject: updateData.subject || targetCourse.subject,
+      description: updateData.description !== undefined ? updateData.description : targetCourse.description,
+      category: updateData.category ? updateData.category.toUpperCase() : targetCourse.category,
+      subcategory: updateData.subcategory ? updateData.subcategory.charAt(0).toUpperCase() + updateData.subcategory.slice(1).toLowerCase() : targetCourse.subcategory,
+      paper_id: updateData.paperId !== undefined ? String(updateData.paperId) : targetCourse.paper_id,
+      paper_name: updateData.paperName || targetCourse.paper_name,
+      course_type: updateData.courseType || targetCourse.course_type,
+      no_of_lecture: updateData.noOfLecture || targetCourse.no_of_lecture,
+      books: updateData.books || targetCourse.books,
+      video_language: updateData.videoLanguage || targetCourse.video_language,
+      video_run_on: updateData.videoRunOn || targetCourse.video_run_on,
+      timing: updateData.timing || targetCourse.timing,
+      doubt_solving: updateData.doubtSolving || targetCourse.doubt_solving,
+      support_mail: updateData.supportMail || targetCourse.support_mail,
+      support_call: updateData.supportCall || targetCourse.support_call,
+      validity_start_from: updateData.validityStartFrom || targetCourse.validity_start_from,
+      institute_name: updateData.institute || targetCourse.institute_name,
+      poster_url: posterUrl,
+      poster_public_id: posterPath,
+      is_active: updateData.isActive !== undefined ? updateData.isActive : targetCourse.is_active,
+      updated_at: new Date()
+    };
+
+    if (updateData.modeAttemptPricing) {
+      try {
+        const pricing = JSON.parse(updateData.modeAttemptPricing);
+        const flatPricing = [];
+        if (Array.isArray(pricing)) {
+          pricing.forEach(modeGroup => {
+            const modeVal = modeGroup.mode || '';
+            if (modeGroup.attempts && Array.isArray(modeGroup.attempts)) {
+              modeGroup.attempts.forEach(att => {
+                flatPricing.push({
+                  mode: modeVal,
+                  attempt: att.attempt || '',
+                  costPrice: Number(att.costPrice) || 0,
+                  sellingPrice: Number(att.sellingPrice) || 0
+                });
+              });
+            }
+          });
+        }
+        sqlData.mode_attempt_pricing = flatPricing;
+        sqlData.cost_price = flatPricing[0]?.costPrice || 0;
+        sqlData.selling_price = flatPricing[0]?.sellingPrice || 0;
+      } catch (err) {
+        console.log('⚠️ Failed to parse modeAttemptPricing on update');
+      }
+    }
+
+    const { error: updateErr } = await supabaseAdmin
+      .from('courses')
+      .update(sqlData)
+      .eq('id', targetCourse.id);
+
+    if (updateErr) throw updateErr;
+
     res.status(200).json({ success: true, message: 'Course updated successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Delete course
+// @desc    Delete course (relies on legacy array index routing - resolved to UUID internally)
+// @route   DELETE /api/courses/:facultySlug/:courseIndex
+// @access  Private/Admin
 exports.deleteCourse = async (req, res) => {
   try {
     const { facultySlug, courseIndex } = req.params;
-
-    const faculty = await Faculty.findOne({ slug: facultySlug });
-    if (!faculty) {
-      return res.status(404).json({ error: 'Faculty not found' });
-    }
-
     const idx = parseInt(courseIndex);
-    if (idx < 0 || idx >= faculty.courses.length) {
-      return res.status(404).json({ error: 'Course not found' });
+
+    // Get courses for faculty, sorted by created_at
+    const { data: courses, error: fetchErr } = await supabaseAdmin
+      .from('courses')
+      .select('id')
+      .eq('faculty_slug', facultySlug)
+      .order('created_at', { ascending: true });
+
+    if (fetchErr) throw fetchErr;
+
+    if (!courses || idx < 0 || idx >= courses.length) {
+      return res.status(404).json({ error: 'Course not found at this index' });
     }
 
-    faculty.courses.splice(idx, 1);
-    await faculty.save();
+    const targetCourse = courses[idx];
+
+    const { error: deleteErr } = await supabaseAdmin
+      .from('courses')
+      .delete()
+      .eq('id', targetCourse.id);
+
+    if (deleteErr) throw deleteErr;
 
     res.status(200).json({ success: true, message: 'Course deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
-// Delete ALL courses from all faculties
+// @desc    Delete ALL courses (emergency endpoint)
+// @route   DELETE /api/admin/courses/delete-all
+// @access  Private/Admin
 exports.deleteAllCourses = async (req, res) => {
   try {
-    console.log('🧨 DELETING ALL COURSES FROM ALL FACULTIES');
+    console.log('🧨 DELETING ALL COURSES FROM SUPABASE');
     
-    // Find all faculties
-    const faculties = await Faculty.find({});
-    const totalFaculties = faculties.length;
-    let totalCoursesRemoved = 0;
-    
-    // For each faculty, empty their courses array
-    for (const faculty of faculties) {
-      totalCoursesRemoved += faculty.courses ? faculty.courses.length : 0;
-      faculty.courses = []; // Remove all courses
-      await faculty.save();
-    }
-    
-    console.log(`✅ Successfully removed all courses from ${totalFaculties} faculties (${totalCoursesRemoved} courses total)`);
+    const { data, error } = await supabaseAdmin
+      .from('courses')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
+
+    if (error) throw error;
     
     res.status(200).json({ 
       success: true, 
-      message: `Successfully removed all courses from all faculties`,
-      details: {
-        facultiesAffected: totalFaculties,
-        coursesRemoved: totalCoursesRemoved
-      }
+      message: `Successfully removed all courses from database`
     });
   } catch (error) {
     console.error('❌ Error deleting all courses:', error);
@@ -763,17 +484,28 @@ exports.deleteAllCourses = async (req, res) => {
   }
 };
 
-// Get courses by institute
+// @desc    Get courses by institute
+// @route   GET /api/courses/institute/:instituteName
+// @access  Public
 exports.getCoursesByInstitute = async (req, res) => {
   try {
     const { instituteName } = req.params;
-    const institute = await Institute.findOne({ name: instituteName });
+
+    const { data: courses, error } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('institute_name', instituteName)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
     
-    if (!institute) {
-      return res.status(404).json({ error: 'Institute not found' });
-    }
-    
-    res.status(200).json({ courses: institute.courses || [] });
+    const mapped = (courses || []).map(c => ({
+      ...c,
+      _id: c.id
+    }));
+
+    res.status(200).json({ courses: mapped });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

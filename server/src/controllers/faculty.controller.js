@@ -1,202 +1,323 @@
+const { supabaseAdmin } = require('../config/supabase.config');
 
-const Faculty = require('../model/Faculty.model');
+// Helper to generate slug
+const generateSlug = (firstName, lastName) => {
+  const full = `${firstName} ${lastName || ''}`.trim().toLowerCase();
+  return full.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+};
 
-// Create a new faculty
+// Helper to upload image to Supabase Storage
+async function uploadToSupabaseStorage(file, folder) {
+  if (!file) return { url: '', publicId: '' };
+  
+  const fileName = `${folder}/${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const { data, error } = await supabaseAdmin.storage
+    .from('academywale-media')
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true
+    });
+    
+  if (error) {
+    console.error('❌ Supabase storage upload error:', error.message);
+    throw error;
+  }
+  
+  const { data: { publicUrl } } = supabaseAdmin.storage
+    .from('academywale-media')
+    .getPublicUrl(fileName);
+    
+  return { url: publicUrl, publicId: fileName };
+}
+
+// @desc    Create a new faculty
+// @route   POST /api/admin/faculties
+// @access  Private/Admin
 exports.createFaculty = async (req, res) => {
   try {
     console.log('📝 Faculty creation request received');
     console.log('📤 Request body:', req.body);
-    console.log('📸 File received:', req.file ? 'Yes' : 'No');
-    
-    if (req.file) {
-      console.log('📂 File details:');
-      console.log('- originalname:', req.file.originalname);
-      console.log('- mimetype:', req.file.mimetype);
-      console.log('- size:', req.file.size);
-      console.log('- path (Cloudinary URL):', req.file.path);
-      console.log('- filename (public_id):', req.file.filename);
-    }
     
     const { firstName, lastName, bio, teaches } = req.body;
     
-    // Get the proper Cloudinary URL from the uploaded file
-    const imageUrl = req.file ? req.file.path : ''; 
-    const public_id = req.file ? req.file.filename : ''; 
-
-    if (!imageUrl) {
-        console.log('❌ Image is missing - no file uploaded');
-        return res.status(400).json({ message: 'Image is required.' });
+    // Upload image to Supabase Storage
+    let imageUrl = '';
+    let publicId = '';
+    
+    if (req.file) {
+      const uploadResult = await uploadToSupabaseStorage(req.file, 'faculties');
+      imageUrl = uploadResult.url;
+      publicId = uploadResult.publicId;
+    } else {
+      return res.status(400).json({ message: 'Image is required.' });
     }
-
-    // 🚨 CRITICAL CHECK: Ensure it's a Cloudinary URL
-    if (!imageUrl.includes('cloudinary.com')) {
-        console.log('🚨 CRITICAL ERROR: Image not uploaded to Cloudinary!');
-        console.log('🚨 Current imageUrl:', imageUrl);
-        console.log('🚨 This suggests multer is using local storage instead of Cloudinary');
-        return res.status(500).json({ 
-            error: 'Image upload failed - not using Cloudinary storage',
-            imageUrl: imageUrl,
-            message: 'Server configuration error'
-        });
-    }
-
-    console.log('✅ Image uploaded successfully to Cloudinary:', imageUrl);
-    console.log('🔑 Public ID:', public_id);
 
     // Handle teaches array
     let parsedTeaches = [];
-    
     if (teaches) {
       try {
-        // Try to parse as JSON first
         parsedTeaches = JSON.parse(teaches);
-        console.log('Parsed teaches from JSON:', parsedTeaches);
       } catch (e) {
-        console.log('Failed to parse teaches as JSON, treating as string/array');
-        // If JSON parsing fails, handle as string or array
         if (typeof teaches === 'string') {
-          // If it's a string like "CMA,CA", split it
           parsedTeaches = teaches.split(',').map(t => t.trim());
         } else if (Array.isArray(teaches)) {
           parsedTeaches = teaches;
         } else {
-          parsedTeaches = [teaches]; // Single value
+          parsedTeaches = [teaches];
         }
       }
     }
+
+    const slug = generateSlug(firstName, lastName);
+
+    const { data: newFaculty, error } = await supabaseAdmin
+      .from('faculties')
+      .insert({
+        first_name: firstName,
+        last_name: lastName || null,
+        bio: bio || '',
+        teaches: parsedTeaches,
+        image_url: imageUrl,
+        public_id: publicId,
+        slug
+      })
+      .select('*')
+      .single();
+
+    if (error) throw error;
     
-    console.log('Final parsed teaches:', parsedTeaches);
+    // Map response for Mongo compatibility
+    const responseFaculty = {
+      ...newFaculty,
+      _id: newFaculty.id,
+      firstName: newFaculty.first_name,
+      lastName: newFaculty.last_name,
+      imageUrl: newFaculty.image_url,
+      image: newFaculty.public_id,
+      courses: []
+    };
 
-    // Generate slug
-    const slug = `${firstName.toLowerCase().replace(/ /g, '-')}-${lastName ? lastName.toLowerCase().replace(/ /g, '-') : ''}`.replace(/--/g, '-').replace(/^-|-$/g, '');
+    console.log('✅ Faculty created successfully in Supabase:', responseFaculty._id);
+    res.status(201).json({ success: true, faculty: responseFaculty });
 
-    const newFaculty = new Faculty({
-      firstName,
-      lastName,
-      bio,
-      teaches: parsedTeaches,
-      imageUrl, // This should be the full Cloudinary secure_url
-      image: public_id, // Store public_id for Cloudinary transformations
-      public_id, // Store public_id for potential deletion later
-      slug,
-    });
-
-    console.log('💾 Saving faculty to database...');
-    await newFaculty.save();
-    console.log('✅ Faculty saved successfully:', newFaculty._id);
-    
-    res.status(201).json({ success: true, faculty: newFaculty });
   } catch (error) {
     console.error('❌ Faculty creation error:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get all faculties
+// @desc    Get all faculties
+// @route   GET /api/faculties
+// @access  Public
 exports.getAllFaculties = async (req, res) => {
   try {
-    const faculties = await Faculty.find();
-    res.status(200).json({ faculties }); // Match the original structure
+    const { data: faculties, error: facError } = await supabaseAdmin
+      .from('faculties')
+      .select('*');
+
+    if (facError) throw facError;
+
+    const { data: courses, error: courseError } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('is_active', true);
+
+    if (courseError) throw courseError;
+
+    // Group courses by faculty
+    const coursesByFaculty = {};
+    (courses || []).forEach(c => {
+      if (c.faculty_id) {
+        if (!coursesByFaculty[c.faculty_id]) {
+          coursesByFaculty[c.faculty_id] = [];
+        }
+        coursesByFaculty[c.faculty_id].push({
+          ...c,
+          _id: c.id
+        });
+      }
+    });
+
+    const mapped = (faculties || []).map(f => ({
+      ...f,
+      _id: f.id,
+      firstName: f.first_name,
+      lastName: f.last_name,
+      imageUrl: f.image_url,
+      image: f.public_id,
+      courses: coursesByFaculty[f.id] || []
+    }));
+
+    res.status(200).json({ faculties: mapped });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get a single faculty by ID
+// @desc    Get a single faculty by slug
+// @route   GET /api/faculties/:slug
+// @access  Public
 exports.getFacultyBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const faculty = await Faculty.findOne({ slug });
+    
+    const { data: faculty, error: facError } = await supabaseAdmin
+      .from('faculties')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (facError) throw facError;
     if (!faculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
-    res.status(200).json(faculty);
+
+    const { data: courses, error: courseError } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('faculty_id', faculty.id)
+      .eq('is_active', true);
+
+    if (courseError) throw courseError;
+
+    const mappedFaculty = {
+      ...faculty,
+      _id: faculty.id,
+      firstName: faculty.first_name,
+      lastName: faculty.last_name,
+      imageUrl: faculty.image_url,
+      image: faculty.public_id,
+      courses: (courses || []).map(c => ({
+        ...c,
+        _id: c.id
+      }))
+    };
+
+    res.status(200).json(mappedFaculty);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Update a faculty
+// @desc    Update a faculty
+// @route   PUT /api/admin/faculties/:slug
+// @access  Private/Admin
 exports.updateFaculty = async (req, res) => {
   try {
     const { firstName, lastName, bio, teaches } = req.body;
-    const { slug } = req.params; // Get slug from params
+    const { slug } = req.params;
 
-    const updateData = { firstName, lastName, bio };
+    // Find current faculty to preserve image if not uploaded
+    const { data: currentFaculty, error: getError } = await supabaseAdmin
+      .from('faculties')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
 
-    // Handle teaches array
+    if (getError) throw getError;
+    if (!currentFaculty) {
+      return res.status(404).json({ message: 'Faculty not found' });
+    }
+
+    const updateData = {
+      first_name: firstName || currentFaculty.first_name,
+      last_name: lastName !== undefined ? lastName : currentFaculty.last_name,
+      bio: bio !== undefined ? bio : currentFaculty.bio,
+      updated_at: new Date()
+    };
+
     if (teaches) {
       try {
-        // Try to parse as JSON first
         updateData.teaches = JSON.parse(teaches);
       } catch (e) {
-        // If JSON parsing fails, handle as string or array
         if (typeof teaches === 'string') {
-          // If it's a string like "CMA,CA", split it
           updateData.teaches = teaches.split(',').map(t => t.trim());
         } else if (Array.isArray(teaches)) {
           updateData.teaches = teaches;
         } else {
-          updateData.teaches = [teaches]; // Single value
+          updateData.teaches = [teaches];
         }
       }
     }
 
-    // If a new file is uploaded, update the image public_id and imageUrl
     if (req.file) {
-      updateData.imageUrl = req.file.path;
-      updateData.image = req.file.filename; // Store public_id for Cloudinary
-      updateData.public_id = req.file.filename;
+      const uploadResult = await uploadToSupabaseStorage(req.file, 'faculties');
+      updateData.image_url = uploadResult.url;
+      updateData.public_id = uploadResult.publicId;
     }
 
-    const updatedFaculty = await Faculty.findOneAndUpdate(
-      { slug: slug }, // Find by slug
-      updateData,
-      { new: true }
-    );
-
-    if (!updatedFaculty) {
-      return res.status(404).json({ message: 'Faculty not found' });
+    // Generate new slug if name changed
+    if (firstName && firstName !== currentFaculty.first_name) {
+      updateData.slug = generateSlug(firstName, lastName || currentFaculty.last_name);
     }
 
-    res.status(200).json({ success: true, faculty: updatedFaculty });
+    const { data: updatedFaculty, error: updateError } = await supabaseAdmin
+      .from('faculties')
+      .update(updateData)
+      .eq('id', currentFaculty.id)
+      .select('*')
+      .single();
+
+    if (updateError) throw updateError;
+
+    const responseFaculty = {
+      ...updatedFaculty,
+      _id: updatedFaculty.id,
+      firstName: updatedFaculty.first_name,
+      lastName: updatedFaculty.last_name,
+      imageUrl: updatedFaculty.image_url,
+      image: updatedFaculty.public_id,
+      courses: []
+    };
+
+    res.status(200).json({ success: true, faculty: responseFaculty });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Delete a faculty
+// @desc    Delete a faculty
+// @route   DELETE /api/admin/faculties/:slug
+// @access  Private/Admin
 exports.deleteFaculty = async (req, res) => {
   try {
     const { slug } = req.params;
-    const deletedFaculty = await Faculty.findOneAndDelete({ slug });
+    
+    const { data: deletedFaculty, error } = await supabaseAdmin
+      .from('faculties')
+      .delete()
+      .eq('slug', slug)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw error;
     if (!deletedFaculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
+
     res.status(200).json({ success: true, message: 'Faculty deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Delete all faculty
+// @desc    Delete all faculties
+// @route   DELETE /api/admin/faculties/delete-all
+// @access  Private/Admin
 exports.deleteAllFaculty = async (req, res) => {
   try {
     console.log('🗑️ Admin requested to delete all faculty');
     
-    // Get count before deletion for logging
-    const facultyCount = await Faculty.countDocuments();
-    console.log(`📊 Total faculty to delete: ${facultyCount}`);
-    
-    // Delete all faculty from database
-    const result = await Faculty.deleteMany({});
-    
-    console.log(`✅ Successfully deleted ${result.deletedCount} faculty members`);
+    const { data, error } = await supabaseAdmin
+      .from('faculties')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
+
+    if (error) throw error;
     
     res.status(200).json({ 
       success: true, 
-      message: `Successfully deleted ${result.deletedCount} faculty members`,
-      deletedCount: result.deletedCount
+      message: 'Successfully deleted all faculty members'
     });
   } catch (error) {
     console.error('❌ Error deleting all faculty:', error);
@@ -205,5 +326,79 @@ exports.deleteAllFaculty = async (req, res) => {
       message: 'Failed to delete faculty',
       error: error.message 
     });
+  }
+};
+
+// @desc    Get faculty info by firstName (legacy)
+// @route   GET /api/faculty-info/:firstName
+// @access  Public
+exports.getFacultyInfo = async (req, res) => {
+  try {
+    const { firstName } = req.params;
+    const { data: faculty, error } = await supabaseAdmin
+      .from('faculties')
+      .select('bio, teaches, last_name')
+      .ilike('first_name', firstName.trim())
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (faculty) {
+      res.json({
+        bio: faculty.bio,
+        teaches: faculty.teaches,
+        lastName: faculty.last_name || ''
+      });
+    } else {
+      res.json({
+        bio: '',
+        teaches: [],
+        lastName: ''
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Update faculty info (legacy)
+// @route   POST /api/admin/faculty-info
+// @access  Private/Admin
+exports.updateFacultyInfo = async (req, res) => {
+  try {
+    const { firstName, bio, teaches } = req.body;
+
+    if (!firstName) {
+      return res.status(400).json({ error: 'Faculty firstName is required' });
+    }
+
+    const { data: faculty, error: getErr } = await supabaseAdmin
+      .from('faculties')
+      .select('id')
+      .ilike('first_name', firstName.trim())
+      .maybeSingle();
+
+    if (getErr) throw getErr;
+    if (!faculty) {
+      return res.status(404).json({ error: 'Faculty not found' });
+    }
+
+    const { data: updatedFaculty, error: updateErr } = await supabaseAdmin
+      .from('faculties')
+      .update({
+        bio: bio || '',
+        teaches: teaches || [],
+        updated_at: new Date()
+      })
+      .eq('id', faculty.id)
+      .select('*')
+      .single();
+
+    if (updateErr) throw updateErr;
+
+    res.json({ success: true, faculty: updatedFaculty });
+  } catch (error) {
+    console.error('Faculty update error:', error);
+    res.status(500).json({ error: error.message });
   }
 };

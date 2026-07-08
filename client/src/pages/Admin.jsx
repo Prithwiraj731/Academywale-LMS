@@ -15,16 +15,16 @@ export default function Admin() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       // Client-side validation for hardcoded credentials
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
         // Set admin status in localStorage
         localStorage.setItem('isAdmin', 'true');
-        
+
         // Set a simulated auth cookie for the session
         document.cookie = "adminAuthenticated=true; path=/; max-age=86400"; // 24 hours
-        
+
         // Navigate to admin dashboard
         navigate('/admin-dashboard');
       } else {

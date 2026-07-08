@@ -1,5 +1,6 @@
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../model/User.model.js');
+const { supabaseAdmin } = require('../config/supabase.config');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
@@ -12,7 +13,7 @@ const signToken = (id) => {
 
 // Create and send token response
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
+  const token = signToken(user.id);
   
   // Cookie options
   const cookieOptions = {
@@ -27,7 +28,7 @@ const createSendToken = (user, statusCode, res) => {
   res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
-  user.password = undefined;
+  delete user.password;
 
   res.status(statusCode).json({
     status: 'success',
@@ -50,17 +51,26 @@ exports.signup = async (req, res) => {
     console.log('🔐 New user signup attempt:', { name, email, mobile, role });
 
     // Validate required fields
-    if (!name || !email || !password || !mobile) {
+    if (!name || !email || !password) {
       console.log('❌ Validation failed: Missing required fields');
       return res.status(400).json({
         status: 'error',
-        message: 'All fields (name, email, password, mobile) are required'
+        message: 'Name, email, and password are required'
       });
     }
 
     // Check if user already exists
     console.log('🔍 Checking if user exists with email:', email);
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser, error: checkError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (checkError) {
+      throw checkError;
+    }
+
     if (existingUser) {
       console.log('❌ User already exists with email:', email);
       return res.status(400).json({
@@ -69,36 +79,51 @@ exports.signup = async (req, res) => {
       });
     }
 
-    console.log('👤 Creating new user...');
+    // Check unique mobile if provided
+    if (mobile) {
+      const { data: existingMobile, error: mobileCheckError } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('mobile', mobile)
+        .maybeSingle();
+
+      if (mobileCheckError) throw mobileCheckError;
+      if (existingMobile) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'User with this mobile number already exists'
+        });
+      }
+    }
+
+    console.log('👤 Hashing password and creating new user...');
+    const hashedPassword = await bcrypt.hash(password, 12);
+
     // Create new user
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-      mobile,
-      role: role || 'user'
-    });
+    const { data: newUser, error: insertError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        mobile: mobile || null,
+        role: role || 'user',
+        is_active: true,
+        created_at: new Date(),
+        last_login_at: new Date()
+      })
+      .select('*')
+      .single();
+
+    if (insertError) {
+      throw insertError;
+    }
 
     console.log('✅ User created successfully:', newUser.email);
-
-    // Update last login
-    await newUser.updateLastLogin();
-
     console.log('🔑 Sending token response...');
     createSendToken(newUser, 201, res);
   } catch (error) {
     console.error('❌ Signup error:', error);
-    
-    // Handle specific MongoDB errors
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyValue)[0];
-      const value = error.keyValue[field];
-      return res.status(400).json({
-        status: 'error',
-        message: `An account with that ${field} already exists.`
-      });
-    }
-    
     res.status(400).json({
       status: 'error',
       message: error.message || 'Error creating user'
@@ -126,10 +151,21 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check if user exists && password is correct
-    const user = await User.findOne({ email }).select('+password');
+    // Check if user exists
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
 
-    if (!user || !(await user.correctPassword(password, user.password))) {
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    // Verify password
+    const isCorrect = user && (await bcrypt.compare(password, user.password));
+
+    if (!user || !isCorrect) {
       return res.status(401).json({
         status: 'error',
         message: 'Incorrect email or password'
@@ -137,7 +173,7 @@ exports.login = async (req, res) => {
     }
 
     // Check if user is active
-    if (!user.isActive) {
+    if (!user.is_active) {
       return res.status(401).json({
         status: 'error',
         message: 'Your account has been deactivated. Please contact support.'
@@ -147,7 +183,10 @@ exports.login = async (req, res) => {
     console.log('✅ Login successful for:', user.email);
 
     // Update last login
-    await user.updateLastLogin();
+    await supabaseAdmin
+      .from('users')
+      .update({ last_login_at: new Date() })
+      .eq('id', user.id);
 
     createSendToken(user, 200, res);
   } catch (error) {
@@ -179,7 +218,18 @@ exports.logout = (req, res) => {
 // @access  Private
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, mobile, role, is_active, created_at, last_login_at')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -194,4 +244,4 @@ exports.getMe = async (req, res) => {
       message: 'Error fetching user data'
     });
   }
-}; 
+};
