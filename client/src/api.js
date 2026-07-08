@@ -55,7 +55,7 @@ api.interceptors.response.use(
 // API URL definition - used for all API requests
 export const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:5000')
-  : (import.meta.env.VITE_API_URL || 'https://academywale-lms.onrender.com');
+  : (import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com');
 
 /**
  * Fetch wrapper that includes credentials for admin requests

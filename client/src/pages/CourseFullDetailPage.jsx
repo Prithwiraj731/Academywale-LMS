@@ -6,7 +6,7 @@ import { MdVideoLibrary } from 'react-icons/md';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { getCourseImageUrl } from '../utils/imageUtils';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();

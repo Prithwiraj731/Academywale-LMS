@@ -18,7 +18,7 @@ app.use(cors({
   origin: [
     'https://academywale.com',
     'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
+    'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
@@ -41,7 +41,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     'https://academywale.com',
     'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
+    'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'

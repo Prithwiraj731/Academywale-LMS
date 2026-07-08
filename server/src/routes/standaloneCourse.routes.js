@@ -20,7 +20,7 @@ router.options('/api/admin/courses/standalone', (req, res) => {
   const allowed = [
     'https://academywale.com',
     'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
+    'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
@@ -100,7 +100,7 @@ router.post('/api/admin/courses/standalone', requireAdminCookie, (req, res) => {
   const allowed = [
     'https://academywale.com',
     'https://www.academywale.com',
-    'https://academywale-lms.onrender.com',
+    'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
