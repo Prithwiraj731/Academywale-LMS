@@ -124,7 +124,7 @@ export function SignupFormDemo({ onSignup, externalError }) {
 
         <button 
           type="submit" 
-          className="relative group/btn bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 block w-full text-white rounded-md h-10 font-semibold shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] transition duration-200" 
+          className="relative block w-full text-white rounded-md h-10 font-semibold bg-[#20b2aa] hover:bg-[#1a9e97] active:bg-[#15857f] transition duration-150 shadow-md" 
           disabled={loading}
         >
           {loading ? (
@@ -229,7 +229,7 @@ export function LoginFormDemo({ onLogin }) {
 
         <button 
           type="submit" 
-          className="relative group/btn bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 block w-full text-white rounded-md h-10 font-semibold shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] transition duration-200" 
+          className="relative block w-full text-white rounded-md h-10 font-semibold bg-[#20b2aa] hover:bg-[#1a9e97] active:bg-[#15857f] transition duration-150 shadow-md" 
           disabled={loading}
         >
           {loading ? (

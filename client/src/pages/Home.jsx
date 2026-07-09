@@ -51,25 +51,22 @@ export default function Home() {
       {/* Move Categories (Your Learning Journey) section to the top */}
       {/* Move Categories (Your Learning Journey) section to the top */}
       {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-16 xs:py-20 md:py-24 flex justify-center items-center overflow-hidden text-white relative z-10 bg-slate-950">
+      <div className="relative py-16 xs:py-20 md:py-24 flex justify-center items-center overflow-hidden text-white relative z-10 bg-slate-950 border-y border-neutral-850">
         <Particles
-          particleColors={['#38bdf8', '#818cf8', '#2dd4bf']}
-          particleCount={120}
+          particleColors={['#20b2aa', '#ffffff']}
+          particleCount={100}
           particleSpread={15}
-          speed={0.1}
-          particleBaseSize={60}
+          speed={0.08}
+          particleBaseSize={50}
           moveParticlesOnHover={true}
           alphaParticles={true}
           disableRotation={false}
           className="absolute top-0 left-0 w-full h-full z-0"
         />
-        {/* Decorative ambient blurs */}
-        <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
-        <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
         <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-teal-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
               Choose Your Learning Path
             </h2>
             <p className="text-neutral-400 mt-4 text-base sm:text-lg max-w-2xl mx-auto">
@@ -79,24 +76,24 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full">
             {/* --- CA Section Card --- */}
-            <div className="group bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-3xl shadow-2xl hover:border-teal-500/40 transition-all duration-300 flex flex-col justify-between">
+            <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-teal-500/30">
+                  <div className="w-12 h-12 bg-teal-500/10 text-[#20b2aa] rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-[#20b2aa]/20">
                     CA
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white tracking-tight">Chartered Accountant</h3>
-                    <p className="text-xs text-teal-400 font-semibold tracking-wider uppercase mt-0.5">ICAIP Portal</p>
+                    <p className="text-xs text-[#20b2aa] font-semibold tracking-wider uppercase mt-0.5">ICAIP Portal</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <button
                     onClick={() => navigate('/ca/foundation-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaBookReader className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CA Foundation</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -104,10 +101,10 @@ export default function Home() {
 
                   <button
                     onClick={() => navigate('/ca/inter-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaGraduationCap className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CA Intermediate</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -115,10 +112,10 @@ export default function Home() {
 
                   <button
                     onClick={() => navigate('/ca/final-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaAward className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CA Final</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -128,24 +125,24 @@ export default function Home() {
             </div>
 
             {/* --- CMA Section Card --- */}
-            <div className="group bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-3xl shadow-2xl hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between">
+            <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-indigo-500/30">
+                  <div className="w-12 h-12 bg-teal-500/10 text-[#20b2aa] rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-[#20b2aa]/20">
                     CMA
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white tracking-tight">Cost & Management Accountant</h3>
-                    <p className="text-xs text-indigo-400 font-semibold tracking-wider uppercase mt-0.5">ICMAI Portal</p>
+                    <p className="text-xs text-[#20b2aa] font-semibold tracking-wider uppercase mt-0.5">ICMAI Portal</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <button
                     onClick={() => navigate('/cma/foundation-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaBookReader className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CMA Foundation</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -153,10 +150,10 @@ export default function Home() {
 
                   <button
                     onClick={() => navigate('/cma/inter-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaGraduationCap className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CMA Intermediate</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -164,10 +161,10 @@ export default function Home() {
 
                   <button
                     onClick={() => navigate('/cma/final-papers')}
-                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <FaAward className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
                       <span className="text-neutral-200 group-hover/btn:text-white">CMA Final</span>
                     </div>
                     <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
@@ -181,7 +178,7 @@ export default function Home() {
           <div className="mt-12 text-center">
             <button
               onClick={() => navigate('/courses/all')}
-              className="bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 text-white font-extrabold py-3.5 px-8 rounded-full text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400/50"
+              className="bg-[#20b2aa] hover:bg-[#1a9e97] text-white font-extrabold py-3.5 px-8 rounded-full text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400/50"
             >
               🎓 Browse All Available Courses
             </button>
@@ -194,7 +191,7 @@ export default function Home() {
       <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 text-center mb-6 xs:mb-8 sm:mb-10 font-heading tracking-tight drop-shadow-lg">
-            Meet Our <span className="bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">Expert Faculties</span>
+            Meet Our <span className="text-[#20b2aa]">Expert Faculties</span>
           </h2>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {topFaculties.map(faculty => {
