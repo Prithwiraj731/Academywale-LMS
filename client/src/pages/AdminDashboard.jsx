@@ -8,6 +8,7 @@ import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
 import { getAllFaculties } from '../data/hardcodedFaculties';
+import { useAuth } from '../context/AuthContext';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -37,6 +38,18 @@ const modalStyles = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      localStorage.removeItem('isAdmin');
+      navigate('/admin');
+    }
+  };
 
   // Check admin access - but show loading state instead of blank page
   const isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -1584,6 +1597,19 @@ export default function AdminDashboard() {
   // Render the AdminDashboard component
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center">
+      {/* Top Header & Logout Row */}
+      <div className="w-full max-w-3xl flex justify-between items-center mb-8 bg-white/60 backdrop-blur-md p-4 rounded-xl border border-blue-100">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+          <span className="text-[#20b2aa]">Academy</span>Wale <span className="text-sm font-semibold px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">Admin Panel</span>
+        </h1>
+        <button
+          onClick={handleLogout}
+          className="px-5 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-semibold text-sm sm:text-base rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+        >
+          Logout
+        </button>
+      </div>
+
       {/* Animated Button Row */}
       <div className="w-full max-w-3xl flex gap-8 mb-10">
         <button
