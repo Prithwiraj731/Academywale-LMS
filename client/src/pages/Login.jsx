@@ -41,20 +41,40 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-8 px-4">
-      <LoginFormDemo onLogin={handleLogin} />
-      {successMessage && (
-        <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          {successMessage}
+    <div className="min-h-screen relative flex flex-col items-center justify-center bg-slate-950 py-12 px-4 overflow-hidden">
+      {/* Decorative gradient blur backgrounds */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
+
+      {/* Card Container */}
+      <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-md border border-white/10 p-6 md:p-8 rounded-2xl shadow-2xl">
+        {/* Brand header */}
+        <div className="flex flex-col items-center mb-6">
+          <Link to="/" className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 hover:scale-105 transition-transform duration-200">
+            <span className="bg-gradient-to-r from-teal-400 to-indigo-400 bg-clip-text text-transparent">Academy</span>
+            <span className="text-teal-400">Wale</span>
+          </Link>
         </div>
-      )}
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
+
+        <LoginFormDemo onLogin={handleLogin} />
+
+        {successMessage && (
+          <div className="mt-4 p-3 bg-emerald-950/30 border border-emerald-800 text-emerald-300 text-sm rounded-lg text-center">
+            {successMessage}
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 p-3 bg-red-950/30 border border-red-800 text-red-300 text-sm rounded-lg text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="mt-6 text-center text-sm text-neutral-400 border-t border-white/5 pt-4">
+          New to AcademyWale?{" "}
+          <Link to="/register" className="text-teal-400 font-semibold hover:underline">
+            Create Account
+          </Link>
         </div>
-      )}
-      <div className="mt-4 text-center text-sm">
-        New to AcademyWale? <Link to="/register" className="text-[#20b2aa] hover:underline">Sign Up</Link>
       </div>
     </div>
   );

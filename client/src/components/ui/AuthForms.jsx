@@ -56,14 +56,21 @@ export function SignupFormDemo({ onSignup, externalError }) {
   };
 
   return (
-    <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
-      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">Sign Up</h2>
-      <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+    <div className="mx-auto w-full max-w-md bg-transparent">
+      <h2 className="text-2xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight text-center md:text-left">
+        Create Your Account
+      </h2>
+      <p className="text-neutral-500 text-sm max-w-sm mt-2 text-center md:text-left dark:text-neutral-400">
+        Sign up to start browsing papers, courses, and faculties.
+      </p>
+
+      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <LabelInputContainer>
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">Full Name</Label>
           <Input 
             id="name" 
             name="name" 
+            placeholder="John Doe"
             autoComplete="name"
             value={form.name} 
             onChange={handleChange} 
@@ -71,11 +78,12 @@ export function SignupFormDemo({ onSignup, externalError }) {
           />
         </LabelInputContainer>
         <LabelInputContainer>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email Address</Label>
           <Input 
             id="email" 
             name="email" 
             type="email" 
+            placeholder="you@example.com"
             autoComplete="email"
             value={form.email} 
             onChange={handleChange} 
@@ -88,6 +96,7 @@ export function SignupFormDemo({ onSignup, externalError }) {
             id="password" 
             name="password" 
             type="password" 
+            placeholder="••••••••"
             autoComplete="new-password"
             value={form.password} 
             onChange={handleChange} 
@@ -95,28 +104,42 @@ export function SignupFormDemo({ onSignup, externalError }) {
           />
         </LabelInputContainer>
         <LabelInputContainer>
-          <Label htmlFor="mobile">Mobile (Optional)</Label>
+          <Label htmlFor="mobile">Mobile Number (Optional)</Label>
           <Input 
             id="mobile" 
             name="mobile" 
             type="tel" 
+            placeholder="+91 99999 99999"
             autoComplete="tel"
             value={form.mobile} 
             onChange={handleChange} 
           />
         </LabelInputContainer>
-        {(error || externalError) && <div className="text-red-500 text-sm">{error || externalError}</div>}
-        <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
-          {loading ? "Signing up..." : "Sign Up"}
+
+        {(error || externalError) && (
+          <div className="text-red-500 text-sm bg-red-50 dark:bg-red-950/20 p-2.5 rounded border border-red-200 dark:border-red-900/50">
+            {error || externalError}
+          </div>
+        )}
+
+        <button 
+          type="submit" 
+          className="relative group/btn bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 block w-full text-white rounded-md h-10 font-semibold shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] transition duration-200" 
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Creating Account...
+            </span>
+          ) : (
+            "Sign Up"
+          )}
         </button>
       </form>
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-sm text-neutral-600 dark:text-neutral-300">Or sign up with</span>
-        <div className="flex gap-2">
-          <button type="button" className="p-2 rounded bg-neutral-100 dark:bg-neutral-800"><IconBrandGoogle size={20} /></button>
-          <button type="button" className="p-2 rounded bg-neutral-100 dark:bg-neutral-800"><IconBrandGithub size={20} /></button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -162,15 +185,22 @@ export function LoginFormDemo({ onLogin }) {
   };
 
   return (
-    <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
-      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">Login</h2>
-      <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+    <div className="mx-auto w-full max-w-md bg-transparent">
+      <h2 className="text-2xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight text-center md:text-left">
+        Welcome Back
+      </h2>
+      <p className="text-neutral-500 text-sm max-w-sm mt-2 text-center md:text-left dark:text-neutral-400">
+        Login to manage your courses, view paper info, and check out.
+      </p>
+
+      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <LabelInputContainer>
-          <Label htmlFor="login-email">Email</Label>
+          <Label htmlFor="login-email">Email Address</Label>
           <Input 
             id="login-email" 
             name="email" 
             type="email" 
+            placeholder="you@example.com"
             autoComplete="email"
             value={form.email} 
             onChange={handleChange} 
@@ -183,24 +213,38 @@ export function LoginFormDemo({ onLogin }) {
             id="login-password" 
             name="password" 
             type="password" 
+            placeholder="••••••••"
             autoComplete="current-password"
             value={form.password} 
             onChange={handleChange} 
             required 
           />
         </LabelInputContainer>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-        <button type="submit" className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+
+        {error && (
+          <div className="text-red-500 text-sm bg-red-50 dark:bg-red-950/20 p-2.5 rounded border border-red-200 dark:border-red-900/50">
+            {error}
+          </div>
+        )}
+
+        <button 
+          type="submit" 
+          className="relative group/btn bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 block w-full text-white rounded-md h-10 font-semibold shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] transition duration-200" 
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Logging in...
+            </span>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-sm text-neutral-600 dark:text-neutral-300">Or login with</span>
-        <div className="flex gap-2">
-          <button type="button" className="p-2 rounded bg-neutral-100 dark:bg-neutral-800"><IconBrandGoogle size={20} /></button>
-          <button type="button" className="p-2 rounded bg-neutral-100 dark:bg-neutral-800"><IconBrandGithub size={20} /></button>
-        </div>
-      </div>
     </div>
   );
 }
