@@ -1,130 +1,63 @@
-import React, { useRef, useEffect, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import React from "react";
+import { motion } from "framer-motion";
 import banner4 from "../../assets/banner4.png";
-import "./categories.css";
 
 const steps = [
-  { title: "Choose Course", icon: "📚", desc: "Find the perfect course for your goals." },
-  { title: "Learn from Experts", icon: "🎓", desc: "Get guidance from top faculty." },
-  { title: "Practice & Review", icon: "📝", desc: "Test yourself and master concepts." },
-  { title: "Get Support", icon: "🤝", desc: "Doubt-solving and mentorship." },
-  { title: "Achieve Success", icon: "🏆", desc: "Crack your exams and celebrate!" },
+  { title: "Choose Course", icon: "📚", desc: "Find the perfect course for your goals.", step: "01" },
+  { title: "Learn from Experts", icon: "🎓", desc: "Get guidance from top faculty.", step: "02" },
+  { title: "Practice & Review", icon: "📝", desc: "Test yourself and master concepts.", step: "03" },
+  { title: "Get Support", icon: "🤝", desc: "Doubt-solving and mentorship.", step: "04" },
+  { title: "Achieve Success", icon: "🏆", desc: "Crack your exams and celebrate!", step: "05" },
 ];
 
 const Categories = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [screenSize, setScreenSize] = useState({
-    isMobile: window.innerWidth <= 768,
-    isExtraSmall: window.innerWidth <= 480,
-    isVerySmall: window.innerWidth <= 360
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenSize({
-        isMobile: window.innerWidth <= 768,
-        isExtraSmall: window.innerWidth <= 480,
-        isVerySmall: window.innerWidth <= 360
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  // Add touch detection for mobile devices
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-  
-  useEffect(() => {
-    const isTouchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    setIsTouchDevice(isTouchEnabled);
-  }, []);
-
   return (
-    <section className="timeline-section-premium bg-gray-900 text-white py-8 xs:py-10 sm:py-12 md:py-16 rounded-lg shadow-lg animate-fadeIn">
-      <div className="timeline-heading-container px-0 py-0 full-width-banner" style={{ overflow: 'visible' }}>
-        <img
-          src={banner4}
-          alt="Learning Journey Banner"
-          className="w-full h-full object-cover rounded-lg shadow-lg transition-transform duration-500 ease-in-out hover:scale-105 cursor-pointer"
-          style={{ maxHeight: 'none' }}
-        />
-      </div>
-      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-4 text-center text-xs xs:text-sm sm:text-base mt-4 xs:mt-5 sm:mt-6">
-      </div>
-      <div className="timeline-scroll-wrapper">
-        <div className="timeline-scroll-fade left" />
-        <motion.div
-          className="timeline-container-premium"
-          ref={ref}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          variants={{
-            visible: { 
-              transition: { 
-                staggerChildren: screenSize.isVerySmall ? 0.1 : (screenSize.isExtraSmall ? 0.12 : (screenSize.isMobile ? 0.15 : 0.18)) 
-              } 
-            },
-          }}
-        >
-          {/* Animated line */}
-          <motion.div
-            className="timeline-line-premium"
-            initial={{ scaleX: 0 }}
-            animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
-            transition={{ 
-              duration: screenSize.isVerySmall ? 0.6 : (screenSize.isExtraSmall ? 0.7 : (screenSize.isMobile ? 0.85 : 1)), 
-              ease: "easeOut" 
-            }}
+    <section className="w-full py-12 bg-slate-50/50 border-y border-slate-200/40 animate-fadeIn">
+      {/* Banner */}
+      <div className="w-full max-w-7xl mx-auto px-4 mb-10">
+        <div className="overflow-hidden rounded-2xl shadow-md border border-slate-200/50">
+          <img
+            src={banner4}
+            alt="Learning Journey Banner"
+            className="w-full h-auto object-cover hover:scale-[1.005] transition-transform duration-300"
           />
+        </div>
+      </div>
+
+      {/* Grid of Steps */}
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 xl:gap-8">
           {steps.map((step, idx) => (
             <motion.div
-              className="timeline-step-premium"
               key={step.title}
-              variants={{
-                hidden: { 
-                  opacity: 0, 
-                  y: screenSize.isVerySmall ? 25 : (screenSize.isExtraSmall ? 30 : (screenSize.isMobile ? 40 : 60)), 
-                  scale: screenSize.isVerySmall ? 0.98 : (screenSize.isExtraSmall ? 0.97 : (screenSize.isMobile ? 0.95 : 0.92))
-                },
-                visible: { opacity: 1, y: 0, scale: 1 },
-              }}
-              transition={{ 
-                type: "spring", 
-                stiffness: screenSize.isVerySmall ? 80 : (screenSize.isExtraSmall ? 90 : (screenSize.isMobile ? 100 : 120)), 
-                damping: screenSize.isVerySmall ? 10 : (screenSize.isExtraSmall ? 12 : (screenSize.isMobile ? 14 : 16))
-              }}
-              whileHover={{ 
-                scale: isTouchDevice ? 1 : (screenSize.isVerySmall ? 1.01 : (screenSize.isExtraSmall ? 1.02 : (screenSize.isMobile ? 1.03 : 1.06))), 
-                boxShadow: isTouchDevice ? "none" : "0 8px 32px 0 rgba(96, 165, 250, 0.4)" 
-              }}
-              whileTap={{
-                scale: isTouchDevice ? 1.02 : 1,
-                boxShadow: isTouchDevice ? "0 8px 32px 0 rgba(96, 165, 250, 0.4)" : "none"
-              }}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.35, delay: idx * 0.08 }}
+              whileHover={{ y: -4 }}
+              className="bg-white border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-[#20b2aa]/40 transition-all duration-200 flex flex-col items-center text-center relative group"
             >
-              <div className="timeline-step-icon-premium">{step.icon}</div>
-              <div className="timeline-step-title-premium">{step.title}</div>
-              <div className="timeline-step-desc-premium">{step.desc}</div>
+              {/* Step indicator */}
+              <span className="absolute top-4 right-4 text-xs font-semibold text-slate-300 select-none group-hover:text-[#20b2aa]/40 transition-colors">
+                {step.step}
+              </span>
+
+              {/* Icon Container */}
+              <div className="w-12 h-12 bg-slate-50 text-slate-700 rounded-2xl flex items-center justify-center text-xl mb-5 border border-slate-100 group-hover:bg-[#20b2aa]/10 group-hover:text-[#20b2aa] group-hover:border-[#20b2aa]/20 transition-all duration-200">
+                {step.icon}
+              </div>
+
+              {/* Content */}
+              <h3 className="text-base font-bold text-slate-800 tracking-tight mb-2 group-hover:text-[#20b2aa] transition-colors">
+                {step.title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-[180px]">
+                {step.desc}
+              </p>
             </motion.div>
           ))}
-        </motion.div>
-        <div className="timeline-scroll-fade right" />
-      </div>
-      {(screenSize.isMobile || isTouchDevice) && (
-        <div className="text-center text-gray-500 text-sm mt-2 px-4">
-          <span className="inline-flex items-center animate-swipe">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            Swipe to see more
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </span>
         </div>
-      )}
+      </div>
     </section>
   );
 };
