@@ -148,7 +148,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const res = await fetch(`/api/admin/faculty-info`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty-info`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
 
     try {
       setFacultyAddStatus('Adding faculty...');
-      const res = await fetch(`${API_URL}/api/admin/faculty`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty`, {
         method: 'POST',
         body: formData
       });
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
       setDeleteAllStatus('Deleting all faculty...');
       console.log('🗑️ Starting delete all faculty operation');
 
-      const res = await fetch(`${API_URL}/emergency-delete-faculty`, {
+      const res = await fetchWithCredentials(`${API_URL}/emergency-delete-faculty`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
     formData.append('name', instituteAdd.name.trim());
     formData.append('image', instituteAdd.image);
     try {
-      const res = await fetch(`${API_URL}/api/admin/institutes`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/institutes`, {
         method: 'POST',
         body: formData
       });
@@ -383,7 +383,7 @@ export default function AdminDashboard() {
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/coupons`);
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons`);
       const data = await res.json();
       if (res.ok && data.success) setCoupons(data.coupons);
     } catch { }
@@ -403,7 +403,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/api/admin/coupons`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -428,7 +428,7 @@ export default function AdminDashboard() {
   const handleDeleteCoupon = async code => {
     if (!window.confirm('Delete this coupon?')) return;
     try {
-      await fetch(`${API_URL}/api/admin/coupons/${code}`, { method: 'DELETE' });
+      await fetchWithCredentials(`${API_URL}/api/admin/coupons/${code}`, { method: 'DELETE' });
       fetchCoupons();
     } catch { }
   };
@@ -842,7 +842,7 @@ export default function AdminDashboard() {
         console.log(`   📝 ${key}: ${value}`);
       }
 
-      const res = await fetch(apiEndpoint, {
+      const res = await fetchWithCredentials(apiEndpoint, {
         method: 'POST',
         body: formData,
       });
@@ -1066,7 +1066,7 @@ export default function AdminDashboard() {
         if (k !== 'posterUrl') formData.append(k, v);
       });
       if (editPoster) formData.append('poster', editPoster);
-      const res = await fetch(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
         method: 'PUT',
         body: formData
       });
@@ -1092,7 +1092,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this course?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/courses/${facultySlug}/${idx}`, { method: 'DELETE' });
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${facultySlug}/${idx}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         fetchCourses(facultySlug);
@@ -1239,7 +1239,7 @@ export default function AdminDashboard() {
         }
       });
       if (editFacultyImage) formData.append('image', editFacultyImage);
-      const res = await fetch(`${API_URL}/api/admin/faculty/${editFacultySlug}`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty/${editFacultySlug}`, {
         method: 'PUT',
         body: formData
       });
@@ -1261,7 +1261,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this faculty?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/faculty/${slug}`, { method: 'DELETE' });
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty/${slug}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         // Refresh faculties list after delete
@@ -1304,7 +1304,7 @@ export default function AdminDashboard() {
         if (k !== 'image' && k !== '_id') formData.append(k, v);
       });
       if (editInstituteImage) formData.append('image', editInstituteImage);
-      const res = await fetch(`${API_URL}/api/admin/institutes/${editInstituteId}`, {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/institutes/${editInstituteId}`, {
         method: 'PUT',
         body: formData
       });
@@ -1325,7 +1325,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this institute?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/institutes/${id}`, { method: 'DELETE' });
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/institutes/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         fetch(`${API_URL}/api/institutes`).then(res => res.json()).then(data => setInstitutes(data.institutes || []));

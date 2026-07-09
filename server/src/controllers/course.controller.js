@@ -67,7 +67,7 @@ exports.addCourseToFaculty = async (req, res) => {
       category, subcategory, paperId, paperName, subject, facultySlug,
       institute, description, noOfLecture, books, videoLanguage,
       videoRunOn, doubtSolving, supportMail, supportCall, timing,
-      courseType, modeAttemptPricing, title
+      courseType, modeAttemptPricing, title, validityStartFrom
     } = req.body;
 
     // Faculty slug is required

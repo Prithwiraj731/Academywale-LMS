@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const ADMIN_EMAIL = 'admin@academywale.com';
-const ADMIN_PASSWORD = 'AdminAcademy12';
+import { useAuth } from '../context/AuthContext';
 
 export default function Admin() {
   const [email, setEmail] = useState('');
@@ -10,25 +8,28 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Client-side validation for hardcoded credentials
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        // Set admin status in localStorage
-        localStorage.setItem('isAdmin', 'true');
+      const result = await login(email, password);
+      
+      if (result.success) {
+        if (result.user.role === 'admin') {
+          // Set admin status in localStorage
+          localStorage.setItem('isAdmin', 'true');
 
-        // Set a simulated auth cookie for the session
-        document.cookie = "adminAuthenticated=true; path=/; max-age=86400"; // 24 hours
-
-        // Navigate to admin dashboard
-        navigate('/admin-dashboard');
+          // Navigate to admin dashboard
+          navigate('/admin-dashboard');
+        } else {
+          setError('Access denied. Admin role required.');
+        }
       } else {
-        setError('Invalid credentials.');
+        setError(result.message || 'Incorrect email or password');
       }
     } catch (err) {
       console.error('Login error:', err);

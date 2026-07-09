@@ -64,13 +64,15 @@ export const API_URL = import.meta.env.DEV
  * @returns {Promise<Response>} - Fetch response
  */
 export async function fetchWithCredentials(url, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { ...options.headers };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
   return fetch(url, {
     ...options,
     credentials: 'include', // Always include credentials
-    headers: {
-      ...options.headers,
-      // Add any required headers here
-    }
+    headers
   });
 }
 

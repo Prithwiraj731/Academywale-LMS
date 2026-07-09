@@ -96,6 +96,9 @@ app.get('/health', async (req, res) => {
 
 // --- Mount Modular Routes ---
 const authRoutes = require('./src/routes/auth.routes.js');
+const courseDetailRoutes = require('./src/routes/courseDetail.routes.js');
+const courseSearchRoutes = require('./src/routes/courseSearch.routes.js');
+const courseControllerRoutes = require('./src/routes/course-controller.routes.js');
 const courseRoutes = require('./src/routes/course.routes.js');
 const facultyRoutes = require('./src/routes/faculty.routes.js');
 const instituteRoutes = require('./src/routes/institute.routes.js');
@@ -108,6 +111,9 @@ const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js'
 const imageMigrationRoutes = require('./src/routes/image-migration.routes.js');
 
 app.use('/api/auth', authRoutes);
+app.use('/', courseDetailRoutes);
+app.use('/', courseSearchRoutes);
+app.use('/', courseControllerRoutes);
 app.use('/', courseRoutes);
 app.use('/', facultyRoutes);
 app.use('/', instituteRoutes);
