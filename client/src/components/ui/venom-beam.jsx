@@ -21,114 +21,103 @@ const VenomBeam = ({
 
     // Set up canvas sizing
     const setupCanvas = () => {
-      // Get DPR and size for crisp rendering
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
       
-      // Set the canvas size and scale
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
+      ctx.resetTransform();
       ctx.scale(dpr, dpr);
       
-      // Create particles on resize
-      initParticles();
+      initParticles(rect.width, rect.height);
     };
 
-    // Initialize particles
-    const initParticles = () => {
+    const initParticles = (w, h) => {
       particlesRef.current = [];
-      const count = 100; // Number of particles
+      const count = 50; // Cleaner, less crowded
       
       for (let i = 0; i < count; i++) {
         particlesRef.current.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 1,
-          vy: (Math.random() - 0.5) * 1,
-          radius: Math.random() * 2 + 1,
-          color: `rgba(32, 178, 170, ${Math.random() * 0.5 + 0.25})`, // Teal color
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 1.5 + 0.5,
+          color: `rgba(32, 178, 170, ${Math.random() * 0.2 + 0.15})`,
         });
       }
     };
 
-    // Track mouse movement
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
       mouseRef.current = {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
       };
     };
     
-    // Handle touch events for mobile
     const handleTouchMove = (e) => {
       if (e.touches.length > 0) {
         const rect = canvas.getBoundingClientRect();
         mouseRef.current = {
-          x: (e.touches[0].clientX - rect.left) * (canvas.width / rect.width),
-          y: (e.touches[0].clientY - rect.top) * (canvas.height / rect.height)
+          x: e.touches[0].clientX - rect.left,
+          y: e.touches[0].clientY - rect.top
         };
       }
     };
 
-    // Animation loop
     const animate = () => {
-      // Clear canvas with slight opacity for trails
-      ctx.fillStyle = "rgba(17, 24, 39, 0.15)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || canvas.width;
+      const h = rect.height || canvas.height;
+
+      ctx.fillStyle = "rgba(17, 24, 39, 0.1)";
+      ctx.fillRect(0, 0, w, h);
       
-      // Update and draw particles
       particlesRef.current.forEach((p, i) => {
-        // Move particles
         p.x += p.vx;
         p.y += p.vy;
         
-        // Boundary check with wrap-around
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
         
-        // Mouse interaction
         const dx = mouseRef.current.x - p.x;
         const dy = mouseRef.current.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        if (dist < 120) {
+        if (dist < 100) {
           const angle = Math.atan2(dy, dx);
-          const force = (120 - dist) / 120;
-          p.vx -= Math.cos(angle) * force * 0.02;
-          p.vy -= Math.sin(angle) * force * 0.02;
+          const force = (100 - dist) / 100;
+          p.vx -= Math.cos(angle) * force * 0.01;
+          p.vy -= Math.sin(angle) * force * 0.01;
         }
         
-        // Draw the particle
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
         ctx.fill();
         
-        // Connect particles
         for (let j = i + 1; j < particlesRef.current.length; j++) {
           const p2 = particlesRef.current[j];
-          const dx = p2.x - p.x;
-          const dy = p2.y - p.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const ldx = p2.x - p.x;
+          const ldy = p2.y - p.y;
+          const ldist = Math.sqrt(ldx * ldx + ldy * ldy);
           
-          if (dist < 100) {
+          if (ldist < 80) {
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
             
-            // Fade connections by distance
-            const alpha = (100 - dist) / 100 * 0.3;
+            const alpha = (80 - ldist) / 80 * 0.15;
             ctx.strokeStyle = `rgba(32, 178, 170, ${alpha})`;
-            ctx.lineWidth = 0.6;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       });
       
-      // Continue animation
       animationRef.current = requestAnimationFrame(animate);
     };
 

@@ -12,6 +12,7 @@ import Footer from '../components/layout/Footer';
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
+import { FaGraduationCap, FaChevronRight, FaBookReader, FaAward } from 'react-icons/fa';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
 import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
@@ -48,80 +49,139 @@ export default function Home() {
       <Hero />
       <div className="h-2 xs:h-3 sm:h-4 md:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
-{/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-8 xs:py-10 sm:py-12 md:py-16 flex justify-center items-center overflow-hidden text-white relative z-10 bg-gray-900">
+      {/* Move Categories (Your Learning Journey) section to the top */}
+      {/* Rearranged CA/CMA Path Buttons Section */}
+      <div className="relative py-16 xs:py-20 md:py-24 flex justify-center items-center overflow-hidden text-white relative z-10 bg-slate-950">
         <Particles
-          particleColors={['#ffffff', '#00eaff', '#ffd600']}
-          particleCount={180}
-          particleSpread={12}
-          speed={0.12}
-          particleBaseSize={80}
+          particleColors={['#38bdf8', '#818cf8', '#2dd4bf']}
+          particleCount={120}
+          particleSpread={15}
+          speed={0.1}
+          particleBaseSize={60}
           moveParticlesOnHover={true}
-          alphaParticles={false}
+          alphaParticles={true}
           disableRotation={false}
           className="absolute top-0 left-0 w-full h-full z-0"
         />
-        <div className="relative z-10 flex flex-col items-center w-full max-w-4xl mx-auto px-3 xs:px-4 sm:px-6 pt-4 xs:pt-5 sm:pt-6 pb-6 xs:pb-7 sm:pb-8">
-          {/* Titles */}
-          <div className="grid grid-cols-2 gap-x-3 xs:gap-x-4 sm:gap-x-6 md:gap-x-8 w-full mb-4 xs:mb-5 sm:mb-6">
-            <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-center">CA Courses</h3>
-            <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-center">CMA Courses</h3>
+        {/* Decorative ambient blurs */}
+        <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-teal-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              Choose Your Learning Path
+            </h2>
+            <p className="text-neutral-400 mt-4 text-base sm:text-lg max-w-2xl mx-auto">
+              Select your course level and access premium video lectures, notes, and preparation resources tailored for CA & CMA excellence.
+            </p>
           </div>
 
-          {/* Button Grid */}
-          <div className="grid grid-cols-2 gap-x-3 xs:gap-x-4 sm:gap-x-6 md:gap-x-8 gap-y-4 xs:gap-y-5 sm:gap-y-6 w-full">
-            {/* --- Foundation Row --- */}
-            <button
-              onClick={() => navigate('/ca/foundation-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Foundation
-            </button>
-            <button
-              onClick={() => navigate('/cma/foundation-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Foundation
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full">
+            {/* --- CA Section Card --- */}
+            <div className="group bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-3xl shadow-2xl hover:border-teal-500/40 transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-teal-500/30">
+                    CA
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white tracking-tight">Chartered Accountant</h3>
+                    <p className="text-xs text-teal-400 font-semibold tracking-wider uppercase mt-0.5">ICAIP Portal</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => navigate('/ca/foundation-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaBookReader className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CA Foundation</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
 
-            {/* --- Inter Row --- */}
-            <button
-              onClick={() => navigate('/ca/inter-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Inter
-            </button>
-            <button
-              onClick={() => navigate('/cma/inter-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Inter
-            </button>
+                  <button
+                    onClick={() => navigate('/ca/inter-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaGraduationCap className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CA Intermediate</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
 
-            {/* --- Final Row --- */}
-            <button
-              onClick={() => navigate('/ca/final-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Final
-            </button>
-            <button
-              onClick={() => navigate('/cma/final-papers')}
-              className="text-xs xs:text-sm sm:text-base md:text-lg px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 rounded-full bg-teal-600 text-white font-bold shadow-xl focus:outline-none focus:ring-4 focus:ring-teal-400 hover:bg-teal-700 transition-colors"
-            >
-              Final
-            </button>
+                  <button
+                    onClick={() => navigate('/ca/final-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-teal-500 hover:to-emerald-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaAward className="text-teal-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CA Final</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* --- CMA Section Card --- */}
+            <div className="group bg-white/5 backdrop-blur-md border border-white/10 p-6 sm:p-8 rounded-3xl shadow-2xl hover:border-indigo-500/40 transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-indigo-500/30">
+                    CMA
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white tracking-tight">Cost & Management Accountant</h3>
+                    <p className="text-xs text-indigo-400 font-semibold tracking-wider uppercase mt-0.5">ICMAI Portal</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => navigate('/cma/foundation-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaBookReader className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CMA Foundation</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/cma/inter-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaGraduationCap className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CMA Intermediate</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/cma/final-papers')}
+                    className="group/btn relative w-full py-4 px-6 rounded-2xl bg-slate-900/60 hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 border border-white/5 hover:border-transparent text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaAward className="text-indigo-400 group-hover/btn:text-white transition-colors" />
+                      <span className="text-neutral-200 group-hover/btn:text-white">CMA Final</span>
+                    </div>
+                    <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 xs:mt-7 sm:mt-8 text-center text-sm xs:text-base sm:text-lg text-gray-300 font-semibold tracking-wide drop-shadow-lg px-3 xs:px-4">
-            Choose your path to success
-          </div>
-          
           {/* Browse All Courses Button */}
-          <div className="mt-5 xs:mt-6 sm:mt-6 text-center">
+          <div className="mt-12 text-center">
             <button
               onClick={() => navigate('/courses/all')}
-              className="bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold py-2.5 xs:py-3 sm:py-3 px-6 xs:px-7 sm:px-8 rounded-full text-sm xs:text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400"
+              className="bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 text-white font-extrabold py-3.5 px-8 rounded-full text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400/50"
             >
               🎓 Browse All Available Courses
             </button>
@@ -134,7 +194,7 @@ export default function Home() {
       <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 text-center mb-6 xs:mb-8 sm:mb-10 font-heading tracking-tight drop-shadow-lg">
-            Meet Our <span className="text-[#000000]">Expert Faculties</span>
+            Meet Our <span className="bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">Expert Faculties</span>
           </h2>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {topFaculties.map(faculty => {
@@ -172,7 +232,7 @@ export default function Home() {
           <div className="flex justify-center mt-6 xs:mt-7 sm:mt-8">
             <button
               onClick={() => navigate('/faculties')}
-              className="px-6 xs:px-7 sm:px-8 py-2.5 xs:py-3 sm:py-3 bg-teal-600 text-white font-bold rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-teal-400 text-base xs:text-lg sm:text-lg tracking-wide hover:bg-teal-700 transition-colors duration-300"
+              className="px-8 py-3.5 bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 tracking-wide text-lg"
             >
               Browse All Faculty
             </button>
