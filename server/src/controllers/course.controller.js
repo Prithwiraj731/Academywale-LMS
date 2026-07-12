@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../config/supabase.config');
 const { mapMode } = require('../utils/modeMapper');
+const { mapCourseToFrontend, mapCoursesToFrontend } = require('../utils/courseMapper');
 
 // Hardcoded faculties database fallback
 const hardcodedFaculties = [
@@ -219,10 +220,7 @@ exports.addCourseToFaculty = async (req, res) => {
     console.log('✅ Course added successfully in Supabase!');
     
     // Map response model keys to mimic Mongo course schema for client compatibility
-    const responseCourse = {
-      ...savedCourse,
-      _id: savedCourse.id, // compatibility mapping
-    };
+    const responseCourse = mapCourseToFrontend(savedCourse);
 
     res.status(201).json({ 
       success: true, 
@@ -256,11 +254,8 @@ exports.getCoursesByFaculty = async (req, res) => {
 
     if (error) throw error;
 
-    // Map `id` to `_id` for backward compatibility
-    const mappedCourses = (courses || []).map(c => ({
-      ...c,
-      _id: c.id
-    }));
+    // Map snake_case DB fields to camelCase for frontend compatibility
+    const mappedCourses = mapCoursesToFrontend(courses);
     
     res.status(200).json({ courses: mappedCourses });
   } catch (error) {
@@ -310,11 +305,7 @@ exports.getCoursesByPaper = async (req, res) => {
 
     if (error) throw error;
 
-    const mapped = (courses || []).map(c => ({
-      ...c,
-      _id: c.id, // Mongo compatibility key
-      subject: c.subject || c.title
-    }));
+    const mapped = mapCoursesToFrontend(courses);
 
     console.log(`✅ Supabase query complete: Found ${mapped.length} matching courses`);
     res.status(200).json({ courses: mapped });
@@ -500,10 +491,7 @@ exports.getCoursesByInstitute = async (req, res) => {
 
     if (error) throw error;
     
-    const mapped = (courses || []).map(c => ({
-      ...c,
-      _id: c.id
-    }));
+    const mapped = mapCoursesToFrontend(courses);
 
     res.status(200).json({ courses: mapped });
   } catch (error) {

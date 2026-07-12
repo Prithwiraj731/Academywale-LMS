@@ -5,8 +5,8 @@ import { FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt,
 import { MdVideoLibrary } from 'react-icons/md';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { getCourseImageUrl } from '../utils/imageUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com';
+import { API_URL } from '../api';
+import { normalizeCoursePricing } from '../utils/coursePricing';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
@@ -42,11 +42,12 @@ const CourseFullDetailPage = () => {
           throw new Error('Invalid course data received');
         }
         
-        setCourse(data.course);
+        const normalizedCourse = normalizeCoursePricing(data.course);
+        setCourse(normalizedCourse);
         
         // Initialize mode and attempt selection
-        if (data.course.modeAttemptPricing && data.course.modeAttemptPricing.length > 0) {
-          const firstMode = data.course.modeAttemptPricing[0];
+        if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
+          const firstMode = normalizedCourse.modeAttemptPricing[0];
           setSelectedMode(firstMode.mode);
           if (firstMode.attempts && firstMode.attempts.length > 0) {
             const firstAttempt = firstMode.attempts[0];

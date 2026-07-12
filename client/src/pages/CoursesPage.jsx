@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || '';
-if (!API_URL) {
-  console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
-}
+import { API_URL } from '../api';
 
 export default function CoursesPage() {
   const { type, level } = useParams();

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../api';
 
 const FacultyImage = ({ 
   faculty, 
@@ -32,7 +33,6 @@ const FacultyImage = ({
     
     // Priority 4: Legacy uploads (try via API)
     if (faculty.imageUrl && faculty.imageUrl.startsWith('/uploads')) {
-      const API_URL = import.meta.env.VITE_API_URL;
       return `${API_URL}${faculty.imageUrl}`;
     }
     

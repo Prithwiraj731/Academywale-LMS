@@ -4,8 +4,8 @@ import { FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt } from 'reac
 import { MdVideoLibrary, MdModeEdit } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com';
+import { API_URL } from '../api';
+import { normalizeCoursePricing } from '../utils/coursePricing';
 
 const CourseDetailPage = () => {
   const { courseId, courseType } = useParams();
@@ -249,41 +249,42 @@ const CourseDetailPage = () => {
         // Process the course data once we have it
         if (data && data.course) {
           console.log('Successfully retrieved course data');
+          const normalizedCourse = normalizeCoursePricing(data.course);
           
           // Update course state
-          setSafeState(setCourse, data.course);
+          setSafeState(setCourse, normalizedCourse);
           
           // Set default mode and validity if available
-          if (data.course.modeAttemptPricing && data.course.modeAttemptPricing.length > 0) {
+          if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
             // Set default mode
-            const firstMode = data.course.modeAttemptPricing[0].mode;
+            const firstMode = normalizedCourse.modeAttemptPricing[0].mode;
             setSafeState(setSelectedMode, firstMode);
             
             // Set default validity option
-            if (data.course.modeAttemptPricing[0].attempts && 
-                data.course.modeAttemptPricing[0].attempts.length > 0) {
-              const firstAttempt = data.course.modeAttemptPricing[0].attempts[0].attempt;
+            if (normalizedCourse.modeAttemptPricing[0].attempts && 
+                normalizedCourse.modeAttemptPricing[0].attempts.length > 0) {
+              const firstAttempt = normalizedCourse.modeAttemptPricing[0].attempts[0].attempt;
               setSafeState(setSelectedValidity, firstAttempt);
               
               // Set initial price
               setSafeState(setPrice, {
-                original: data.course.modeAttemptPricing[0].attempts[0].costPrice || 0,
-                final: data.course.modeAttemptPricing[0].attempts[0].sellingPrice || 0
+                original: normalizedCourse.modeAttemptPricing[0].attempts[0].costPrice || 0,
+                final: normalizedCourse.modeAttemptPricing[0].attempts[0].sellingPrice || 0
               });
             }
           } else {
             // Fallback to old structure
-            if (data.course.modes && data.course.modes.length > 0) {
-              setSafeState(setSelectedMode, data.course.modes[0]);
+            if (normalizedCourse.modes && normalizedCourse.modes.length > 0) {
+              setSafeState(setSelectedMode, normalizedCourse.modes[0]);
             }
-            if (data.course.durations && data.course.durations.length > 0) {
-              setSafeState(setSelectedValidity, data.course.durations[0]);
+            if (normalizedCourse.durations && normalizedCourse.durations.length > 0) {
+              setSafeState(setSelectedValidity, normalizedCourse.durations[0]);
             }
             
             // Set fallback price
             setSafeState(setPrice, {
-              original: data.course.costPrice || 0,
-              final: data.course.sellingPrice || 0
+              original: normalizedCourse.costPrice || 0,
+              final: normalizedCourse.sellingPrice || 0
             });
           }
         } else {

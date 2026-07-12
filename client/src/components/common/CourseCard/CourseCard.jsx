@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { normalizeModeAttemptPricing } from '../../../utils/coursePricing';
 
 /**
  * A responsive course card component for displaying course information
@@ -33,9 +34,18 @@ const CourseCard = ({
       return { sellingPrice: course.sellingPrice || 0, costPrice: course.costPrice || 0 };
     }
 
-    const prices = course.modeAttemptPricing.flatMap(
-      m => m.attempts.map(a => ({ sellingPrice: a.sellingPrice, costPrice: a.costPrice }))
-    );
+    const prices = normalizeModeAttemptPricing(course.modeAttemptPricing)
+      .flatMap((modeOption) => {
+        return modeOption.attempts.map((attempt) => ({
+          sellingPrice: Number(attempt.sellingPrice) || 0,
+          costPrice: Number(attempt.costPrice) || 0,
+        }));
+      })
+      .filter((price) => price.sellingPrice > 0 || price.costPrice > 0);
+
+    if (prices.length === 0) {
+      return { sellingPrice: course.sellingPrice || 0, costPrice: course.costPrice || 0 };
+    }
 
     // Find the lowest selling price
     return prices.reduce((min, price) =>

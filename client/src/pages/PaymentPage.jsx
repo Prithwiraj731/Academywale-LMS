@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaQrcode, FaMobile, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { MdPayment } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../api';
 
 // Razorpay script loader
 function loadRazorpayScript(src) {
@@ -33,8 +34,6 @@ const PaymentPage = () => {
   const [couponStatus, setCouponStatus] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(null);
-
-  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     async function fetchCourse() {

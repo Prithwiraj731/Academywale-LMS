@@ -5,10 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { getFacultyBySlug } from '../data/hardcodedFaculties';
+import { API_URL } from '../api';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
-const API_URL = import.meta.env.VITE_API_URL;
 
 export default function FacultyDetailPage() {
   const { slug } = useParams();

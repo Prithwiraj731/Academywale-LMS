@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../api';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function Navbar() {
   // Live faculty list
   const [faculties, setFaculties] = useState([]);
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/faculties`)
+    fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => setFaculties(data.faculties || []));
   }, []);

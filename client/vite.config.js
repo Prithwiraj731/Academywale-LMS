@@ -11,7 +11,6 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:5000',
       '/user': 'http://localhost:5000',
-      '/course': 'http://localhost:5000',
       '/cart': 'http://localhost:5000',
       '/order': 'http://localhost:5000',
     },

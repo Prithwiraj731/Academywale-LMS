@@ -21,6 +21,8 @@ app.use(cors({
     'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
+    'http://localhost:4175',
+    'http://localhost:4176',
     'http://localhost:3000'
   ],
   credentials: true,
@@ -44,6 +46,8 @@ app.use((req, res, next) => {
     'https://academywale-lms-backend.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
+    'http://localhost:4175',
+    'http://localhost:4176',
     'http://localhost:3000'
   ];
   

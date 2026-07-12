@@ -2,6 +2,7 @@ import Particles from '../components/common/Particles';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { useState } from 'react';
+import { API_URL } from '../api';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -19,7 +20,6 @@ export default function Contact() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: {

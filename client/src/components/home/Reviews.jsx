@@ -5,8 +5,7 @@ import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import { getTestimonialImageUrl, getTestimonialCloudinaryId } from '../../utils/imageUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_URL } from '../../api';
 
 export default function Reviews() {
   const [testimonials, setTestimonials] = useState([]);

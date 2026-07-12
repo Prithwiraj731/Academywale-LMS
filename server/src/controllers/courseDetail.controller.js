@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase.config');
+const { mapCourseToFrontend } = require('../utils/courseMapper');
 
 // Get course details by ID/slug/mongo_id
 exports.getCourseDetails = async (req, res) => {
@@ -32,7 +33,7 @@ exports.getCourseDetails = async (req, res) => {
       if (error) throw error;
       if (course) {
         console.log('✅ Found course by UUID:', course.id);
-        return res.status(200).json({ course: { ...course, _id: course.id }, success: true });
+        return res.status(200).json({ course: mapCourseToFrontend(course), success: true });
       }
     }
 
@@ -48,7 +49,7 @@ exports.getCourseDetails = async (req, res) => {
       if (error) throw error;
       if (course) {
         console.log('✅ Found course by mongo_id:', course.mongo_id);
-        return res.status(200).json({ course: { ...course, _id: course.id }, success: true });
+        return res.status(200).json({ course: mapCourseToFrontend(course), success: true });
       }
     }
 
@@ -98,7 +99,7 @@ exports.getCourseDetails = async (req, res) => {
 
     if (matchedCourse) {
       console.log('✅ Found course via slug mapping:', matchedCourse.subject);
-      return res.status(200).json({ course: { ...matchedCourse, _id: matchedCourse.id }, success: true });
+      return res.status(200).json({ course: mapCourseToFrontend(matchedCourse), success: true });
     }
 
     // Still not found

@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase.config');
+const { mapCoursesToFrontend } = require('../utils/courseMapper');
 
 // @desc    Search for courses
 // @route   GET /api/courses/search
@@ -66,11 +67,8 @@ exports.searchCourses = async (req, res) => {
       
     if (error) throw error;
     
-    // Map response keys for Mongo compatibility
-    const mapped = (matchedCourses || []).map(c => ({
-      ...c,
-      _id: c.id
-    }));
+    // Map response keys for frontend compatibility (snake_case -> camelCase)
+    const mapped = mapCoursesToFrontend(matchedCourses);
     
     // Sort results to prioritize exact subject/title matches
     const sorted = mapped.sort((a, b) => {

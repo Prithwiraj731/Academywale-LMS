@@ -4,8 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || '';
+import { API_URL } from '../api';
 
 export default function AllCoursesPage() {
   const navigate = useNavigate();

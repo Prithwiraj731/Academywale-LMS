@@ -3,8 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaCheckCircle, FaMobileAlt, FaDesktop, FaQrcode } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com';
+import { API_URL } from '../api';
 const UPI_ID = 'shivanshkashyap27-2@oksbi';
 
 const UPIPaymentPage = () => {

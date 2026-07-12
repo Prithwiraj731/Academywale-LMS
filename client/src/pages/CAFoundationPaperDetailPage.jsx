@@ -3,11 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
 import papersData from '../data/papersData';
-
-const API_URL = import.meta.env.VITE_API_URL || '';
-if (!API_URL) {
-  console.warn('Warning: VITE_API_URL is not set. Image URLs may be invalid.');
-}
+import { API_URL } from '../api';
+import { normalizeCoursesPricing } from '../utils/coursePricing';
 
 const CAFoundationPaperDetailPage = () => {
   const { paperSlug } = useParams();
@@ -339,7 +336,7 @@ const CAFoundationPaperDetailPage = () => {
         // Set final results
         if (foundCourses.length > 0) {
           console.log(`🎉 FINAL RESULT: Setting ${foundCourses.length} courses`);
-          setCourses(foundCourses);
+          setCourses(normalizeCoursesPricing(foundCourses));
           if (!error) {
             setError('');
           }

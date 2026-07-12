@@ -1,6 +1,6 @@
 // Utility functions for handling image URLs
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_URL } from '../api';
 
 /**
  * Get the full image URL for faculty images

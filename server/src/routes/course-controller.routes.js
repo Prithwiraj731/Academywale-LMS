@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../config/supabase.config');
+const { mapCoursesToFrontend } = require('../utils/courseMapper');
 
 // Test route to check if controller routes are working
 router.get('/api/courses/test', (req, res) => {
@@ -21,15 +22,7 @@ router.get('/api/courses/all', async (req, res) => {
 
     if (error) throw error;
 
-    const mapped = (courses || []).map(c => ({
-      ...c,
-      _id: c.id,
-      facultyName: c.faculty_name,
-      facultySlug: c.faculty_slug,
-      facultyId: c.faculty_id,
-      isStandalone: true,
-      modeAttemptPricing: c.mode_attempt_pricing
-    }));
+    const mapped = mapCoursesToFrontend(courses);
 
     res.json({ success: true, courses: mapped });
   } catch (error) {
@@ -51,15 +44,7 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
 
     if (error) throw error;
 
-    const mapped = (courses || []).map(c => ({
-      ...c,
-      _id: c.id,
-      facultyName: c.faculty_name,
-      facultySlug: c.faculty_slug,
-      facultyId: c.faculty_id,
-      isStandalone: true,
-      modeAttemptPricing: c.mode_attempt_pricing
-    }));
+    const mapped = mapCoursesToFrontend(courses);
 
     res.json({ success: true, courses: mapped });
   } catch (error) {

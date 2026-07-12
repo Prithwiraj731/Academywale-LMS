@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../config/supabase.config');
+const { mapCoursesToFrontend } = require('../utils/courseMapper');
 
 // Import unified course controllers
 const courseController = require('../controllers/course.controller');
@@ -60,18 +61,7 @@ router.get('/api/courses/all', async (req, res) => {
 
     if (error) throw error;
 
-    const mappedCourses = (courses || []).map(c => ({
-      ...c,
-      _id: c.id,
-      facultyName: c.faculty_name,
-      facultySlug: c.faculty_slug,
-      institute: c.institute_name,
-      posterUrl: c.poster_url,
-      posterPublicId: c.poster_public_id,
-      modeAttemptPricing: c.mode_attempt_pricing,
-      costPrice: c.cost_price,
-      sellingPrice: c.selling_price
-    }));
+    const mappedCourses = mapCoursesToFrontend(courses);
 
     res.status(200).json({
       courses: mappedCourses,

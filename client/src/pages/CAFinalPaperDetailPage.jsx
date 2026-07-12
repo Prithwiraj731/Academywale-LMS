@@ -3,14 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
 import papersData from '../data/papersData';
-
-// Try to use remote API URL first, fall back to local if not available
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-console.log('Using API URL:', API_URL);
-if (!API_URL) {
-  console.warn('Warning: No API URL is available. Image URLs and API calls may fail.');
-}
+import { API_URL } from '../api';
 
 const CAFinalPaperDetailPage = () => {
   const { paperSlug } = useParams();
