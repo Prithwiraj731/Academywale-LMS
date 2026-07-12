@@ -13,6 +13,8 @@ router.get('/test', (req, res) => {
 router.post('/signup', authController.signup);
 router.post('/register', authController.register); // Legacy compatibility
 router.post('/login', authController.login);
+router.post('/verify-otp', authController.verifyOTP);
+router.post('/resend-otp', authController.resendOTP);
 
 // Protected routes
 router.post('/logout', protect, authController.logout);

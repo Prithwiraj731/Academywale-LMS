@@ -9,6 +9,7 @@ router.post('/purchase', purchaseController.purchaseCourse);
 
 // UPI Purchase route - temporarily removed auth middleware
 router.post('/upi-purchase', purchaseController.upiPurchase);
+router.post('/cart-purchase', purchaseController.cartPurchase);
 
 // Get user's purchased courses
 router.get('/user/:userId', purchaseController.getUserPurchases);

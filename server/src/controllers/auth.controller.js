@@ -1,8 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { supabaseAdmin } = require('../config/supabase.config');
+const { sendOTPEmail } = require('../utils/email.utils');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
+
+// Generate random 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 // Generate JWT Token
 const signToken = (id) => {
@@ -29,6 +35,8 @@ const createSendToken = (user, statusCode, res) => {
 
   // Remove password from output
   delete user.password;
+  delete user.otp_code;
+  delete user.otp_expires_at;
 
   res.status(statusCode).json({
     status: 'success',
@@ -39,20 +47,16 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-// @desc    Register user
+// @desc    Register user (generates & sends OTP)
 // @route   POST /api/auth/signup
 // @access  Public
 exports.signup = async (req, res) => {
   try {
     console.log('📥 Signup request received');
-    console.log('📥 Request body:', req.body);
     const { name, email, password, mobile, role } = req.body;
-
-    console.log('🔐 New user signup attempt:', { name, email, mobile, role });
 
     // Validate required fields
     if (!name || !email || !password) {
-      console.log('❌ Validation failed: Missing required fields');
       return res.status(400).json({
         status: 'error',
         message: 'Name, email, and password are required'
@@ -63,20 +67,57 @@ exports.signup = async (req, res) => {
     console.log('🔍 Checking if user exists with email:', email);
     const { data: existingUser, error: checkError } = await supabaseAdmin
       .from('users')
-      .select('id')
-      .eq('email', email)
+      .select('*')
+      .eq('email', email.toLowerCase())
       .maybeSingle();
 
     if (checkError) {
       throw checkError;
     }
 
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
     if (existingUser) {
-      console.log('❌ User already exists with email:', email);
-      return res.status(400).json({
-        status: 'error',
-        message: 'User with this email already exists'
-      });
+      if (existingUser.is_active) {
+        console.log('❌ User already exists with email:', email);
+        return res.status(400).json({
+          status: 'error',
+          message: 'User with this email already exists'
+        });
+      } else if (existingUser.otp_code) {
+        // Pending verification, update record with new details and OTP
+        console.log('👤 Updating pending user with new registration details...');
+        const { error: updateError } = await supabaseAdmin
+          .from('users')
+          .update({
+            name,
+            password: hashedPassword,
+            mobile: mobile || null,
+            role: role || 'user',
+            otp_code: otp,
+            otp_expires_at: otpExpires
+          })
+          .eq('id', existingUser.id);
+
+        if (updateError) throw updateError;
+        
+        // Send OTP email
+        await sendOTPEmail(email.toLowerCase(), name, otp);
+
+        return res.status(200).json({
+          status: 'success',
+          message: 'Verification code resent to your email.',
+          email: email.toLowerCase()
+        });
+      } else {
+        // Deactivated by admin
+        return res.status(401).json({
+          status: 'error',
+          message: 'Your account has been deactivated. Please contact support.'
+        });
+      }
     }
 
     // Check unique mobile if provided
@@ -96,10 +137,9 @@ exports.signup = async (req, res) => {
       }
     }
 
-    console.log('👤 Hashing password and creating new user...');
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Create new user
+    console.log('👤 Creating new inactive user and generating verification code...');
+    
+    // Create new user (inactive until verified via OTP)
     const { data: newUser, error: insertError } = await supabaseAdmin
       .from('users')
       .insert({
@@ -108,7 +148,9 @@ exports.signup = async (req, res) => {
         password: hashedPassword,
         mobile: mobile || null,
         role: role || 'user',
-        is_active: true,
+        is_active: false,
+        otp_code: otp,
+        otp_expires_at: otpExpires,
         created_at: new Date(),
         last_login_at: new Date()
       })
@@ -119,14 +161,166 @@ exports.signup = async (req, res) => {
       throw insertError;
     }
 
-    console.log('✅ User created successfully:', newUser.email);
-    console.log('🔑 Sending token response...');
-    createSendToken(newUser, 201, res);
+    // Send OTP email
+    await sendOTPEmail(email.toLowerCase(), name, otp);
+
+    console.log('✅ User registered successfully. Verification code sent to:', newUser.email);
+    res.status(201).json({
+      status: 'success',
+      message: 'Verification code sent to your email.',
+      email: newUser.email
+    });
   } catch (error) {
     console.error('❌ Signup error:', error);
     res.status(400).json({
       status: 'error',
       message: error.message || 'Error creating user'
+    });
+  }
+};
+
+// @desc    Verify OTP for sign-up completion
+// @route   POST /api/auth/verify-otp
+// @access  Public
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email and verification code are required'
+      });
+    }
+
+    console.log(`🔐 Verification request received for ${email} with code ${otp}`);
+
+    // Fetch user
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (fetchError || !user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    if (user.is_active) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Account is already verified and active.'
+      });
+    }
+
+    if (!user.otp_code || user.otp_code !== otp) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Incorrect verification code'
+      });
+    }
+
+    // Check expiration
+    if (new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Verification code has expired. Please request a new one.'
+      });
+    }
+
+    // Activate user and clear OTP fields
+    console.log(`✅ Code matched. Activating account for ${email}...`);
+    const { data: updatedUser, error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        is_active: true,
+        otp_code: null,
+        otp_expires_at: null,
+        last_login_at: new Date()
+      })
+      .eq('id', user.id)
+      .select('*')
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Send JWT token
+    createSendToken(updatedUser, 200, res);
+  } catch (error) {
+    console.error('❌ OTP Verification error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Error verifying code'
+    });
+  }
+};
+
+// @desc    Resend OTP to email
+// @route   POST /api/auth/resend-otp
+// @access  Public
+exports.resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required'
+      });
+    }
+
+    console.log(`🔄 OTP Resend requested for ${email}`);
+
+    // Fetch user
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (fetchError || !user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    if (user.is_active) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Account is already verified and active.'
+      });
+    }
+
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Update user record
+    const { error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        otp_code: otp,
+        otp_expires_at: otpExpires
+      })
+      .eq('id', user.id);
+
+    if (updateError) throw updateError;
+
+    // Send OTP email
+    await sendOTPEmail(email.toLowerCase(), user.name, otp);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'New verification code sent to your email.'
+    });
+  } catch (error) {
+    console.error('❌ Resend OTP error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Error resending verification code'
     });
   }
 };
@@ -172,8 +366,16 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check if user is active
+    // Check if user is active or pending verification
     if (!user.is_active) {
+      if (user.otp_code) {
+        return res.status(401).json({
+          status: 'error',
+          code: 'PENDING_VERIFICATION',
+          message: 'Please verify your email using the OTP sent to your email.',
+          email: user.email
+        });
+      }
       return res.status(401).json({
         status: 'error',
         message: 'Your account has been deactivated. Please contact support.'

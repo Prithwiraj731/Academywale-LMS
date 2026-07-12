@@ -32,7 +32,16 @@ export default function Login() {
           navigate('/');
         }
       } else {
-        setError(result.message || "Login failed. Please try again.");
+        if (result.code === 'PENDING_VERIFICATION') {
+          navigate('/register', {
+            state: {
+              email: result.email,
+              showOtp: true
+            }
+          });
+        } else {
+          setError(result.message || "Login failed. Please try again.");
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

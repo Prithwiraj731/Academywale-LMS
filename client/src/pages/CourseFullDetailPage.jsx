@@ -8,11 +8,14 @@ import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { addToCart, isInCart } = useCart();
+  const [addedMessage, setAddedMessage] = useState('');
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -123,6 +126,23 @@ const CourseFullDetailPage = () => {
         course: course
       }
     });
+  };
+
+  // Handle Add to Cart
+  const handleAddToCart = () => {
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (!selectedMode || !selectedAttempt)) {
+      alert('Please select both mode and attempt before adding to cart.');
+      return;
+    }
+
+    const added = addToCart(course, selectedMode, selectedAttempt, selectedPrice.selling);
+    if (added) {
+      setAddedMessage('Added to cart successfully!');
+      setTimeout(() => setAddedMessage(''), 3000);
+    } else {
+      setAddedMessage('Course option already in cart!');
+      setTimeout(() => setAddedMessage(''), 3000);
+    }
   };
   
   const getPosterUrl = (course) => {
@@ -335,26 +355,52 @@ const CourseFullDetailPage = () => {
                   )}
                 </div>
 
-                <button
-                  onClick={handleProceedToPay}
-                  disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
-                  className={`w-full max-w-md font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base ${
-                    (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#20b2aa] to-[#17817a] text-white hover:from-[#17817a] hover:to-[#126862]'
-                  }`}
-                >
-                  {isAuthenticated ? (
-                    <>
-                      Proceed to Pay
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </>
-                  ) : (
-                    'Log in to proceed'
-                  )}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                    className={`flex-1 font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base border-2 ${
+                      (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : isInCart(course.id || course._id, selectedMode, selectedAttempt)
+                        ? 'bg-teal-50 text-[#20b2aa] border-[#20b2aa] hover:bg-teal-100'
+                        : 'bg-white text-[#20b2aa] border-[#20b2aa] hover:bg-teal-50'
+                    }`}
+                  >
+                    {isInCart(course.id || course._id, selectedMode, selectedAttempt) ? 'In Cart ✓' : 'Add to Cart'}
+                  </button>
+
+                  <button
+                    onClick={handleProceedToPay}
+                    disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                    className={`flex-[1.5] font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base ${
+                      (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-[#20b2aa] to-[#17817a] text-white hover:from-[#17817a] hover:to-[#126862]'
+                    }`}
+                  >
+                    {isAuthenticated ? (
+                      <>
+                        Buy Now
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </>
+                    ) : (
+                      'Log in to Buy'
+                    )}
+                  </button>
+                </div>
+
+                {addedMessage && (
+                  <div className={`mt-4 max-w-md text-sm font-semibold p-2.5 rounded-lg text-center transition-all ${
+                    addedMessage.includes('successfully') 
+                      ? 'bg-teal-50 text-teal-800 border border-teal-200 animate-pulse' 
+                      : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
+                  }`}>
+                    {addedMessage}
+                  </div>
+                )}
               </div>
             </div>
           </div>

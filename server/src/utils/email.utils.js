@@ -145,9 +145,45 @@ const sendPurchaseInvoiceEmail = async (userEmail, userName, course, transaction
   }
 };
 
+// Send OTP email for registration verification
+const sendOTPEmail = async (userEmail, userName, otp) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: emailConfig.from,
+      to: userEmail,
+      subject: `${otp} is your AcademyWale Verification Code`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #0d9488; text-align: center; font-weight: bold;">AcademyWale Verification</h2>
+          <p>Dear ${userName},</p>
+          <p>Thank you for signing up with AcademyWale. Please use the following One-Time Password (OTP) to verify your email address and activate your account:</p>
+          <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0d9488;">${otp}</span>
+          </div>
+          <p style="color: #64748b; font-size: 14px;">This code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="color: #64748b; font-size: 12px; text-align: center;">
+            Best regards,<br /><strong>The AcademyWale Team</strong><br />
+            <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a>
+          </p>
+        </div>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('OTP email sending error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendContactEmail,
   sendWelcomeEmail,
   sendEnrollmentEmail,
-  sendPurchaseInvoiceEmail
+  sendPurchaseInvoiceEmail,
+  sendOTPEmail
 }; 

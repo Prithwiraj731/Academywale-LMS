@@ -424,6 +424,173 @@ exports.upiPurchase = async (req, res) => {
   }
 };
 
+// @desc    Purchase multiple courses via Cart with UPI
+// @route   POST /api/purchase/cart-purchase
+// @access  Private
+exports.cartPurchase = async (req, res) => {
+  try {
+    const { userId, cartItems, transactionId, amount, userDetails } = req.body;
+
+    if (!userId || !Array.isArray(cartItems) || cartItems.length === 0 || !transactionId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, cartItems, transactionId, amount'
+      });
+    }
+
+    // Resolve user UUID
+    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    let userQuery = isUserUuid ? 'id' : 'mongo_id';
+    
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq(userQuery, userId)
+      .maybeSingle();
+
+    if (userError || !user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const createdPurchases = [];
+    const skippedPurchases = [];
+
+    // Process each item in the cart
+    for (let idx = 0; idx < cartItems.length; idx++) {
+      const item = cartItems[idx];
+      const courseId = item.id;
+
+      // Resolve course UUID
+      const isCourseUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseId);
+      let courseQuery = isCourseUuid ? 'id' : 'mongo_id';
+
+      const { data: course, error: courseError } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq(courseQuery, courseId)
+        .maybeSingle();
+
+      if (courseError || !course) {
+        skippedPurchases.push({ title: item.subject || 'Unknown', reason: 'Course not found' });
+        continue;
+      }
+
+      // Check if user already purchased this course
+      const { data: existingPurchase, error: checkError } = await supabaseAdmin
+        .from('purchases')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!checkError && existingPurchase) {
+        skippedPurchases.push({ title: course.subject, reason: 'Already purchased' });
+        continue;
+      }
+
+      // Unique transaction ID per row to bypass unique constraint
+      const uniqueTxnId = `${transactionId}_${idx + 1}`;
+
+      // Create purchase record
+      const { data: purchase, error: insertError } = await supabaseAdmin
+        .from('purchases')
+        .insert({
+          user_id: user.id,
+          course_id: course.id,
+          faculty_id: course.faculty_id,
+          payment_method: 'UPI',
+          amount: Number(item.sellingPrice || item.price || 0),
+          transaction_id: uniqueTxnId,
+          payment_status: 'pending_verification',
+          course_details: {
+            title: course.title || course.subject,
+            subject: course.subject,
+            mode: item.mode || '',
+            validity: item.attempt || item.validity || '',
+            facultyName: course.faculty_name
+          },
+          access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        })
+        .select('*')
+        .single();
+
+      if (!insertError && purchase) {
+        createdPurchases.push(purchase);
+      } else {
+        console.error('Error inserting cart purchase item:', insertError);
+        skippedPurchases.push({ title: course.subject, reason: insertError?.message || 'Failed to save' });
+      }
+    }
+
+    if (createdPurchases.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No new courses could be purchased. They may already be active in your dashboard.',
+        skipped: skippedPurchases
+      });
+    }
+
+    // Send consolidated notification email to admin
+    try {
+      let emailText = `
+        New UPI Multi-Course Cart Purchase received:
+        User: ${user.name || userDetails?.name} (${user.email || userDetails?.email})
+        Phone: ${userDetails?.phone || ''}
+        Total Amount: ₹${amount}
+        Base Transaction ID: ${transactionId}
+        Status: Pending verification
+
+        Purchased Items:
+      `;
+
+      createdPurchases.forEach((p, idx) => {
+        emailText += `
+        ${idx + 1}. Course: ${p.course_details.subject}
+           Faculty: ${p.course_details.facultyName}
+           Mode: ${p.course_details.mode}
+           Validity: ${p.course_details.validity}
+           Row Transaction ID: ${p.transaction_id}
+           Amount: ₹${p.amount}
+        `;
+      });
+
+      if (skippedPurchases.length > 0) {
+        emailText += `\n\n        Skipped Items:\n`;
+        skippedPurchases.forEach((s, idx) => {
+          emailText += `        - ${s.title} (${s.reason})\n`;
+        });
+      }
+      
+      await sendPurchaseInvoiceEmail(
+        'support@academywale.com',
+        'Admin',
+        { subject: 'New UPI Cart Purchase - Verification Needed' },
+        transactionId,
+        new Date(),
+        amount,
+        emailText
+      );
+    } catch (emailErr) {
+      console.error('Failed to send notification email:', emailErr);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Purchase recorded successfully! ${createdPurchases.length} courses will be activated after verification.`,
+      purchases: createdPurchases.map(p => ({ id: p.id, transactionId: p.transaction_id })),
+      skipped: skippedPurchases
+    });
+
+  } catch (error) {
+    console.error('Cart Purchase error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while processing cart purchase'
+    });
+  }
+};
+
 // @desc    Get purchase statistics for admin
 // @route   GET /api/purchase/stats
 // @access  Private/Admin

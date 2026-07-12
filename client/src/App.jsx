@@ -20,6 +20,7 @@ import InstituteDetailPage from './pages/InstituteDetailPage';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
+import CartPaymentPage from './pages/CartPaymentPage';
 import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentPage from './pages/PaymentPage';
@@ -67,6 +68,7 @@ const App = () => {
         <Route path="/institutes" element={<InstitutesPage />} />
         <Route path="/institutes/:slug" element={<InstituteDetailPage />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="/payment/cart" element={<CartPaymentPage />} />
         <Route path="/payment/:courseType/:courseId" element={<UPIPaymentPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/course/:courseType/:courseId" element={<CourseDetailPage />} />

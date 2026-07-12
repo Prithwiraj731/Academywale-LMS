@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
         
         return { success: true, user: data.data.user };
       } else {
-        return { success: false, message: data.message };
+        return { success: false, message: data.message, code: data.code, email: data.email };
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -112,7 +112,6 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify(requestBody),
       });
 
@@ -121,14 +120,63 @@ export const AuthProvider = ({ children }) => {
       console.log('Signup response data:', data);
 
       if (response.ok) {
-        // Don't automatically log in the user after signup
-        // Just return success with user data for confirmation
-        return { success: true, user: data.data.user };
+        return { success: true, message: data.message, email: data.email };
       } else {
         return { success: false, message: data.message };
       }
     } catch (error) {
       console.error('Signup failed:', error);
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
+  const verifyOTP = async (email, otp) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setUser(data.data.user);
+        setIsAuthenticated(true);
+        
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        
+        return { success: true, user: data.data.user };
+      } else {
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('Verify OTP failed:', error);
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
+  const resendOTP = async (email) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/resend-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('Resend OTP failed:', error);
       return { success: false, message: 'Network error. Please try again.' };
     }
   };
@@ -176,6 +224,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     checkAuth,
+    verifyOTP,
+    resendOTP
   };
 
   return (
