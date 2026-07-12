@@ -55,6 +55,64 @@ exports.getCourseDetails = async (req, res) => {
 
     // 3. Fallback: Slug matching / flexible matching
     console.log('🔄 Attempting fallback slug matching for:', courseId);
+
+    // Optimized Step 3a: Check paper number matching directly via Supabase query
+    const paperMatch = /paper-?(\d+)/i.exec(courseId);
+    const testMatch = /test(\d+)/i.exec(courseId);
+    const numberMatch = /(\d+)/.exec(courseId);
+    const paperNumber = paperMatch ? paperMatch[1] : (testMatch ? testMatch[1] : (numberMatch ? numberMatch[1] : null));
+
+    if (paperNumber) {
+      let paperQuery = supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq('paper_id', paperNumber)
+        .eq('is_active', true);
+
+      if (courseType) {
+        const typeWords = courseType.replace('/', ' ').toLowerCase().split(' ');
+        typeWords.forEach(word => {
+          paperQuery = paperQuery.ilike('course_type', `%${word}%`);
+        });
+      }
+
+      const { data: paperCourses, error: paperErr } = await paperQuery;
+      if (!paperErr && paperCourses && paperCourses.length > 0) {
+        console.log('✅ Found course directly via optimized paper query:', paperCourses[0].subject);
+        return res.status(200).json({ course: mapCourseToFrontend(paperCourses[0]), success: true });
+      }
+    }
+
+    // Optimized Step 3b: Query Supabase directly by slug title/subject match
+    const cleanTerm = courseId.replace(/-/g, ' ');
+    if (cleanTerm && cleanTerm.length > 2) {
+      const { data: directSlugMatch, error: directSlugErr } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq('is_active', true)
+        .or(`subject.ilike.%${cleanTerm}%,title.ilike.%${cleanTerm}%`)
+        .limit(5);
+
+      if (!directSlugErr && directSlugMatch && directSlugMatch.length > 0) {
+        // Fine-tune match in-memory from the small matching set
+        const matchedCourse = directSlugMatch.find(course => {
+          const subjectSlug = course.subject ? course.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          const titleSlug = course.title ? course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          const courseTypeSlug = course.course_type ? course.course_type.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '';
+          
+          return courseId === subjectSlug || 
+                 courseId === titleSlug || 
+                 courseId === courseTypeSlug ||
+                 courseId === `${courseTypeSlug}-${subjectSlug}`;
+        }) || directSlugMatch[0];
+
+        console.log('✅ Found course directly via optimized slug query:', matchedCourse.subject);
+        return res.status(200).json({ course: mapCourseToFrontend(matchedCourse), success: true });
+      }
+    }
+
+    // Fallback: Retrieve all active courses as a last resort
+    console.log('🔄 Performing fallback database scan...');
     const { data: allCourses, error: fetchErr } = await supabaseAdmin
       .from('courses')
       .select('*')
@@ -78,12 +136,6 @@ exports.getCourseDetails = async (req, res) => {
         return true;
       }
 
-      // Check paper number matching
-      const paperMatch = /paper-?(\d+)/i.exec(courseId);
-      const testMatch = /test(\d+)/i.exec(courseId);
-      const numberMatch = /(\d+)/.exec(courseId);
-      const paperNumber = paperMatch ? paperMatch[1] : (testMatch ? testMatch[1] : (numberMatch ? numberMatch[1] : null));
-
       if (paperNumber && course.paper_id && String(course.paper_id) === String(paperNumber)) {
         if (courseType) {
           const typeWords = courseType.replace('/', ' ').toLowerCase().split(' ');
@@ -98,7 +150,7 @@ exports.getCourseDetails = async (req, res) => {
     });
 
     if (matchedCourse) {
-      console.log('✅ Found course via slug mapping:', matchedCourse.subject);
+      console.log('✅ Found course via fallback database scan:', matchedCourse.subject);
       return res.status(200).json({ course: mapCourseToFrontend(matchedCourse), success: true });
     }
 

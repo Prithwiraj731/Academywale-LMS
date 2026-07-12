@@ -1,5 +1,4 @@
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import Particles from '../components/common/Particles';
 
 export default function PrivacyPolicy() {
@@ -16,7 +15,7 @@ export default function PrivacyPolicy() {
         disableRotation={false}
       />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+
         <section className="flex flex-col items-center justify-center py-16 px-4 bg-transparent">
           <div className="max-w-2xl w-full bg-white/90 rounded-2xl shadow-xl p-6 sm:p-10 border-t-4 border-[#ffd600]">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0a6ebd] mb-6 text-center">Privacy Policy</h1>
@@ -65,9 +64,7 @@ export default function PrivacyPolicy() {
             </ol>
           </div>
         </section>
-        <div className="mt-auto">
-          <Footer />
-        </div>
+
       </div>
     </div>
   );

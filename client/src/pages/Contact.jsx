@@ -1,6 +1,5 @@
 import Particles from '../components/common/Particles';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import { useState } from 'react';
 import { API_URL } from '../api';
 
@@ -58,7 +57,7 @@ export default function Contact() {
       />
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center text-center py-20 px-4 bg-transparent">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white drop-shadow-lg mb-4 animate-pulse">Contact <span className="text-[#00eaff]">Us</span></h1>
@@ -165,9 +164,7 @@ export default function Contact() {
             </div>
           </div>
         </section>
-        <div className="mt-auto">
-          <Footer />
-        </div>
+
       </div>
     </div>
   );

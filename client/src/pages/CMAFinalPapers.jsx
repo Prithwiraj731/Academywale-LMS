@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 
 const group3 = [
@@ -21,7 +19,6 @@ const group4 = [
 const CMAFinalPapers = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <BackButton />
         <h1 className="text-3xl font-bold text-center mb-8">CMA Final Papers</h1>
@@ -58,7 +55,6 @@ const CMAFinalPapers = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

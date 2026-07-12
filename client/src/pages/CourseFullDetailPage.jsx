@@ -7,10 +7,12 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
+import { useAuth } from '../context/AuthContext';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,7 +100,17 @@ const CourseFullDetailPage = () => {
 
   // Handle proceed to payment
   const handleProceedToPay = () => {
-    if (!selectedMode || !selectedAttempt) {
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: `/course-details/${encodeURIComponent(courseType || 'general')}/${courseId}`,
+          message: 'Please log in to purchase this course'
+        }
+      });
+      return;
+    }
+
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (!selectedMode || !selectedAttempt)) {
       alert('Please select both mode and attempt before proceeding.');
       return;
     }
@@ -107,7 +119,7 @@ const CourseFullDetailPage = () => {
       state: {
         selectedMode,
         selectedAttempt,
-        price: selectedPrice,
+        price: selectedPrice.selling,
         course: course
       }
     });
@@ -187,172 +199,164 @@ const CourseFullDetailPage = () => {
           <FaArrowLeft className="mr-2" /> Back
         </button>
 
-        {/* Course Header */}
-        <div className="bg-white rounded-xl overflow-hidden shadow-lg mb-8">
-          <div className="relative">
-            <img 
-              src={getPosterUrl(course)} 
-              alt={course.subject || course.title} 
-              className="w-full h-64 object-cover"
-              onError={(e) => {
-                e.target.src = '/logo.svg'; // Fallback image
-              }}
-            />
-            {course.courseType && (
-              <div className="absolute top-4 left-4 bg-gradient-to-r from-teal-500 to-blue-500 text-white px-3 py-1 rounded-md text-sm font-semibold shadow-md">
-                {course.courseType}
+        {/* Course Header Side-by-Side Design */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-150 p-6 md:p-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Poster Image and Faculty info */}
+            <div className="md:col-span-5 lg:col-span-4 flex flex-col items-center">
+              <div className="w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-gray-50 flex items-center justify-center relative mb-4">
+                <img 
+                  src={getPosterUrl(course)} 
+                  alt={course.subject || course.title} 
+                  className="w-full h-full object-contain p-2"
+                  onError={(e) => {
+                    e.target.src = '/logo.svg'; // Fallback image
+                  }}
+                />
+                {course.courseType && (
+                  <span className="absolute top-3 left-3 bg-[#20b2aa] text-white px-2.5 py-0.5 rounded text-xs font-semibold shadow">
+                    {course.courseType}
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-          
-          <div className="p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {course.subject || course.title}
-            </h1>
-            
-            {course.facultyName && (
-              <div className="flex items-center text-gray-700 mb-4">
-                <FaUser className="mr-2 text-blue-500" />
-                <span>Faculty: <span className="font-medium">{course.facultyName}</span></span>
-              </div>
-            )}
-            
-            <div className="flex flex-wrap gap-2 mb-4">
-              {course.mode && (
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {course.mode}
-                </span>
-              )}
-              {course.videoLanguage && (
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {course.videoLanguage}
-                </span>
-              )}
-              {course.category && (
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {course.category}
-                </span>
-              )}
-              {course.subcategory && (
-                <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {course.subcategory}
-                </span>
-              )}
-            </div>
-            
-            <div className="mb-6">
-              {/* Mode & Attempts Selection */}
-              {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Mode Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Mode:
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {course.modeAttemptPricing.map((modeData, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleModeChange(modeData.mode)}
-                          className={`p-3 rounded-lg text-left border-2 transition-all duration-200 ${
-                            selectedMode === modeData.mode
-                              ? 'border-teal-500 bg-teal-50 text-teal-800'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300'
-                          }`}
-                        >
-                          <div className="font-medium">{modeData.mode}</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            {modeData.attempts.length} pricing option{modeData.attempts.length > 1 ? 's' : ''} available
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+              
+              {course.facultyName && (
+                <div className="w-full text-center md:text-left bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Faculty</div>
+                  <div className="text-gray-800 font-bold text-lg flex items-center justify-center md:justify-start gap-2">
+                    <FaUser className="text-[#20b2aa]" />
+                    {course.facultyName}
                   </div>
-
-                  {/* Attempt Selection */}
-                  {selectedMode && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Select Validity & Attempts:
-                      </label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {course.modeAttemptPricing
-                          .find(m => m.mode === selectedMode)?.attempts.map((attempt, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleAttemptChange(attempt.attempt)}
-                            className={`p-3 rounded-lg text-left border-2 transition-all duration-200 ${
-                              selectedAttempt === attempt.attempt
-                                ? 'border-blue-500 bg-blue-50 text-blue-800'
-                                : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="font-medium">{attempt.attempt}</div>
-                                <div className="text-sm text-gray-600">
-                                  ₹{attempt.sellingPrice?.toLocaleString()}
-                                  {attempt.costPrice > attempt.sellingPrice && (
-                                    <span className="ml-2 text-xs text-green-600">
-                                      Save ₹{(attempt.costPrice - attempt.sellingPrice)?.toLocaleString()}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              {attempt.costPrice > attempt.sellingPrice && (
-                                <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
-                                  {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                  {course.instituteName && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      Institute: <span className="font-semibold text-gray-700">{course.instituteName}</span>
                     </div>
                   )}
                 </div>
-              ) : (
-                // Fallback for courses without mode/attempt pricing
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <p className="text-gray-600">Basic pricing structure</p>
+              )}
+            </div>
+
+            {/* Right Column: Title, selectors, price and checkout button */}
+            <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-between h-full">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 leading-tight mb-3">
+                  {course.subject || course.title}
+                </h1>
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {course.videoLanguage && (
+                    <span className="bg-green-50 text-green-700 border border-green-150 px-3 py-1 rounded-full text-xs font-medium">
+                      Language: {course.videoLanguage}
+                    </span>
+                  )}
+                  {course.noOfLecture && (
+                    <span className="bg-blue-50 text-blue-700 border border-blue-150 px-3 py-1 rounded-full text-xs font-medium">
+                      {course.noOfLecture} Lectures
+                    </span>
+                  )}
+                  {course.timing && (
+                    <span className="bg-purple-50 text-purple-700 border border-purple-150 px-3 py-1 rounded-full text-xs font-medium">
+                      {course.timing}
+                    </span>
+                  )}
                 </div>
-              )}
+
+                {/* selectors */}
+                {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 ? (
+                  <div className="space-y-4 mb-6">
+                    {/* Mode selector dropdown */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <label className="sm:w-36 text-sm font-semibold text-gray-700">Mode:</label>
+                      <select
+                        value={selectedMode}
+                        onChange={(e) => handleModeChange(e.target.value)}
+                        className="flex-1 max-w-md bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-800"
+                      >
+                        <option value="" disabled>Select Mode</option>
+                        {course.modeAttemptPricing.map((modeData, idx) => (
+                          <option key={idx} value={modeData.mode}>
+                            {modeData.mode}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Attempt selector dropdown */}
+                    {selectedMode && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <label className="sm:w-36 text-sm font-semibold text-gray-700">Exam Term / Attempts:</label>
+                        <select
+                          value={selectedAttempt}
+                          onChange={(e) => handleAttemptChange(e.target.value)}
+                          className="flex-1 max-w-md bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-800"
+                        >
+                          <option value="" disabled>Select Validity & Attempt</option>
+                          {course.modeAttemptPricing
+                            .find(m => m.mode === selectedMode)?.attempts.map((attempt, idx) => (
+                              <option key={idx} value={attempt.attempt}>
+                                {attempt.attempt}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-150 mb-6">
+                    Standard pricing structure applies for this course.
+                  </div>
+                )}
+              </div>
+
+              {/* Price display and proceed to pay */}
+              <div className="mt-4 border-t border-gray-100 pt-6">
+                <div className="flex flex-wrap items-baseline gap-3 mb-6">
+                  {selectedPrice.selling > 0 ? (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa]">
+                        ₹{selectedPrice.selling.toLocaleString()}
+                      </span>
+                      {selectedPrice.cost > selectedPrice.selling && (
+                        <>
+                          <span className="text-lg text-gray-400 line-through">
+                            ₹{selectedPrice.cost.toLocaleString()}
+                          </span>
+                          <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-md font-bold">
+                            {Math.round(((selectedPrice.cost - selectedPrice.selling) / selectedPrice.cost) * 100)}% OFF
+                          </span>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-2xl sm:text-3xl font-extrabold text-gray-600">
+                      Contact for Price
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleProceedToPay}
+                  disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                  className={`w-full max-w-md font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base ${
+                    (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-[#20b2aa] to-[#17817a] text-white hover:from-[#17817a] hover:to-[#126862]'
+                  }`}
+                >
+                  {isAuthenticated ? (
+                    <>
+                      Proceed to Pay
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </>
+                  ) : (
+                    'Log in to proceed'
+                  )}
+                </button>
+              </div>
             </div>
-            
-            {/* Selected Price Display */}
-            <div className="flex items-baseline mb-6 p-4 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border border-teal-200">
-              <span className="text-3xl font-bold text-teal-600 mr-2">
-                ₹{selectedPrice.selling?.toLocaleString()}
-              </span>
-              {selectedPrice.cost > selectedPrice.selling && (
-                <>
-                  <span className="text-lg text-gray-400 line-through mr-2">
-                    ₹{selectedPrice.cost?.toLocaleString()}
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
-                    {Math.round(((selectedPrice.cost - selectedPrice.selling) / selectedPrice.cost) * 100)}% OFF
-                  </span>
-                </>
-              )}
-            </div>
-            
-            <button
-              onClick={handleProceedToPay}
-              disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
-              className={`w-full font-bold py-4 px-6 rounded-lg shadow-lg transition-all transform hover:scale-[1.01] flex items-center justify-center text-lg ${
-                (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700'
-              }`}
-            >
-              {(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                ? 'Please select mode and attempt'
-                : 'Proceed to Pay'
-              }
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
           </div>
         </div>
 

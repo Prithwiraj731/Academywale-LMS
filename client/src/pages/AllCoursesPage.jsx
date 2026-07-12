@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
@@ -43,21 +42,21 @@ export default function AllCoursesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
-        <Navbar />
+
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-blue-600">Loading courses...</p>
           </div>
         </div>
-        <Footer />
+
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
-      <Navbar />
+
       <main className="container mx-auto px-4 py-8">
         <BackButton />
         
@@ -192,7 +191,7 @@ export default function AllCoursesPage() {
           </div>
         )}
       </main>
-      <Footer />
+
     </div>
   );
 }

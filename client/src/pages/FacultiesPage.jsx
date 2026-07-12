@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Particles from '../components/common/Particles';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import { PinContainer } from '../components/ui/3d-pin';
 import { getAllFaculties } from '../data/hardcodedFaculties';
 
@@ -39,7 +38,7 @@ export default function FacultiesPage() {
         disableRotation={false}
       />
       <div className="flex-1 flex flex-col">
-        <Navbar />
+
         <section className="flex-1 py-6 sm:py-8 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#20b2aa] text-center mb-8">Meet Our <span className="text-[#ffd600]">Expert Faculties</span></h2>
@@ -79,7 +78,7 @@ export default function FacultiesPage() {
             </div>
           </div>
         </section>
-        <Footer />
+
       </div>
     </div>
   );

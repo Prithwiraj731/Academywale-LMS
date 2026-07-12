@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+
 import Hero from '../components/home/Hero';
 import Categories from '../components/home/Categories';
 import Numbers from '../components/home/Numbers';
@@ -8,7 +8,7 @@ import Partners from '../components/home/Partners';
 // Import the modern testimonial component
 import ModernTestimonial from '../components/ui/modern-testimonial';
 import WhatsAppButton from '../components/home/WhatsAppButton';
-import Footer from '../components/layout/Footer';
+
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-100 overflow-x-hidden">
       {/* Removed the first Particles component to restrict particles to dark background section only */}
-      <Navbar />
+
       <Hero />
       <div className="h-2 xs:h-3 sm:h-4 md:h-8" />
       {/* Move Categories (Your Learning Journey) section to the top */}
@@ -283,7 +283,7 @@ export default function Home() {
         subtitle="Feedback from our community of learners and educators"
       />
       <WhatsAppButton />
-      <Footer />
+
     </div>
   );
 }

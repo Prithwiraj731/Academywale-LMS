@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import { API_URL } from '../api';
 
 export default function StudentDashboard() {
@@ -63,7 +62,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e0f7f4] via-purple-50 to-yellow-50">
-      <Navbar />
+
       
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Header Section */}
@@ -225,7 +224,7 @@ export default function StudentDashboard() {
         </div>
       </div>
       
-      <Footer />
+
     </div>
   );
 }

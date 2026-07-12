@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 import BackButton from '../components/common/BackButton';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
@@ -47,7 +46,7 @@ export default function InstituteDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
-      <Navbar />
+
       <main className="container mx-auto px-4 py-8">
         <BackButton />
         <div className="bg-white/90 rounded-3xl shadow-2xl p-8 border border-gray-100 mb-8">
@@ -168,7 +167,7 @@ export default function InstituteDetailPage() {
           )}
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 } 

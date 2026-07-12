@@ -5,6 +5,9 @@ import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 
+// Import Layout
+import Layout from './components/layout/Layout';
+
 // Import your pages
 import Home from './pages/Home';
 import About from './pages/About';
@@ -52,44 +55,49 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/courses" element={<CoursesPage />} />
-      <Route path="/courses/all" element={<AllCoursesPage />} />
-      <Route path="/faculties" element={<FacultiesPage />} />
-      <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
-      <Route path="/institutes" element={<InstitutesPage />} />
-      <Route path="/institutes/:slug" element={<InstituteDetailPage />} />
+      {/* Routes with global Header (Navbar) and Footer */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/all" element={<AllCoursesPage />} />
+        <Route path="/faculties" element={<FacultiesPage />} />
+        <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
+        <Route path="/institutes" element={<InstitutesPage />} />
+        <Route path="/institutes/:slug" element={<InstituteDetailPage />} />
+        <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="/payment/:courseType/:courseId" element={<UPIPaymentPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/course/:courseType/:courseId" element={<CourseDetailPage />} />
+        <Route path="/course-details/:courseType/:courseId" element={<CourseFullDetailPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+        {/* General paper overview pages */}
+        <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />
+        <Route path="/ca/inter-papers" element={<CAInterPapers />} />
+        <Route path="/ca/final-papers" element={<CAFinalPapers />} />
+        <Route path="/cma/foundation-papers" element={<CMAFoundationPapers />} />
+        <Route path="/cma/inter-papers" element={<CMAInterPapers />} />
+        <Route path="/cma/final-papers" element={<CMAFinalPapers />} />
+
+        {/* Specific paper detail pages */}
+        <Route path="/courses/ca/foundation/:paperSlug" element={<CAFoundationPaperDetailPage />} />
+        <Route path="/courses/ca/inter/:paperSlug" element={<CAInterPaperDetailPage />} />
+        <Route path="/courses/ca/final/:paperSlug" element={<CAFinalPaperDetailPage />} />
+        <Route path="/courses/cma/foundation/:paperSlug" element={<CMAFoundationPaperDetailPage />} />
+        <Route path="/courses/cma/inter/:paperSlug" element={<CMAInterPaperDetailPage />} />
+        <Route path="/courses/cma/final/:paperSlug" element={<CMAFinalPaperDetailPage />} />
+
+        {/* This is the route for the Cloudinary example you provided */}
+        <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
+      </Route>
+
+      {/* Routes WITHOUT global Header/Footer (admin/auth - own full-screen layouts) */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/student-dashboard" element={<StudentDashboard />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/payment/:courseType/:courseId" element={<UPIPaymentPage />} />
-      <Route path="/payment" element={<PaymentPage />} />
-      <Route path="/course/:courseType/:courseId" element={<CourseDetailPage />} />
-      <Route path="/course-details/:courseType/:courseId" element={<CourseFullDetailPage />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-
-      {/* General paper overview pages */}
-      <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />
-      <Route path="/ca/inter-papers" element={<CAInterPapers />} />
-      <Route path="/ca/final-papers" element={<CAFinalPapers />} />
-      <Route path="/cma/foundation-papers" element={<CMAFoundationPapers />} />
-      <Route path="/cma/inter-papers" element={<CMAInterPapers />} />
-      <Route path="/cma/final-papers" element={<CMAFinalPapers />} />
-
-      {/* Specific paper detail pages */}
-      <Route path="/courses/ca/foundation/:paperSlug" element={<CAFoundationPaperDetailPage />} />
-      <Route path="/courses/ca/inter/:paperSlug" element={<CAInterPaperDetailPage />} />
-      <Route path="/courses/ca/final/:paperSlug" element={<CAFinalPaperDetailPage />} />
-      <Route path="/courses/cma/foundation/:paperSlug" element={<CMAFoundationPaperDetailPage />} />
-      <Route path="/courses/cma/inter/:paperSlug" element={<CMAInterPaperDetailPage />} />
-      <Route path="/courses/cma/final/:paperSlug" element={<CMAFinalPaperDetailPage />} />
-
-      {/* This is the route for the Cloudinary example you provided */}
-      <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
     </Routes>
   );
 };

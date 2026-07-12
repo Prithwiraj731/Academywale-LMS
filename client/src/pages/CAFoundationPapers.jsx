@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
 import BackButton from '../components/common/BackButton';
 
 const papers = [
@@ -14,7 +12,6 @@ const papers = [
 const CAFoundationPapers = () => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
       <main className="flex-grow container mx-auto px-3 xs:px-4 sm:px-6 py-6 xs:py-7 sm:py-8">
         <BackButton />
         <h1 className="text-2xl xs:text-3xl sm:text-3xl md:text-4xl font-bold text-center mb-6 xs:mb-7 sm:mb-8 text-gray-800">CA Foundation Papers</h1>
@@ -31,7 +28,6 @@ const CAFoundationPapers = () => {
           ))}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

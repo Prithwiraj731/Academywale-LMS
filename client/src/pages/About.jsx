@@ -1,6 +1,5 @@
 import Particles from '../components/common/Particles';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+
 
 
 export default function About() {
@@ -19,7 +18,7 @@ export default function About() {
       />
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center py-16 px-4 bg-transparent">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-10 text-center">
@@ -226,9 +225,7 @@ export default function About() {
             </div>
           </div>
         </section>
-        <div className="mt-auto">
-          <Footer />
-        </div>
+
       </div>
     </div>
   );
