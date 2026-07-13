@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
@@ -42,7 +41,6 @@ const MorphyButton = React.forwardRef(
   ) => {
     const [isHovered, setIsHovered] = React.useState(false);
     const timeoutRef = React.useRef(null);
-    const Comp = asChild ? Slot : 'button';
     const buttonSize = size || 'default';
 
     const handleTouchStart = () => {
@@ -61,22 +59,9 @@ const MorphyButton = React.forwardRef(
 
     const userHasTextColor = className?.includes('text-');
 
-    return (
-      <Comp
-        ref={ref}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onTouchStart={handleTouchStart}
-        className={cn(
-          morphyButtonVariants({ size, variant }),
-          'transition-colors duration-700 ease-in-out border',
-          variant === 'secondary'
-            ? 'border-[#20b2aa]'
-            : (active ? 'border-[#20b2aa]' : 'border-transparent'),
-          className,
-        )}
-        {...props}
-      >
+    // Internal components to render inside the button/slot
+    const internalContent = (
+      <>
         <div
           className={cn(
             'absolute inset-0 transition-colors duration-700 ease-in-out rounded-[inherit]',
@@ -87,8 +72,7 @@ const MorphyButton = React.forwardRef(
         />
         <div
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out',
-            variant === 'secondary' ? 'bg-[#20b2aa]' : 'bg-[#20b2aa] active:bg-[#20b2aa]', // Wait, dot is teal for both
+            'absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out bg-[#20b2aa]',
             variant === 'secondary' && !active ? 'bg-white' : 'bg-[#20b2aa]',
             'w-[200%] h-[200%] -left-full',
             buttonSize === 'sm' &&
@@ -110,9 +94,61 @@ const MorphyButton = React.forwardRef(
                 : (active ? 'text-[#20b2aa]' : 'text-white')),
           )}
         >
-          {children}
+          {asChild && React.isValidElement(children) ? children.props.children : children}
         </span>
-      </Comp>
+      </>
+    );
+
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(
+        children,
+        {
+          ref,
+          ...props,
+          className: cn(
+            morphyButtonVariants({ size, variant }),
+            'transition-colors duration-700 ease-in-out border',
+            variant === 'secondary'
+              ? 'border-[#20b2aa]'
+              : (active ? 'border-[#20b2aa]' : 'border-transparent'),
+            children.props.className,
+            className,
+          ),
+          onMouseEnter: (e) => {
+            setIsHovered(true);
+            if (children.props.onMouseEnter) children.props.onMouseEnter(e);
+          },
+          onMouseLeave: (e) => {
+            setIsHovered(false);
+            if (children.props.onMouseLeave) children.props.onMouseLeave(e);
+          },
+          onTouchStart: (e) => {
+            handleTouchStart();
+            if (children.props.onTouchStart) children.props.onTouchStart(e);
+          },
+        },
+        internalContent,
+      );
+    }
+
+    return (
+      <button
+        ref={ref}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        className={cn(
+          morphyButtonVariants({ size, variant }),
+          'transition-colors duration-700 ease-in-out border',
+          variant === 'secondary'
+            ? 'border-[#20b2aa]'
+            : (active ? 'border-[#20b2aa]' : 'border-transparent'),
+          className,
+        )}
+        {...props}
+      >
+        {internalContent}
+      </button>
     );
   },
 );
