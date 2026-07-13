@@ -20,44 +20,71 @@ const institutes = [
 export default function SearchBy() {
   const navigate = useNavigate();
   return (
-    <section className="py-10 xs:py-12 sm:py-16 section-light">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-2xl xs:text-3xl md:text-4xl font-bold text-blue-800 text-center mb-6 xs:mb-8 sm:mb-10 font-pacifico">
-          <button
-            className="hover:underline text-blue-700 transition-colors duration-200 text-2xl xs:text-3xl sm:text-4xl font-extrabold"
+    <section className="py-12 xs:py-16 sm:py-20 section-light relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 relative z-20">
+        
+        {/* Heading Section */}
+        <div className="text-center mb-10 sm:mb-14">
+          <div 
             onClick={() => navigate('/institutes')}
+            className="group inline-flex flex-col items-center cursor-pointer"
           >
-            Search by Institutes
-          </button>
-        </h2>
-        {/* Carousel */}
-        <div className="w-full overflow-x-auto scrollbar-hide">
-          <div className="flex gap-4 xs:gap-6 sm:gap-8 py-4 animate-scroll-x">
-            {[...institutes, ...institutes].map(inst => (
-              <div key={inst.name + Math.random()} className="flex flex-col items-center min-w-[120px] xs:min-w-[150px] sm:min-w-[180px] max-w-[160px] xs:max-w-[180px] sm:max-w-[200px]">
-                <div className="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg bg-white flex items-center justify-center mb-1 xs:mb-2 border-2 border-blue-200">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
+              Search by <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Institutes</span>
+            </h2>
+            <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
+          </div>
+          <p className="text-gray-500 mt-3 text-base sm:text-lg max-w-2xl mx-auto px-4">
+            Access premium lectures and courses from the nation's leading coaching partners
+          </p>
+        </div>
+
+        {/* Carousel Container with edge fades */}
+        <div className="relative w-full overflow-hidden py-4 select-none">
+          {/* Edge Fades */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#e0f7f4] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#f1f5f9] to-transparent z-10 pointer-events-none" />
+          
+          {/* Infinite Marquee Track */}
+          <div className="flex animate-marquee py-2">
+            {[...institutes, ...institutes, ...institutes].map((inst, index) => (
+              <div
+                key={`${inst.name}-${index}`}
+                onClick={() => navigate(`/institutes/${encodeURIComponent(inst.name.replace(/\s+/g, '_'))}`)}
+                className="group flex flex-col items-center justify-between w-36 xs:w-40 sm:w-48 h-28 xs:h-32 sm:h-40 bg-white p-3 sm:p-4 rounded-2xl border border-neutral-100/80 hover:border-teal-500/20 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex-shrink-0 mr-4 sm:mr-6"
+              >
+                {/* Logo Wrapper */}
+                <div className="w-full flex-1 flex items-center justify-center overflow-hidden p-1">
                   <img
                     src={inst.img}
                     alt={inst.name}
-                    className="object-contain w-full h-full hover:scale-110 transition-transform duration-300"
+                    className="object-contain max-w-full max-h-full group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
                 </div>
-                <span className="text-sm xs:text-base font-semibold text-gray-700 text-center whitespace-nowrap mt-1">
+                {/* Name Label */}
+                <span className="w-full text-center text-xs sm:text-sm font-bold text-gray-700 group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-1 sm:line-clamp-2 mt-2 leading-tight px-1">
                   {inst.name}
                 </span>
               </div>
             ))}
           </div>
         </div>
+        
+        {/* Inline styles for infinite scrolling & animations */}
         <style>{`
-          @keyframes scroll-x {
+          @keyframes marquee {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            100% { transform: translateX(-33.3333%); }
           }
-          .animate-scroll-x {
-            animation: scroll-x 12s linear infinite;
+          .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 45s linear infinite;
           }
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .animate-marquee:hover {
+            animation-play-state: paused;
+          }
         `}</style>
       </div>
     </section>
