@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../api';
+import { getAllFaculties } from '../../data/hardcodedFaculties';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,12 +24,33 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Live faculty list
-  const [faculties, setFaculties] = useState([]);
+  // Live faculty list (combined hardcoded & API faculties)
+  const [faculties, setFaculties] = useState(getAllFaculties());
   useEffect(() => {
     fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
-      .then(data => setFaculties(data.faculties || []));
+      .then(data => {
+        const apiFaculties = data.faculties || [];
+        if (apiFaculties.length > 0) {
+          const hardcoded = getAllFaculties();
+          const combined = [...hardcoded];
+          apiFaculties.forEach(apiFac => {
+            const apiSlug = apiFac.slug || `${apiFac.firstName}-${apiFac.lastName}`.toLowerCase().replace(/\s+/g, '-');
+            const exists = hardcoded.some(h => h.slug === apiSlug);
+            if (!exists) {
+              combined.push({
+                id: apiFac.id || apiFac._id,
+                name: `${apiFac.firstName} ${apiFac.lastName || ''}`.trim(),
+                slug: apiSlug,
+                image: apiFac.imageUrl || apiFac.image,
+                specialization: apiFac.teaches?.[0] || 'Faculty'
+              });
+            }
+          });
+          setFaculties(combined);
+        }
+      })
+      .catch(err => console.error('Error loading API faculties in header:', err));
   }, []);
 
   const handleLogout = async () => {
@@ -137,14 +159,13 @@ export default function Navbar() {
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 max-h-96 overflow-y-auto">
                   <div className="p-2">
                     {faculties.map(fac => {
-                      const name = fac.firstName + (fac.lastName ? ' ' + fac.lastName : '');
                       return (
                         <Link
                           key={fac.slug}
                           to={`/faculties/${fac.slug}`}
                           className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded"
                         >
-                          {name.replace(/_/g, ' ')}
+                          {fac.name}
                         </Link>
                       );
                     })}
