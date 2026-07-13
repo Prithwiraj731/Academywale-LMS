@@ -13,9 +13,12 @@
 // 3. For other email providers, update the service in email.utils.js
 
 const emailConfig = {
+  host: process.env.EMAIL_HOST || 'smtp.hostinger.com',
+  port: parseInt(process.env.EMAIL_PORT, 10) || 465,
+  secure: process.env.EMAIL_SECURE !== 'false', // true for 465 (SSL/TLS), false for others
   user: process.env.EMAIL_USER || 'support@academywale.com',
   password: process.env.EMAIL_PASSWORD,
-  service: 'gmail', // Change this for other providers
+  service: process.env.EMAIL_SERVICE || '', // Use Gmail if service is explicitly 'gmail'
   from: process.env.EMAIL_USER || 'support@academywale.com',
   to: 'support@academywale.com'
 };

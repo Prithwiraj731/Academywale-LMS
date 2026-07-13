@@ -3,8 +3,20 @@ const emailConfig = require('../config/email.config');
 
 // Create transporter for sending emails
 const createTransporter = () => {
+  if (emailConfig.service) {
+    return nodemailer.createTransport({
+      service: emailConfig.service,
+      auth: {
+        user: emailConfig.user,
+        pass: emailConfig.password
+      }
+    });
+  }
+  
   return nodemailer.createTransport({
-    service: emailConfig.service,
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
     auth: {
       user: emailConfig.user,
       pass: emailConfig.password
