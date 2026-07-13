@@ -18,6 +18,8 @@ import CMAClasses from '../components/home/CMAClasses';
 import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
 import InstitutesPage from './InstitutesPage';
 import sjcCert from '../assets/sjcCert.jpg';
+import caLogo from '../assets/CA_LOGO.jpeg';
+import cmaLogo from '../assets/CMA_LOGO.jpeg';
 
 // import banner3 from '../assets/banner3.png';
 
@@ -79,8 +81,8 @@ export default function Home() {
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-teal-500/10 text-[#20b2aa] rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-[#20b2aa]/20">
-                    CA
+                  <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/20">
+                    <img src={caLogo} alt="CA Logo" className="object-contain w-full h-full" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white tracking-tight">Chartered Accountant</h3>
@@ -128,8 +130,8 @@ export default function Home() {
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-teal-500/10 text-[#20b2aa] rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg border border-[#20b2aa]/20">
-                    CMA
+                  <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/20">
+                    <img src={cmaLogo} alt="CMA Logo" className="object-contain w-full h-full" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white tracking-tight">Cost & Management Accountant</h3>
