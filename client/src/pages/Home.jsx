@@ -260,29 +260,69 @@ export default function Home() {
       <Numbers />
       
       {/* SJC Certificate Section */}
-      <section className="py-10 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50/50 to-white relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#20b2aa]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Dot pattern background */}
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* Synchronized Header */}
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="group inline-flex flex-col items-center">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
+                Recognized by <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">SJC Institute</span>
+              </h2>
+              <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
+            </div>
+            <p className="text-gray-500 mt-4 text-base sm:text-lg max-w-xl mx-auto px-4">
+              Authorized Business Partner certifying outstanding contribution to quality education
+            </p>
+          </div>
+
+          {/* Certificate Showcase Frame */}
           <div className="flex flex-col items-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
-              Recognized by <span className="text-blue-600">SJC Institute</span>
-            </h2>
-            <div className="w-full max-w-2xl shadow-xl rounded-lg overflow-hidden">
-              <img 
-                src={sjcCert}
-                alt="SJC Institute Certificate" 
-                className="w-full h-auto object-contain"
-                onError={(e) => {
-                  console.error('Image failed to load');
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-              <div 
-                className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400 text-lg" 
-                style={{ display: 'none' }}
-              >
-                Certificate image not available
+            <div className="relative group/cert w-full max-w-3xl p-3 sm:p-5 bg-white/70 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-gray-200/60 shadow-xl transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_30px_60px_-15px_rgba(32,178,170,0.25)] hover:border-[#20b2aa]/30">
+              
+              {/* Premium Glow effect behind certificate */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#20b2aa] to-blue-500 rounded-2xl sm:rounded-3xl opacity-0 group-hover/cert:opacity-10 blur-xl transition-opacity duration-500" />
+              
+              {/* Golden Ribbon Badge */}
+              <div className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 z-20 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-white font-extrabold py-2 px-4 sm:py-2.5 sm:px-5 rounded-xl shadow-lg border border-amber-300 text-xs sm:text-sm tracking-wider uppercase rotate-6 hover:rotate-0 transition-transform duration-300 flex items-center gap-1.5 select-none">
+                <span>★</span> Official Partner
               </div>
+              
+              {/* Inset Frame around Certificate Image */}
+              <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-gray-900 border border-gray-150 shadow-inner">
+                <img 
+                  src={sjcCert}
+                  alt="SJC Institute Certificate" 
+                  className="w-full h-auto object-contain transition-all duration-500 group-hover/cert:brightness-[1.02]"
+                  onError={(e) => {
+                    console.error('Image failed to load');
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div 
+                  className="w-full h-64 sm:h-96 bg-gray-900 flex flex-col items-center justify-center text-gray-400 p-6 text-center" 
+                  style={{ display: 'none' }}
+                >
+                  <svg className="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="font-bold text-gray-300 text-lg mb-1">Certificate Image Offline</span>
+                  <span className="text-sm text-gray-500">Authorized Business Partner: AcademyWale (2024-25)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Tag */}
+            <div className="mt-6 flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200/50 shadow-sm text-xs sm:text-sm text-gray-500">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Verified Certificate and Accreditation by SJC Institute Management</span>
             </div>
           </div>
         </div>
