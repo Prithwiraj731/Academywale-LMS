@@ -3,6 +3,16 @@ const emailConfig = require('../config/email.config');
 
 // Create transporter for sending emails
 const createTransporter = () => {
+  console.log('Creating email transporter with config:', {
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
+    user: emailConfig.user,
+    passwordSet: !!emailConfig.password,
+    service: emailConfig.service,
+    from: emailConfig.from
+  });
+
   if (emailConfig.service) {
     return nodemailer.createTransport({
       service: emailConfig.service,
@@ -20,6 +30,9 @@ const createTransporter = () => {
     auth: {
       user: emailConfig.user,
       pass: emailConfig.password
+    },
+    tls: {
+      rejectUnauthorized: false // Required for some Hostinger SMTP setups
     }
   });
 };

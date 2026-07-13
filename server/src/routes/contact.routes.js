@@ -91,20 +91,15 @@ router.post('/', async (req, res) => {
     if (emailResult.success) {
       return res.status(200).json({
         success: true,
-        message: 'Thank you for your message! We will get back to you soon.',
-        messageId: emailResult.messageId
+        message: 'Thank you for your message! We will get back to you soon.'
       });
     } else {
-      // Log the failed email and contact details in console so it's not lost
       console.error('Email sending failed for submission:', { name, email, subject, message });
       console.error('Email error details:', emailResult.error);
       
-      // Return 200 success state to the frontend to ensure students' requests go through
-      // and they are not blocked by unconfigured SMTP settings.
-      return res.status(200).json({
-        success: true,
-        message: 'Thank you for your message! We have received your request and will contact you shortly.',
-        smtp_error: emailResult.error
+      return res.status(500).json({
+        success: false,
+        message: 'We could not send your request right now. Please try again or contact us on WhatsApp.'
       });
     }
   } catch (error) {
