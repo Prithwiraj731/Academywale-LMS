@@ -193,9 +193,17 @@ export default function Home() {
       {/* Restore Meet Our Expert Faculties section */}
       <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 text-center mb-6 xs:mb-8 sm:mb-10 font-heading tracking-tight drop-shadow-lg">
-            Meet Our <span className="text-[#20b2aa]">Expert Faculties</span>
-          </h2>
+          <div className="text-center mb-6 xs:mb-8 sm:mb-10">
+            <div 
+              onClick={() => navigate('/faculties')}
+              className="group inline-flex flex-col items-center cursor-pointer"
+            >
+              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
+                Meet Our <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Expert Faculties</span>
+              </h2>
+              <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
+            </div>
+          </div>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {topFaculties.map(faculty => {
               return (
@@ -228,14 +236,14 @@ export default function Home() {
               );
             })}
           </div>
-          {/* Browse All Faculty Button */}
           <div className="flex justify-center mt-6 xs:mt-7 sm:mt-8">
-            <button
+            <MorphyButton
               onClick={() => navigate('/faculties')}
-              className="px-8 py-3.5 bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-600 hover:to-indigo-700 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 tracking-wide text-lg"
+              size="lg"
+              className="shadow-xl hover:shadow-2xl font-extrabold tracking-wide"
             >
               Browse All Faculty
-            </button>
+            </MorphyButton>
           </div>
         </div>
       </section>

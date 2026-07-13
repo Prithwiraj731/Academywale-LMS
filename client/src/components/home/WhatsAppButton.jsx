@@ -1,5 +1,6 @@
 import React from 'react';
 import whatsappLogo from '../../assets/whatsapp.png';
+import { MorphyButton } from '../ui/morphy-button';
 
 export default function WhatsAppButton() {
   const phoneNumber = '919693320108'; 
@@ -29,16 +30,22 @@ export default function WhatsAppButton() {
         </p>
 
         {/* WhatsApp Button */}
-        <a 
-          href={whatsappUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#25D366] to-[#1cbd57] hover:from-[#22c35e] hover:to-[#17a84c] text-white font-extrabold rounded-2xl text-lg shadow-lg hover:shadow-[0_12px_24px_rgba(37,211,102,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-98 transition-all duration-300 focus:outline-none"
+        <MorphyButton
+          asChild
+          variant="whatsapp"
+          size="lg"
+          className="shadow-lg hover:shadow-[0_12px_24px_rgba(37,211,102,0.25)] h-14 px-8 rounded-2xl"
         >
-          {/* Official WhatsApp Logo */}
-          <img src={whatsappLogo} alt="WhatsApp" className="w-6 h-6 object-contain group-hover:rotate-12 transition-transform duration-300" />
-          Chat with us on WhatsApp
-        </a>
+          <a 
+            href={whatsappUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            {/* Official WhatsApp Logo */}
+            <img src={whatsappLogo} alt="WhatsApp" className="w-6 h-6 object-contain group-hover:rotate-12 transition-transform duration-300" />
+            Chat with us on WhatsApp
+          </a>
+        </MorphyButton>
       </div>
     </section>
   );

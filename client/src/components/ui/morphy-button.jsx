@@ -11,6 +11,7 @@ const morphyButtonVariants = cva(
       variant: {
         default: 'border-transparent',
         secondary: 'border-[#20b2aa] bg-white',
+        whatsapp: 'border-transparent bg-[#25D366]',
       },
       size: {
         default: 'h-10 px-6 py-2 text-sm sm:text-base',
@@ -65,15 +66,19 @@ const MorphyButton = React.forwardRef(
         <div
           className={cn(
             'absolute inset-0 transition-colors duration-700 ease-in-out rounded-[inherit]',
-            variant === 'secondary'
-              ? (active ? 'bg-[#20b2aa]' : 'bg-white')
-              : (active ? 'bg-teal-50' : 'bg-[#20b2aa]'),
+            variant === 'whatsapp'
+              ? (active ? 'bg-green-50' : 'bg-[#25D366]')
+              : (variant === 'secondary'
+                  ? (active ? 'bg-[#20b2aa]' : 'bg-white')
+                  : (active ? 'bg-teal-50' : 'bg-[#20b2aa]')),
           )}
         />
         <div
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out bg-[#20b2aa]',
-            variant === 'secondary' && !active ? 'bg-white' : 'bg-[#20b2aa]',
+            'absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out',
+            variant === 'whatsapp'
+              ? 'bg-[#25D366]'
+              : (variant === 'secondary' && !active ? 'bg-white' : 'bg-[#20b2aa]'),
             'w-[200%] h-[200%] -left-full',
             buttonSize === 'sm' &&
               (active ? 'w-2 h-2 left-3' : 'w-[200%] h-[200%] -left-full'),
@@ -89,9 +94,11 @@ const MorphyButton = React.forwardRef(
             'relative z-10 font-bold transition-all duration-700 ease-in-out flex items-center justify-center gap-2',
             active ? 'translate-x-1.5' : 'translate-x-0',
             !userHasTextColor &&
-              (variant === 'secondary'
-                ? (active ? 'text-white' : 'text-[#20b2aa]')
-                : (active ? 'text-[#20b2aa]' : 'text-white')),
+              (variant === 'whatsapp'
+                ? (active ? 'text-[#1cbd57]' : 'text-white')
+                : (variant === 'secondary'
+                    ? (active ? 'text-white' : 'text-[#20b2aa]')
+                    : (active ? 'text-[#20b2aa]' : 'text-white'))),
           )}
         >
           {asChild && React.isValidElement(children) ? children.props.children : children}
@@ -108,9 +115,11 @@ const MorphyButton = React.forwardRef(
           className: cn(
             morphyButtonVariants({ size, variant }),
             'transition-colors duration-700 ease-in-out border',
-            variant === 'secondary'
-              ? 'border-[#20b2aa]'
-              : (active ? 'border-[#20b2aa]' : 'border-transparent'),
+            variant === 'whatsapp'
+              ? (active ? 'border-[#25D366]' : 'border-transparent')
+              : (variant === 'secondary'
+                  ? 'border-[#20b2aa]'
+                  : (active ? 'border-[#20b2aa]' : 'border-transparent')),
             children.props.className,
             className,
           ),
@@ -140,9 +149,11 @@ const MorphyButton = React.forwardRef(
         className={cn(
           morphyButtonVariants({ size, variant }),
           'transition-colors duration-700 ease-in-out border',
-          variant === 'secondary'
-            ? 'border-[#20b2aa]'
-            : (active ? 'border-[#20b2aa]' : 'border-transparent'),
+          variant === 'whatsapp'
+            ? (active ? 'border-[#25D366]' : 'border-transparent')
+            : (variant === 'secondary'
+                ? 'border-[#20b2aa]'
+                : (active ? 'border-[#20b2aa]' : 'border-transparent')),
           className,
         )}
         {...props}
