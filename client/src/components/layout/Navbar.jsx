@@ -6,6 +6,7 @@ import { getAllFaculties } from '../../data/hardcodedFaculties';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
 import linkedinLogo from '../../assets/linkedin.png';
+import { MorphyButton } from '../ui/morphy-button';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -169,35 +170,34 @@ export default function Navbar() {
               <Link to="/about" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">About</Link>
               <Link to="/contact" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Contact</Link>
               {isAuthenticated && (
-                <Link
-                  to="/student-dashboard"
-                  className="px-6 py-3 bg-[#20b2aa] text-white font-bold rounded-xl shadow-lg hover:bg-[#17817a] transition-all text-lg"
-                >
-                  Dashboard
-                </Link>
+                <MorphyButton asChild size="default" className="shadow-lg font-bold">
+                  <Link to="/student-dashboard">
+                    Dashboard
+                  </Link>
+                </MorphyButton>
               )}
             </div>
 
             {/* Account/Profile Button */}
             <div className="flex items-center space-x-2 sm:space-x-4">
               {!isAuthenticated ? (
-                <button
+                <MorphyButton
                   onClick={() => navigate('/login')}
-                  className="px-3 py-1.5 text-sm bg-[#20b2aa] text-white font-bold rounded-lg shadow-md hover:bg-[#17817a] transition-all sm:px-6 sm:py-2.5 sm:text-base sm:rounded-xl"
+                  size="default"
+                  className="shadow-md font-bold"
                 >
                   Login
-                </button>
+                </MorphyButton>
               ) : (
                 <div className="relative profile-menu-container flex items-center gap-2">
-                  <Link
-                    to="/student-dashboard"
-                    className="flex items-center px-3 py-1.5 text-sm bg-[#20b2aa] text-white font-bold rounded-lg shadow-md hover:bg-[#17817a] transition-all sm:flex lg:hidden"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  <MorphyButton asChild size="sm" className="shadow-md font-bold sm:flex lg:hidden flex">
+                    <Link to="/student-dashboard">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
                       Dashboard
-                    </svg>
-                  </Link>
+                    </Link>
+                  </MorphyButton>
                   <button
                     className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-400 hover:shadow-lg transition focus:outline-none sm:w-10 sm:h-10"
                     onClick={(e) => {
@@ -359,15 +359,18 @@ export default function Navbar() {
                   </Link>
                 )}
                 {!isAuthenticated && (
-                  <button
-                    onClick={() => {
-                      navigate('/login');
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full text-left mt-2 py-2 px-4 bg-[#20b2aa] text-white font-bold rounded-lg shadow-lg hover:bg-[#17817a] transition-all"
-                  >
-                    Login
-                  </button>
+                  <div className="mt-2 flex justify-start w-full">
+                    <MorphyButton
+                      onClick={() => {
+                        navigate('/login');
+                        setIsMenuOpen(false);
+                      }}
+                      size="default"
+                      className="shadow-lg font-bold w-full"
+                    >
+                      Login
+                    </MorphyButton>
+                  </div>
                 )}
               </div>
             </div>

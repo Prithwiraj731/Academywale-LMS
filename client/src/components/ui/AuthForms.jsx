@@ -4,6 +4,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { cn } from "../../lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
+import { MorphyButton } from "../ui/morphy-button";
 
 export function SignupFormDemo({ onSignup, externalError }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", mobile: "" });
@@ -122,14 +123,15 @@ export function SignupFormDemo({ onSignup, externalError }) {
           </div>
         )}
 
-        <button 
+        <MorphyButton 
           type="submit" 
-          className="relative block w-full text-white rounded-md h-10 font-semibold bg-[#20b2aa] hover:bg-[#1a9e97] active:bg-[#15857f] transition duration-150 shadow-md" 
+          size="default"
+          className="w-full font-bold shadow-md rounded-md" 
           disabled={loading}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-[#20b2aa]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -138,7 +140,7 @@ export function SignupFormDemo({ onSignup, externalError }) {
           ) : (
             "Sign Up"
           )}
-        </button>
+        </MorphyButton>
       </form>
     </div>
   );
@@ -227,14 +229,15 @@ export function LoginFormDemo({ onLogin }) {
           </div>
         )}
 
-        <button 
+        <MorphyButton 
           type="submit" 
-          className="relative block w-full text-white rounded-md h-10 font-semibold bg-[#20b2aa] hover:bg-[#1a9e97] active:bg-[#15857f] transition duration-150 shadow-md" 
+          size="default"
+          className="w-full font-bold shadow-md rounded-md" 
           disabled={loading}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5 text-[#20b2aa]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -243,7 +246,7 @@ export function LoginFormDemo({ onLogin }) {
           ) : (
             "Login"
           )}
-        </button>
+        </MorphyButton>
       </form>
     </div>
   );

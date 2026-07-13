@@ -8,6 +8,7 @@ import Partners from '../components/home/Partners';
 // Import the modern testimonial component
 import ModernTestimonial from '../components/ui/modern-testimonial';
 import WhatsAppButton from '../components/home/WhatsAppButton';
+import { MorphyButton } from '../components/ui/morphy-button';
 
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
@@ -176,14 +177,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Browse All Courses Button */}
-          <div className="mt-12 text-center">
-            <button
+          <div className="mt-12 text-center flex justify-center">
+            <MorphyButton
               onClick={() => navigate('/courses/all')}
-              className="bg-[#20b2aa] hover:bg-[#1a9e97] text-white font-extrabold py-3.5 px-8 rounded-full text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-400/50"
+              size="lg"
+              className="shadow-xl hover:shadow-2xl font-extrabold"
             >
               🎓 Browse All Available Courses
-            </button>
+            </MorphyButton>
           </div>
         </div>
       </div>

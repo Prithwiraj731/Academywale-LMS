@@ -3,6 +3,7 @@ import VenomBeam from '../ui/venom-beam';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
 import linkedinLogo from '../../assets/linkedin.png';
+import { MorphyButton } from '../ui/morphy-button';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -149,12 +150,13 @@ export default function Footer() {
                   required
                 />
               </div>
-              <button 
+              <MorphyButton 
                 type="submit" 
-                className="w-full bg-[#20b2aa] text-white py-2.5 px-4 rounded-xl font-bold hover:bg-[#17817a] transition-all duration-300 shadow-md hover:shadow-[#20b2aa]/10 hover:scale-[1.01] active:scale-[0.99] text-sm"
+                size="default"
+                className="w-full shadow-md hover:shadow-[#20b2aa]/10 font-bold"
               >
                 Request a Call Back
-              </button>
+              </MorphyButton>
 
 
               {status && (
