@@ -71,7 +71,7 @@ export const PinContainer = ({
             transform: transform,
             border: "2px solid "+(isHovered ? "rgba(255,255,255,0.11)" : "rgba(255,255,255,0.06)"),
           }}
-          className="absolute left-1/2 p-4 top-1/2 flex justify-start items-start rounded-2xl shadow-[0_1px_2px_rgb(0_0_0/0.07)] bg-black transition duration-700 overflow-hidden"
+          className="absolute left-1/2 p-1 top-1/2 flex justify-start items-start rounded-2xl shadow-[0_1px_2px_rgb(0_0_0/0.07)] bg-black transition duration-700 overflow-hidden"
         >
           <div className={cn("relative z-50", className)}>{children}</div>
         </div>
