@@ -4,6 +4,7 @@ import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
 import linkedinLogo from '../../assets/linkedin.png';
 import { MorphyButton } from '../ui/morphy-button';
+import { API_URL } from '../../api';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ export default function Footer() {
     setStatus(null);
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

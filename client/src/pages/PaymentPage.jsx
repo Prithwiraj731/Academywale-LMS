@@ -71,7 +71,7 @@ const PaymentPage = () => {
       return;
     }
     try {
-      const res = await fetch('/api/coupons/validate', {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: coupon.trim().toUpperCase() })
@@ -95,7 +95,7 @@ const PaymentPage = () => {
 
   const fetchCourseDetails = async () => {
     try {
-      const response = await fetch(`/api/courses/${slug}`);
+      const response = await fetch(`${API_URL}/api/courses/${slug}`);
       console.log('Fetching courses for:', slug);
       if (response.ok) {
         const data = await response.json();
@@ -145,7 +145,7 @@ const PaymentPage = () => {
       handler: async function (response) {
         // On payment success, call backend to record purchase
         try {
-          const purchaseRes = await fetch('/api/purchase/purchase', {
+          const purchaseRes = await fetch(`${API_URL}/api/purchase/purchase`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

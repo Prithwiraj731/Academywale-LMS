@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../api';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -61,7 +62,7 @@ export default function CoursePurchase({ course, onPurchaseSuccess, onPurchaseFa
       image: '/logo.svg',
       handler: async function (response) {
         try {
-          const purchaseRes = await fetch('/api/purchase/purchase', {
+          const purchaseRes = await fetch(`${API_URL}/api/purchase/purchase`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
