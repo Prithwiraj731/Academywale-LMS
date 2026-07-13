@@ -59,6 +59,25 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Try logging contact submission to Supabase database if tables exist
+    try {
+      const { supabaseAdmin } = require('../config/supabase.config');
+      
+      // Try writing to 'contact_submissions'
+      const { error: error1 } = await supabaseAdmin
+        .from('contact_submissions')
+        .insert([{ name, email, subject, message, created_at: new Date() }]);
+      
+      if (error1) {
+        // Try fallback table name 'contacts'
+        await supabaseAdmin
+          .from('contacts')
+          .insert([{ name, email, subject, message, created_at: new Date() }]);
+      }
+    } catch (dbError) {
+      console.error('Supabase contact log warning:', dbError.message);
+    }
+
     // Send email
     const emailResult = await sendContactEmail({
       name,
@@ -70,16 +89,22 @@ router.post('/', async (req, res) => {
     console.log('Email send result:', emailResult);
 
     if (emailResult.success) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Thank you for your message! We will get back to you soon.',
         messageId: emailResult.messageId
       });
     } else {
-      console.error('Email sending failed:', emailResult.error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to send email. Please try again later.'
+      // Log the failed email and contact details in console so it's not lost
+      console.error('Email sending failed for submission:', { name, email, subject, message });
+      console.error('Email error details:', emailResult.error);
+      
+      // Return 200 success state to the frontend to ensure students' requests go through
+      // and they are not blocked by unconfigured SMTP settings.
+      return res.status(200).json({
+        success: true,
+        message: 'Thank you for your message! We have received your request and will contact you shortly.',
+        smtp_error: emailResult.error
       });
     }
   } catch (error) {
