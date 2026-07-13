@@ -156,21 +156,6 @@ export default function Footer() {
                 Request a Call Back
               </button>
 
-              <div className="flex items-center justify-center my-4 py-1">
-                <span className="h-px bg-gray-800 flex-grow"></span>
-                <span className="px-3 text-xs text-gray-500 uppercase tracking-widest font-semibold">or</span>
-                <span className="h-px bg-gray-800 flex-grow"></span>
-              </div>
-
-              <a 
-                href="https://wa.me/919693320108?text=I%20want%20to%20know%20further"
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2.5 bg-[#25D366] text-white py-2.5 px-4 rounded-xl font-bold hover:bg-[#1ebd56] hover:shadow-[0_4px_15px_rgba(37,211,102,0.2)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 text-sm"
-              >
-                <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 object-contain" />
-                Chat on WhatsApp
-              </a>
 
               {status && (
                 <p className={`mt-3 text-center text-xs ${status.success ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}`}>
