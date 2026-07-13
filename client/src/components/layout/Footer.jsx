@@ -64,19 +64,22 @@ export default function Footer() {
               We offer online video lectures, pendrive classes, test series, and study materials from some of the best faculties across the country.
             </p>
             <div className="flex space-x-3 xs:space-x-4 mt-3 xs:mt-4 sm:mt-6">
-              <a href="https://chat.whatsapp.com/HmUSCs1IguT7Tew1z82JwO" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition">
+              <a href="https://chat.whatsapp.com/HmUSCs1IguT7Tew1z82JwO" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition shadow-md hover:shadow-green-500/20 hover:-translate-y-0.5 duration-200">
                 {/* Official WhatsApp Logo */}
-                <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="16" fill="#25D366"/>
-                  <path d="M21.6 18.7c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.1-.2.3-.7.9-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5-.2 0-.4 0-.6 0-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5 0 1.5 1.1 2.9 1.2 3.1.1.2 2.1 3.2 5.1 4.4.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4 0-.1-.3-.2-.6-.3z" fill="#fff"/>
-                  <path d="M16 6.2c-5.4 0-9.8 4.4-9.8 9.8 0 1.7.4 3.3 1.2 4.7l-1.3 4.7 4.8-1.3c1.3.7 2.8 1.1 4.3 1.1 5.4 0 9.8-4.4 9.8-9.8S21.4 6.2 16 6.2zm0 17.6c-1.4 0-2.7-.4-3.9-1.1l-.3-.2-2.8.7.7-2.7-.2-.3c-.7-1.2-1.1-2.6-1.1-4 0-4.5 3.7-8.2 8.2-8.2s8.2 3.7 8.2 8.2-3.7 8.2-8.2 8.2z" fill="#fff"/>
+                <svg className="w-5.5 h-5.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.402.002 9.799-4.382 9.802-9.77.001-2.61-1.01-5.063-2.846-6.9C16.393 2.1 13.94 1.088 11.332 1.087 5.928 1.087 1.53 5.472 1.528 10.86c0 1.561.432 3.09 1.25 4.43l-.329 1.2.04-.017.067.11 1.706-1.127 1.037.615zM17.487 14.39c-.3-.15-1.774-.875-2.05-.975-.276-.1-.476-.15-.676.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-.3-.15-1.267-.467-2.413-1.488-.892-.796-1.493-1.78-1.668-2.08-.175-.3-.018-.462.13-.61.135-.133.3-.35.45-.525.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.676-1.63-.925-2.235-.24-.58-.485-.503-.676-.513-.175-.01-.375-.01-.575-.01-.2 0-.525.075-.8 1.025-.275.95-1.05 3.098-1.05 3.2 0 .1.1.225.25.4.15.175 1.83 2.795 4.43 3.92.617.267 1.1.425 1.475.545.62.195 1.18.168 1.625.102.495-.073 1.775-.725 2.025-1.425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
                 </svg>
               </a>
-              <a href="https://t.me/CMAspirants_01" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+              <a href="https://t.me/CMAspirants_01" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition shadow-md hover:shadow-blue-500/20 hover:-translate-y-0.5 duration-200">
                 {/* Telegram Brand Icon */}
-                <svg className="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="16" fill="#229ED9"/>
-                  <path d="M23.707 9.293a1 1 0 0 0-1.02-.242l-13 5a1 1 0 0 0 .09 1.89l3.44 1.15 1.32 4.41a1 1 0 0 0 1.77.27l2.02-2.53 3.36 2.48a1 1 0 0 0 1.58-.57l2-9a1 1 0 0 0-.56-1.18zm-2.13 2.14-7.19 4.7a.5.5 0 0 0 .11.89l2.13.71a.5.5 0 0 1 .31.31l.66 2.2a.5.5 0 0 0 .89.13l1.01-1.27a.5.5 0 0 1 .7-.09l1.77 1.31a.5.5 0 0 0 .8-.29l1.5-6.75a.5.5 0 0 0-.74-.55z" fill="#fff"/>
+                <svg className="w-5.5 h-5.5 text-white mr-[1px] mt-[0.5px]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M9.78 18.65l.28-4.28 7.76-7.01c.34-.3-.07-.47-.52-.17L7.74 12.5 3.59 11.2c-.9-.28-.92-.9.19-1.33L20.1 3.5c.75-.28 1.4.17 1.15 1.16l-2.87 13.5c-.21.99-.8 1.24-1.63.78l-4.42-3.25-2.13 2.05c-.24.24-.44.44-.9.44z"/>
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center hover:bg-blue-800 transition shadow-md hover:shadow-blue-700/20 hover:-translate-y-0.5 duration-200">
+                {/* LinkedIn Brand Icon */}
+                <svg className="w-5.5 h-5.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
                 </svg>
               </a>
             </div>
@@ -114,46 +117,71 @@ export default function Footer() {
 
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6">Get In Touch</h4>
-            <p className="text-gray-300 mb-3 xs:mb-4 sm:mb-4 text-sm xs:text-sm sm:text-base">
-              Simply fill out the form to request a callback from one of our team members.
+            <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6 text-white border-l-4 border-[#20b2aa] pl-3">Get In Touch</h4>
+            <p className="text-gray-300 mb-4 text-xs xs:text-sm leading-relaxed">
+              Have questions? Fill out the form below to request a call back, or reach out to us instantly on WhatsApp.
             </p>
-            <form onSubmit={handleSubmit} className="space-y-2.5 xs:space-y-3 sm:space-y-3">
-              <input 
-                type="text" 
-                name="fullName" 
-                placeholder="Full Name" 
-                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
-              <input 
-                type="text" 
-                name="phoneNumber" 
-                placeholder="Phone Number" 
-                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-              />
-              <input 
-                type="text" 
-                name="city" 
-                placeholder="City" 
-                className="w-full px-3 xs:px-3.5 sm:px-4 py-2 xs:py-2.5 sm:py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] text-sm xs:text-sm sm:text-base"
-                value={formData.city}
-                onChange={handleChange}
-                required
-              />
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  name="fullName" 
+                  placeholder="Full Name" 
+                  className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  name="phoneNumber" 
+                  placeholder="Phone Number" 
+                  className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  name="city" 
+                  placeholder="City" 
+                  className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
               <button 
                 type="submit" 
-                className="w-full bg-[#20b2aa] text-white py-2 xs:py-2.5 sm:py-3 px-3 xs:px-3.5 sm:px-4 rounded-lg font-semibold hover:bg-[#17817a] transition text-sm xs:text-sm sm:text-base"
+                className="w-full bg-[#20b2aa] text-white py-2.5 px-4 rounded-xl font-bold hover:bg-[#17817a] transition-all duration-300 shadow-md hover:shadow-[#20b2aa]/10 hover:scale-[1.01] active:scale-[0.99] text-sm"
               >
                 Request a Call Back
               </button>
+
+              <div className="flex items-center justify-center my-4 py-1">
+                <span className="h-px bg-gray-800 flex-grow"></span>
+                <span className="px-3 text-xs text-gray-500 uppercase tracking-widest font-semibold">or</span>
+                <span className="h-px bg-gray-800 flex-grow"></span>
+              </div>
+
+              <a 
+                href="https://wa.me/919693320108?text=I%20want%20to%20know%20further"
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] text-white py-2.5 px-4 rounded-xl font-bold hover:bg-[#1ebd56] hover:shadow-[0_4px_15px_rgba(37,211,102,0.2)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 text-sm"
+              >
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.402.002 9.799-4.382 9.802-9.77.001-2.61-1.01-5.063-2.846-6.9C16.393 2.1 13.94 1.088 11.332 1.087 5.928 1.087 1.53 5.472 1.528 10.86c0 1.561.432 3.09 1.25 4.43l-.329 1.2.04-.017.067.11 1.706-1.127 1.037.615zM17.487 14.39c-.3-.15-1.774-.875-2.05-.975-.276-.1-.476-.15-.676.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-.3-.15-1.267-.467-2.413-1.488-.892-.796-1.493-1.78-1.668-2.08-.175-.3-.018-.462.13-.61.135-.133.3-.35.45-.525.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.676-1.63-.925-2.235-.24-.58-.485-.503-.676-.513-.175-.01-.375-.01-.575-.01-.2 0-.525.075-.8 1.025-.275.95-1.05 3.098-1.05 3.2 0 .1.1.225.25.4.15.175 1.83 2.795 4.43 3.92.617.267 1.1.425 1.475.545.62.195 1.18.168 1.625.102.495-.073 1.775-.725 2.025-1.425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
+                </svg>
+                Chat on WhatsApp
+              </a>
+
               {status && (
-                <p className={`mt-3 text-center ${status.success ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`mt-3 text-center text-xs ${status.success ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}`}>
                   {status.message}
                 </p>
               )}
