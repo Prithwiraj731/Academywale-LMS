@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../api';
 import { getAllFaculties } from '../../data/hardcodedFaculties';
+import whatsappLogo from '../../assets/whatsapp.png';
+import telegramLogo from '../../assets/telegram.png';
+import linkedinLogo from '../../assets/linkedin.png';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,20 +84,14 @@ export default function Navbar() {
             </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition">
-              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.402.002 9.799-4.382 9.802-9.77.001-2.61-1.01-5.063-2.846-6.9C16.393 2.1 13.94 1.088 11.332 1.087 5.928 1.087 1.53 5.472 1.528 10.86c0 1.561.432 3.09 1.25 4.43l-.329 1.2.04-.017.067.11 1.706-1.127 1.037.615zM17.487 14.39c-.3-.15-1.774-.875-2.05-.975-.276-.1-.476-.15-.676.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-.3-.15-1.267-.467-2.413-1.488-.892-.796-1.493-1.78-1.668-2.08-.175-.3-.018-.462.13-.61.135-.133.3-.35.45-.525.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.676-1.63-.925-2.235-.24-.58-.485-.503-.676-.513-.175-.01-.375-.01-.575-.01-.2 0-.525.075-.8 1.025-.275.95-1.05 3.098-1.05 3.2 0 .1.1.225.25.4.15.175 1.83 2.795 4.43 3.92.617.267 1.1.425 1.475.545.62.195 1.18.168 1.625.102.495-.073 1.775-.725 2.025-1.425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
-              </svg>
+            <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
+              <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
-            <a href="https://t.me/CMAspirants_01" target="_blank" rel="noopener noreferrer" className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
-              <svg className="w-3.5 h-3.5 text-white mr-[1px] mt-[0.5px]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9.78 18.65l.28-4.28 7.76-7.01c.34-.3-.07-.47-.52-.17L7.74 12.5 3.59 11.2c-.9-.28-.92-.9.19-1.33L20.1 3.5c.75-.28 1.4.17 1.15 1.16l-2.87 13.5c-.21.99-.8 1.24-1.63.78l-4.42-3.25-2.13 2.05c-.24.24-.44.44-.9.44z"/>
-              </svg>
+            <a href="https://t.me/CMAspirants_01" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
+              <img src={telegramLogo} alt="Telegram" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
-            <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-700 rounded-full flex items-center justify-center hover:bg-blue-800 transition">
-              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
-              </svg>
+            <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
+              <img src={linkedinLogo} alt="LinkedIn" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
           </div>
         </div>
