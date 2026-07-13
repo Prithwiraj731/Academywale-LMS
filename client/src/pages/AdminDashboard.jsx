@@ -38,7 +38,7 @@ const modalStyles = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user, isLoading: authLoading } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -52,17 +52,21 @@ export default function AdminDashboard() {
   };
 
   // Check admin access - but show loading state instead of blank page
-  const isAdmin = localStorage.getItem('isAdmin') === 'true';
+  const isAdmin = localStorage.getItem('isAdmin') === 'true' || user?.role === 'admin';
 
   // If not admin, redirect but show loading state during redirect
   useEffect(() => {
-    if (!isAdmin) {
-      navigate('/admin');
+    if (!authLoading) {
+      if (!isAdmin) {
+        navigate('/admin');
+      } else if (user?.role === 'admin') {
+        localStorage.setItem('isAdmin', 'true');
+      }
     }
-  }, [isAdmin, navigate]);
+  }, [isAdmin, authLoading, navigate, user]);
 
   // Show loading background during redirect
-  if (!isAdmin) {
+  if (authLoading || !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center justify-center">
         <div className="text-center">

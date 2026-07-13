@@ -6,9 +6,21 @@ import { LoginFormDemo } from "../components/ui/AuthForms";
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        localStorage.setItem('isAdmin', 'true');
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   // Check if coming from successful signup
   useEffect(() => {
@@ -26,7 +38,8 @@ export default function Login() {
       if (result.success) {
         // Check if user is admin
         if (result.user.role === 'admin') {
-          navigate('/admin');
+          localStorage.setItem('isAdmin', 'true');
+          navigate('/admin-dashboard');
         } else {
           // Navigate to homepage after successful login
           navigate('/');

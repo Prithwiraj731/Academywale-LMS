@@ -1,12 +1,30 @@
 const nodemailer = require('nodemailer');
+const emailConfig = require('../config/email.config');
 
-// Mock transporter for development
-console.log('⚠️ Using mock email transporter for development');
-const transporter = {
-  sendMail: (options) => {
-    console.log('📧 Mock email sent:', options);
-    return Promise.resolve({ messageId: 'mock-id-' + Date.now() });
+// Create transporter for sending emails
+const createTransporter = () => {
+  if (emailConfig.service) {
+    return nodemailer.createTransport({
+      service: emailConfig.service,
+      auth: {
+        user: emailConfig.user,
+        pass: emailConfig.password
+      }
+    });
   }
+  
+  return nodemailer.createTransport({
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
+    auth: {
+      user: emailConfig.user,
+      pass: emailConfig.password
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
 /**
@@ -20,7 +38,7 @@ const transporter = {
  */
 const sendEmail = async (options) => {
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'AcademyWale <support@academywale.com>',
+    from: emailConfig.from,
     to: options.to,
     subject: options.subject,
     text: options.text
@@ -31,6 +49,7 @@ const sendEmail = async (options) => {
   }
 
   try {
+    const transporter = createTransporter();
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent:', info.messageId);
     return info;
