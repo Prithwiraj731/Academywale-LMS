@@ -53,9 +53,20 @@ api.interceptors.response.use(
 );
 
 // API URL definition - used for all API requests
-export const API_URL = import.meta.env.DEV
+// Force HTTPS protocol on production API URL to prevent CORS preflight redirect failures
+let baseUrl = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:5000')
   : (import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com');
+
+if (baseUrl && !import.meta.env.DEV) {
+  if (baseUrl.startsWith('http://')) {
+    baseUrl = baseUrl.replace('http://', 'https://');
+  } else if (!baseUrl.startsWith('https://')) {
+    baseUrl = `https://${baseUrl}`;
+  }
+}
+
+export const API_URL = baseUrl;
 
 /**
  * Fetch wrapper that includes credentials for admin requests
