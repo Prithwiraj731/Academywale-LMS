@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
@@ -254,10 +254,10 @@ const CAFinalPaperDetailPage = () => {
         
         {currentPaper ? (
           <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
               CA Final Paper - {currentPaper.id}
             </h2>
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight drop-shadow-lg">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 tracking-tight drop-shadow-lg">
               {currentPaper.title}
             </h3>
           </div>
