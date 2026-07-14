@@ -13,6 +13,7 @@ import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import CourseCard from '../components/common/CourseCard/CourseCard';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
@@ -639,46 +640,9 @@ const CourseFullDetailPage = () => {
             <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-8">
               Similar Related Courses
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full">
               {relatedCourses.map((rCourse) => (
-                <div 
-                  key={rCourse.id || rCourse._id} 
-                  onClick={() => navigate(`/course/${encodeURIComponent(rCourse.courseType || 'course')}/${rCourse.id || rCourse._id}`)}
-                  className="group bg-neutral-900 border border-neutral-850 hover:border-neutral-750 p-4 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="w-full aspect-[4/3] rounded-2xl bg-slate-950/80 border border-neutral-850 p-2 flex items-center justify-center relative mb-4">
-                      <img 
-                        src={getPosterUrl(rCourse)} 
-                        alt={rCourse.title} 
-                        className="w-full h-full object-contain"
-                        onError={(e) => { e.target.src = '/logo.svg'; }}
-                      />
-                      {rCourse.category && (
-                        <span className="absolute top-2.5 left-2.5 bg-[#20b2aa]/10 text-[#20b2aa] px-2 py-0.5 rounded text-[10px] font-bold border border-[#20b2aa]/25 uppercase">
-                          {rCourse.category}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="font-bold text-white text-sm line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors mb-2">
-                      {rCourse.title || rCourse.subject}
-                    </h4>
-                    {rCourse.facultyName && (
-                      <p className="text-neutral-400 text-xs flex items-center gap-1 font-medium">
-                        <FaUser className="text-[10px] text-[#20b2aa]" /> {rCourse.facultyName}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="mt-4 pt-3 border-t border-neutral-850 flex items-center justify-between">
-                    <span className="text-[#20b2aa] font-extrabold text-sm sm:text-base">
-                      ₹{(rCourse.sellingPrice || 0).toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider group-hover:text-white transition-colors flex items-center gap-1">
-                      View details →
-                    </span>
-                  </div>
-                </div>
+                <CourseCard key={rCourse.id || rCourse._id} course={rCourse} />
               ))}
             </div>
           </div>
