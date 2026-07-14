@@ -210,7 +210,7 @@ const CartPaymentPage = () => {
                     <div>
                       <p className="font-bold text-gray-800">{item.title}</p>
                       <p className="text-xs text-gray-500">
-                        Mode: {item.mode || 'Standard'} | Validity: {item.attempt || 'Standard'} | Faculty: {item.facultyName}
+                        Mode: {item.mode || 'Standard'} | Exam Term: {item.attempt || 'Standard'}{item.validity ? ` | Validity: ${item.validity}` : ''} | Faculty: {item.facultyName}
                       </p>
                     </div>
                     <span className="font-bold text-gray-900">₹{Number(item.price).toLocaleString()}</span>

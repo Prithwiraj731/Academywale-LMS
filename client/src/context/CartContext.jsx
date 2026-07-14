@@ -26,9 +26,9 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  const addToCart = (course, selectedMode, selectedAttempt, price) => {
+  const addToCart = (course, selectedMode, selectedAttempt, price, selectedValidity = '') => {
     const courseId = course.id || course._id;
-    const uniqueId = `${courseId}-${selectedMode}-${selectedAttempt}`;
+    const uniqueId = `${courseId}-${selectedMode}-${selectedAttempt}-${selectedValidity}`;
 
     const cartItem = {
       id: courseId,
@@ -39,6 +39,7 @@ export const CartProvider = ({ children }) => {
       facultyName: course.faculty_name || course.facultyName || 'Expert Faculty',
       mode: selectedMode,
       attempt: selectedAttempt,
+      validity: selectedValidity,
       price: price,
       courseType: course.courseType || 'general'
     };
@@ -70,8 +71,8 @@ export const CartProvider = ({ children }) => {
     localStorage.removeItem('cart');
   };
 
-  const isInCart = (courseId, selectedMode, selectedAttempt) => {
-    const uniqueId = `${courseId}-${selectedMode}-${selectedAttempt}`;
+  const isInCart = (courseId, selectedMode, selectedAttempt, selectedValidity = '') => {
+    const uniqueId = `${courseId}-${selectedMode}-${selectedAttempt}-${selectedValidity}`;
     return cartItems.some(item => item.uniqueId === uniqueId);
   };
 

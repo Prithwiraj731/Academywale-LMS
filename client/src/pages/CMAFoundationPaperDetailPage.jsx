@@ -284,7 +284,7 @@ const CMAFoundationPaperDetailPage = () => {
         ) : (
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-6">Available Courses</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {courses.map((course, index) => (
                 <CourseCard 
                   key={course._id || index} 

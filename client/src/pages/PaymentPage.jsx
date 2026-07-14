@@ -297,6 +297,12 @@ const PaymentPage = () => {
                 <span className="font-medium text-gray-700">Attempt:</span>
                 <span className="text-gray-900">{location.state?.selectedAttempt || course.duration || 'Not specified'}</span>
               </div>
+              {location.state?.selectedValidity && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <span className="font-medium text-gray-700">Validity:</span>
+                  <span className="text-gray-900">{location.state.selectedValidity}</span>
+                </div>
+              )}
               {/* Price Section */}
               <div className="mb-4">
                 <label className="font-semibold text-gray-700 cursor-pointer">Apply Coupon Code (if any)</label>

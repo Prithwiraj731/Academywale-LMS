@@ -78,40 +78,40 @@ const CourseCard = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
       {/* Image Section */}
       <div className="relative">
         <img
           src={getPosterUrl(course)}
           alt={course.subject || 'Course'}
-          className="w-full h-40 sm:h-48 object-cover"
+          className="w-full h-24 xs:h-32 sm:h-48 object-cover"
           onError={(e) => {
             e.target.src = '/logo.svg';
           }}
         />
-        <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold truncate max-w-[80%]">
+        <div className="absolute top-1.5 left-1.5 bg-teal-600 text-white px-1.5 py-0.5 rounded text-[9px] sm:text-xs font-semibold truncate max-w-[85%]">
           {course.courseType || (course.category ? `${course.category} ${course.subcategory}` : 'Course')}
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-3 sm:p-4 flex flex-col flex-grow">
+      <div className="p-2 xs:p-3 sm:p-4 flex flex-col flex-grow">
         {/* Course Title */}
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+        <h3 className="text-xs xs:text-sm sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2 line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
           {course.subject || course.title}
         </h3>
 
         {/* Faculty Name */}
         {course.facultyName && (
-          <p className="text-xs sm:text-sm text-gray-600 mb-3">
+          <p className="text-[10px] xs:text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-3">
             by <span className="font-medium text-teal-600">{course.facultyName}</span>
           </p>
         )}
 
         {/* Course Type Badge */}
         {course.courseType && (
-          <div className="mb-3">
-            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+          <div className="mb-1.5 sm:mb-3">
+            <span className="inline-block bg-blue-100 text-blue-800 text-[8px] xs:text-xs px-1.5 py-0.5 rounded-full">
               {course.courseType}
             </span>
           </div>
@@ -121,17 +121,17 @@ const CourseCard = ({
         <div className="flex-grow"></div>
 
         {/* Pricing Section */}
-        <div className="mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg sm:text-xl font-bold text-teal-600">
+        <div className="mb-2 sm:mb-3">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            <span className="text-sm xs:text-base sm:text-xl font-bold text-teal-600">
               ₹{sellingPrice?.toLocaleString() || '0'}
             </span>
             {costPrice > sellingPrice && (
               <>
-                <span className="text-sm text-gray-400 line-through">
+                <span className="text-[10px] xs:text-xs text-gray-400 line-through">
                   ₹{costPrice?.toLocaleString()}
                 </span>
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                <span className="text-[8px] xs:text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded-full font-medium">
                   {Math.round(((costPrice - sellingPrice) / costPrice) * 100)}% off
                 </span>
               </>
@@ -142,7 +142,7 @@ const CourseCard = ({
         {/* View Details Button */}
         <button
           onClick={handleCourseClick}
-          className="w-full bg-teal-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors duration-200"
+          className="w-full bg-teal-600 text-white py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold hover:bg-teal-700 transition-colors duration-200"
         >
           View Details
         </button>

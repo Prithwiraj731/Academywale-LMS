@@ -369,6 +369,7 @@ exports.upiPurchase = async (req, res) => {
           subject: course.subject,
           mode: courseDetails?.mode || '',
           validity: courseDetails?.validity || '',
+          attempt: courseDetails?.attempt || '',
           facultyName: course.faculty_name
         },
         access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
@@ -389,6 +390,7 @@ exports.upiPurchase = async (req, res) => {
         Transaction ID: ${transactionId}
         Mode: ${courseDetails?.mode || ''}
         Validity: ${courseDetails?.validity || ''}
+        Exam Term: ${courseDetails?.attempt || ''}
         Status: Pending verification
       `;
       

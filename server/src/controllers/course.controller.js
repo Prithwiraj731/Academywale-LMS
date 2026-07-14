@@ -164,6 +164,7 @@ exports.addCourseToFaculty = async (req, res) => {
             flatPricing.push({
               mode: modeVal,
               attempt: attemptData.attempt || '',
+              validity: attemptData.validity || '',
               costPrice: Number(attemptData.costPrice) || 0,
               sellingPrice: Number(attemptData.sellingPrice) || 0
             });
@@ -172,6 +173,7 @@ exports.addCourseToFaculty = async (req, res) => {
           flatPricing.push({
             mode: modeVal,
             attempt: modeGroup.attempt,
+            validity: modeGroup.validity || '',
             costPrice: Number(modeGroup.costPrice) || 0,
             sellingPrice: Number(modeGroup.sellingPrice) || 0
           });
@@ -408,6 +410,7 @@ exports.updateCourse = async (req, res) => {
                 flatPricing.push({
                   mode: modeVal,
                   attempt: att.attempt || '',
+                  validity: att.validity || '',
                   costPrice: Number(att.costPrice) || 0,
                   sellingPrice: Number(att.sellingPrice) || 0
                 });

@@ -11,6 +11,7 @@ export function normalizeModeAttemptPricing(modeAttemptPricing) {
       ? option.attempts
       : [{
           attempt: option.attempt || option.validity || '',
+          validity: option.validity || '',
           costPrice: option.costPrice,
           sellingPrice: option.sellingPrice,
         }];

@@ -541,7 +541,7 @@ export default function AdminDashboard() {
       {
         mode: 'Live at Home With Hard Copy',
         attempts: [
-          { attempt: '1.5 Views & 12 Months Validity', costPrice: 15999, sellingPrice: 13999 }
+          { attempt: 'Dec 2026', validity: '12 Months', costPrice: 15999, sellingPrice: 13999 }
         ]
       }
     ]
@@ -690,7 +690,7 @@ export default function AdminDashboard() {
         {
           mode: '',
           attempts: [
-            { attempt: '', costPrice: 0, sellingPrice: 0 }
+            { attempt: '', validity: '', costPrice: 0, sellingPrice: 0 }
           ]
         }
       ]
@@ -720,7 +720,7 @@ export default function AdminDashboard() {
         index === modeIndex
           ? {
             ...item,
-            attempts: [...item.attempts, { attempt: '', costPrice: 0, sellingPrice: 0 }]
+            attempts: [...item.attempts, { attempt: '', validity: '', costPrice: 0, sellingPrice: 0 }]
           }
           : item
       )
@@ -919,7 +919,7 @@ export default function AdminDashboard() {
             {
               mode: 'Live at Home With Hard Copy',
               attempts: [
-                { attempt: '1.5 Views & 12 Months Validity', costPrice: 15999, sellingPrice: 13999 }
+                { attempt: 'Dec 2026', validity: '12 Months', costPrice: 15999, sellingPrice: 13999 }
               ]
             }
           ]
@@ -2105,13 +2105,23 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing:</h5>
                     {modeData.attempts.map((attempt, attemptIndex) => (
-                      <div key={attemptIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3 sm:p-4 bg-purple-50 rounded-lg">
+                      <div key={attemptIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-3 sm:p-4 bg-purple-50 rounded-lg">
                         <div className="sm:col-span-2 lg:col-span-1">
-                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Attempt *</label>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Exam Term / Attempt *</label>
                           <input
                             value={attempt.attempt}
                             onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value)}
-                            placeholder="e.g. 1.5 Views & 12 Months"
+                            placeholder="e.g. Dec 2026"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Validity *</label>
+                          <input
+                            value={attempt.validity || ''}
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value)}
+                            placeholder="e.g. 12 Months"
                             className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
                             required
                           />

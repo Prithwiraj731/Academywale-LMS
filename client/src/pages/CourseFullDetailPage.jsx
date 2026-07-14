@@ -24,6 +24,7 @@ const CourseFullDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMode, setSelectedMode] = useState('');
+  const [selectedValidity, setSelectedValidity] = useState('');
   const [selectedAttempt, setSelectedAttempt] = useState('');
   const [selectedPrice, setSelectedPrice] = useState({ selling: 0, cost: 0 });
   const [addedMessage, setAddedMessage] = useState('');
@@ -57,13 +58,14 @@ const CourseFullDetailPage = () => {
         const normalizedCourse = normalizeCoursePricing(data.course);
         setCourse(normalizedCourse);
         
-        // Initialize mode and attempt selection
+        // Initialize mode, validity, and attempt selection
         if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
           const firstMode = normalizedCourse.modeAttemptPricing[0];
           setSelectedMode(firstMode.mode);
           if (firstMode.attempts && firstMode.attempts.length > 0) {
             const firstAttempt = firstMode.attempts[0];
-            setSelectedAttempt(firstAttempt.attempt);
+            setSelectedValidity(firstAttempt.validity || '');
+            setSelectedAttempt(firstAttempt.attempt || '');
             setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
           }
         } else {
@@ -108,14 +110,57 @@ const CourseFullDetailPage = () => {
     }
   }, [course]);
 
+  const getUniqueValiditiesForMode = (modeName) => {
+    const modeData = course?.modeAttemptPricing?.find(m => m.mode === modeName);
+    if (!modeData || !modeData.attempts) return [];
+    return Array.from(new Set(modeData.attempts.map(a => a.validity).filter(Boolean)));
+  };
+
+  const getAttemptsForSelectedModeAndValidity = () => {
+    const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
+    if (!modeData || !modeData.attempts) return [];
+    const validities = getUniqueValiditiesForMode(selectedMode);
+    if (validities.length > 0) {
+      return modeData.attempts.filter(a => a.validity === selectedValidity);
+    }
+    return modeData.attempts;
+  };
+
   // Handle mode selection
   const handleModeChange = (mode) => {
     setSelectedMode(mode);
     const modeData = course.modeAttemptPricing.find(m => m.mode === mode);
     if (modeData && modeData.attempts && modeData.attempts.length > 0) {
-      const firstAttempt = modeData.attempts[0];
-      setSelectedAttempt(firstAttempt.attempt);
-      setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+      const validities = Array.from(new Set(modeData.attempts.map(a => a.validity).filter(Boolean)));
+      if (validities.length > 0) {
+        const firstValidity = validities[0];
+        setSelectedValidity(firstValidity);
+        const attemptsForVal = modeData.attempts.filter(a => a.validity === firstValidity);
+        if (attemptsForVal.length > 0) {
+          const firstAttempt = attemptsForVal[0];
+          setSelectedAttempt(firstAttempt.attempt);
+          setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+        }
+      } else {
+        setSelectedValidity('');
+        const firstAttempt = modeData.attempts[0];
+        setSelectedAttempt(firstAttempt.attempt);
+        setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+      }
+    }
+  };
+
+  // Handle validity selection
+  const handleValidityChange = (validity) => {
+    setSelectedValidity(validity);
+    const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
+    if (modeData && modeData.attempts) {
+      const attemptsForVal = modeData.attempts.filter(a => a.validity === validity);
+      if (attemptsForVal.length > 0) {
+        const firstAttempt = attemptsForVal[0];
+        setSelectedAttempt(firstAttempt.attempt);
+        setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+      }
     }
   };
 
@@ -123,8 +168,11 @@ const CourseFullDetailPage = () => {
   const handleAttemptChange = (attempt) => {
     setSelectedAttempt(attempt);
     const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-    if (modeData) {
-      const attemptData = modeData.attempts.find(a => a.attempt === attempt);
+    if (modeData && modeData.attempts) {
+      const attemptData = modeData.attempts.find(a => 
+        a.attempt === attempt && 
+        (!selectedValidity || a.validity === selectedValidity)
+      );
       if (attemptData) {
         setSelectedPrice({ selling: attemptData.sellingPrice, cost: attemptData.costPrice });
       }
@@ -143,8 +191,9 @@ const CourseFullDetailPage = () => {
       return;
     }
 
-    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (!selectedMode || !selectedAttempt)) {
-      alert('Please select both mode and attempt before proceeding.');
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && 
+        (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
+      alert('Please select mode, validity, and attempt before proceeding.');
       return;
     }
     
@@ -152,6 +201,7 @@ const CourseFullDetailPage = () => {
       state: {
         selectedMode,
         selectedAttempt,
+        selectedValidity,
         price: selectedPrice.selling,
         course: course
       }
@@ -160,12 +210,13 @@ const CourseFullDetailPage = () => {
 
   // Handle Add to Cart
   const handleAddToCart = () => {
-    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (!selectedMode || !selectedAttempt)) {
-      alert('Please select both mode and attempt before adding to cart.');
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && 
+        (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
+      alert('Please select mode, validity, and attempt before adding to cart.');
       return;
     }
 
-    const added = addToCart(course, selectedMode, selectedAttempt, selectedPrice.selling);
+    const added = addToCart(course, selectedMode, selectedAttempt, selectedPrice.selling, selectedValidity);
     if (added) {
       setAddedMessage('Added to cart successfully!');
       setTimeout(() => setAddedMessage(''), 3000);
@@ -260,11 +311,11 @@ const CourseFullDetailPage = () => {
             
             {/* Banner/Poster container */}
             <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-2xl backdrop-blur-sm flex justify-center items-center">
-              <div className="w-full max-w-[500px] aspect-[4/3] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
+              <div className="w-full max-w-[360px] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject || course.title} 
-                  className="w-full h-full object-contain p-2 group-hover:scale-102 transition-transform duration-500"
+                  className="w-full max-h-[220px] object-contain p-1 group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
                     e.target.src = '/logo.svg'; 
                   }}
@@ -434,22 +485,40 @@ const CourseFullDetailPage = () => {
                     </select>
                   </div>
 
-                  {/* Attempt/Validity Selector */}
+                  {/* Validity Selector */}
+                  {selectedMode && getUniqueValiditiesForMode(selectedMode).length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Select Validity</label>
+                      <select
+                        value={selectedValidity}
+                        onChange={(e) => handleValidityChange(e.target.value)}
+                        className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                      >
+                        <option value="" disabled>Choose Validity</option>
+                        {getUniqueValiditiesForMode(selectedMode).map((val, idx) => (
+                          <option key={idx} value={val}>
+                            {val}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Attempt/Exam Term Selector */}
                   {selectedMode && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Attempt & Validity</label>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Exam Term / Attempt</label>
                       <select
                         value={selectedAttempt}
                         onChange={(e) => handleAttemptChange(e.target.value)}
                         className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
                       >
-                        <option value="" disabled>Choose validity duration</option>
-                        {course.modeAttemptPricing
-                          .find(m => m.mode === selectedMode)?.attempts.map((attempt, idx) => (
-                            <option key={idx} value={attempt.attempt}>
-                              {attempt.attempt}
-                            </option>
-                          ))}
+                        <option value="" disabled>Choose Exam Term</option>
+                        {getAttemptsForSelectedModeAndValidity().map((attempt, idx) => (
+                          <option key={idx} value={attempt.attempt}>
+                            {attempt.attempt}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   )}
@@ -492,9 +561,9 @@ const CourseFullDetailPage = () => {
               <div className="space-y-3">
                 <button
                   onClick={handleProceedToPay}
-                  disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                  disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
                   className={`w-full font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center text-sm transition-all duration-300 ${
-                    (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                    (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
                       ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-850'
                       : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] hover:from-[#17817a] hover:to-[#0f5752] text-white hover:scale-[1.01] hover:shadow-[#20b2aa]/10'
                   }`}
@@ -510,17 +579,17 @@ const CourseFullDetailPage = () => {
 
                 <button
                   onClick={handleAddToCart}
-                  disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                  disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
                   className={`w-full font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center text-sm border-2 transition-all duration-300 ${
-                    (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                    (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
                       ? 'bg-neutral-900/30 text-neutral-600 border-neutral-850 cursor-not-allowed'
-                      : isInCart(course.id || course._id, selectedMode, selectedAttempt)
+                      : isInCart(course.id || course._id, selectedMode, selectedAttempt, selectedValidity)
                       ? 'bg-[#20b2aa]/10 text-[#20b2aa] border-[#20b2aa]'
                       : 'bg-transparent text-white border-neutral-750 hover:bg-neutral-800 hover:border-neutral-700'
                   }`}
                 >
                   <FaShoppingCart className="mr-2 text-xs" />
-                  {isInCart(course.id || course._id, selectedMode, selectedAttempt) ? 'Item in Cart ✓' : 'Add to Cart'}
+                  {isInCart(course.id || course._id, selectedMode, selectedAttempt, selectedValidity) ? 'Item in Cart ✓' : 'Add to Cart'}
                 </button>
               </div>
 

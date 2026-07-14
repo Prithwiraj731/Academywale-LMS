@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import BackButton from '../components/common/BackButton';
+import CourseCard from '../components/common/CourseCard';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 
@@ -35,9 +36,9 @@ export default function AllCoursesPage() {
     }
   };
 
-  const getPosterUrl = (course) => {
-    return getCourseImageUrl(course);
-  };
+  const caCourses = courses.filter(c => c.category && c.category.toUpperCase() === 'CA');
+  const cmaCourses = courses.filter(c => c.category && c.category.toUpperCase() === 'CMA');
+  const otherCourses = courses.filter(c => !c.category || (c.category.toUpperCase() !== 'CA' && c.category.toUpperCase() !== 'CMA'));
 
   if (loading) {
     return (
@@ -83,111 +84,48 @@ export default function AllCoursesPage() {
           </div>
         )}
 
-        {/* Courses Grid */}
-        {!error && courses.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-            {courses.map((course, index) => (
-              <div 
-                key={course._id || index} 
-                className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102"
-              >
-                {/* Course Poster */}
-                <div className="relative">
-                  {course.posterUrl ? (
-                    <img 
-                      src={getPosterUrl(course)} 
-                      alt="Course Poster" 
-                      className="w-full h-52 object-cover"
-                      onError={(e) => {
-                        e.target.src = '/logo.svg';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-52 bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center">
-                      <span className="text-teal-600">No Image</span>
-                    </div>
-                  )}
-                  {course.category && (
-                    <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
-                      {course.category} {course.subcategory}
-                    </div>
-                  )}
-                </div>
+        {/* CA Courses Section */}
+        {!error && caCourses.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-6 pb-2 border-b border-teal-500/20 flex items-center gap-2">
+              <span className="bg-teal-600 w-2.5 h-6 rounded-full"></span>
+              CA Classes
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+              {caCourses.map((course, index) => (
+                <CourseCard key={course._id || index} course={course} />
+              ))}
+            </div>
+          </div>
+        )}
 
-                {/* Course Info */}
-                <div className="p-4">
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                    {course.title || course.subject}
-                  </h3>
-                  
-                  {/* Faculty */}
-                  {course.facultyName && (
-                    <p className="text-sm text-gray-600 mb-3">
-                      by <span className="font-medium">{course.facultyName}</span>
-                    </p>
-                  )}
-                  
-                  {/* For standalone courses, show type */}
-                  {course.isStandalone && !course.facultyName && (
-                    <p className="text-sm text-teal-600 mb-3 bg-teal-50 px-2 py-1 rounded inline-block border border-teal-200">
-                      <span className="font-medium">✓ Standalone Course</span>
-                    </p>
-                  )}
+        {/* CMA Courses Section */}
+        {!error && cmaCourses.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-6 pb-2 border-b border-purple-500/20 flex items-center gap-2">
+              <span className="bg-purple-600 w-2.5 h-6 rounded-full"></span>
+              CMA Classes
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+              {cmaCourses.map((course, index) => (
+                <CourseCard key={course._id || index} course={course} />
+              ))}
+            </div>
+          </div>
+        )}
 
-                  {/* Paper Name if available */}
-                  {course.paperName && (
-                    <div className="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-md inline-block mb-2">
-                      {course.paperName}
-                    </div>
-                  )}
-                  
-                  {/* Lectures count */}
-                  {course.noOfLecture && (
-                    <p className="text-xs text-gray-500 mb-2">
-                      {course.noOfLecture}
-                    </p>
-                  )}
-
-                  {/* Pricing */}
-                  <div className="mt-3">
-                    <div className="text-sm text-gray-500">Starting from:</div>
-                    <div className="flex items-center gap-2">
-                      {course.sellingPrice && (
-                        <span className="text-2xl font-bold text-teal-600">
-                          ₹{course.sellingPrice}
-                        </span>
-                      )}
-                      {course.costPrice && course.costPrice > (course.sellingPrice || 0) && (
-                        <span className="text-sm text-gray-400 line-through">
-                          ₹{course.costPrice}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <button
-                    onClick={() => {
-                      // Navigate to course detail page to show full course description
-                      const courseId = course._id || course.id;
-                      const courseType = course.courseType || course.category || 'course';
-                      
-                      if (courseId) {
-                        console.log('Navigating to course details:', courseId, courseType);
-                        navigate(`/course/${encodeURIComponent(courseType)}/${courseId}`);
-                      } else {
-                        console.error('Course missing ID for navigation:', course);
-                        alert('Unable to view course details - missing course ID');
-                      }
-                    }}
-                    className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
+        {/* Other Courses Section */}
+        {!error && otherCourses.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-6 pb-2 border-b border-blue-500/20 flex items-center gap-2">
+              <span className="bg-blue-600 w-2.5 h-6 rounded-full"></span>
+              Other Classes
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+              {otherCourses.map((course, index) => (
+                <CourseCard key={course._id || index} course={course} />
+              ))}
+            </div>
           </div>
         )}
       </main>

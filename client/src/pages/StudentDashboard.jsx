@@ -366,8 +366,13 @@ export default function StudentDashboard() {
                             Mode: {item.mode || 'Online'}
                           </span>
                           <span className="bg-purple-50 text-purple-700 text-[10px] px-2 py-0.5 rounded font-extrabold uppercase">
-                            Validity: {item.attempt || '1 Year'}
+                            Exam Term: {item.attempt || 'Dec 2026'}
                           </span>
+                          {item.validity && (
+                            <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5 rounded font-extrabold uppercase">
+                              Validity: {item.validity}
+                            </span>
+                          )}
                         </div>
                       </div>
                       

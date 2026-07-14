@@ -24,6 +24,7 @@ const UPIPaymentPage = () => {
   // Get details passed from the previous page
   const selectedMode = location.state?.selectedMode || '';
   const selectedValidity = location.state?.selectedValidity || '';
+  const selectedAttempt = location.state?.selectedAttempt || '';
   const userDetails = location.state?.userDetails || {};
   const priceFromState = location.state?.price;
 
@@ -117,7 +118,8 @@ const UPIPaymentPage = () => {
           courseDetails: {
             courseName: course?.title || course?.subject,
             mode: selectedMode,
-            validity: selectedValidity
+            validity: selectedValidity,
+            attempt: selectedAttempt
           }
         })
       });
@@ -247,6 +249,13 @@ const UPIPaymentPage = () => {
                   <>
                     <div className="text-gray-600">Validity:</div>
                     <div className="text-gray-900">{selectedValidity}</div>
+                  </>
+                )}
+                
+                {selectedAttempt && (
+                  <>
+                    <div className="text-gray-600">Exam Term:</div>
+                    <div className="text-gray-900">{selectedAttempt}</div>
                   </>
                 )}
                 
