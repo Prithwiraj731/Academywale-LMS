@@ -14,7 +14,6 @@ export default function Login() {
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'admin') {
-        localStorage.setItem('isAdmin', 'true');
         navigate('/admin-dashboard');
       } else {
         navigate('/');
@@ -38,7 +37,6 @@ export default function Login() {
       if (result.success) {
         // Check if user is admin
         if (result.user.role === 'admin') {
-          localStorage.setItem('isAdmin', 'true');
           navigate('/admin-dashboard');
         } else {
           // Navigate to homepage after successful login

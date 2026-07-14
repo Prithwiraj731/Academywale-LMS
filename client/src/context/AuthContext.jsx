@@ -201,6 +201,7 @@ export const AuthProvider = ({ children }) => {
       // Clear local state regardless of API call success
       Cookies.remove('jwt');
       localStorage.removeItem('token');
+      localStorage.removeItem('isAdmin');
       setUser(null);
       setIsAuthenticated(false);
     }

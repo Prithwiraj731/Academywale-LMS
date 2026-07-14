@@ -81,13 +81,12 @@ export default function Home() {
             {/* --- CA Section Card --- */}
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/20">
-                    <img src={caLogo} alt="CA Logo" className="object-contain w-full h-full" />
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-white rounded-full p-2.5 overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
+                    <img src={caLogo} alt="CA Logo" className="object-contain w-full h-full rounded-full" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight">Chartered Accountant</h3>
-                    <p className="text-xs text-[#20b2aa] font-semibold tracking-wider uppercase mt-0.5">ICAIP Portal</p>
+                    <h3 className="text-2xl font-semibold text-white tracking-tight">Chartered Accountant</h3>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -130,13 +129,12 @@ export default function Home() {
             {/* --- CMA Section Card --- */}
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/20">
-                    <img src={cmaLogo} alt="CMA Logo" className="object-contain w-full h-full" />
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-white rounded-full p-2.5 overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
+                    <img src={cmaLogo} alt="CMA Logo" className="object-contain w-full h-full scale-105" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight">Cost & Management Accountant</h3>
-                    <p className="text-xs text-[#20b2aa] font-semibold tracking-wider uppercase mt-0.5">ICMAI Portal</p>
+                    <h3 className="text-2xl font-semibold text-white tracking-tight">Cost & Management Accountant</h3>
                   </div>
                 </div>
                 <div className="space-y-4">

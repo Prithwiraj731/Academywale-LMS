@@ -71,7 +71,7 @@ const App = () => {
         <Route path="/payment/cart" element={<CartPaymentPage />} />
         <Route path="/payment/:courseType/:courseId" element={<UPIPaymentPage />} />
         <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/course/:courseType/:courseId" element={<CourseDetailPage />} />
+        <Route path="/course/:courseType/:courseId" element={<CourseFullDetailPage />} />
         <Route path="/course-details/:courseType/:courseId" element={<CourseFullDetailPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 

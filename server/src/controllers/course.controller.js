@@ -1,6 +1,32 @@
-const { supabaseAdmin } = require('../config/supabase.config');
+const { supabaseAdmin, isServiceKeyAvailable } = require('../config/supabase.config');
 const { mapMode } = require('../utils/modeMapper');
 const { mapCourseToFrontend, mapCoursesToFrontend } = require('../utils/courseMapper');
+
+// Standardized error handler with deep RLS diagnostics
+const handleControllerError = (error, operation, res) => {
+  console.error(`❌ ${operation} error:`, error);
+  
+  const errMsg = error.message || '';
+  if (errMsg.includes('row-level security') || errMsg.includes('RLS') || (error.code === '42501')) {
+    const diagnostic = !isServiceKeyAvailable
+      ? 'The SUPABASE_SERVICE_ROLE_KEY is missing or invalid in the server environment configuration, forcing the admin client to fall back to anonymous public permissions.'
+      : 'A row-level security policy restriction was violated on the database table. Please check your Supabase schema settings and permissions.';
+    
+    return res.status(500).json({
+      success: false,
+      error: 'Database Security Violation (RLS)',
+      message: `${operation} failed: ${error.message || 'Row-level security policy violation.'}`,
+      diagnostic
+    });
+  }
+  
+  return res.status(500).json({
+    success: false,
+    error: `${operation} failed`,
+    message: error.message || 'An unexpected database error occurred.'
+  });
+};
+
 
 // Hardcoded faculties database fallback
 const hardcodedFaculties = [
@@ -229,12 +255,7 @@ exports.addCourseToFaculty = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Course creation error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Course creation failed', 
-      message: error.message
-    });
+    return handleControllerError(error, 'Course creation', res);
   }
 };
 
@@ -411,7 +432,7 @@ exports.updateCourse = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Course updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleControllerError(error, 'Course update', res);
   }
 };
 
@@ -447,7 +468,7 @@ exports.deleteCourse = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Course deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleControllerError(error, 'Course deletion', res);
   }
 };
 
@@ -470,8 +491,7 @@ exports.deleteAllCourses = async (req, res) => {
       message: `Successfully removed all courses from database`
     });
   } catch (error) {
-    console.error('❌ Error deleting all courses:', error);
-    res.status(500).json({ error: error.message });
+    return handleControllerError(error, 'All courses deletion', res);
   }
 };
 
@@ -496,6 +516,226 @@ exports.getCoursesByInstitute = async (req, res) => {
     res.status(200).json({ courses: mapped });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Bulk upload courses via CSV data JSON
+// @route   POST /api/admin/courses/bulk-upload
+// @access  Private/Admin
+exports.bulkUploadCourses = async (req, res) => {
+  try {
+    console.log('🎯 Course controller: bulkUploadCourses called');
+    const { courses } = req.body;
+    
+    if (!courses || !Array.isArray(courses)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid input. An array of courses is required.' 
+      });
+    }
+
+    if (courses.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No courses provided.' 
+      });
+    }
+
+    console.log(`📋 Received ${courses.length} courses for bulk upload.`);
+
+    const successfulRows = [];
+    const failedRows = [];
+
+    // Helper to get slug from faculty name
+    const getSlugFromName = (name) => {
+      if (!name) return 'n-a';
+      return name.trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-') 
+        .replace(/[^\w-]/g, '') 
+        .replace(/^(ca|cma|cs)-/, '');
+    };
+
+    // Process each course sequentially to resolve faculty and format data correctly
+    for (let i = 0; i < courses.length; i++) {
+      const rowNum = i + 1;
+      const c = courses[i];
+      
+      // Basic validation
+      const title = c.title || c.subject;
+      const subject = c.subject;
+      const category = c.category ? c.category.toUpperCase().trim() : '';
+      const courseType = c.course_type || '';
+      const facultyName = c.faculty_name || '';
+      const sellingPrice = Number(c.selling_price);
+
+      if (!title) {
+        failedRows.push({ row: rowNum, error: 'Missing title/subject' });
+        continue;
+      }
+      if (!subject) {
+        failedRows.push({ row: rowNum, error: 'Missing subject' });
+        continue;
+      }
+      if (category !== 'CA' && category !== 'CMA') {
+        failedRows.push({ row: rowNum, error: 'Invalid or missing category. Must be CA or CMA.' });
+        continue;
+      }
+      if (isNaN(sellingPrice) || sellingPrice < 0) {
+        failedRows.push({ row: rowNum, error: 'Invalid or missing selling_price' });
+        continue;
+      }
+      if (!facultyName) {
+        failedRows.push({ row: rowNum, error: 'Missing faculty_name' });
+        continue;
+      }
+
+      try {
+        // Resolve Faculty
+        const facultySlug = getSlugFromName(facultyName);
+        
+        let { data: faculty, error: facultyError } = await supabaseAdmin
+          .from('faculties')
+          .select('*')
+          .eq('slug', facultySlug)
+          .maybeSingle();
+
+        if (facultyError) throw facultyError;
+
+        // Auto-provision faculty if missing
+        if (!faculty) {
+          const hardcodedFaculty = hardcodedFaculties.find(f => f.slug === facultySlug);
+          let firstName = '';
+          let lastName = '';
+          let bio = '';
+          
+          if (hardcodedFaculty) {
+            const parts = hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, '').split(' ');
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ') || '';
+            bio = `Expert faculty in ${hardcodedFaculty.specialization}`;
+          } else {
+            const parts = facultyName.replace(/^(CA|CMA|CS)\s+/, '').split(' ');
+            firstName = parts[0];
+            lastName = parts.slice(1).join(' ') || '';
+            bio = `Expert faculty at AcademyWale`;
+          }
+
+          const { data: newFac, error: createFacError } = await supabaseAdmin
+            .from('faculties')
+            .insert({
+              first_name: firstName,
+              last_name: lastName,
+              slug: facultySlug,
+              bio,
+              teaches: [category]
+            })
+            .select('*')
+            .single();
+
+          if (createFacError) throw createFacError;
+          faculty = newFac;
+        }
+
+        const facultyFullName = faculty.first_name + (faculty.last_name ? ' ' + faculty.last_name : '');
+
+        // Determine subcategory from courseType
+        let subcategory = 'Inter'; // Default
+        const lowerType = courseType.toLowerCase();
+        if (lowerType.includes('foundation')) {
+          subcategory = 'Foundation';
+        } else if (lowerType.includes('final')) {
+          subcategory = 'Final';
+        } else if (lowerType.includes('inter') || lowerType.includes('intermediate')) {
+          subcategory = 'Inter';
+        }
+
+        // Parse paper ID from title
+        let paperId = '1';
+        const paperMatch = title.match(/paper\s*(\d+)/i) || subject.match(/paper\s*(\d+)/i);
+        if (paperMatch && paperMatch[1]) {
+          paperId = paperMatch[1];
+        }
+
+        // Construct pricing JSONB
+        const costPrice = Number(c.cost_price) || sellingPrice;
+        const mode = c.mode || 'Recorded Video';
+        const attempt = c.attempt || '1.5 Views & 6 Months Validity';
+        
+        const flatPricing = [{
+          mode,
+          attempt,
+          costPrice,
+          sellingPrice
+        }];
+
+        // Build course record
+        const courseRecord = {
+          title,
+          subject,
+          description: c.description || '',
+          category,
+          subcategory,
+          paper_id: String(paperId),
+          paper_name: c.paper_name || '',
+          course_type: courseType || `${category} ${subcategory}`,
+          no_of_lecture: c.duration || '',
+          books: c.books || 'Study Material Included',
+          video_language: c.language || 'Hindi',
+          video_run_on: c.video_run_on || 'Windows / Android',
+          timing: c.duration || '',
+          doubt_solving: 'WhatsApp Support',
+          support_mail: 'support@academywale.com',
+          support_call: '+91 9693320108',
+          validity_start_from: c.validity || 'From Date of Activation',
+          faculty_id: faculty.id,
+          faculty_name: facultyFullName,
+          faculty_slug: faculty.slug,
+          institute_name: c.institute || '',
+          poster_url: c.image_url || '',
+          mode_attempt_pricing: flatPricing,
+          cost_price: costPrice,
+          selling_price: sellingPrice,
+          is_active: c.status !== 'inactive'
+        };
+
+        successfulRows.push(courseRecord);
+      } catch (err) {
+        failedRows.push({ row: rowNum, error: `Failed mapping details: ${err.message}` });
+      }
+    }
+
+    if (successfulRows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid courses could be prepared for insertion.',
+        errors: failedRows
+      });
+    }
+
+    // Bulk insert into courses
+    console.log(`📤 Inserting ${successfulRows.length} mapped courses into Supabase.`);
+    const { data: insertedData, error: insertError } = await supabaseAdmin
+      .from('courses')
+      .insert(successfulRows)
+      .select();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    console.log(`✅ Bulk insertion complete: inserted ${insertedData.length} records.`);
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully uploaded ${insertedData.length} courses!`,
+      successCount: insertedData.length,
+      failedCount: failedRows.length,
+      errors: failedRows
+    });
+
+  } catch (error) {
+    return handleControllerError(error, 'Bulk course upload', res);
   }
 };
 

@@ -51,27 +51,25 @@ export default function AdminDashboard() {
     }
   };
 
-  // Check admin access - but show loading state instead of blank page
-  const isAdmin = localStorage.getItem('isAdmin') === 'true' || user?.role === 'admin';
+  // Check admin access - verify strictly with backend session role
+  const isAdmin = user && user.role === 'admin';
 
   // If not admin, redirect but show loading state during redirect
   useEffect(() => {
     if (!authLoading) {
       if (!isAdmin) {
         navigate('/admin');
-      } else if (user?.role === 'admin') {
-        localStorage.setItem('isAdmin', 'true');
       }
     }
-  }, [isAdmin, authLoading, navigate, user]);
+  }, [isAdmin, authLoading, navigate]);
 
   // Show loading background during redirect
   if (authLoading || !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-neutral-900 py-8 px-2 sm:px-4 flex flex-col items-center justify-center text-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking admin access...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#20b2aa] mx-auto mb-4"></div>
+          <p className="text-neutral-400">Verifying admin access...</p>
         </div>
       </div>
     );
@@ -349,6 +347,14 @@ export default function AdminDashboard() {
   const [instituteAdd, setInstituteAdd] = useState({ name: '', image: null, imagePreview: null });
   const [instituteAddStatus, setInstituteAddStatus] = useState('');
   const [instituteAddError, setInstituteAddError] = useState('');
+
+  // Bulk Upload State
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkCourses, setBulkCourses] = useState([]);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkSuccess, setBulkSuccess] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [uploadResults, setUploadResults] = useState(null);
 
   const handleInstituteAddChange = e => {
     const { name, value, files } = e.target;
@@ -1493,6 +1499,178 @@ export default function AdminDashboard() {
       });
   }, []);
 
+  // Bulk Upload Parsing and Handlers
+  const handleBulkFileChange = (e) => {
+    const file = e.target.files[0];
+    setBulkFile(file);
+    setBulkCourses([]);
+    setBulkError('');
+    setBulkSuccess('');
+    setUploadResults(null);
+  };
+
+  const handleParseCSV = () => {
+    if (!bulkFile) {
+      setBulkError('Please select a CSV file first.');
+      return;
+    }
+
+    setBulkLoading(true);
+    setBulkError('');
+    setBulkSuccess('');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result;
+        
+        // Custom robust CSV parser
+        const parseCSV = (csvText) => {
+          const lines = [];
+          let row = [""];
+          let inQuotes = false;
+
+          for (let i = 0; i < csvText.length; i++) {
+            const c = csvText[i];
+            const next = csvText[i+1];
+
+            if (c === '"') {
+              if (inQuotes && next === '"') {
+                row[row.length - 1] += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (c === ',' && !inQuotes) {
+              row.push('');
+            } else if ((c === '\r' || c === '\n') && !inQuotes) {
+              if (c === '\r' && next === '\n') {
+                i++;
+              }
+              lines.push(row);
+              row = [''];
+            } else {
+              row[row.length - 1] += c;
+            }
+          }
+          if (row.length > 1 || row[0] !== '') {
+            lines.push(row);
+          }
+          return lines;
+        };
+
+        const rows = parseCSV(text);
+        if (rows.length < 2) {
+          throw new Error('CSV must have a header row and at least one data row.');
+        }
+
+        const headers = rows[0].map(h => h.trim().toLowerCase());
+        const parsedData = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length === 0 || (row.length === 1 && row[0] === '')) continue; // Skip empty rows
+
+          const rowData = {};
+          headers.forEach((header, index) => {
+            rowData[header] = row[index] ? row[index].trim() : '';
+          });
+
+          // Row validation
+          const title = rowData.title || rowData.subject;
+          const subject = rowData.subject;
+          const category = rowData.category ? rowData.category.toUpperCase() : '';
+          const facultyName = rowData.faculty_name;
+          const sellingPrice = Number(rowData.selling_price);
+
+          let errorMsg = '';
+          if (!title) errorMsg = 'Missing title/subject';
+          else if (!subject) errorMsg = 'Missing subject name';
+          else if (category !== 'CA' && category !== 'CMA') errorMsg = 'Category must be CA or CMA';
+          else if (!facultyName) errorMsg = 'Missing faculty name';
+          else if (isNaN(sellingPrice) || sellingPrice < 0) errorMsg = 'Invalid selling price';
+
+          parsedData.push({
+            rowNum: i,
+            data: rowData,
+            isValid: !errorMsg,
+            validationError: errorMsg
+          });
+        }
+
+        if (parsedData.length === 0) {
+          throw new Error('No data rows found in the CSV.');
+        }
+
+        setBulkCourses(parsedData);
+        setBulkSuccess(`Successfully parsed ${parsedData.length} rows. Please review below.`);
+      } catch (err) {
+        console.error('Error parsing CSV:', err);
+        setBulkError(err.message || 'Failed to parse CSV file.');
+      } finally {
+        setBulkLoading(false);
+      }
+    };
+
+    reader.onerror = () => {
+      setBulkError('Failed to read CSV file.');
+      setBulkLoading(false);
+    };
+
+    reader.readAsText(bulkFile);
+  };
+
+  const handleBulkUploadSubmit = async () => {
+    const validCourses = bulkCourses.filter(c => c.isValid).map(c => c.data);
+
+    if (validCourses.length === 0) {
+      setBulkError('No valid rows to upload. Please correct errors and try again.');
+      return;
+    }
+
+    setBulkLoading(true);
+    setBulkError('');
+    setBulkSuccess('');
+    setUploadResults(null);
+
+    try {
+      console.log(`📤 Sending bulk upload request with ${validCourses.length} courses`);
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/bulk-upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courses: validCourses })
+      });
+
+      const data = await res.json();
+      console.log('📥 Bulk upload response:', data);
+
+      if (res.ok && data.success) {
+        setBulkSuccess(data.message || `Successfully uploaded courses!`);
+        setUploadResults({
+          successCount: data.successCount,
+          failedCount: data.failedCount,
+          errors: data.errors || []
+        });
+        setBulkCourses([]);
+        setBulkFile(null);
+      } else {
+        setBulkError(data.message || 'Bulk upload failed');
+        if (data.errors) {
+          setUploadResults({
+            successCount: data.successCount || 0,
+            failedCount: data.failedCount || 0,
+            errors: data.errors
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Bulk upload network/server error:', err);
+      setBulkError('Server error occurred during upload.');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
   // Testimonial state
   const [testimonials, setTestimonials] = useState([]);
   const [testimonialAdd, setTestimonialAdd] = useState({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
@@ -1615,27 +1793,34 @@ export default function AdminDashboard() {
       </div>
 
       {/* Animated Button Row */}
-      <div className="w-full max-w-3xl flex gap-8 mb-10">
+      <div className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-10">
         <button
           className={`${buttonBase} ${activePanel === 'course' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('course')}
         >
-          <span className="mb-2 text-4xl">📚</span>
-          Add Course
+          <span className="mb-1 text-3xl">📚</span>
+          <span className="text-sm font-semibold">Add Course</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'faculty' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('faculty')}
         >
-          <span className="mb-2 text-4xl">👨‍🏫</span>
-          Add Faculty
+          <span className="mb-1 text-3xl">👨‍🏫</span>
+          <span className="text-sm font-semibold">Add Faculty</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'institute' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('institute')}
         >
-          <span className="mb-2 text-4xl">🏫</span>
-          Add Institute
+          <span className="mb-1 text-3xl">🏫</span>
+          <span className="text-sm font-semibold">Add Institute</span>
+        </button>
+        <button
+          className={`${buttonBase} ${activePanel === 'bulk' ? buttonActive : buttonInactive}`}
+          onClick={() => setActivePanel('bulk')}
+        >
+          <span className="mb-1 text-3xl">📤</span>
+          <span className="text-sm font-semibold">Bulk Upload</span>
         </button>
       </div>
       {/* Panel Switcher */}
@@ -2331,6 +2516,161 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Testimonials</h2>
             <div className="text-gray-700">Testimonials are now hardcoded. Admin editing is disabled.</div>
           </div>
+        </div>
+      )}
+      {activePanel === 'bulk' && (
+        <div className="w-full max-w-5xl bg-white/95 rounded-2xl shadow-2xl p-6 sm:p-8 border border-blue-100 mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-4 text-center">CSV Bulk Course Upload</h2>
+          <p className="text-gray-600 text-sm text-center max-w-xl mx-auto mb-6">
+            Upload a CSV file containing multiple courses to add them to the LMS in bulk. Missing faculties will be automatically provisioned based on the faculty name.
+          </p>
+
+          {/* Guidelines / Help section */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-5 mb-6 text-sm text-gray-700">
+            <h4 className="font-bold text-blue-800 mb-2">CSV Column Guidelines:</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 list-disc pl-4 font-mono text-xs text-gray-600">
+              <div>• title * (Course title)</div>
+              <div>• subject * (Subject name)</div>
+              <div>• category * (CA or CMA)</div>
+              <div>• course_type * (Foundation, Inter, Final)</div>
+              <div>• faculty_name * (Faculty Name)</div>
+              <div>• selling_price * (e.g. 5000)</div>
+              <div>• cost_price (e.g. 8000)</div>
+              <div>• duration (e.g. 70 lectures)</div>
+              <div>• books (Study Material description)</div>
+              <div>• language (e.g. English, Hindi)</div>
+              <div>• validity (e.g. 6 Months Validity)</div>
+              <div>• mode (e.g. Recorded Video)</div>
+              <div>• image_url (Poster Image URL)</div>
+              <div>• status (active or inactive)</div>
+            </div>
+            <p className="text-[11px] text-blue-600 mt-3 font-semibold">* Required fields must not be empty.</p>
+          </div>
+
+          {/* Upload Controls */}
+          <div className="flex flex-col sm:flex-row gap-4 items-center mb-6 bg-slate-50 p-5 rounded-2xl border border-gray-200 w-full justify-between">
+            <div className="flex-1 w-full">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select CSV File</label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleBulkFileChange}
+                className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-xl bg-white p-1.5 focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleParseCSV}
+              disabled={!bulkFile || bulkLoading}
+              className={`w-full sm:w-auto px-6 py-3 font-bold text-sm rounded-xl shadow transition-all shrink-0 ${
+                !bulkFile || bulkLoading
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md'
+              }`}
+            >
+              {bulkLoading ? 'Parsing...' : 'Parse & Preview'}
+            </button>
+          </div>
+
+          {bulkError && (
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-semibold text-center">
+              ❌ {bulkError}
+            </div>
+          )}
+
+          {bulkSuccess && (
+            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-semibold text-center">
+              ✅ {bulkSuccess}
+            </div>
+          )}
+
+          {/* Results Summary if upload was triggered */}
+          {uploadResults && (
+            <div className="mb-6 bg-slate-950 text-white p-5 rounded-xl border border-neutral-800 text-sm">
+              <h4 className="font-bold text-base mb-2">Upload Results Summary:</h4>
+              <p className="text-green-400 font-semibold font-sans">✓ Successfully Uploaded: {uploadResults.successCount} courses</p>
+              <p className="text-red-400 font-semibold font-sans mb-3">✗ Failed / Skipped Rows: {uploadResults.failedCount}</p>
+              
+              {uploadResults.errors && uploadResults.errors.length > 0 && (
+                <div className="max-h-40 overflow-y-auto bg-neutral-950 p-3 rounded-lg border border-neutral-900 mt-2 font-mono text-xs text-red-300 space-y-1 divide-y divide-neutral-900/50">
+                  {uploadResults.errors.map((err, idx) => (
+                    <div key={idx} className="pt-1.5 first:pt-0">
+                      Row {err.row}: {err.error}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Preview Table */}
+          {bulkCourses.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-gray-800">CSV Row Preview & Validation</h3>
+              <div className="overflow-x-auto border border-gray-200 rounded-xl max-h-[350px] overflow-y-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-gray-100 border-b border-gray-200 font-semibold text-gray-700 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3">Row</th>
+                      <th className="p-3">Title / Subject</th>
+                      <th className="p-3">Category</th>
+                      <th className="p-3">Faculty</th>
+                      <th className="p-3">Price</th>
+                      <th className="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {bulkCourses.map((c, idx) => (
+                      <tr key={idx} className={c.isValid ? 'hover:bg-slate-50/50' : 'bg-red-50/30 hover:bg-red-50/50'}>
+                        <td className="p-3 font-semibold text-gray-500">#{c.rowNum}</td>
+                        <td className="p-3 font-medium text-gray-800">
+                          <div>{c.data.title || c.data.subject}</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{c.data.course_type || 'N/A'}</div>
+                        </td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                            c.data.category?.toUpperCase() === 'CA' 
+                              ? 'bg-blue-50 text-blue-700 border border-blue-150' 
+                              : 'bg-amber-50 text-amber-700 border border-amber-150'
+                          }`}>
+                            {c.data.category || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="p-3 font-medium text-gray-600">{c.data.faculty_name || 'N/A'}</td>
+                        <td className="p-3 font-bold text-slate-800">₹{Number(c.data.selling_price || 0).toLocaleString()}</td>
+                        <td className="p-3">
+                          {c.isValid ? (
+                            <span className="text-green-700 font-bold flex items-center gap-1">✓ Valid</span>
+                          ) : (
+                            <span className="text-red-600 font-bold flex flex-col gap-0.5">
+                              <span>✗ Invalid</span>
+                              <span className="text-[9px] font-normal leading-tight text-red-500">{c.validationError}</span>
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Upload Trigger Button */}
+              <div className="flex justify-end pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleBulkUploadSubmit}
+                  disabled={bulkLoading || bulkCourses.filter(c => c.isValid).length === 0}
+                  className={`px-8 py-3 rounded-xl font-bold shadow-lg text-sm transition-all ${
+                    bulkLoading || bulkCourses.filter(c => c.isValid).length === 0
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] hover:from-[#17817a] hover:to-[#0f5752] text-white hover:scale-[1.01]'
+                  }`}
+                >
+                  {bulkLoading ? 'Uploading...' : `Upload ${bulkCourses.filter(c => c.isValid).length} Valid Courses`}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">

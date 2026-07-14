@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt, 
-         FaCheckCircle, FaUser, FaGraduationCap, FaChalkboardTeacher } from 'react-icons/fa';
+import { 
+  FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt, 
+  FaCheckCircle, FaUser, FaGraduationCap, FaChalkboardTeacher,
+  FaShoppingCart, FaPhoneAlt, FaEnvelope, FaLaptop, FaQuestionCircle,
+  FaExternalLinkAlt, FaBookOpen
+} from 'react-icons/fa';
 import { MdVideoLibrary } from 'react-icons/md';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { getCourseImageUrl } from '../utils/imageUtils';
@@ -15,20 +19,23 @@ const CourseFullDetailPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { addToCart, isInCart } = useCart();
-  const [addedMessage, setAddedMessage] = useState('');
+  
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMode, setSelectedMode] = useState('');
   const [selectedAttempt, setSelectedAttempt] = useState('');
   const [selectedPrice, setSelectedPrice] = useState({ selling: 0, cost: 0 });
+  const [addedMessage, setAddedMessage] = useState('');
+  const [activeTab, setActiveTab] = useState('info'); // 'info' or 'highlights'
+  const [relatedCourses, setRelatedCourses] = useState([]);
 
+  // Fetch course details
   useEffect(() => {
     async function fetchCourseDetails() {
       setLoading(true);
       setError('');
       try {
-        // Build the API URL with courseType as a query parameter if available
         let apiUrl = `${API_URL}/api/courses/details/${courseId}`;
         if (courseType) {
           apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
@@ -60,7 +67,6 @@ const CourseFullDetailPage = () => {
             setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
           }
         } else {
-          // Fallback to basic pricing
           setSelectedPrice({ 
             selling: data.course.sellingPrice || 0, 
             cost: data.course.costPrice || 0 
@@ -77,6 +83,30 @@ const CourseFullDetailPage = () => {
     
     fetchCourseDetails();
   }, [courseId, courseType]);
+
+  // Fetch related courses
+  useEffect(() => {
+    if (course) {
+      async function fetchRelated() {
+        try {
+          const res = await fetch(`${API_URL}/api/courses/all`);
+          const data = await res.json();
+          if (res.ok && data.courses) {
+            const filtered = data.courses.filter(c => 
+              c.category === course.category && 
+              c.subcategory === course.subcategory && 
+              c._id !== (course.id || course._id) && 
+              c.id !== (course.id || course._id)
+            );
+            setRelatedCourses(filtered.slice(0, 4));
+          }
+        } catch (err) {
+          console.log('Error fetching related courses:', err);
+        }
+      }
+      fetchRelated();
+    }
+  }, [course]);
 
   // Handle mode selection
   const handleModeChange = (mode) => {
@@ -106,7 +136,7 @@ const CourseFullDetailPage = () => {
     if (!isAuthenticated) {
       navigate('/login', {
         state: {
-          from: `/course-details/${encodeURIComponent(courseType || 'general')}/${courseId}`,
+          from: `/course/${encodeURIComponent(courseType || 'general')}/${courseId}`,
           message: 'Please log in to purchase this course'
         }
       });
@@ -151,479 +181,441 @@ const CourseFullDetailPage = () => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-xl shadow-lg">
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
+        <div className="bg-slate-950/80 border border-slate-800 p-8 rounded-2xl shadow-2xl backdrop-blur-md max-w-sm w-full text-center">
           <LoadingSpinner size="lg" />
-          <div className="text-gray-600 mt-4 text-center">Loading course details...</div>
+          <div className="text-gray-400 mt-4 font-semibold">Loading course details...</div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-gray-100 p-4 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <div className="text-red-500 text-center mb-4">
+      <div className="min-h-screen bg-slate-900 p-4 flex items-center justify-center">
+        <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center text-white">
+          <div className="text-red-500 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">Error</h2>
-          <p className="text-gray-600 text-center mb-6">{error}</p>
-          <div className="flex justify-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Go Back
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold mb-4">{error ? 'Error' : 'Course Not Found'}</h2>
+          <p className="text-gray-400 mb-6">{error || "The course you're looking for doesn't exist or has been removed."}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full bg-[#20b2aa] hover:bg-[#17817a] text-white font-bold py-3 rounded-xl transition-all shadow-lg"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
   }
 
-  if (!course) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <div className="text-blue-500 text-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">Course Not Found</h2>
-          <p className="text-gray-600 text-center mb-6">The course you're looking for doesn't exist or has been removed.</p>
-          <div className="flex justify-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Pre-calculated discount percentage
+  const discountPercent = selectedPrice.cost > selectedPrice.selling 
+    ? Math.round(((selectedPrice.cost - selectedPrice.selling) / selectedPrice.cost) * 100)
+    : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
-        >
-          <FaArrowLeft className="mr-2" /> Back
-        </button>
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-[#20b2aa]/30">
+      
+      {/* 1. Header Banner Area */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-neutral-900 border-b border-neutral-900 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors duration-200 mb-6 bg-slate-900 px-4 py-2 rounded-full border border-neutral-800"
+          >
+            <FaArrowLeft /> Back to Courses
+          </button>
+          
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="bg-[#20b2aa]/10 text-[#20b2aa] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-[#20b2aa]/20 shadow-sm uppercase">
+              {course.category} {course.subcategory}
+            </span>
+            {course.paper_id && (
+              <span className="bg-slate-800 text-neutral-300 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-neutral-750">
+                Paper {course.paper_id}
+              </span>
+            )}
+          </div>
+          
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight max-w-4xl">
+            {course.title || course.subject}
+          </h1>
+          
+          <p className="text-neutral-400 mt-2 text-sm sm:text-base max-w-3xl font-medium">
+            Master-class preparation course with top faculty and curated curriculum.
+          </p>
+        </div>
+      </div>
 
-        {/* Course Header Side-by-Side Design */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-150 p-6 md:p-8 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      {/* 2. Main content split columns */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          
+          {/* LEFT COLUMN: Media, Product Info Table, Highlights */}
+          <div className="lg:col-span-8 space-y-8">
             
-            {/* Left Column: Poster Image and Faculty info */}
-            <div className="md:col-span-5 lg:col-span-4 flex flex-col items-center">
-              <div className="w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-gray-50 flex items-center justify-center relative mb-4">
+            {/* Banner/Poster container */}
+            <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-2xl backdrop-blur-sm flex justify-center items-center">
+              <div className="w-full max-w-[500px] aspect-[4/3] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject || course.title} 
-                  className="w-full h-full object-contain p-2"
+                  className="w-full h-full object-contain p-2 group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
-                    e.target.src = '/logo.svg'; // Fallback image
+                    e.target.src = '/logo.svg'; 
                   }}
                 />
-                {course.courseType && (
-                  <span className="absolute top-3 left-3 bg-[#20b2aa] text-white px-2.5 py-0.5 rounded text-xs font-semibold shadow">
-                    {course.courseType}
-                  </span>
-                )}
               </div>
-              
-              {course.facultyName && (
-                <div className="w-full text-center md:text-left bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Faculty</div>
-                  <div className="text-gray-800 font-bold text-lg flex items-center justify-center md:justify-start gap-2">
-                    <FaUser className="text-[#20b2aa]" />
-                    {course.facultyName}
-                  </div>
-                  {course.instituteName && (
-                    <div className="text-xs text-gray-600 mt-1">
-                      Institute: <span className="font-semibold text-gray-700">{course.instituteName}</span>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
-            {/* Right Column: Title, selectors, price and checkout button */}
-            <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-between h-full">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 leading-tight mb-3">
-                  {course.subject || course.title}
-                </h1>
-                
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {course.videoLanguage && (
-                    <span className="bg-green-50 text-green-700 border border-green-150 px-3 py-1 rounded-full text-xs font-medium">
-                      Language: {course.videoLanguage}
-                    </span>
-                  )}
-                  {course.noOfLecture && (
-                    <span className="bg-blue-50 text-blue-700 border border-blue-150 px-3 py-1 rounded-full text-xs font-medium">
-                      {course.noOfLecture} Lectures
-                    </span>
-                  )}
-                  {course.timing && (
-                    <span className="bg-purple-50 text-purple-700 border border-purple-150 px-3 py-1 rounded-full text-xs font-medium">
-                      {course.timing}
-                    </span>
-                  )}
-                </div>
+            {/* TABBED BOX: Spec table & Highlights */}
+            <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
+              <div className="flex border-b border-neutral-850 bg-neutral-950/40">
+                <button
+                  onClick={() => setActiveTab('info')}
+                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
+                    activeTab === 'info' 
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-neutral-900/30' 
+                      : 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-900/10'
+                  }`}
+                >
+                  <FaBookOpen /> Product Info
+                </button>
+                <button
+                  onClick={() => setActiveTab('highlights')}
+                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
+                    activeTab === 'highlights' 
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-neutral-900/30' 
+                      : 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-900/10'
+                  }`}
+                >
+                  <FaChalkboardTeacher /> Highlights & Features
+                </button>
+              </div>
 
-                {/* selectors */}
-                {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 ? (
-                  <div className="space-y-4 mb-6">
-                    {/* Mode selector dropdown */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <label className="sm:w-36 text-sm font-semibold text-gray-700">Mode:</label>
-                      <select
-                        value={selectedMode}
-                        onChange={(e) => handleModeChange(e.target.value)}
-                        className="flex-1 max-w-md bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-800"
-                      >
-                        <option value="" disabled>Select Mode</option>
-                        {course.modeAttemptPricing.map((modeData, idx) => (
-                          <option key={idx} value={modeData.mode}>
-                            {modeData.mode}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Attempt selector dropdown */}
-                    {selectedMode && (
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <label className="sm:w-36 text-sm font-semibold text-gray-700">Exam Term / Attempts:</label>
-                        <select
-                          value={selectedAttempt}
-                          onChange={(e) => handleAttemptChange(e.target.value)}
-                          className="flex-1 max-w-md bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-800"
-                        >
-                          <option value="" disabled>Select Validity & Attempt</option>
-                          {course.modeAttemptPricing
-                            .find(m => m.mode === selectedMode)?.attempts.map((attempt, idx) => (
-                              <option key={idx} value={attempt.attempt}>
-                                {attempt.attempt}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    )}
+              <div className="p-6 sm:p-8">
+                {activeTab === 'info' ? (
+                  /* SPECIFICATIONS TABLE */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden">
+                      <thead>
+                        <tr className="bg-neutral-950 border-b border-neutral-850 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                          <th className="py-3.5 px-4 font-bold">Parameter</th>
+                          <th className="py-3.5 px-4 font-bold">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-850">
+                        <tr className="hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400 w-1/3">Applicable For</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.category} {course.subcategory} level exams</td>
+                        </tr>
+                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Lecture Duration</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.timing || 'Approx 150+ Hours'}</td>
+                        </tr>
+                        <tr className="hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">No. of Lectures</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
+                        </tr>
+                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Study Materials</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
+                        </tr>
+                        <tr className="hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Run On</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
+                        </tr>
+                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Language</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
+                        </tr>
+                        <tr className="hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Doubt Solving Medium</td>
+                          <td className="py-3.5 px-4 text-white font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
+                        </tr>
+                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Course Support</td>
+                          <td className="py-3.5 px-4 text-white font-medium flex flex-wrap gap-x-4 gap-y-1">
+                            {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-[#20b2aa]" /> {course.supportCall}</span>}
+                            {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-[#20b2aa]" /> {course.supportMail}</span>}
+                          </td>
+                        </tr>
+                        {course.validity_start_from && (
+                          <tr className="hover:bg-neutral-900/40 transition-colors">
+                            <td className="py-3.5 px-4 font-semibold text-neutral-400">Validity Commences</td>
+                            <td className="py-3.5 px-4 text-white font-medium">{course.validity_start_from}</td>
+                          </tr>
+                        )}
+                        {course.instituteName && (
+                          <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                            <td className="py-3.5 px-4 font-semibold text-neutral-400">Institute Affiliation</td>
+                            <td className="py-3.5 px-4 text-[#20b2aa] font-bold">{course.instituteName}</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-150 mb-6">
-                    Standard pricing structure applies for this course.
+                  /* HIGHLIGHTS & DESCRIPTION */
+                  <div className="space-y-6">
+                    {course.description && (
+                      <div className="prose prose-invert prose-teal max-w-none">
+                        <h4 className="text-lg font-bold text-white mb-2">Detailed Overview</h4>
+                        <div className="text-neutral-300 space-y-4 text-sm sm:text-base leading-relaxed">
+                          {course.description.split('\n').map((paragraph, index) => (
+                            <p key={index}>{paragraph}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="border-t border-neutral-850 pt-6">
+                      <h4 className="text-lg font-bold text-white mb-4">Key Course Benefits</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-neutral-300 text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <FaCheckCircle className="text-green-500 shrink-0" />
+                          <span>100% syllabus coverage based on ICAI/ICMAI</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <FaCheckCircle className="text-green-500 shrink-0" />
+                          <span>Mock tests & exam preparation tips included</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <FaCheckCircle className="text-green-500 shrink-0" />
+                          <span>Interactive doubts portal access</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <FaCheckCircle className="text-green-500 shrink-0" />
+                          <span>High-speed servers for lag-free video stream</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+          
+          {/* RIGHT COLUMN: Selection actions, pricing, faculty card */}
+          <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+            
+            {/* ACTION CARD */}
+            <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#20b2aa]/10 rounded-full blur-2xl"></div>
+              
+              <div className="flex justify-between items-center mb-6">
+                <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Purchase Options</span>
+                <span className="bg-[#20b2aa] text-black font-extrabold text-[10px] px-2 py-0.5 rounded shadow uppercase tracking-wide">
+                  Best Price
+                </span>
+              </div>
+              
+              {/* Selectors */}
+              {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 ? (
+                <div className="space-y-4 mb-6">
+                  {/* Mode Selector */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Select Mode</label>
+                    <select
+                      value={selectedMode}
+                      onChange={(e) => handleModeChange(e.target.value)}
+                      className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                    >
+                      <option value="" disabled>Choose Learning Mode</option>
+                      {course.modeAttemptPricing.map((modeData, idx) => (
+                        <option key={idx} value={modeData.mode}>
+                          {modeData.mode}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Price display and proceed to pay */}
-              <div className="mt-4 border-t border-gray-100 pt-6">
-                <div className="flex flex-wrap items-baseline gap-3 mb-6">
+                  {/* Attempt/Validity Selector */}
+                  {selectedMode && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Attempt & Validity</label>
+                      <select
+                        value={selectedAttempt}
+                        onChange={(e) => handleAttemptChange(e.target.value)}
+                        className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                      >
+                        <option value="" disabled>Choose validity duration</option>
+                        {course.modeAttemptPricing
+                          .find(m => m.mode === selectedMode)?.attempts.map((attempt, idx) => (
+                            <option key={idx} value={attempt.attempt}>
+                              {attempt.attempt}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-neutral-500 bg-neutral-950 p-4 rounded-2xl border border-neutral-850 mb-6">
+                  Standard course package pricing applies.
+                </div>
+              )}
+
+              {/* Pricing breakdown */}
+              <div className="border-t border-neutral-850 pt-6 mb-6">
+                <div className="flex flex-wrap items-baseline gap-2 mb-2">
                   {selectedPrice.selling > 0 ? (
                     <>
-                      <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa]">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
                         ₹{selectedPrice.selling.toLocaleString()}
                       </span>
                       {selectedPrice.cost > selectedPrice.selling && (
                         <>
-                          <span className="text-lg text-gray-400 line-through">
+                          <span className="text-base text-neutral-500 line-through">
                             ₹{selectedPrice.cost.toLocaleString()}
                           </span>
-                          <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-md font-bold">
-                            {Math.round(((selectedPrice.cost - selectedPrice.selling) / selectedPrice.cost) * 100)}% OFF
+                          <span className="bg-[#20b2aa]/15 text-[#20b2aa] text-xs px-2.5 py-0.5 rounded font-bold border border-[#20b2aa]/20">
+                            {discountPercent}% OFF
                           </span>
                         </>
                       )}
                     </>
                   ) : (
-                    <span className="text-2xl sm:text-3xl font-extrabold text-gray-600">
-                      Contact for Price
+                    <span className="text-2xl font-extrabold text-neutral-400">
+                      Contact for pricing
                     </span>
                   )}
                 </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 max-w-md">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
-                    className={`flex-1 font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base border-2 ${
-                      (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                        : isInCart(course.id || course._id, selectedMode, selectedAttempt)
-                        ? 'bg-teal-50 text-[#20b2aa] border-[#20b2aa] hover:bg-teal-100'
-                        : 'bg-white text-[#20b2aa] border-[#20b2aa] hover:bg-teal-50'
-                    }`}
-                  >
-                    {isInCart(course.id || course._id, selectedMode, selectedAttempt) ? 'In Cart ✓' : 'Add to Cart'}
-                  </button>
-
-                  <button
-                    onClick={handleProceedToPay}
-                    disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
-                    className={`flex-[1.5] font-bold py-3.5 px-6 rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-base ${
-                      (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-[#20b2aa] to-[#17817a] text-white hover:from-[#17817a] hover:to-[#126862]'
-                    }`}
-                  >
-                    {isAuthenticated ? (
-                      <>
-                        Buy Now
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </>
-                    ) : (
-                      'Log in to Buy'
-                    )}
-                  </button>
-                </div>
-
-                {addedMessage && (
-                  <div className={`mt-4 max-w-md text-sm font-semibold p-2.5 rounded-lg text-center transition-all ${
-                    addedMessage.includes('successfully') 
-                      ? 'bg-teal-50 text-teal-800 border border-teal-200 animate-pulse' 
-                      : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
-                  }`}>
-                    {addedMessage}
-                  </div>
-                )}
+                <p className="text-[10px] text-neutral-500 font-medium">Inclusive of all local taxes and GST.</p>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Course Details Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2">
-            {/* Course Description */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <FaGraduationCap className="mr-3 text-blue-500" />
-                Course Description
-              </h2>
-              
-              {course.description ? (
-                <div className="prose prose-lg max-w-none text-gray-700">
-                  {course.description.split('\n').map((paragraph, index) => (
-                    <p key={index} className="mb-4 last:mb-0">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-blue-700">
-                  This is a comprehensive course covering all aspects of {course.subject || course.title}. 
-                  For detailed curriculum information, please contact our support team.
-                </div>
-              )}
-            </div>
-            
-            {/* What You'll Learn */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <FaCheckCircle className="mr-3 text-green-500" />
-                What You'll Learn
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  `Complete ${course.subject || course.title} curriculum coverage`,
-                  course.books ? `Study materials: ${course.books}` : 'Comprehensive study materials',
-                  course.doubtSolving || 'Doubt solving sessions',
-                  'Practice questions and solutions',
-                  'Real-world problem solving',
-                  'Exam preparation strategies'
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Course Features */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                <FaChalkboardTeacher className="mr-3 text-purple-500" />
-                Course Features
-              </h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-start">
-                    <MdVideoLibrary className="text-blue-600 text-xl mt-1 mr-3 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-1">Lectures</h4>
-                      <p className="text-gray-700">{course.noOfLecture || 'Comprehensive lectures'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-start">
-                    <FaRegClock className="text-blue-600 text-xl mt-1 mr-3 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-1">Duration</h4>
-                      <p className="text-gray-700">{course.timing || 'Self-paced learning'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-start">
-                    <FaBook className="text-blue-600 text-xl mt-1 mr-3 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-1">Study Materials</h4>
-                      <p className="text-gray-700">{course.books || 'Comprehensive materials'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-start">
-                    <FaLanguage className="text-blue-600 text-xl mt-1 mr-3 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-800 mb-1">Language</h4>
-                      <p className="text-gray-700">{course.videoLanguage || 'Multiple languages available'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Right Column - Course Info Card */}
-          <div>
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Course Information
-              </h3>
-              
-              <div className="space-y-4">
-                {course.videoRunOn && (
-                  <div className="flex items-start border-b border-gray-100 pb-3">
-                    <div className="bg-blue-100 p-2 rounded-md mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Video Platform</h4>
-                      <p className="text-sm text-gray-600">{course.videoRunOn}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {course.doubtSolving && (
-                  <div className="flex items-start border-b border-gray-100 pb-3">
-                    <div className="bg-green-100 p-2 rounded-md mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Doubt Solving</h4>
-                      <p className="text-sm text-gray-600">{course.doubtSolving}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {(course.supportMail || course.supportCall) && (
-                  <div className="flex items-start border-b border-gray-100 pb-3">
-                    <div className="bg-purple-100 p-2 rounded-md mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Support</h4>
-                      {course.supportMail && <p className="text-sm text-gray-600">Email: {course.supportMail}</p>}
-                      {course.supportCall && <p className="text-sm text-gray-600">Phone: {course.supportCall}</p>}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex items-start border-b border-gray-100 pb-3">
-                  <div className="bg-amber-100 p-2 rounded-md mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Last Updated</h4>
-                    <p className="text-sm text-gray-600">
-                      {new Date().toLocaleDateString('en-IN', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <div className="mb-4 p-3 bg-teal-50 rounded-lg border border-teal-200">
-                  <div className="text-sm text-gray-600 mb-1">Selected Package:</div>
-                  <div className="font-semibold text-gray-800">
-                    {selectedMode || 'No mode selected'}
-                  </div>
-                  {selectedAttempt && (
-                    <div className="text-sm text-gray-600 mt-1">
-                      {selectedAttempt}
-                    </div>
-                  )}
-                  <div className="text-lg font-bold text-teal-600 mt-2">
-                    ₹{selectedPrice.selling?.toLocaleString()}
-                    {selectedPrice.cost > selectedPrice.selling && (
-                      <span className="text-sm text-gray-400 line-through ml-2">
-                        ₹{selectedPrice.cost?.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
+              {/* Buttons */}
+              <div className="space-y-3">
                 <button
                   onClick={handleProceedToPay}
                   disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
-                  className={`w-full font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.01] flex items-center justify-center ${
+                  className={`w-full font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center text-sm transition-all duration-300 ${
                     (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:from-teal-600 hover:to-blue-700'
+                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-850'
+                      : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] hover:from-[#17817a] hover:to-[#0f5752] text-white hover:scale-[1.01] hover:shadow-[#20b2aa]/10'
                   }`}
                 >
-                  {(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
-                    ? 'Select Options Above'
-                    : 'Enroll Now'
-                  }
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
+                  {isAuthenticated ? (
+                    <span className="flex items-center justify-center gap-2">
+                      Buy Course Now <FaExternalLinkAlt className="text-xs" />
+                    </span>
+                  ) : (
+                    'Log in to Enroll'
+                  )}
+                </button>
+
+                <button
+                  onClick={handleAddToCart}
+                  disabled={(!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0}
+                  className={`w-full font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center text-sm border-2 transition-all duration-300 ${
+                    (!selectedMode || !selectedAttempt) && course.modeAttemptPricing?.length > 0
+                      ? 'bg-neutral-900/30 text-neutral-600 border-neutral-850 cursor-not-allowed'
+                      : isInCart(course.id || course._id, selectedMode, selectedAttempt)
+                      ? 'bg-[#20b2aa]/10 text-[#20b2aa] border-[#20b2aa]'
+                      : 'bg-transparent text-white border-neutral-750 hover:bg-neutral-800 hover:border-neutral-700'
+                  }`}
+                >
+                  <FaShoppingCart className="mr-2 text-xs" />
+                  {isInCart(course.id || course._id, selectedMode, selectedAttempt) ? 'Item in Cart ✓' : 'Add to Cart'}
                 </button>
               </div>
+
+              {addedMessage && (
+                <div className={`mt-4 text-xs font-semibold p-3 rounded-xl text-center border transition-all duration-300 animate-fade-in ${
+                  addedMessage.includes('successfully') 
+                    ? 'bg-teal-950/20 text-[#20b2aa] border-teal-900/50' 
+                    : 'bg-amber-950/20 text-amber-400 border-amber-900/50'
+                }`}>
+                  {addedMessage}
+                </div>
+              )}
+            </div>
+
+            {/* FACULTY SHORT CARD */}
+            {course.facultyName && (
+              <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
+                <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4">Course Instructor</h4>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-tr from-[#20b2aa] to-indigo-500 rounded-full flex items-center justify-center text-xl font-extrabold text-white uppercase shrink-0 border border-neutral-700 shadow-md">
+                    {course.facultyName[0]}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-white text-base leading-snug">{course.facultyName}</h5>
+                    <p className="text-xs text-[#20b2aa] font-semibold mt-0.5">Subject Expert</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* CALLOUT HELPLINE CARD */}
+            <div className="bg-[#20b2aa]/5 border border-[#20b2aa]/15 rounded-3xl p-6 shadow-xl backdrop-blur-sm text-center">
+              <p className="text-xs text-neutral-300 font-bold mb-3 flex items-center justify-center gap-1.5">
+                <FaQuestionCircle className="text-[#20b2aa]" /> Need Guidance or Offers?
+              </p>
+              <h4 className="text-lg font-extrabold text-white mb-2">+91 9693320108</h4>
+              <p className="text-[11px] text-neutral-400">Call or WhatsApp our counselors directly for assistance.</p>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* 3. Related Courses Section */}
+        {relatedCourses.length > 0 && (
+          <div className="mt-16 pt-12 border-t border-neutral-900">
+            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-8">
+              Similar Related Courses
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+              {relatedCourses.map((rCourse) => (
+                <div 
+                  key={rCourse.id || rCourse._id} 
+                  onClick={() => navigate(`/course/${encodeURIComponent(rCourse.courseType || 'course')}/${rCourse.id || rCourse._id}`)}
+                  className="group bg-neutral-900 border border-neutral-850 hover:border-neutral-750 p-4 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+                >
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl bg-slate-950/80 border border-neutral-850 p-2 flex items-center justify-center relative mb-4">
+                      <img 
+                        src={getPosterUrl(rCourse)} 
+                        alt={rCourse.title} 
+                        className="w-full h-full object-contain"
+                        onError={(e) => { e.target.src = '/logo.svg'; }}
+                      />
+                      {rCourse.category && (
+                        <span className="absolute top-2.5 left-2.5 bg-[#20b2aa]/10 text-[#20b2aa] px-2 py-0.5 rounded text-[10px] font-bold border border-[#20b2aa]/25 uppercase">
+                          {rCourse.category}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-white text-sm line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors mb-2">
+                      {rCourse.title || rCourse.subject}
+                    </h4>
+                    {rCourse.facultyName && (
+                      <p className="text-neutral-400 text-xs flex items-center gap-1 font-medium">
+                        <FaUser className="text-[10px] text-[#20b2aa]" /> {rCourse.facultyName}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-neutral-850 flex items-center justify-between">
+                    <span className="text-[#20b2aa] font-extrabold text-sm sm:text-base">
+                      ₹{(rCourse.sellingPrice || 0).toLocaleString()}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider group-hover:text-white transition-colors flex items-center gap-1">
+                      View details →
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
+
     </div>
   );
 };

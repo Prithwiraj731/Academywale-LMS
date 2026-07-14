@@ -12,8 +12,7 @@ export default function Admin() {
 
   // Redirect if already authenticated as admin
   useEffect(() => {
-    if ((isAuthenticated && user?.role === 'admin') || localStorage.getItem('isAdmin') === 'true') {
-      localStorage.setItem('isAdmin', 'true');
+    if (isAuthenticated && user?.role === 'admin') {
       navigate('/admin-dashboard');
     }
   }, [isAuthenticated, user, navigate]);
@@ -28,9 +27,6 @@ export default function Admin() {
       
       if (result.success) {
         if (result.user.role === 'admin') {
-          // Set admin status in localStorage
-          localStorage.setItem('isAdmin', 'true');
-
           // Navigate to admin dashboard
           navigate('/admin-dashboard');
         } else {
