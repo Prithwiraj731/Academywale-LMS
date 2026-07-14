@@ -20,7 +20,7 @@ import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFacultie
 import InstitutesPage from './InstitutesPage';
 import sjcCert from '../assets/sjcCert.jpg';
 import caLogo from '../assets/CA_LOGO.jpeg';
-import cmaLogo from '../assets/CMA_LOGO.jpeg';
+import cmaLogo from '../assets/CMA_LOGO.png';
 
 // import banner3 from '../assets/banner3.png';
 
