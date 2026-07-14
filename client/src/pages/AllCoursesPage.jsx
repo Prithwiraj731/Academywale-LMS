@@ -62,11 +62,11 @@ export default function AllCoursesPage() {
         <BackButton />
         
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">All Available Courses</h1>
-          <p className="text-lg text-gray-600">Browse through our comprehensive course catalog</p>
-          <div className="mt-4">
-            <span className="text-2xl font-semibold text-blue-600">{courses.length} Courses Available</span>
+        <div className="text-center mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Available Courses</h1>
+          <p className="hidden sm:block text-sm sm:text-lg text-gray-600 mt-1 sm:mt-2">Browse through our comprehensive course catalog</p>
+          <div className="hidden sm:block mt-2">
+            <span className="text-sm sm:text-2xl font-semibold text-blue-600">{courses.length} Courses Available</span>
           </div>
         </div>
 
