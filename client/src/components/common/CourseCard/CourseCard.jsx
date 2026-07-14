@@ -104,7 +104,7 @@ const CourseCard = ({
         {/* Pricing Section */}
         <div className="mb-2 sm:mb-3">
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <span className="text-sm xs:text-base sm:text-lg font-bold text-teal-600">
+            <span className="text-sm xs:text-base sm:text-lg font-bold text-black">
               ₹{sellingPrice?.toLocaleString() || '0'}
             </span>
             {costPrice > sellingPrice && (
