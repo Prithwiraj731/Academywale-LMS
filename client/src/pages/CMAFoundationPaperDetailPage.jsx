@@ -168,18 +168,6 @@ const CMAFoundationPaperDetailPage = () => {
                   foundCourses = filteredCourses;
                 } else {
                   console.log(`📋 No CMA Foundation Paper ${paperId} courses found in ${data.courses.length} total courses`);
-                  
-                  // Debug: show what CMA Foundation courses exist
-                  const allCMAFoundation = data.courses.filter(course => {
-                    const isCMA = course.category && course.category.toUpperCase().includes('CMA');
-                    const isFoundation = course.subcategory && course.subcategory.toLowerCase().includes('foundation');
-                    return isCMA && isFoundation;
-                  });
-                  
-                  console.log(`🔍 Available CMA Foundation courses:`);
-                  allCMAFoundation.forEach(course => {
-                    console.log(`   - ${course.subject} (Paper ${course.paperId})`);
-                  });
                 }
               }
             }
@@ -284,7 +272,7 @@ const CMAFoundationPaperDetailPage = () => {
         ) : (
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-6">Available Courses</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
               {courses.map((course, index) => (
                 <CourseCard 
                   key={course._id || index} 

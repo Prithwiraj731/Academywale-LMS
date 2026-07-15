@@ -91,7 +91,7 @@ export default function AllCoursesPage() {
               <span className="bg-teal-600 w-2.5 h-6 rounded-full"></span>
               CA Classes
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
               {caCourses.map((course, index) => (
                 <CourseCard key={course._id || index} course={course} />
               ))}
@@ -106,7 +106,7 @@ export default function AllCoursesPage() {
               <span className="bg-purple-600 w-2.5 h-6 rounded-full"></span>
               CMA Classes
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
               {cmaCourses.map((course, index) => (
                 <CourseCard key={course._id || index} course={course} />
               ))}
@@ -121,7 +121,7 @@ export default function AllCoursesPage() {
               <span className="bg-blue-600 w-2.5 h-6 rounded-full"></span>
               Other Classes
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
               {otherCourses.map((course, index) => (
                 <CourseCard key={course._id || index} course={course} />
               ))}

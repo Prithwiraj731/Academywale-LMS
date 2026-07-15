@@ -640,7 +640,7 @@ const CourseFullDetailPage = () => {
             <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-8">
               Similar Related Courses
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 w-full">
               {relatedCourses.map((rCourse) => (
                 <CourseCard key={rCourse.id || rCourse._id} course={rCourse} />
               ))}

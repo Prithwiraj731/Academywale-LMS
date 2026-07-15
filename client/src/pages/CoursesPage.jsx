@@ -79,14 +79,14 @@ export default function CoursesPage() {
             No courses found for this paper.
           </div>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
           {filteredCourses.map((course, idx) => (
             <div key={idx} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102">
               <div className="relative">
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject} 
-                  className="w-full h-52 object-cover"
+                  className="w-full aspect-[4/3] object-cover"
                   onError={(e) => {
                     e.target.src = '/logo.svg';
                   }}
@@ -99,7 +99,7 @@ export default function CoursesPage() {
               </div>
               
               <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                   {course.subject}
                 </h3>
                 

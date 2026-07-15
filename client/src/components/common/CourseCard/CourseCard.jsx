@@ -80,7 +80,7 @@ const CourseCard = ({
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
       {/* Image Section */}
-      <div className="relative w-full aspect-square bg-white flex items-center justify-center border-b border-gray-100 overflow-hidden">
+      <div className="relative w-full aspect-[4/3] bg-white flex items-center justify-center border-b border-gray-100 overflow-hidden">
         <img
           src={getPosterUrl(course)}
           alt={course.subject || 'Course'}
@@ -94,7 +94,7 @@ const CourseCard = ({
       {/* Content Section */}
       <div className="p-2 xs:p-3 sm:p-4 flex flex-col flex-grow">
         {/* Course Title */}
-        <h3 className="text-xs xs:text-sm sm:text-base font-bold text-gray-900 mb-1 sm:mb-2 line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+        <h3 className="text-xs xs:text-sm sm:text-sm md:text-base font-bold text-gray-900 mb-1 sm:mb-2 line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
           {course.subject || course.title}
         </h3>
 
@@ -104,7 +104,7 @@ const CourseCard = ({
         {/* Pricing Section */}
         <div className="mb-2 sm:mb-3">
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <span className="text-sm xs:text-base sm:text-lg font-bold text-black">
+            <span className="text-sm xs:text-base sm:text-base md:text-lg font-bold text-black">
               ₹{sellingPrice?.toLocaleString() || '0'}
             </span>
             {costPrice > sellingPrice && (
