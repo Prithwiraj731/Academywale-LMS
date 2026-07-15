@@ -43,6 +43,7 @@ import CMAFoundationPaperDetailPage from './pages/CMAFoundationPaperDetailPage';
 import CMAInterPaperDetailPage from './pages/CMAInterPaperDetailPage';
 import CMAFinalPaperDetailPage from './pages/CMAFinalPaperDetailPage';
 import AllCoursesPage from './pages/AllCoursesPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const App = () => {
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
@@ -93,6 +94,9 @@ const App = () => {
 
         {/* This is the route for the Cloudinary example you provided */}
         <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
+
+        {/* Catch-all Route for 404 Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* Routes WITHOUT global Header/Footer (admin/auth - own full-screen layouts) */}
