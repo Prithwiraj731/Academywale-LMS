@@ -19,8 +19,8 @@ router.post('/course-interest', async (req, res) => {
       });
     }
 
-    // Send email notification to support with beautiful draft
-    await sendAdminNotificationEmail({
+    // Send email notification to support with beautiful draft in the background
+    sendAdminNotificationEmail({
       type: 'interest',
       userDetails,
       courseDetails: {
@@ -29,11 +29,13 @@ router.post('/course-interest', async (req, res) => {
         validity: selectedValidity
       },
       amount: price
+    }).catch(error => {
+      console.error('Background course interest email notification failed:', error);
     });
 
     res.status(200).json({ 
       success: true, 
-      message: 'Notification sent successfully' 
+      message: 'Notification initiated successfully' 
     });
     
   } catch (error) {

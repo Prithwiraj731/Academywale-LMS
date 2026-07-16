@@ -447,3 +447,46 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+
+// @desc    Update current user's name
+// @route   PUT /api/auth/update-name
+// @access  Private
+exports.updateName = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || name.trim() === '') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Name is required'
+      });
+    }
+
+    const { data: updatedUser, error } = await supabaseAdmin
+      .from('users')
+      .update({ name: name.trim() })
+      .eq('id', req.user.id)
+      .select('id, name, email, mobile, role, is_active, created_at, last_login_at')
+      .single();
+
+    if (error || !updatedUser) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Failed to update name'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Name updated successfully',
+      data: {
+        user: updatedUser
+      }
+    });
+  } catch (error) {
+    console.error('❌ Update name error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error updating user name'
+    });
+  }
+};

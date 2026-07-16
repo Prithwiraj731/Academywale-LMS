@@ -2,6 +2,45 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit, FaCheckCircle, FaTimes, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { API_URL } from '../../api';
 
+const INDIAN_STATES = [
+  "Andaman and Nicobar Islands",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chandigarh",
+  "Chhattisgarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu and Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Ladakh",
+  "Lakshadweep",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Puducherry",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal"
+];
+
 export default function CheckoutModal({ 
   user, 
   onClose, 
@@ -19,6 +58,11 @@ export default function CheckoutModal({
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   
+  // Name update states
+  const [initialName, setInitialName] = useState('');
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [nameUpdatedSuccess, setNameUpdatedSuccess] = useState(false);
+
   // Form states for adding/editing address
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
@@ -40,6 +84,7 @@ export default function CheckoutModal({
         email: user.email || '',
         phone: user.mobile || ''
       });
+      setInitialName(user.name || '');
       
       // Load saved addresses from localStorage
       const userAddressesKey = `academywale_addresses_${user.id || user._id}`;
@@ -70,6 +115,39 @@ export default function CheckoutModal({
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPersonalDetails(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateName = async () => {
+    if (!personalDetails.fullName.trim()) return;
+    setIsUpdatingName(true);
+    setNameUpdatedSuccess(false);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/update-name`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ name: personalDetails.fullName.trim() })
+      });
+      if (response.ok) {
+        setInitialName(personalDetails.fullName.trim());
+        setNameUpdatedSuccess(true);
+        // Force update of the user name on the window object or auth context if stored globally
+        if (user) {
+          user.name = personalDetails.fullName.trim();
+        }
+        setTimeout(() => setNameUpdatedSuccess(false), 3000);
+      } else {
+        const errData = await response.json();
+        alert(errData.message || 'Failed to update name');
+      }
+    } catch (err) {
+      console.error('Error updating name:', err);
+      alert('Error updating profile name');
+    } finally {
+      setIsUpdatingName(false);
+    }
   };
 
   const handleAddressFormChange = (e) => {
@@ -147,41 +225,34 @@ export default function CheckoutModal({
     setIsSubmitting(true);
     setError('');
 
-    // Pre-payment API notification
-    try {
-      const courseName = courseInfo?.title || courseInfo?.subject || itemsSummary.join(', ') || 'LMS Courses';
-      
-      const payload = {
-        courseName,
-        courseId: courseInfo?.id || 'cart',
-        userDetails: {
-          fullName: personalDetails.fullName,
-          email: personalDetails.email,
-          phone: personalDetails.phone,
-          address: selectedAddress
-        },
-        selectedMode: courseInfo?.selectedMode || 'Cart checkout',
-        selectedValidity: courseInfo?.selectedValidity || 'Cart checkout',
-        price: totalAmount
-      };
+    // Pre-payment API notification (asynchronous background call)
+    const courseName = courseInfo?.title || courseInfo?.subject || itemsSummary.join(', ') || 'LMS Courses';
+    
+    const payload = {
+      courseName,
+      courseId: courseInfo?.id || 'cart',
+      userDetails: {
+        fullName: personalDetails.fullName,
+        email: personalDetails.email,
+        phone: personalDetails.phone,
+        address: selectedAddress
+      },
+      selectedMode: courseInfo?.selectedMode || 'Cart checkout',
+      selectedValidity: courseInfo?.selectedValidity || 'Cart checkout',
+      price: totalAmount
+    };
 
-      await fetch(`${API_URL}/api/notify/course-interest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+    fetch(`${API_URL}/api/notify/course-interest`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }).catch(err => console.error('Failed to notify course interest:', err));
 
-      // Proceed to parent callback
-      onProceed(personalDetails, selectedAddress);
-    } catch (err) {
-      console.error('Failed to notify course interest:', err);
-      // Even if email notification fails, we still allow proceeding so user isn't blocked
-      onProceed(personalDetails, selectedAddress);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Redirect to payment immediately
+    onProceed(personalDetails, selectedAddress);
+    setIsSubmitting(false);
   };
 
   return (
@@ -220,14 +291,29 @@ export default function CheckoutModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Full Name</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={personalDetails.fullName}
-                  onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={personalDetails.fullName}
+                    onChange={handleInputChange}
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2 pr-20 pl-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
+                    required
+                  />
+                  {personalDetails.fullName !== initialName && personalDetails.fullName.trim() !== '' && (
+                    <button
+                      type="button"
+                      onClick={handleUpdateName}
+                      disabled={isUpdatingName}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#20b2aa] hover:bg-[#126862] text-white text-xs font-bold py-1 px-2.5 rounded transition-all disabled:opacity-50"
+                    >
+                      {isUpdatingName ? 'Saving...' : 'Update'}
+                    </button>
+                  )}
+                </div>
+                {nameUpdatedSuccess && (
+                  <p className="text-xs text-green-600 mt-1 font-medium">✓ Profile name updated successfully!</p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Email</label>
@@ -311,15 +397,18 @@ export default function CheckoutModal({
                   </div>
                   <div className="col-span-1">
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">State</label>
-                    <input
-                      type="text"
+                    <select
                       name="state"
                       value={addressForm.state}
                       onChange={handleAddressFormChange}
-                      placeholder="State"
-                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa]"
+                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa] bg-white"
                       required
-                    />
+                    >
+                      <option value="">Select State</option>
+                      {INDIAN_STATES.map((st) => (
+                        <option key={st} value={st}>{st}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="col-span-1">
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Pincode</label>

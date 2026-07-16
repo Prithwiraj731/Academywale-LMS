@@ -19,5 +19,6 @@ router.post('/resend-otp', authController.resendOTP);
 // Protected routes
 router.post('/logout', protect, authController.logout);
 router.get('/me', protect, authController.getMe);
+router.put('/update-name', protect, authController.updateName);
 
 module.exports = router; 
