@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
+import CheckoutModal from '../components/common/CheckoutModal';
 
 const CourseDetailPage = () => {
   const { courseId, courseType } = useParams();
@@ -430,47 +431,27 @@ const CourseDetailPage = () => {
     }));
   }, []);
 
-  // Handle payment button click
-  const handleProceedToPayment = useCallback(() => {
-    // Validate user details
-    if (!userDetails.fullName || !userDetails.email || !userDetails.phone) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
-    // Ensure we have course data
-    if (!course) {
-      alert('Course information is missing. Please try again.');
-      setShowCheckoutModal(false);
-      return;
-    }
-    
-    // Send user details to backend and navigate to payment
-    saveUserDetails()
-      .then(success => {
-        if (success) {
-          // Navigate to payment page with course info
-          navigate(courseType ? 
-            `/payment/${courseType}/${courseId}` : 
-            `/payment/${courseId}`, 
-          { 
-            state: { 
-              selectedMode,
-              selectedValidity,
-              price: price.final,
-              userDetails,
-              courseName: course.title || course.subject
-            }
-          });
-        } else {
-          alert('There was a problem saving your details. Please try again.');
-        }
-      })
-      .catch(error => {
-        console.error('Error in payment process:', error);
-        alert('Unable to process your request at this time. Please try again later.');
-      });
-  }, [userDetails, course, courseType, courseId, selectedMode, selectedValidity, price.final, navigate]);
+  // Handle payment button click from the CheckoutModal
+  const handleCheckoutProceed = useCallback((details, address) => {
+    setShowCheckoutModal(false);
+    navigate(courseType ? 
+      `/payment/${courseType}/${courseId}` : 
+      `/payment/${courseId}`, 
+    { 
+      state: { 
+        selectedMode,
+        selectedValidity,
+        price: price.final,
+        userDetails: {
+          fullName: details.fullName,
+          email: details.email,
+          phone: details.phone,
+          address
+        },
+        courseName: course.title || course.subject
+      }
+    });
+  }, [course, courseId, courseType, selectedMode, selectedValidity, price.final, navigate]);
   
   // Save user details to backend
   const saveUserDetails = useCallback(async () => {
@@ -1048,106 +1029,19 @@ const CourseDetailPage = () => {
 
       {/* Checkout Modal - Enhanced UI */}
       {showCheckoutModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-3 md:p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl p-5 md:p-7 max-w-sm md:max-w-md w-full mx-3 animate-fadeIn">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Complete Your Profile</h2>
-              <button 
-                onClick={() => setShowCheckoutModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-5 text-sm text-blue-700">
-              Please verify your details before proceeding to payment
-            </div>
-            
-            {/* Course Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-5">
-              <div className="flex items-start mb-3">
-                <div className="bg-teal-100 p-2 rounded-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h4 className="font-medium text-gray-900">{course.subject || course.title}</h4>
-                  <div className="text-xs text-gray-500 mt-1">
-                    <span className="font-medium">{selectedMode}</span> • <span>{selectedValidity}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-xs text-gray-500">Total Price</div>
-                <div className="font-bold text-gray-900">₹{price.final}</div>
-              </div>
-            </div>
-            
-            <form>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={userDetails.fullName}
-                  onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
-                  required
-                />
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={userDetails.email}
-                  onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
-                  required
-                />
-              </div>
-              
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={userDetails.phone}
-                  onChange={handleUserDetailsChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base"
-                  required
-                  readOnly={!!userDetails.phone} // Make it readonly if already populated
-                />
-                <p className="mt-1 text-xs text-gray-500">You can only update your name and email. Create a new account if you want to update your phone number.</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCheckoutModal(false)}
-                  className="bg-gray-100 text-gray-800 font-medium py-3 rounded-md hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleProceedToPayment}
-                  className="bg-gradient-to-r from-teal-500 to-blue-500 text-white font-medium py-3 rounded-md hover:from-teal-600 hover:to-blue-600 transition-all flex items-center justify-center"
-                >
-                  <span>Proceed to Payment</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CheckoutModal
+          user={user}
+          onClose={() => setShowCheckoutModal(false)}
+          onProceed={handleCheckoutProceed}
+          totalAmount={price.final}
+          courseInfo={{
+            id: courseId,
+            title: course.title,
+            subject: course.subject,
+            selectedMode,
+            selectedValidity
+          }}
+        />
       )}
     </div>
   );

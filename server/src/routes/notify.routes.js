@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendEmail } = require('../utils/emailService');
+const { sendAdminNotificationEmail } = require('../utils/email.utils');
 
 /**
  * Send course interest notification email
@@ -19,28 +19,16 @@ router.post('/course-interest', async (req, res) => {
       });
     }
 
-    // Format email content
-    const emailContent = `
-      New Course Interest:
-      
-      Course: ${courseName} (ID: ${courseId})
-      Mode: ${selectedMode || 'Not specified'}
-      Validity: ${selectedValidity || 'Not specified'}
-      Price: ₹${price || 'Not specified'}
-      
-      User Details:
-      Name: ${userDetails.fullName || 'Not provided'}
-      Email: ${userDetails.email || 'Not provided'}
-      Phone: ${userDetails.phone || 'Not provided'}
-      
-      This user has shown interest in purchasing the course and is proceeding to payment.
-    `;
-
-    // Send email notification to support
-    await sendEmail({
-      to: 'support@academywale.com',
-      subject: 'New Course Interest - AcademyWale',
-      text: emailContent
+    // Send email notification to support with beautiful draft
+    await sendAdminNotificationEmail({
+      type: 'interest',
+      userDetails,
+      courseDetails: {
+        courseName,
+        mode: selectedMode,
+        validity: selectedValidity
+      },
+      amount: price
     });
 
     res.status(200).json({ 
@@ -64,21 +52,24 @@ router.post('/course-interest', async (req, res) => {
  */
 router.post('/payment', async (req, res) => {
   try {
-    const { to, subject, text } = req.body;
+    const { userDetails, courseDetails, cartItems, transactionId, amount } = req.body;
     
     // Input validation
-    if (!to || !subject || !text) {
+    if (!userDetails || !amount || !transactionId) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Missing required fields: to, subject, text' 
+        message: 'Missing required fields: userDetails, transactionId, amount' 
       });
     }
 
-    // Send email notification
-    await sendEmail({
-      to,
-      subject,
-      text
+    // Send payment email notification to support with beautiful draft
+    await sendAdminNotificationEmail({
+      type: 'purchase',
+      userDetails,
+      courseDetails,
+      cartItems,
+      transactionId,
+      amount
     });
 
     res.status(200).json({ 

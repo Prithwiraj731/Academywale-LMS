@@ -1,5 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase.config');
-const { sendPurchaseInvoiceEmail } = require('../utils/email.utils');
+const { sendPurchaseInvoiceEmail, sendAdminNotificationEmail } = require('../utils/email.utils');
 
 // Generate unique transaction ID
 const generateTransactionId = () => {
@@ -381,28 +381,23 @@ exports.upiPurchase = async (req, res) => {
 
     // Send notification email to admin
     try {
-      const emailText = `
-        New UPI payment received:
-        Course: ${course.title || course.subject}
-        User: ${user.name || userDetails?.name} (${user.email || userDetails?.email})
-        Phone: ${userDetails?.phone || ''}
-        Amount: ₹${amount}
-        Transaction ID: ${transactionId}
-        Mode: ${courseDetails?.mode || ''}
-        Validity: ${courseDetails?.validity || ''}
-        Exam Term: ${courseDetails?.attempt || ''}
-        Status: Pending verification
-      `;
-      
-      await sendPurchaseInvoiceEmail(
-        'support@academywale.com',
-        'Admin',
-        { subject: 'New UPI Purchase - Verification Needed' },
+      await sendAdminNotificationEmail({
+        type: 'purchase',
+        userDetails: {
+          fullName: userDetails?.name || user?.name || 'Student',
+          email: userDetails?.email || user?.email,
+          phone: userDetails?.phone || user?.mobile || '',
+          address: userDetails?.address
+        },
+        courseDetails: {
+          courseName: course.title || course.subject,
+          mode: courseDetails?.mode || '',
+          validity: courseDetails?.validity || '',
+          attempt: courseDetails?.attempt || ''
+        },
         transactionId,
-        new Date(),
-        amount,
-        emailText
-      );
+        amount
+      });
     } catch (emailErr) {
       console.error('Failed to send notification email:', emailErr);
     }
@@ -535,44 +530,25 @@ exports.cartPurchase = async (req, res) => {
 
     // Send consolidated notification email to admin
     try {
-      let emailText = `
-        New UPI Multi-Course Cart Purchase received:
-        User: ${user.name || userDetails?.name} (${user.email || userDetails?.email})
-        Phone: ${userDetails?.phone || ''}
-        Total Amount: ₹${amount}
-        Base Transaction ID: ${transactionId}
-        Status: Pending verification
-
-        Purchased Items:
-      `;
-
-      createdPurchases.forEach((p, idx) => {
-        emailText += `
-        ${idx + 1}. Course: ${p.course_details.subject}
-           Faculty: ${p.course_details.facultyName}
-           Mode: ${p.course_details.mode}
-           Validity: ${p.course_details.validity}
-           Row Transaction ID: ${p.transaction_id}
-           Amount: ₹${p.amount}
-        `;
-      });
-
-      if (skippedPurchases.length > 0) {
-        emailText += `\n\n        Skipped Items:\n`;
-        skippedPurchases.forEach((s, idx) => {
-          emailText += `        - ${s.title} (${s.reason})\n`;
-        });
-      }
-      
-      await sendPurchaseInvoiceEmail(
-        'support@academywale.com',
-        'Admin',
-        { subject: 'New UPI Cart Purchase - Verification Needed' },
+      await sendAdminNotificationEmail({
+        type: 'purchase',
+        userDetails: {
+          fullName: userDetails?.name || user?.name || 'Student',
+          email: userDetails?.email || user?.email,
+          phone: userDetails?.phone || user?.mobile || '',
+          address: userDetails?.address
+        },
+        cartItems: createdPurchases.map(p => ({
+          title: p.course_details.title || p.course_details.subject,
+          subject: p.course_details.subject,
+          mode: p.course_details.mode,
+          validity: p.course_details.validity,
+          facultyName: p.course_details.facultyName,
+          price: p.amount
+        })),
         transactionId,
-        new Date(),
-        amount,
-        emailText
-      );
+        amount
+      });
     } catch (emailErr) {
       console.error('Failed to send notification email:', emailErr);
     }

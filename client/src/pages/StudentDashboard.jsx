@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { FaBookOpen, FaShoppingCart, FaUserGraduate, FaTrashAlt, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { API_URL } from '../api';
+import CheckoutModal from '../components/common/CheckoutModal';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -14,6 +15,21 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('courses'); // 'courses' or 'cart'
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
+  const handleCheckoutProceed = (details, address) => {
+    setShowCheckoutModal(false);
+    navigate('/payment/cart', {
+      state: {
+        userDetails: {
+          fullName: details.fullName,
+          email: details.email,
+          phone: details.phone,
+          address
+        }
+      }
+    });
+  };
 
   useEffect(() => {
     if (user) {
@@ -417,7 +433,7 @@ export default function StudentDashboard() {
                   </div>
 
                   <button
-                    onClick={() => navigate('/payment/cart')}
+                    onClick={() => setShowCheckoutModal(true)}
                     className="w-full bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white py-3.5 rounded-xl font-bold hover:shadow-lg shadow-md transition-all text-center block"
                   >
                     Proceed to Payment
@@ -429,6 +445,15 @@ export default function StudentDashboard() {
           </div>
         )}
       </div>
+      {showCheckoutModal && (
+        <CheckoutModal
+          user={user}
+          onClose={() => setShowCheckoutModal(false)}
+          onProceed={handleCheckoutProceed}
+          totalAmount={cartTotal}
+          itemsSummary={cartItems.map(item => item.subject || item.title)}
+        />
+      )}
     </div>
   );
 }

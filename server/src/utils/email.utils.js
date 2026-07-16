@@ -205,10 +205,203 @@ const sendOTPEmail = async (userEmail, userName, otp) => {
   }
 };
 
+// Send beautiful HTML notification email to admin
+const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, cartItems, transactionId, amount }) => {
+  try {
+    const transporter = createTransporter();
+    
+    const isPrePayment = type === 'interest';
+    const subject = isPrePayment 
+      ? `[Checkout Initiated] User Profile & Address Verification - AcademyWale`
+      : `[Payment Submitted] New UPI Purchase Pending Verification - AcademyWale`;
+      
+    // Format Address
+    const address = userDetails?.address;
+    const addressHtml = address 
+      ? `
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 6px 0; color: #64748b; width: 35%; font-size: 14px;"><strong>Street Address:</strong></td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.street}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>City:</strong></td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.city}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>State:</strong></td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.state}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Pin Code:</strong></td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.pinCode}</td>
+          </tr>
+        </table>
+      `
+      : `<p style="color: #ef4444; font-size: 14px;">No shipping address selected.</p>`;
+
+    // Format Course Items Summary
+    let itemsHtml = '';
+    if (cartItems && cartItems.length > 0) {
+      itemsHtml = cartItems.map((item, idx) => `
+        <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
+          <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${idx + 1}. ${item.title || item.subject}</h4>
+          <p style="margin: 0; font-size: 12px; color: #64748b;">
+            <strong>Mode:</strong> ${item.mode || 'Standard'} | 
+            <strong>Validity:</strong> ${item.validity || 'Standard'} | 
+            <strong>Faculty:</strong> ${item.facultyName || 'N/A'}
+          </p>
+          <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
+            Price: ₹${item.price}
+          </p>
+        </div>
+      `).join('');
+    } else {
+      const courseName = courseDetails?.courseName || 'LMS Course';
+      itemsHtml = `
+        <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${courseName}</h4>
+          <p style="margin: 0; font-size: 12px; color: #64748b;">
+            <strong>Mode:</strong> ${courseDetails?.mode || 'Standard'} | 
+            <strong>Validity:</strong> ${courseDetails?.validity || 'Standard'} ${courseDetails?.attempt ? `| <strong>Exam Term:</strong> ${courseDetails.attempt}` : ''}
+          </p>
+          <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
+            Price: ₹${amount}
+          </p>
+        </div>
+      `;
+    }
+
+    // Format Payment Details
+    const paymentHtml = isPrePayment
+      ? `
+        <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 5px 0; color: #1e3a8a; font-size: 14px;">Pre-Payment Check</h4>
+          <p style="margin: 0; font-size: 13px; color: #1e40af;">
+            User has filled out details and has been redirected to the payment gateway.
+          </p>
+        </div>
+      `
+      : `
+        <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 5px 0; color: #14532d; font-size: 14px;">Payment Verification Required</h4>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+            <tr>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px; width: 35%;"><strong>Transaction ID/UTR:</strong></td>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px; font-weight: bold;">${transactionId}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Amount Paid:</strong></td>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px; font-weight: bold;">₹${amount}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Payment Mode:</strong></td>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px;">UPI (Scan/Mobile)</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Submitted At:</strong></td>
+              <td style="padding: 4px 0; color: #14532d; font-size: 13px;">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; padding: 30px 15px; color: #334155;">
+        <div style="max-width: 600px; margin: 0 auto; bg-color: #ffffff; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border-top: 6px solid #0d9488;">
+          
+          <!-- Header Banner -->
+          <div style="padding: 30px 20px; text-align: center; background-color: #f0fdfa;">
+            <h2 style="margin: 0; color: #0d9488; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">AcademyWale Admin Notification</h2>
+            <p style="margin: 8px 0 0 0; color: #0f766e; font-size: 14px; font-weight: 600;">
+              \${isPrePayment ? '🛒 CHECKOUT INTEREST SUBMITTED' : '💰 UPI PAYMENT TO VERIFY'}
+            </p>
+          </div>
+          
+          <div style="padding: 25px 30px;">
+            
+            <!-- Section 1: Personal Details -->
+            <h3 style="color: #0d9488; font-size: 16px; border-bottom: 2px solid #f0fdfa; padding-bottom: 6px; margin-top: 0; margin-bottom: 12px;">
+              Personal Details
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 35%; font-size: 14px;"><strong>Name:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">\${userDetails?.fullName || 'Not provided'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Email:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">
+                  <a href="mailto:\${userDetails?.email}" style="color: #0d9488; text-decoration: none;">\${userDetails?.email || 'Not provided'}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Phone:</strong></td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">\${userDetails?.phone || 'Not provided'}</td>
+              </tr>
+            </table>
+
+            <!-- Section 2: Address Details -->
+            <h3 style="color: #0d9488; font-size: 16px; border-bottom: 2px solid #f0fdfa; padding-bottom: 6px; margin-bottom: 12px;">
+              Billing & Shipping Address
+            </h3>
+            \${addressHtml}
+
+            <!-- Section 3: Order Summary -->
+            <h3 style="color: #0d9488; font-size: 16px; border-bottom: 2px solid #f0fdfa; padding-bottom: 6px; margin-bottom: 12px;">
+              Order Summary
+            </h3>
+            <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+              \${itemsHtml}
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; font-weight: bold; font-size: 15px; color: #0f766e;">
+                <span>Total Amount:</span>
+                <span>₹\${amount}</span>
+              </div>
+            </div>
+
+            <!-- Section 4: Payment Details & CTA -->
+            \${paymentHtml}
+            
+            \${!isPrePayment ? `
+              <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
+                <a href="https://academywale.com/admin/dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);">
+                  Open Admin Dashboard to Verify
+                </a>
+              </div>
+            ` : ''}
+
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8;">
+            This notification was automatically sent by the AcademyWale LMS core system.<br/>
+            &copy; 2026 AcademyWale. All rights reserved.
+          </div>
+          
+        </div>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: emailConfig.from,
+      to: 'support@academywale.com',
+      subject: subject,
+      html: htmlContent
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Admin notification email sending error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendContactEmail,
   sendWelcomeEmail,
   sendEnrollmentEmail,
   sendPurchaseInvoiceEmail,
-  sendOTPEmail
+  sendOTPEmail,
+  sendAdminNotificationEmail
 }; 

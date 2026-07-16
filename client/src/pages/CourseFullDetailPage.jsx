@@ -14,11 +14,12 @@ import { normalizeCoursePricing } from '../utils/coursePricing';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import CourseCard from '../components/common/CourseCard/CourseCard';
+import CheckoutModal from '../components/common/CheckoutModal';
 
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { addToCart, isInCart } = useCart();
   
   const [course, setCourse] = useState(null);
@@ -31,6 +32,7 @@ const CourseFullDetailPage = () => {
   const [addedMessage, setAddedMessage] = useState('');
   const [activeTab, setActiveTab] = useState('info'); // 'info' or 'highlights'
   const [relatedCourses, setRelatedCourses] = useState([]);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   // Fetch course details
   useEffect(() => {
@@ -180,7 +182,7 @@ const CourseFullDetailPage = () => {
     }
   };
 
-  // Handle proceed to payment
+  // Handle proceed to payment (opens CheckoutModal)
   const handleProceedToPay = () => {
     if (!isAuthenticated) {
       navigate('/login', {
@@ -198,13 +200,24 @@ const CourseFullDetailPage = () => {
       return;
     }
     
+    setShowCheckoutModal(true);
+  };
+
+  const handleCheckoutProceed = (details, address) => {
+    setShowCheckoutModal(false);
     navigate(`/payment/${encodeURIComponent(courseType || 'general')}/${courseId}`, {
       state: {
         selectedMode,
         selectedAttempt,
         selectedValidity,
         price: selectedPrice.selling,
-        course: course
+        course: course,
+        userDetails: {
+          fullName: details.fullName,
+          email: details.email,
+          phone: details.phone,
+          address
+        }
       }
     });
   };
@@ -647,6 +660,22 @@ const CourseFullDetailPage = () => {
             </div>
           </div>
         )}
+      {showCheckoutModal && (
+        <CheckoutModal
+          user={user}
+          onClose={() => setShowCheckoutModal(false)}
+          onProceed={handleCheckoutProceed}
+          totalAmount={selectedPrice.selling}
+          courseInfo={{
+            id: courseId,
+            title: course?.title,
+            subject: course?.subject,
+            selectedMode,
+            selectedValidity,
+            selectedAttempt
+          }}
+        />
+      )}
       </div>
 
     </div>

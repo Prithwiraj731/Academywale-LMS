@@ -4,7 +4,9 @@ import { FaArrowLeft, FaCheckCircle, FaMobileAlt, FaDesktop, FaQrcode } from 're
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
-const UPI_ID = 'shivanshkashyap27-2@oksbi';
+import upiQrCode from '../assets/AcademyWale_UPI.jpeg';
+
+const UPI_ID = 'academywale01@oksbi';
 
 const UPIPaymentPage = () => {
   const { courseId, courseType } = useParams();
@@ -105,7 +107,7 @@ const UPIPaymentPage = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}` // Include auth token
         },
         body: JSON.stringify({
-          userId: user?._id,
+          userId: user?._id || user?.id,
           courseId: courseId,
           transactionId: transactionId,
           amount: priceFromState || (course?.sellingPrice || 0),
@@ -113,7 +115,8 @@ const UPIPaymentPage = () => {
           userDetails: {
             name: userDetails.fullName || user?.name,
             email: userDetails.email || user?.email,
-            phone: userDetails.phone || user?.phone
+            phone: userDetails.phone || user?.phone || user?.mobile,
+            address: userDetails.address
           },
           courseDetails: {
             courseName: course?.title || course?.subject,
@@ -128,26 +131,34 @@ const UPIPaymentPage = () => {
       
       if (purchaseRes.ok) {
         // Send email notification
-        await fetch(`${API_URL}/api/notify/payment`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: 'support@academywale.com',
-            subject: 'New Course Purchase',
-            text: `
-              New purchase notification:
-              Course: ${course?.title || course?.subject}
-              User: ${userDetails.fullName || user?.name} (${userDetails.email || user?.email})
-              Phone: ${userDetails.phone || user?.phone}
-              Amount: ₹${priceFromState || (course?.sellingPrice || 0)}
-              Transaction ID: ${transactionId}
-              Mode: ${selectedMode}
-              Validity: ${selectedValidity}
-            `
-          })
-        });
+        try {
+          await fetch(`${API_URL}/api/notify/payment`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: 'support@academywale.com',
+              subject: 'New Course Purchase',
+              userDetails: {
+                fullName: userDetails.fullName || user?.name,
+                email: userDetails.email || user?.email,
+                phone: userDetails.phone || user?.phone || user?.mobile,
+                address: userDetails.address
+              },
+              courseDetails: {
+                courseName: course?.title || course?.subject,
+                mode: selectedMode,
+                validity: selectedValidity,
+                attempt: selectedAttempt
+              },
+              transactionId: transactionId,
+              amount: priceFromState || (course?.sellingPrice || 0)
+            })
+          });
+        } catch (emailErr) {
+          console.error('Failed to send payment notification email:', emailErr);
+        }
         
         // Show success and redirect
         setPaymentSuccess(true);
@@ -263,7 +274,32 @@ const UPIPaymentPage = () => {
                 <div className="text-gray-900 font-bold">₹{priceFromState || course?.sellingPrice}</div>
               </div>
             </div>
-            
+
+            {/* User Billing & Address Details */}
+            <div className="bg-blue-50/30 border border-blue-100 p-4 rounded-lg mb-6">
+              <h3 className="font-medium text-gray-800 mb-2">Billing & Shipping Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
+                <div>
+                  <span className="text-gray-500 font-medium">Name:</span> {userDetails.fullName || user?.name}
+                </div>
+                <div>
+                  <span className="text-gray-500 font-medium">Email:</span> {userDetails.email || user?.email}
+                </div>
+                <div>
+                  <span className="text-gray-500 font-medium">Phone:</span> {userDetails.phone || user?.mobile}
+                </div>
+                {userDetails.address && (
+                  <div className="md:col-span-2 mt-2 pt-2 border-t border-blue-100/50">
+                    <span className="text-gray-500 font-medium block mb-1">Shipping Address:</span>
+                    <div className="bg-white p-2.5 rounded border border-gray-150 text-xs">
+                      <p className="font-semibold text-gray-800">{userDetails.address.street}</p>
+                      <p className="text-gray-500">{userDetails.address.city}, {userDetails.address.state} - {userDetails.address.pinCode}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Payment Method Selection */}
             <div className="mb-6">
               <h3 className="font-medium text-gray-800 mb-3">Choose Payment Method</h3>
@@ -346,7 +382,7 @@ const UPIPaymentPage = () => {
                 
                 <div className="flex justify-center my-4">
                   <div className="bg-white p-4 rounded-lg shadow-md">
-                    <img src="/qr.jpg" alt="UPI QR Code" className="w-48 h-48 object-contain" />
+                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
                   </div>
                 </div>
                 
@@ -376,7 +412,7 @@ const UPIPaymentPage = () => {
                 
                 <div className="flex justify-center my-4">
                   <div className="bg-white p-4 rounded-lg shadow-md">
-                    <img src="/qr.jpg" alt="UPI QR Code" className="w-48 h-48 object-contain" />
+                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
                   </div>
                 </div>
                 

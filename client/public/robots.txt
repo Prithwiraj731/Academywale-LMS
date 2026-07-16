@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin-dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /student-dashboard
+Disallow: /payment
+Disallow: /payment/
+Disallow: /api/
+Disallow: /cart/
+Disallow: /order/
+Disallow: /course-details/
+Disallow: /cloudinary-example
+
+Sitemap: https://academywale.com/sitemap.xml

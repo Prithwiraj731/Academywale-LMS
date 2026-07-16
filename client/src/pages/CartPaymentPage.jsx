@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaCheckCircle, FaMobileAlt, FaDesktop, FaQrcode, FaShoppingBag } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
+import upiQrCode from '../assets/AcademyWale_UPI.jpeg';
 
-const UPI_ID = 'shivanshkashyap27-2@oksbi';
+const UPI_ID = 'academywale01@oksbi';
 
 const CartPaymentPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
   
@@ -20,10 +22,13 @@ const CartPaymentPage = () => {
   const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  const stateUserDetails = location.state?.userDetails || {};
   const [userDetails, setUserDetails] = useState({
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phone: user?.mobile || ''
+    fullName: stateUserDetails.fullName || user?.name || '',
+    email: stateUserDetails.email || user?.email || '',
+    phone: stateUserDetails.phone || user?.mobile || '',
+    address: stateUserDetails.address || null
   });
 
   // Authentication & Cart Empty check
@@ -43,16 +48,19 @@ const CartPaymentPage = () => {
     }
   }, [isAuthenticated, cartItems, navigate, paymentSuccess]);
 
-  // Sync user details when user state loads
+  // Sync user details when user state loads or state changes
   useEffect(() => {
-    if (user) {
+    if (location.state?.userDetails) {
+      setUserDetails(location.state.userDetails);
+    } else if (user) {
       setUserDetails({
         fullName: user.name || '',
         email: user.email || '',
-        phone: user.mobile || ''
+        phone: user.mobile || '',
+        address: null
       });
     }
-  }, [user]);
+  }, [user, location.state]);
 
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
@@ -112,7 +120,8 @@ const CartPaymentPage = () => {
           userDetails: {
             name: userDetails.fullName || user?.name,
             email: userDetails.email || user?.email,
-            phone: userDetails.phone
+            phone: userDetails.phone,
+            address: userDetails.address
           }
         })
       });
@@ -120,6 +129,38 @@ const CartPaymentPage = () => {
       const data = await purchaseRes.json();
       
       if (purchaseRes.ok) {
+        // Send email notification to admin about successful purchase
+        try {
+          await fetch(`${API_URL}/api/notify/payment`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: 'support@academywale.com',
+              subject: 'New Course Purchase - Cart Checkout',
+              userDetails: {
+                fullName: userDetails.fullName || user?.name,
+                email: userDetails.email || user?.email,
+                phone: userDetails.phone,
+                address: userDetails.address
+              },
+              cartItems: cartItems.map(item => ({
+                title: item.title || item.subject,
+                subject: item.subject,
+                mode: item.mode || 'Standard',
+                validity: item.attempt || item.validity || 'Standard',
+                facultyName: item.facultyName,
+                price: item.price || item.sellingPrice
+              })),
+              transactionId: transactionId,
+              amount: cartTotal
+            })
+          });
+        } catch (emailErr) {
+          console.error('Failed to send payment notification email:', emailErr);
+        }
+
         // Clear cart
         clearCart();
         
@@ -222,16 +263,16 @@ const CartPaymentPage = () => {
             {/* User Details Verification Form */}
             <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100/50 mb-6">
               <h3 className="font-semibold text-[#126862] mb-3">Billing & Verification Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Full Name</label>
                   <input
                     type="text"
                     name="fullName"
                     value={userDetails.fullName}
-                    onChange={handleInputChange}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
-                    required
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-500 cursor-not-allowed focus:outline-none"
+                    readOnly
+                    disabled
                   />
                 </div>
                 <div>
@@ -240,8 +281,8 @@ const CartPaymentPage = () => {
                     type="email"
                     name="email"
                     value={userDetails.email}
-                    onChange={handleInputChange}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-500 cursor-not-allowed focus:outline-none"
+                    readOnly
                     disabled
                   />
                 </div>
@@ -251,13 +292,22 @@ const CartPaymentPage = () => {
                     type="tel"
                     name="phone"
                     value={userDetails.phone}
-                    onChange={handleInputChange}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
-                    placeholder="Enter phone number"
-                    required
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-500 cursor-not-allowed focus:outline-none"
+                    readOnly
+                    disabled
                   />
                 </div>
               </div>
+
+              {userDetails.address && (
+                <div className="pt-3 border-t border-teal-100/50">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Billing & Shipping Address</label>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+                    <p className="font-semibold text-gray-800">{userDetails.address.street}</p>
+                    <p className="text-gray-500">{userDetails.address.city}, {userDetails.address.state} - {userDetails.address.pinCode}</p>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Payment Method Selection */}
@@ -328,7 +378,7 @@ const CartPaymentPage = () => {
                 
                 <div className="flex flex-col items-center my-4">
                   <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-150 mb-3">
-                    <img src="/qr.jpg" alt="UPI QR Code" className="w-48 h-48 object-contain" />
+                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-600">UPI ID: <strong className="text-gray-900">{UPI_ID}</strong></p>
