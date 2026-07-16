@@ -225,7 +225,7 @@ export default function CheckoutModal({
                   name="fullName"
                   value={personalDetails.fullName}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
                   required
                 />
               </div>
@@ -236,7 +236,7 @@ export default function CheckoutModal({
                   name="email"
                   value={personalDetails.email}
                   onChange={handleInputChange}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
                   required
                 />
               </div>
@@ -246,7 +246,7 @@ export default function CheckoutModal({
                   type="tel"
                   name="phone"
                   value={personalDetails.phone}
-                  className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-500 cursor-not-allowed focus:outline-none"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 cursor-not-allowed focus:outline-none"
                   readOnly
                   disabled
                 />
@@ -291,7 +291,7 @@ export default function CheckoutModal({
                     value={addressForm.street}
                     onChange={handleAddressFormChange}
                     placeholder="House/Flat No, Area, Landmark"
-                    className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
+                    className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa]"
                     required
                   />
                 </div>
@@ -305,7 +305,7 @@ export default function CheckoutModal({
                       value={addressForm.city}
                       onChange={handleAddressFormChange}
                       placeholder="City"
-                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
+                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa]"
                       required
                     />
                   </div>
@@ -317,7 +317,7 @@ export default function CheckoutModal({
                       value={addressForm.state}
                       onChange={handleAddressFormChange}
                       placeholder="State"
-                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
+                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa]"
                       required
                     />
                   </div>
@@ -329,7 +329,7 @@ export default function CheckoutModal({
                       value={addressForm.pinCode}
                       onChange={handleAddressFormChange}
                       placeholder="Pin Code"
-                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#20b2aa]"
+                      className="w-full border border-gray-300 rounded-lg py-1.5 px-3 text-sm text-gray-800 focus:outline-none focus:border-[#20b2aa]"
                       required
                     />
                   </div>

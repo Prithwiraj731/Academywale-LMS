@@ -405,7 +405,7 @@ const CartPaymentPage = () => {
                   value={transactionId}
                   onChange={(e) => setTransactionId(e.target.value)}
                   placeholder="e.g. 320492847293 or UTR number"
-                  className="w-full border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:border-[#20b2aa] focus:ring-1 focus:ring-[#20b2aa] font-medium"
+                  className="w-full border border-gray-300 rounded-xl py-3 px-4 text-gray-800 focus:outline-none focus:border-[#20b2aa] focus:ring-1 focus:ring-[#20b2aa] font-medium"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
