@@ -311,6 +311,11 @@ export default function CheckoutModal({
                     </button>
                   )}
                 </div>
+                {personalDetails.fullName !== initialName && personalDetails.fullName.trim() !== '' && (
+                  <p className="text-[11px] text-amber-600 mt-1 font-semibold">
+                    ⚠️ Click "Update" to save name changes before proceeding.
+                  </p>
+                )}
                 {nameUpdatedSuccess && (
                   <p className="text-xs text-green-600 mt-1 font-medium">✓ Profile name updated successfully!</p>
                 )}
@@ -556,7 +561,7 @@ export default function CheckoutModal({
           <button
             type="button"
             onClick={handleProceed}
-            disabled={isSubmitting || addresses.length === 0 || !selectedAddressId}
+            disabled={isSubmitting || addresses.length === 0 || !selectedAddressId || personalDetails.fullName !== initialName}
             className="flex-1 bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white font-bold py-2.5 rounded-xl hover:from-[#20b2aa] hover:to-[#0f544f] transition-all flex items-center justify-center gap-1.5 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Processing...' : 'Proceed to Payment'}
