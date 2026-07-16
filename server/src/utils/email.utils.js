@@ -314,7 +314,7 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
           <div style="padding: 30px 20px; text-align: center; background-color: #f0fdfa;">
             <h2 style="margin: 0; color: #0d9488; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">AcademyWale Admin Notification</h2>
             <p style="margin: 8px 0 0 0; color: #0f766e; font-size: 14px; font-weight: 600;">
-              \${isPrePayment ? '🛒 CHECKOUT INTEREST SUBMITTED' : '💰 UPI PAYMENT TO VERIFY'}
+              ${isPrePayment ? '🛒 CHECKOUT INTEREST SUBMITTED' : '💰 UPI PAYMENT TO VERIFY'}
             </p>
           </div>
           
@@ -327,17 +327,17 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
               <tr>
                 <td style="padding: 6px 0; color: #64748b; width: 35%; font-size: 14px;"><strong>Name:</strong></td>
-                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">\${userDetails?.fullName || 'Not provided'}</td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${userDetails?.fullName || 'Not provided'}</td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Email:</strong></td>
                 <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">
-                  <a href="mailto:\${userDetails?.email}" style="color: #0d9488; text-decoration: none;">\${userDetails?.email || 'Not provided'}</a>
+                  <a href="mailto:${userDetails?.email}" style="color: #0d9488; text-decoration: none;">${userDetails?.email || 'Not provided'}</a>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Phone:</strong></td>
-                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">\${userDetails?.phone || 'Not provided'}</td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${userDetails?.phone || 'Not provided'}</td>
               </tr>
             </table>
 
@@ -345,24 +345,24 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
             <h3 style="color: #0d9488; font-size: 16px; border-bottom: 2px solid #f0fdfa; padding-bottom: 6px; margin-bottom: 12px;">
               Billing & Shipping Address
             </h3>
-            \${addressHtml}
+            ${addressHtml}
 
             <!-- Section 3: Order Summary -->
             <h3 style="color: #0d9488; font-size: 16px; border-bottom: 2px solid #f0fdfa; padding-bottom: 6px; margin-bottom: 12px;">
               Order Summary
             </h3>
             <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-              \${itemsHtml}
+              ${itemsHtml}
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; font-weight: bold; font-size: 15px; color: #0f766e;">
                 <span>Total Amount:</span>
-                <span>₹\${amount}</span>
+                <span>₹${amount}</span>
               </div>
             </div>
 
             <!-- Section 4: Payment Details & CTA -->
-            \${paymentHtml}
+            ${paymentHtml}
             
-            \${!isPrePayment ? `
+            ${!isPrePayment ? `
               <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
                 <a href="https://academywale.com/admin/dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);">
                   Open Admin Dashboard to Verify
