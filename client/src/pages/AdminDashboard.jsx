@@ -1065,13 +1065,6 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('❌ Network/Server error:', err);
-      setError('Error: ' + err.message);
-    }
-    setLoading(false);
-  };
-    } catch (err) {
-      console.error('❌ Network/Server error:', err);
-
       if (err.message.includes('fetch')) {
         setError('Network error: Cannot connect to backend. Please check if the server is running.');
       } else if (err.message.includes('Backend server error')) {
