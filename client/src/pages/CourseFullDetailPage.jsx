@@ -319,8 +319,8 @@ const CourseFullDetailPage = () => {
           {/* LEFT COLUMN: Media, Product Info Table, Highlights */}
           <div className="lg:col-span-8 space-y-8">
             
-            {/* Banner/Poster container */}
-            <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-2xl backdrop-blur-sm flex justify-center items-center">
+            {/* Banner/Poster container (Mobile/Tablet only) */}
+            <div className="block lg:hidden bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-2xl backdrop-blur-sm flex justify-center items-center">
               <div className="w-full max-w-[360px] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
                 <img 
                   src={getPosterUrl(course)} 
@@ -484,6 +484,20 @@ const CourseFullDetailPage = () => {
           
           {/* RIGHT COLUMN: Selection actions, pricing, faculty card */}
           <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+            
+            {/* Banner/Poster container (Desktop only) */}
+            <div className="hidden lg:flex bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 overflow-hidden shadow-2xl backdrop-blur-sm justify-center items-center">
+              <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
+                <img 
+                  src={getPosterUrl(course)} 
+                  alt={course.subject || course.title} 
+                  className="w-full h-full object-contain p-1 group-hover:scale-102 transition-transform duration-500"
+                  onError={(e) => {
+                    e.target.src = '/logo.svg'; 
+                  }}
+                />
+              </div>
+            </div>
             
             {/* ACTION CARD */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden">

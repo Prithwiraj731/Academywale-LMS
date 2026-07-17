@@ -86,7 +86,7 @@ export default function CoursesPage() {
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject} 
-                  className="w-full aspect-[4/3] object-cover"
+                  className="w-full aspect-[16/10] object-cover"
                   onError={(e) => {
                     e.target.src = '/logo.svg';
                   }}
