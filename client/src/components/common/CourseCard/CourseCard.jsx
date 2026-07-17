@@ -84,7 +84,7 @@ const CourseCard = ({
         <img
           src={getPosterUrl(course)}
           alt={course.subject || 'Course'}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-fill"
           onError={(e) => {
             e.target.src = '/logo.svg';
           }}

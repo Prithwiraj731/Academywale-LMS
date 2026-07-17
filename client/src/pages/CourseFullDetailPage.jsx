@@ -309,10 +309,6 @@ const CourseFullDetailPage = () => {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight max-w-4xl">
             {course.title || course.subject}
           </h1>
-          
-          <p className="text-neutral-400 mt-2 text-sm sm:text-base max-w-3xl font-medium">
-            Master-class preparation course with top faculty and curated curriculum.
-          </p>
         </div>
       </div>
 
@@ -369,7 +365,7 @@ const CourseFullDetailPage = () => {
                     <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden">
                       <thead>
                         <tr className="bg-neutral-950 border-b border-neutral-850 text-xs font-bold uppercase tracking-wider text-neutral-400">
-                          <th className="py-3.5 px-4 font-bold">Parameter</th>
+                          <th className="py-3.5 px-4 font-bold"></th>
                           <th className="py-3.5 px-4 font-bold">Details</th>
                         </tr>
                       </thead>
