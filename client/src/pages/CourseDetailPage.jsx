@@ -638,7 +638,7 @@ const CourseDetailPage = () => {
                 {/* Mode selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <FaBook className="mr-1 text-teal-600" /> Mode:
+                    <FaBook className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.[0]?.modeLabel || 'Mode'}:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {course.modeAttemptPricing 
@@ -677,7 +677,7 @@ const CourseDetailPage = () => {
                 {/* Validity selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <FaRegClock className="mr-1 text-teal-600" /> Views & Validity:
+                    <FaRegClock className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Views & Validity'}:
                   </label>
                   
                   {!selectedMode ? (
@@ -728,6 +728,21 @@ const CourseDetailPage = () => {
                       }
                     </div>
                   )}
+
+                  {/* Selected Option Description */}
+                  {(() => {
+                    const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
+                    const attemptData = modeData?.attempts?.find(a => a.attempt === selectedValidity);
+                    const desc = attemptData?.description || '';
+                    if (desc) {
+                      return (
+                        <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-gray-600 text-xs mt-3">
+                          {desc}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 
                 {/* Price - Enhanced UI */}
@@ -796,53 +811,76 @@ const CourseDetailPage = () => {
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                      <div className="flex items-start">
-                        <MdVideoLibrary className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Lectures</h4>
-                          <p className="text-gray-600">{course.noOfLecture || 'N/A'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <FaRegClock className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Duration</h4>
-                          <p className="text-gray-600">{course.timing || 'N/A'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <FaBook className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Study Materials</h4>
-                          <p className="text-gray-600">{course.books || 'N/A'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <FaLanguage className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Language</h4>
-                          <p className="text-gray-600">{course.videoLanguage || 'N/A'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <FaCalendarAlt className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Validity</h4>
-                          <p className="text-gray-600">{course.validityStartFrom || 'N/A'}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
-                        <div>
-                          <h4 className="font-medium text-gray-800">Doubt Solving</h4>
-                          <p className="text-gray-600">{course.doubtSolving || 'N/A'}</p>
-                        </div>
-                      </div>
+                      {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
+                        course.customDetails
+                          .filter(detail => detail.visible !== false && detail.value)
+                          .map((detail, index) => {
+                            let displayVal = detail.value;
+                            if (detail.fieldType === 'faculty') {
+                              displayVal = course.facultyName || detail.value;
+                            }
+                            return (
+                              <div key={index} className="flex items-start">
+                                <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                                <div>
+                                  <h4 className="font-medium text-gray-800">{detail.label}</h4>
+                                  <p className="text-gray-600">{displayVal}</p>
+                                </div>
+                              </div>
+                            );
+                          })
+                      ) : (
+                        // Fallback to legacy fields
+                        <>
+                          <div className="flex items-start">
+                            <MdVideoLibrary className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Lectures</h4>
+                              <p className="text-gray-600">{course.noOfLecture || 'N/A'}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <FaRegClock className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Duration</h4>
+                              <p className="text-gray-600">{course.timing || 'N/A'}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <FaBook className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Study Materials</h4>
+                              <p className="text-gray-600">{course.books || 'N/A'}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <FaLanguage className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Language</h4>
+                              <p className="text-gray-600">{course.videoLanguage || 'N/A'}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <FaCalendarAlt className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Validity</h4>
+                              <p className="text-gray-600">{course.validityStartFrom || 'N/A'}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                            <div>
+                              <h4 className="font-medium text-gray-800">Doubt Solving</h4>
+                              <p className="text-gray-600">{course.doubtSolving || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -882,7 +920,7 @@ const CourseDetailPage = () => {
                   {/* Mode selection - Enhanced Desktop UI */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                      <FaBook className="mr-1 text-teal-600" /> Mode:
+                      <FaBook className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.[0]?.modeLabel || 'Mode'}:
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {course.modeAttemptPricing 
@@ -921,7 +959,7 @@ const CourseDetailPage = () => {
                   {/* Validity selection - Enhanced Desktop UI */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                      <FaRegClock className="mr-1 text-teal-600" /> Views & Validity:
+                      <FaRegClock className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Views & Validity'}:
                     </label>
                     
                     {!selectedMode ? (
@@ -981,6 +1019,21 @@ const CourseDetailPage = () => {
                         }
                       </div>
                     )}
+                    
+                    {/* Selected Option Description */}
+                    {(() => {
+                      const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
+                      const attemptData = modeData?.attempts?.find(a => a.attempt === selectedValidity);
+                      const desc = attemptData?.description || '';
+                      if (desc) {
+                        return (
+                          <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg text-gray-600 text-xs mt-3">
+                            {desc}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                   
                   {/* Price - Enhanced UI */}

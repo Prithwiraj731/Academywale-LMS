@@ -517,31 +517,36 @@ export default function AdminDashboard() {
   };
 
   // New Course Management State
+  const defaultCustomDetails = [
+    { label: 'Subject', value: '', fieldType: 'text', displayOrder: 1, visible: true },
+    { label: 'Lectures', value: '', fieldType: 'text', displayOrder: 2, visible: true },
+    { label: 'Duration', value: '', fieldType: 'text', displayOrder: 3, visible: true },
+    { label: 'Study Materials', value: '', fieldType: 'text', displayOrder: 4, visible: true },
+    { label: 'Language', value: 'Hindi', fieldType: 'text', displayOrder: 5, visible: true },
+    { label: 'Video Run On', value: '', fieldType: 'text', displayOrder: 6, visible: true },
+    { label: 'Doubt Solving', value: '', fieldType: 'text', displayOrder: 7, visible: true },
+    { label: 'Support Mail', value: '', fieldType: 'text', displayOrder: 8, visible: true },
+    { label: 'Support Call', value: '', fieldType: 'text', displayOrder: 9, visible: true },
+    { label: 'Validity', value: '', fieldType: 'text', displayOrder: 10, visible: true },
+    { label: 'Faculty', value: '', fieldType: 'faculty', displayOrder: 11, visible: true },
+    { label: 'Institute', value: '', fieldType: 'institute', displayOrder: 12, visible: true }
+  ];
+
   const [courseForm, setCourseForm] = useState({
     title: '', // Course title (required)
     category: '', // CA or CMA (required)
     subcategory: '', // Foundation, Inter, Final (required)
     paperId: '', // Paper 1, Paper 2, etc. (required)
     paperName: '', // Auto-filled from paperId (required)
-    subject: '', // Subject name (required)
-    facultySlug: '', // Faculty selection (REQUIRED)
-    institute: '', // Institute selection (OPTIONAL)
     description: '',
-    noOfLecture: '',
-    books: '',
-    videoLanguage: '',
-    videoRunOn: '',
-    doubtSolving: '',
-    supportMail: '',
-    supportCall: '',
-    timing: '',
-    validityStartFrom: '',
     poster: null,
+    customDetails: defaultCustomDetails,
     modeAttemptPricing: [
       {
         mode: 'Live at Home With Hard Copy',
+        modeLabel: 'Mode',
         attempts: [
-          { attempt: 'Dec 2026', validity: '12 Months', costPrice: 15999, sellingPrice: 13999 }
+          { attempt: 'Dec 2026', attemptLabel: 'Exam Term / Attempt', validity: '12 Months', validityLabel: 'Validity', costPrice: 15999, sellingPrice: 13999, description: '' }
         ]
       }
     ]
@@ -682,79 +687,234 @@ export default function AdminDashboard() {
     }
   };
 
-  const addModeAttemptPricing = () => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: [
-        ...prev.modeAttemptPricing,
-        {
-          mode: '',
-          attempts: [
-            { attempt: '', validity: '', costPrice: 0, sellingPrice: 0 }
-          ]
-        }
+  const addCustomDetail = (isEdit = false) => {
+    const defaultNewDetail = { label: '', value: '', fieldType: 'text', displayOrder: 1, visible: true };
+    if (isEdit) {
+      setEditCourseData(prev => {
+        const details = prev.customDetails || [];
+        defaultNewDetail.displayOrder = details.length + 1;
+        return {
+          ...prev,
+          customDetails: [...details, defaultNewDetail]
+        };
+      });
+    } else {
+      setCourseForm(prev => {
+        const details = prev.customDetails || [];
+        defaultNewDetail.displayOrder = details.length + 1;
+        return {
+          ...prev,
+          customDetails: [...details, defaultNewDetail]
+        };
+      });
+    }
+  };
+
+  const removeCustomDetail = (index, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => {
+        const filtered = (prev.customDetails || []).filter((_, idx) => idx !== index);
+        const reindexed = filtered.map((d, idx) => ({ ...d, displayOrder: idx + 1 }));
+        return { ...prev, customDetails: reindexed };
+      });
+    } else {
+      setCourseForm(prev => {
+        const filtered = (prev.customDetails || []).filter((_, idx) => idx !== index);
+        const reindexed = filtered.map((d, idx) => ({ ...d, displayOrder: idx + 1 }));
+        return { ...prev, customDetails: reindexed };
+      });
+    }
+  };
+
+  const updateCustomDetail = (index, field, value, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => {
+        const updated = (prev.customDetails || []).map((d, idx) => 
+          idx === index ? { ...d, [field]: value } : d
+        );
+        return { ...prev, customDetails: updated };
+      });
+    } else {
+      setCourseForm(prev => {
+        const updated = (prev.customDetails || []).map((d, idx) => 
+          idx === index ? { ...d, [field]: value } : d
+        );
+        return { ...prev, customDetails: updated };
+      });
+    }
+  };
+
+  const moveCustomDetail = (index, direction, isEdit = false) => {
+    const moveInArray = (arr, from, to) => {
+      const copy = [...arr];
+      const item = copy.splice(from, 1)[0];
+      copy.splice(to, 0, item);
+      return copy.map((d, idx) => ({ ...d, displayOrder: idx + 1 }));
+    };
+
+    if (isEdit) {
+      setEditCourseData(prev => {
+        const details = prev.customDetails || [];
+        const toIndex = direction === 'up' ? index - 1 : index + 1;
+        if (toIndex < 0 || toIndex >= details.length) return prev;
+        return {
+          ...prev,
+          customDetails: moveInArray(details, index, toIndex)
+        };
+      });
+    } else {
+      setCourseForm(prev => {
+        const details = prev.customDetails || [];
+        const toIndex = direction === 'up' ? index - 1 : index + 1;
+        if (toIndex < 0 || toIndex >= details.length) return prev;
+        return {
+          ...prev,
+          customDetails: moveInArray(details, index, toIndex)
+        };
+      });
+    }
+  };
+
+  const addModeAttemptPricing = (isEdit = false) => {
+    const newMode = {
+      mode: '',
+      modeLabel: 'Mode',
+      attempts: [
+        { attempt: '', attemptLabel: 'Exam Term / Attempt', validity: '', validityLabel: 'Validity', costPrice: 0, sellingPrice: 0, description: '' }
       ]
-    }));
+    };
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: [...(prev.modeAttemptPricing || []), newMode]
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: [...prev.modeAttemptPricing, newMode]
+      }));
+    }
   };
 
-  const removeModeAttemptPricing = (modeIndex) => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.filter((_, index) => index !== modeIndex)
-    }));
+  const removeModeAttemptPricing = (modeIndex, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: (prev.modeAttemptPricing || []).filter((_, index) => index !== modeIndex)
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: prev.modeAttemptPricing.filter((_, index) => index !== modeIndex)
+      }));
+    }
   };
 
-  const updateModeAttemptPricing = (modeIndex, field, value) => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
-        index === modeIndex ? { ...item, [field]: value } : item
-      )
-    }));
+  const updateModeAttemptPricing = (modeIndex, field, value, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: (prev.modeAttemptPricing || []).map((item, index) =>
+          index === modeIndex ? { ...item, [field]: value } : item
+        )
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+          index === modeIndex ? { ...item, [field]: value } : item
+        )
+      }));
+    }
   };
 
-  const addAttemptToPricing = (modeIndex) => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
-        index === modeIndex
-          ? {
-            ...item,
-            attempts: [...item.attempts, { attempt: '', validity: '', costPrice: 0, sellingPrice: 0 }]
-          }
-          : item
-      )
-    }));
+  const addAttemptToPricing = (modeIndex, isEdit = false) => {
+    const newAttempt = { attempt: '', attemptLabel: 'Exam Term / Attempt', validity: '', validityLabel: 'Validity', costPrice: 0, sellingPrice: 0, description: '' };
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: (prev.modeAttemptPricing || []).map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: [...item.attempts, newAttempt]
+            }
+            : item
+        )
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: [...item.attempts, newAttempt]
+            }
+            : item
+        )
+      }));
+    }
   };
 
-  const removeAttemptFromPricing = (modeIndex, attemptIndex) => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
-        index === modeIndex
-          ? {
-            ...item,
-            attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex)
-          }
-          : item
-      )
-    }));
+  const removeAttemptFromPricing = (modeIndex, attemptIndex, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: (prev.modeAttemptPricing || []).map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex)
+            }
+            : item
+        )
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: item.attempts.filter((_, aIndex) => aIndex !== attemptIndex)
+            }
+            : item
+        )
+      }));
+    }
   };
 
-  const updateAttemptPricing = (modeIndex, attemptIndex, field, value) => {
-    setCourseForm(prev => ({
-      ...prev,
-      modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
-        index === modeIndex
-          ? {
-            ...item,
-            attempts: item.attempts.map((attempt, aIndex) =>
-              aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
-            )
-          }
-          : item
-      )
-    }));
+  const updateAttemptPricing = (modeIndex, attemptIndex, field, value, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => ({
+        ...prev,
+        modeAttemptPricing: (prev.modeAttemptPricing || []).map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: item.attempts.map((attempt, aIndex) =>
+                aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
+              )
+            }
+            : item
+        )
+      }));
+    } else {
+      setCourseForm(prev => ({
+        ...prev,
+        modeAttemptPricing: prev.modeAttemptPricing.map((item, index) =>
+          index === modeIndex
+            ? {
+              ...item,
+              attempts: item.attempts.map((attempt, aIndex) =>
+                aIndex === attemptIndex ? { ...attempt, [field]: value } : attempt
+              )
+            }
+            : item
+        )
+      }));
+    }
   };
 
   const handleNewCourseSubmit = async (e) => {
@@ -762,10 +922,10 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
 
-    // Unified validation - faculty is required, institute is optional
+    // Unified validation - category, subcategory, paperId, title, and poster are required
     if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId ||
-      !courseForm.title || !courseForm.subject || !courseForm.poster || !courseForm.facultySlug) {
-      setError('Please fill all required fields: Category, Subcategory, Paper, Title, Subject, Faculty, and Poster are required');
+      !courseForm.title || !courseForm.poster) {
+      setError('Please fill all required fields: Category, Subcategory, Paper, Title, and Poster are required');
       return;
     }
 
@@ -792,77 +952,64 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
 
-      // Validate faculty is required
-      if (!courseForm.facultySlug || courseForm.facultySlug.trim() === '') {
-        setError('Faculty is required. Please select a valid faculty.');
-        setLoading(false);
-        return;
-      }
+      const getDetailVal = (label) => {
+        const found = (courseForm.customDetails || []).find(d => d.label.toLowerCase() === label.toLowerCase());
+        return found ? found.value : '';
+      };
+      
+      const getDetailValByType = (type) => {
+        const found = (courseForm.customDetails || []).find(d => d.fieldType === type);
+        return found ? found.value : '';
+      };
 
-      // Institute is optional, no validation needed
+      const resolvedSubject = getDetailVal('subject') || courseForm.title;
+      const resolvedFacultySlug = getDetailValByType('faculty') || 'n-a';
+      const resolvedInstitute = getDetailValByType('institute') || '';
 
-      // Always use the same endpoint for all courses - we no longer use standalone concept
       const apiEndpoint = `${API_URL}/api/admin/courses`;
 
       console.log('🔗 API Endpoint:', apiEndpoint);
       console.log('📋 Course Form Data:', courseForm);
-      console.log('🌐 API_URL value:', API_URL);      // Required fields for all courses
+      console.log('🌐 API_URL value:', API_URL);
+
       formData.append('category', courseForm.category);
       formData.append('subcategory', courseForm.subcategory);
       formData.append('paperId', courseForm.paperId);
       formData.append('paperName', courseForm.paperName);
-      formData.append('subject', courseForm.subject);
       formData.append('title', courseForm.title);
+      formData.append('subject', resolvedSubject);
 
-      // Faculty and institute are now required
-      formData.append('facultySlug', courseForm.facultySlug);
-      formData.append('facultyName', courseForm.facultySlug); // For backward compatibility
-      console.log('👨‍🏫 Added faculty:', courseForm.facultySlug);
+      // Faculty and institute sync
+      formData.append('facultySlug', resolvedFacultySlug);
+      formData.append('facultyName', resolvedFacultySlug); // For backward compatibility
+      formData.append('institute', resolvedInstitute);
 
-      // Institute is optional
-      formData.append('institute', courseForm.institute || '');
-      console.log('🏫 Added institute:', courseForm.institute || '(none)');
+      // Common fields mapped for legacy support
+      formData.append('description', courseForm.description || '');
+      formData.append('noOfLecture', getDetailVal('lectures'));
+      formData.append('books', getDetailVal('study materials'));
+      formData.append('videoLanguage', getDetailVal('language'));
+      formData.append('videoRunOn', getDetailVal('video run on'));
+      formData.append('doubtSolving', getDetailVal('doubt solving'));
+      formData.append('supportMail', getDetailVal('support mail'));
+      formData.append('supportCall', getDetailVal('support call'));
+      formData.append('timing', getDetailVal('duration'));
+      formData.append('validityStartFrom', getDetailVal('validity'));
 
-
-      // Common fields for all courses
-      formData.append('description', courseForm.description);
-      formData.append('noOfLecture', courseForm.noOfLecture);
-      formData.append('books', courseForm.books);
-      formData.append('videoLanguage', courseForm.videoLanguage);
-      formData.append('videoRunOn', courseForm.videoRunOn);
-      formData.append('doubtSolving', courseForm.doubtSolving);
-      formData.append('supportMail', courseForm.supportMail);
-      formData.append('supportCall', courseForm.supportCall);
-      formData.append('timing', courseForm.timing);
-      formData.append('validityStartFrom', courseForm.validityStartFrom);
-
-      // Poster upload validation
+      // Poster upload
       if (courseForm.poster) {
         formData.append('poster', courseForm.poster);
-      } else {
-        setError('Poster image is required');
-        setLoading(false);
-        return;
       }
 
-      // Course type for backwards compatibility
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
 
-      // Faculty is always required - this is enforced by validation earlier
-
-      // Mode and attempt pricing
+      // Serialize dynamic custom details and pricing blocks
+      formData.append('customDetails', JSON.stringify(courseForm.customDetails));
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
       console.log('📤 Sending FormData with fields:');
       for (let [key, value] of formData.entries()) {
         console.log(`   ${key}: ${value}`);
-      }
-
-      console.log('🚀 Making POST request to:', apiEndpoint);
-      console.log('🔍 Complete API URL being used:', apiEndpoint);
-      console.log('🔍 FormData entries being sent:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`   📝 ${key}: ${value}`);
       }
 
       const res = await fetchWithCredentials(apiEndpoint, {
@@ -871,7 +1018,6 @@ export default function AdminDashboard() {
       });
 
       console.log('📥 Response received:', res.status, res.statusText);
-      console.log('📥 Response headers:', Object.fromEntries(res.headers.entries()));
 
       const responseText = await res.text();
       console.log('📋 Raw response text:', responseText);
@@ -881,11 +1027,8 @@ export default function AdminDashboard() {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('❌ Failed to parse response as JSON:', parseError);
-        console.error('❌ Raw response:', responseText);
-
-        // Check if it's an HTML error page (500 error)
         if (responseText.includes('<!DOCTYPE html>') && responseText.includes('Internal Server Error')) {
-          throw new Error('Backend server error - please check server logs. The server crashed while processing your request.');
+          throw new Error('Backend server error - please check server logs.');
         } else {
           throw new Error(`Server response is not valid JSON: ${responseText.substring(0, 200)}...`);
         }
@@ -893,7 +1036,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         console.log('✅ Course creation successful:', data);
-        setSuccess(`Course added successfully to faculty: ${courseForm.facultySlug}`);
+        setSuccess(`Course added successfully`);
         // Reset form
         setCourseForm({
           title: '',
@@ -901,25 +1044,15 @@ export default function AdminDashboard() {
           subcategory: '',
           paperId: '',
           paperName: '',
-          subject: '',
-          facultySlug: '',
-          institute: '',
           description: '',
-          noOfLecture: '',
-          books: '',
-          videoLanguage: '',
-          videoRunOn: '',
-          doubtSolving: '',
-          supportMail: '',
-          supportCall: '',
-          timing: '',
-          validityStartFrom: '',
           poster: null,
+          customDetails: defaultCustomDetails,
           modeAttemptPricing: [
             {
               mode: 'Live at Home With Hard Copy',
+              modeLabel: 'Mode',
               attempts: [
-                { attempt: 'Dec 2026', validity: '12 Months', costPrice: 15999, sellingPrice: 13999 }
+                { attempt: 'Dec 2026', attemptLabel: 'Exam Term / Attempt', validity: '12 Months', validityLabel: 'Validity', costPrice: 15999, sellingPrice: 13999, description: '' }
               ]
             }
           ]
@@ -928,10 +1061,14 @@ export default function AdminDashboard() {
         setTimeout(() => setSuccess(''), 3000);
       } else {
         console.error('❌ Course creation failed:', data);
-        console.error('❌ HTTP Status:', res.status, res.statusText);
-        console.error('❌ Response headers:', Object.fromEntries(res.headers.entries()));
         setError(`Course creation failed: ${data.error || data.message || 'Unknown error'} (HTTP ${res.status})`);
       }
+    } catch (err) {
+      console.error('❌ Network/Server error:', err);
+      setError('Error: ' + err.message);
+    }
+    setLoading(false);
+  };
     } catch (err) {
       console.error('❌ Network/Server error:', err);
 
@@ -1062,12 +1199,88 @@ export default function AdminDashboard() {
     }
     setForm(f => ({ ...f, facultySlug }));
     setEditCourseIdx(idx);
-    setEditCourseData({ ...courses[idx] });
+    
+    const course = courses[idx];
+    
+    // Parse custom details or construct defaults if missing
+    let details = course.customDetails || course.custom_details || [];
+    if (!Array.isArray(details) || details.length === 0) {
+      // Re-construct custom details from legacy flat fields on the course if they exist
+      details = [
+        { label: 'Subject', value: course.subject || '', fieldType: 'text', displayOrder: 1, visible: true },
+        { label: 'Lectures', value: course.noOfLecture || '', fieldType: 'text', displayOrder: 2, visible: true },
+        { label: 'Duration', value: course.timing || '', fieldType: 'text', displayOrder: 3, visible: true },
+        { label: 'Study Materials', value: course.books || '', fieldType: 'text', displayOrder: 4, visible: true },
+        { label: 'Language', value: course.videoLanguage || 'Hindi', fieldType: 'text', displayOrder: 5, visible: true },
+        { label: 'Video Run On', value: course.videoRunOn || '', fieldType: 'text', displayOrder: 6, visible: true },
+        { label: 'Doubt Solving', value: course.doubtSolving || '', fieldType: 'text', displayOrder: 7, visible: true },
+        { label: 'Support Mail', value: course.supportMail || '', fieldType: 'text', displayOrder: 8, visible: true },
+        { label: 'Support Call', value: course.supportCall || '', fieldType: 'text', displayOrder: 9, visible: true },
+        { label: 'Validity', value: course.validityStartFrom || '', fieldType: 'text', displayOrder: 10, visible: true },
+        { label: 'Faculty', value: course.facultySlug || '', fieldType: 'faculty', displayOrder: 11, visible: true },
+        { label: 'Institute', value: course.instituteName || course.institute || '', fieldType: 'institute', displayOrder: 12, visible: true }
+      ];
+    }
+
+    // Pricing normalization
+    let pricing = course.modeAttemptPricing || [];
+    if (!Array.isArray(pricing) || pricing.length === 0) {
+      pricing = [
+        {
+          mode: course.mode || 'Recorded Video',
+          modeLabel: 'Mode',
+          attempts: [
+            {
+              attempt: course.attempt || 'Dec 2026',
+              attemptLabel: 'Exam Term / Attempt',
+              validity: course.validityStartFrom || '12 Months',
+              validityLabel: 'Validity',
+              costPrice: course.costPrice || 0,
+              sellingPrice: course.sellingPrice || 0,
+              description: ''
+            }
+          ]
+        }
+      ];
+    } else {
+      const hasAttempts = pricing.some(p => p.attempts && Array.isArray(p.attempts));
+      if (!hasAttempts) {
+        const modesMap = {};
+        pricing.forEach(item => {
+          const m = item.mode || 'Recorded Video';
+          if (!modesMap[m]) {
+            modesMap[m] = {
+              mode: m,
+              modeLabel: item.modeLabel || 'Mode',
+              attempts: []
+            };
+          }
+          modesMap[m].attempts.push({
+            attempt: item.attempt || '',
+            attemptLabel: item.attemptLabel || 'Exam Term / Attempt',
+            validity: item.validity || '',
+            validityLabel: item.validityLabel || 'Validity',
+            costPrice: item.costPrice || item.cost_price || 0,
+            sellingPrice: item.sellingPrice || item.selling_price || 0,
+            description: item.description || ''
+          });
+        });
+        pricing = Object.values(modesMap);
+      }
+    }
+
+    setEditCourseData({ 
+      ...course,
+      customDetails: details,
+      modeAttemptPricing: pricing
+    });
+    
     setEditPoster(null);
     setEditPosterPreview(null);
     setEditError('');
     setEditModalOpen(true);
   };
+
   // Handle edit form change
   const handleEditChange = e => {
     const { name, value, files } = e.target;
@@ -1078,6 +1291,7 @@ export default function AdminDashboard() {
       setEditCourseData(f => ({ ...f, [name]: value }));
     }
   };
+
   // Submit edit
   const handleEditSubmit = async e => {
     e.preventDefault();
@@ -1085,10 +1299,51 @@ export default function AdminDashboard() {
     setEditError('');
     try {
       const formData = new FormData();
-      Object.entries(editCourseData).forEach(([k, v]) => {
-        if (k !== 'posterUrl') formData.append(k, v);
-      });
-      if (editPoster) formData.append('poster', editPoster);
+
+      const getDetailVal = (label) => {
+        const found = (editCourseData.customDetails || []).find(d => d.label.toLowerCase() === label.toLowerCase());
+        return found ? found.value : '';
+      };
+      
+      const getDetailValByType = (type) => {
+        const found = (editCourseData.customDetails || []).find(d => d.fieldType === type);
+        return found ? found.value : '';
+      };
+
+      const resolvedSubject = getDetailVal('subject') || editCourseData.title;
+      const resolvedFacultySlug = getDetailValByType('faculty') || 'n-a';
+      const resolvedInstitute = getDetailValByType('institute') || '';
+
+      formData.append('title', editCourseData.title);
+      formData.append('category', editCourseData.category);
+      formData.append('subcategory', editCourseData.subcategory);
+      formData.append('paperId', editCourseData.paperId);
+      formData.append('paperName', editCourseData.paperName || '');
+      formData.append('description', editCourseData.description || '');
+      formData.append('courseType', editCourseData.courseType || `${editCourseData.category} ${editCourseData.subcategory}`);
+      
+      formData.append('subject', resolvedSubject);
+      formData.append('facultySlug', resolvedFacultySlug);
+      formData.append('facultyName', resolvedFacultySlug); // For backward compatibility
+      formData.append('institute', resolvedInstitute);
+
+      formData.append('noOfLecture', getDetailVal('lectures'));
+      formData.append('books', getDetailVal('study materials'));
+      formData.append('videoLanguage', getDetailVal('language'));
+      formData.append('videoRunOn', getDetailVal('video run on'));
+      formData.append('doubtSolving', getDetailVal('doubt solving'));
+      formData.append('supportMail', getDetailVal('support mail'));
+      formData.append('supportCall', getDetailVal('support call'));
+      formData.append('timing', getDetailVal('duration'));
+      formData.append('validityStartFrom', getDetailVal('validity'));
+
+      if (editPoster) {
+        formData.append('poster', editPoster);
+      }
+
+      formData.append('customDetails', JSON.stringify(editCourseData.customDetails));
+      formData.append('modeAttemptPricing', JSON.stringify(editCourseData.modeAttemptPricing));
+
       const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
         method: 'PUT',
         body: formData
@@ -1100,7 +1355,8 @@ export default function AdminDashboard() {
       } else {
         setEditError(data.error || 'Failed to update course');
       }
-    } catch {
+    } catch (err) {
+      console.error('❌ Error updating course:', err);
       setEditError('Server error');
     }
     setEditLoading(false);
@@ -1891,8 +2147,10 @@ export default function AdminDashboard() {
             {/* Step 2: Course Details */}
             <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl border-2 border-green-200">
               <h3 className="text-lg sm:text-xl font-semibold text-green-800 mb-3 sm:mb-4">Step 2: Course Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                <div className="col-span-1">
+              
+              {/* Core Fixed Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                   <input
                     type="text"
@@ -1900,175 +2158,174 @@ export default function AdminDashboard() {
                     value={courseForm.title}
                     onChange={handleCourseFormChange}
                     placeholder="Enter course title"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
                     required
                   />
                 </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    value={courseForm.subject}
-                    onChange={handleCourseFormChange}
-                    placeholder="Enter subject"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                    required
-                  />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
+                  <div className="flex gap-4 items-start">
+                    <input
+                      name="poster"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCourseFormChange}
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
+                      required
+                    />
+                    {posterPreviewNew && (
+                      <img src={posterPreviewNew} alt="Preview" className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />
+                    )}
+                  </div>
                 </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty (Required)</label>
-                  <select
-                    name="facultySlug"
-                    value={courseForm.facultySlug}
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                    required
-                  >
-                    <option value="">Select Faculty</option>
-                    <option value="n/a">N/A - No Faculty</option>
-                    {allFaculties.map(faculty => (
-                      <option key={faculty.slug} value={faculty.slug}>
-                        {faculty.isHardcoded ? faculty.fullName : (faculty.firstName + (faculty.lastName ? ' ' + faculty.lastName : ''))}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute (Optional)</label>
-                  <select
-                    name="institute"
-                    value={courseForm.institute}
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  >
-                    <option value="">Select Institute (Optional)</option>
-                    <option value="N/A">N/A - No Institute</option>
-                    {institutes.map(inst => (
-                      <option key={inst._id} value={inst.name}>{inst.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-1 md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={courseForm.description}
                     onChange={handleCourseFormChange}
                     placeholder="Course description"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
                     rows={3}
                   />
                 </div>
+              </div>
 
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Number of Lectures</label>
-                  <input
-                    name="noOfLecture"
-                    value={courseForm.noOfLecture}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. 65 Lectures"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
+              {/* Dynamic Details List */}
+              <div className="border-t border-green-200 pt-4">
+                <h4 className="text-md font-semibold text-green-700 mb-3">Custom Fields / Details:</h4>
+                <div className="space-y-4">
+                  {(courseForm.customDetails || []).map((detail, idx) => (
+                    <div key={idx} className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                      
+                      {/* Reorder Buttons */}
+                      <div className="flex lg:flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveCustomDetail(idx, 'up', false)}
+                          disabled={idx === 0}
+                          className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
+                          title="Move Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveCustomDetail(idx, 'down', false)}
+                          disabled={idx === (courseForm.customDetails || []).length - 1}
+                          className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
+                          title="Move Down"
+                        >
+                          ▼
+                        </button>
+                      </div>
+
+                      {/* Field Type selector */}
+                      <div className="w-full lg:w-40">
+                        <select
+                          value={detail.fieldType || 'text'}
+                          onChange={(e) => updateCustomDetail(idx, 'fieldType', e.target.value, false)}
+                          className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                        >
+                          <option value="text">Short Text</option>
+                          <option value="textarea">Long Text / Rich Text</option>
+                          <option value="faculty">Faculty Selector</option>
+                          <option value="institute">Institute Selector</option>
+                          <option value="image">Image URL</option>
+                        </select>
+                      </div>
+
+                      {/* Label/Heading */}
+                      <div className="w-full lg:w-48">
+                        <input
+                          type="text"
+                          value={detail.label}
+                          onChange={(e) => updateCustomDetail(idx, 'label', e.target.value, false)}
+                          placeholder="Field Label (e.g. Duration)"
+                          className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                          required
+                        />
+                      </div>
+
+                      {/* Value Input */}
+                      <div className="w-full lg:flex-1">
+                        {detail.fieldType === 'faculty' ? (
+                          <select
+                            value={detail.value}
+                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                          >
+                            <option value="">Select Faculty</option>
+                            <option value="n-a">N/A - No Faculty</option>
+                            {allFaculties.map(f => (
+                              <option key={f.slug} value={f.slug}>
+                                {f.isHardcoded ? f.fullName : `${f.firstName} ${f.lastName || ''}`}
+                              </option>
+                            ))}
+                          </select>
+                        ) : detail.fieldType === 'institute' ? (
+                          <select
+                            value={detail.value}
+                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                          >
+                            <option value="">Select Institute</option>
+                            <option value="N/A">N/A - No Institute</option>
+                            {institutes.map(inst => (
+                              <option key={inst._id || inst.name} value={inst.name}>{inst.name}</option>
+                            ))}
+                          </select>
+                        ) : detail.fieldType === 'textarea' ? (
+                          <textarea
+                            value={detail.value}
+                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                            placeholder="Field Value..."
+                            rows={1}
+                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={detail.value}
+                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                            placeholder="Field Value..."
+                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                          />
+                        )}
+                      </div>
+
+                      {/* Visibility checkbox */}
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          id={`visible-${idx}`}
+                          checked={detail.visible !== false}
+                          onChange={(e) => updateCustomDetail(idx, 'visible', e.target.checked, false)}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-400"
+                        />
+                        <label htmlFor={`visible-${idx}`} className="text-xs text-gray-500 cursor-pointer select-none">Visible</label>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        type="button"
+                        onClick={() => removeCustomDetail(idx, false)}
+                        className="text-red-500 hover:text-red-700 text-sm font-semibold mobile-touch-target"
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+                  ))}
                 </div>
 
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Books</label>
-                  <input
-                    name="books"
-                    value={courseForm.books}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. Main Book, Practice Manual"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Language</label>
-                  <input
-                    name="videoLanguage"
-                    value={courseForm.videoLanguage}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. Hindi + English Mix"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Run On</label>
-                  <input
-                    name="videoRunOn"
-                    value={courseForm.videoRunOn}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. Windows Laptop, Android Mobile"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Doubt Solving</label>
-                  <input
-                    name="doubtSolving"
-                    value={courseForm.doubtSolving}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. WhatsApp / Telegram"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Support Mail</label>
-                  <input
-                    name="supportMail"
-                    value={courseForm.supportMail}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. support@academywale.com"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Support Call</label>
-                  <input
-                    name="supportCall"
-                    value={courseForm.supportCall}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. 8910416751"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Timing</label>
-                  <input
-                    name="timing"
-                    value={courseForm.timing}
-                    onChange={handleCourseFormChange}
-                    placeholder="e.g. 120 Hours"
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                  />
-                </div>
-
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
-                    <input
-                      name="poster"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCourseFormChange}
-                      className="flex-1 rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                      required
-                    />
-                    {posterPreviewNew && (
-                      <img src={posterPreviewNew} alt="Preview" className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border-2 border-green-200" />
-                    )}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => addCustomDetail(false)}
+                  className="mt-4 text-green-700 hover:text-green-800 text-sm font-semibold py-2 px-4 bg-green-100 hover:bg-green-200 rounded-lg transition-colors mobile-touch-target"
+                >
+                  + Add Custom Detail Field
+                </button>
               </div>
             </div>
 
@@ -2079,11 +2336,11 @@ export default function AdminDashboard() {
               {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
                 <div key={modeIndex} className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold text-purple-700">Mode {modeIndex + 1}</h4>
+                    <h4 className="text-lg font-semibold text-purple-700">Mode Block {modeIndex + 1}</h4>
                     {courseForm.modeAttemptPricing.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeModeAttemptPricing(modeIndex)}
+                        onClick={() => removeModeAttemptPricing(modeIndex, false)}
                         className="text-red-600 hover:text-red-800 font-semibold"
                       >
                         Remove Mode
@@ -2091,83 +2348,131 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Mode Name *</label>
-                    <input
-                      value={modeData.mode}
-                      onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value)}
-                      placeholder="e.g. Live at Home With Hard Copy"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      required
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mode Label (e.g. Mode, Media, Format)</label>
+                      <input
+                        value={modeData.modeLabel || 'Mode'}
+                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'modeLabel', e.target.value, false)}
+                        placeholder="e.g. Mode"
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mode Value (e.g. Recorded Video, Pendrive)</label>
+                      <input
+                        value={modeData.mode}
+                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value, false)}
+                        placeholder="e.g. Live at Home With Hard Copy"
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing:</h5>
+                  <div className="space-y-4">
+                    <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing Options:</h5>
                     {modeData.attempts.map((attempt, attemptIndex) => (
-                      <div key={attemptIndex} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-3 sm:p-4 bg-purple-50 rounded-lg">
-                        <div className="sm:col-span-2 lg:col-span-1">
-                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Exam Term / Attempt *</label>
-                          <input
-                            value={attempt.attempt}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value)}
-                            placeholder="e.g. Dec 2026"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
-                            required
-                          />
+                      <div key={attemptIndex} className="p-4 bg-purple-50 rounded-lg border border-purple-100 space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Attempt Option Label</label>
+                            <input
+                              value={attempt.attemptLabel || 'Exam Term / Attempt'}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attemptLabel', e.target.value, false)}
+                              placeholder="e.g. Exam Term / Attempt"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Attempt Option Value</label>
+                            <input
+                              value={attempt.attempt}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value, false)}
+                              placeholder="e.g. Dec 2026"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Validity Label</label>
+                            <input
+                              value={attempt.validityLabel || 'Validity'}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validityLabel', e.target.value, false)}
+                              placeholder="e.g. Validity"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Validity Value</label>
+                            <input
+                              value={attempt.validity || ''}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value, false)}
+                              placeholder="e.g. 12 Months"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Cost Price *</label>
+                            <input
+                              type="number"
+                              value={attempt.costPrice}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, false)}
+                              placeholder="15999"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Selling Price *</label>
+                            <input
+                              type="number"
+                              value={attempt.sellingPrice}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, false)}
+                              placeholder="13999"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                              required
+                            />
+                          </div>
+                          <div className="flex items-end justify-end">
+                            {modeData.attempts.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex, false)}
+                                className="text-red-600 hover:text-red-800 text-xs font-semibold py-1 px-3 bg-red-100 rounded transition-colors"
+                              >
+                                Remove Attempt
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Validity *</label>
-                          <input
-                            value={attempt.validity || ''}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value)}
-                            placeholder="e.g. 12 Months"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
-                            required
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Option Description (Optional, e.g. Book details or access notes)</label>
+                          <textarea
+                            value={attempt.description || ''}
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, false)}
+                            placeholder="e.g. Includes Multi-Coloured Books, MCQ Compiler, and WhatsApp Query support."
+                            className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            rows={1}
                           />
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Cost Price *</label>
-                          <input
-                            type="number"
-                            value={attempt.costPrice}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0)}
-                            placeholder="15999"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Selling Price *</label>
-                          <input
-                            type="number"
-                            value={attempt.sellingPrice}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0)}
-                            placeholder="13999"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-1 focus:ring-purple-400 mobile-touch-target"
-                            required
-                          />
-                        </div>
-                        <div className="flex items-end sm:col-span-2 lg:col-span-1">
-                          {modeData.attempts.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex)}
-                              className="text-red-600 hover:text-red-800 text-sm sm:text-base font-semibold py-2 sm:py-3 px-3 sm:px-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors mobile-touch-target w-full lg:w-auto"
-                            >
-                              Remove
-                            </button>
-                          )}
                         </div>
                       </div>
                     ))}
 
                     <button
                       type="button"
-                      onClick={() => addAttemptToPricing(modeIndex)}
-                      className="text-purple-600 hover:text-purple-800 text-sm sm:text-base font-semibold py-2 px-3 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors mobile-touch-target"
+                      onClick={() => addAttemptToPricing(modeIndex, false)}
+                      className="text-purple-600 hover:text-purple-800 text-xs font-semibold py-1.5 px-3 bg-purple-100 hover:bg-purple-200 rounded transition-colors"
                     >
-                      + Add Another Attempt
+                      + Add Another Attempt Option
                     </button>
                   </div>
                 </div>
@@ -2175,10 +2480,10 @@ export default function AdminDashboard() {
 
               <button
                 type="button"
-                onClick={addModeAttemptPricing}
+                onClick={() => addModeAttemptPricing(false)}
                 className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold text-sm sm:text-base mobile-touch-target w-full sm:w-auto"
               >
-                + Add Another Mode
+                + Add Another Mode Block
               </button>
             </div>
 
@@ -2716,53 +3021,368 @@ export default function AdminDashboard() {
       <Modal
         isOpen={editModalOpen}
         onRequestClose={() => setEditModalOpen(false)}
-        style={modalStyles}
+        style={{
+          content: {
+            ...modalStyles.content,
+            maxWidth: '800px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }
+        }}
         ariaHideApp={false}
       >
-        <h2 className="text-xl font-bold mb-4">Edit Course</h2>
-        <form onSubmit={handleEditSubmit} className="flex flex-col gap-3">
-          <input name="subject" value={editCourseData.subject || ''} onChange={handleEditChange} placeholder="Subject" className="rounded border px-3 py-2" required />
-          <input name="noOfLecture" value={editCourseData.noOfLecture || ''} onChange={handleEditChange} placeholder="No Of Lecture" className="rounded border px-3 py-2" required />
-          <input name="books" value={editCourseData.books || ''} onChange={handleEditChange} placeholder="Books" className="rounded border px-3 py-2" />
-          <input name="videoLanguage" value={editCourseData.videoLanguage || ''} onChange={handleEditChange} placeholder="Video Language" className="rounded border px-3 py-2" />
-          <input name="validityStartFrom" value={editCourseData.validityStartFrom || ''} onChange={handleEditChange} placeholder="Validity" className="rounded border px-3 py-2" />
-          <input name="videoRunOn" value={editCourseData.videoRunOn || ''} onChange={handleEditChange} placeholder="Video Run On" className="rounded border px-3 py-2" />
-          <input name="doubtSolving" value={editCourseData.doubtSolving || ''} onChange={handleEditChange} placeholder="Doubt Solving" className="rounded border px-3 py-2" />
-          <input name="supportMail" value={editCourseData.supportMail || ''} onChange={handleEditChange} placeholder="Support Mail" className="rounded border px-3 py-2" />
-          <input name="supportCall" value={editCourseData.supportCall || ''} onChange={handleEditChange} placeholder="Support Call" className="rounded border px-3 py-2" />
-          <input name="mode" value={editCourseData.mode || ''} onChange={handleEditChange} placeholder="Mode" className="rounded border px-3 py-2" />
-          <input name="timing" value={editCourseData.timing || ''} onChange={handleEditChange} placeholder="Timing" className="rounded border px-3 py-2" />
-          <input name="costPrice" value={editCourseData.costPrice || ''} onChange={handleEditChange} placeholder="Cost Price" type="number" className="rounded border px-3 py-2" />
-          <input name="sellingPrice" value={editCourseData.sellingPrice || ''} onChange={handleEditChange} placeholder="Selling Price" type="number" className="rounded border px-3 py-2" />
-          <select name="courseType" value={editCourseData.courseType || ''} onChange={handleEditChange} className="rounded border px-3 py-2" required>
-            <option value="">Select Course Type</option>
-            <option value="CA Foundation">CA Foundation</option>
-            <option value="CMA Foundation">CMA Foundation</option>
-            <option value="CA Inter">CA Inter</option>
-            <option value="CMA Inter">CMA Inter</option>
-            <option value="CA Final">CA Final</option>
-            <option value="CMA Final">CMA Final</option>
-          </select>
-          <label className="font-semibold text-gray-700">Institute</label>
-          <select
-            name="institute"
-            value={editCourseData.institute || ''}
-            onChange={handleEditChange}
-            className="rounded border px-3 py-2"
-            required
-          >
-            <option value="">Select Institute</option>
-            {institutes.map(inst => (
-              <option key={inst.name} value={inst.name}>{inst.name}</option>
-            ))}
-          </select>
-          <textarea name="description" value={editCourseData.description || ''} onChange={handleEditChange} placeholder="Description" className="rounded border px-3 py-2" />
-          <input name="poster" type="file" accept="image/*" onChange={handleEditChange} className="rounded border px-3 py-2" />
-          {editPosterPreview && <img src={editPosterPreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />}
+        <h2 className="text-2xl font-bold mb-4 text-blue-700">Edit Course</h2>
+        <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course Title *</label>
+              <input 
+                name="title" 
+                value={editCourseData.title || ''} 
+                onChange={handleEditChange} 
+                placeholder="Course Title" 
+                className="w-full rounded border border-gray-300 px-3 py-2" 
+                required 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course Type *</label>
+              <select 
+                name="courseType" 
+                value={editCourseData.courseType || ''} 
+                onChange={handleEditChange} 
+                className="w-full rounded border border-gray-300 px-3 py-2" 
+                required
+              >
+                <option value="">Select Course Type</option>
+                <option value="CA Foundation">CA Foundation</option>
+                <option value="CMA Foundation">CMA Foundation</option>
+                <option value="CA Inter">CA Inter</option>
+                <option value="CMA Inter">CMA Inter</option>
+                <option value="CA Final">CA Final</option>
+                <option value="CMA Final">CMA Final</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea 
+              name="description" 
+              value={editCourseData.description || ''} 
+              onChange={handleEditChange} 
+              placeholder="Description" 
+              className="w-full rounded border border-gray-300 px-3 py-2" 
+              rows={2}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Course Poster</label>
+            <input 
+              name="poster" 
+              type="file" 
+              accept="image/*" 
+              onChange={handleEditChange} 
+              className="w-full rounded border border-gray-300 px-3 py-2" 
+            />
+            {editPosterPreview ? (
+              <img src={editPosterPreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />
+            ) : editCourseData.posterUrl ? (
+              <img src={editCourseData.posterUrl} alt="Current Poster" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />
+            ) : null}
+          </div>
+
+          {/* Step 2: Custom Details Editor */}
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-lg font-semibold text-green-700 mb-3">Course Custom Fields</h3>
+            <div className="space-y-3">
+              {(editCourseData.customDetails || []).map((detail, idx) => (
+                <div key={idx} className="flex flex-col lg:flex-row gap-2 items-start lg:items-center bg-gray-50 p-3 rounded border border-gray-200">
+                  
+                  {/* Reorder Buttons */}
+                  <div className="flex lg:flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveCustomDetail(idx, 'up', true)}
+                      disabled={idx === 0}
+                      className="p-0.5 rounded hover:bg-gray-200 disabled:opacity-30 text-xs"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveCustomDetail(idx, 'down', true)}
+                      disabled={idx === (editCourseData.customDetails || []).length - 1}
+                      className="p-0.5 rounded hover:bg-gray-200 disabled:opacity-30 text-xs"
+                    >
+                      ▼
+                    </button>
+                  </div>
+
+                  <div className="w-full lg:w-32">
+                    <select
+                      value={detail.fieldType || 'text'}
+                      onChange={(e) => updateCustomDetail(idx, 'fieldType', e.target.value, true)}
+                      className="w-full rounded border border-gray-300 px-1 py-1 text-xs focus:outline-none focus:ring-1"
+                    >
+                      <option value="text">Short Text</option>
+                      <option value="textarea">Long Text</option>
+                      <option value="faculty">Faculty</option>
+                      <option value="institute">Institute</option>
+                      <option value="image">Image URL</option>
+                    </select>
+                  </div>
+
+                  <div className="w-full lg:w-40">
+                    <input
+                      type="text"
+                      value={detail.label}
+                      onChange={(e) => updateCustomDetail(idx, 'label', e.target.value, true)}
+                      placeholder="Label"
+                      className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                      required
+                    />
+                  </div>
+
+                  <div className="w-full lg:flex-1">
+                    {detail.fieldType === 'faculty' ? (
+                      <select
+                        value={detail.value}
+                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                      >
+                        <option value="">Select Faculty</option>
+                        <option value="n-a">N/A - No Faculty</option>
+                        {allFaculties.map(f => (
+                          <option key={f.slug} value={f.slug}>
+                            {f.isHardcoded ? f.fullName : `${f.firstName} ${f.lastName || ''}`}
+                          </option>
+                        ))}
+                      </select>
+                    ) : detail.fieldType === 'institute' ? (
+                      <select
+                        value={detail.value}
+                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                      >
+                        <option value="">Select Institute</option>
+                        <option value="N/A">N/A - No Institute</option>
+                        {institutes.map(inst => (
+                          <option key={inst._id || inst.name} value={inst.name}>{inst.name}</option>
+                        ))}
+                      </select>
+                    ) : detail.fieldType === 'textarea' ? (
+                      <textarea
+                        value={detail.value}
+                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
+                        placeholder="Value"
+                        rows={1}
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={detail.value}
+                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
+                        placeholder="Value"
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      id={`edit-visible-${idx}`}
+                      checked={detail.visible !== false}
+                      onChange={(e) => updateCustomDetail(idx, 'visible', e.target.checked, true)}
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-400"
+                    />
+                    <label htmlFor={`edit-visible-${idx}`} className="text-xs text-gray-500 cursor-pointer">Visible</label>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeCustomDetail(idx, true)}
+                    className="text-red-500 hover:text-red-700 text-xs font-semibold"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => addCustomDetail(true)}
+              className="mt-3 text-green-700 hover:text-green-800 text-xs font-semibold py-1.5 px-3 bg-green-100 hover:bg-green-200 rounded"
+            >
+              + Add Custom Detail Field
+            </button>
+          </div>
+
+          {/* Step 3: Pricing Block Editor */}
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-lg font-semibold text-purple-700 mb-3">Pricing Options</h3>
+            <div className="space-y-4">
+              {(editCourseData.modeAttemptPricing || []).map((modeData, modeIndex) => (
+                <div key={modeIndex} className="bg-purple-50/50 p-3 rounded border border-purple-200">
+                  
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-semibold text-purple-800 text-sm">Mode Block {modeIndex + 1}</span>
+                    {(editCourseData.modeAttemptPricing || []).length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeModeAttemptPricing(modeIndex, true)}
+                        className="text-red-600 hover:text-red-800 text-xs font-semibold"
+                      >
+                        Remove Mode Block
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Mode Label</label>
+                      <input
+                        value={modeData.modeLabel || 'Mode'}
+                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'modeLabel', e.target.value, true)}
+                        placeholder="Label"
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Mode Value</label>
+                      <input
+                        value={modeData.mode}
+                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value, true)}
+                        placeholder="Value"
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pl-2 border-l-2 border-purple-200">
+                    {modeData.attempts.map((attempt, attemptIndex) => (
+                      <div key={attemptIndex} className="p-3 bg-white rounded border border-gray-200 space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Attempt Label</label>
+                            <input
+                              value={attempt.attemptLabel || 'Exam Term / Attempt'}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attemptLabel', e.target.value, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Attempt Value</label>
+                            <input
+                              value={attempt.attempt}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Validity Label</label>
+                            <input
+                              value={attempt.validityLabel || 'Validity'}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validityLabel', e.target.value, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Validity Value</label>
+                            <input
+                              value={attempt.validity || ''}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Cost Price *</label>
+                            <input
+                              type="number"
+                              value={attempt.costPrice}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-500 mb-1">Selling Price *</label>
+                            <input
+                              type="number"
+                              value={attempt.sellingPrice}
+                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, true)}
+                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                              required
+                            />
+                          </div>
+                          <div className="flex items-end justify-end">
+                            {modeData.attempts.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex, true)}
+                                className="text-red-600 hover:text-red-800 text-[10px] font-semibold py-0.5 px-2 bg-red-50 rounded"
+                              >
+                                Remove Attempt
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-gray-500 mb-1">Option Description (Optional)</label>
+                          <textarea
+                            value={attempt.description || ''}
+                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, true)}
+                            placeholder="Option notes..."
+                            className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
+                            rows={1}
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => addAttemptToPricing(modeIndex, true)}
+                      className="text-purple-600 hover:text-purple-800 text-xs font-semibold py-1 px-2 bg-purple-100 hover:bg-purple-200 rounded"
+                    >
+                      + Add Another Attempt Option
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => addModeAttemptPricing(true)}
+                className="bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 font-semibold text-xs mt-2"
+              >
+                + Add Another Mode Block
+              </button>
+            </div>
+
+          </div>
+
           {editError && <div className="text-red-600 text-center font-semibold">{editError}</div>}
-          <div className="flex gap-2 mt-2">
-            <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold">Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold" disabled={editLoading}>{editLoading ? 'Saving...' : 'Save'}</button>
+          
+          <div className="flex gap-2 mt-4 border-t pt-3">
+            <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold text-sm">Cancel</button>
+            <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold text-sm" disabled={editLoading}>{editLoading ? 'Saving...' : 'Save'}</button>
           </div>
         </form>
       </Modal>

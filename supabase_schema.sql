@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mongo_id VARCHAR(50),                     -- For MongoDB reference mapping (standalone or nested)
     title VARCHAR(255) DEFAULT 'Untitled Course',
-    subject VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) DEFAULT '',
     description TEXT DEFAULT '',
     category VARCHAR(100) DEFAULT '',         -- 'CA' or 'CMA'
     subcategory VARCHAR(100) DEFAULT '',      -- 'Foundation', 'Inter', 'Final'
@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
     poster_url TEXT DEFAULT '',
     poster_public_id TEXT DEFAULT '',
     mode_attempt_pricing JSONB DEFAULT '[]'::jsonb, -- Attempts and modes represented dynamically
+    custom_details JSONB DEFAULT '[]'::jsonb,       -- Dynamic course details fields
     cost_price NUMERIC DEFAULT 0,
     selling_price NUMERIC DEFAULT 0,
     is_active BOOLEAN DEFAULT true,

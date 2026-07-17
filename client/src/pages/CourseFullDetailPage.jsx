@@ -370,46 +370,67 @@ const CourseFullDetailPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-850">
+                        {/* Always show Applicable For as it's part of Course Information */}
                         <tr className="hover:bg-neutral-900/40 transition-colors">
                           <td className="py-3.5 px-4 font-semibold text-neutral-400 w-1/3">Applicable For</td>
                           <td className="py-3.5 px-4 text-white font-medium">{course.category} {course.subcategory} level exams</td>
                         </tr>
-                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Lecture Duration</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.timing || 'Approx 150+ Hours'}</td>
-                        </tr>
-                        <tr className="hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">No. of Lectures</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
-                        </tr>
-                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Study Materials</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
-                        </tr>
-                        <tr className="hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Run On</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
-                        </tr>
-                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Language</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
-                        </tr>
-                        <tr className="hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Doubt Solving Medium</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
-                        </tr>
-                        <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400">Course Support</td>
-                          <td className="py-3.5 px-4 text-white font-medium flex flex-wrap gap-x-4 gap-y-1">
-                            {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-[#20b2aa]" /> {course.supportCall}</span>}
-                            {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-[#20b2aa]" /> {course.supportMail}</span>}
-                          </td>
-                        </tr>
-                        {course.validity_start_from && (
-                          <tr className="hover:bg-neutral-900/40 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-neutral-400">Validity Commences</td>
-                            <td className="py-3.5 px-4 text-white font-medium">{course.validity_start_from}</td>
-                          </tr>
+                        {/* Render Dynamic Details */}
+                        {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
+                          course.customDetails
+                            .filter(detail => detail.visible !== false && detail.value)
+                            .map((detail, index) => {
+                              const isAlternateColor = index % 2 === 0; // Alternating background colors
+                              const rowClass = isAlternateColor ? "bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors" : "hover:bg-neutral-900/40 transition-colors";
+                              
+                              let displayVal = detail.value;
+                              
+                              if (detail.fieldType === 'faculty') {
+                                displayVal = course.facultyName || detail.value;
+                              }
+
+                              return (
+                                <tr key={index} className={rowClass}>
+                                  <td className="py-3.5 px-4 font-semibold text-neutral-400">{detail.label}</td>
+                                  <td className="py-3.5 px-4 text-white font-medium">{displayVal}</td>
+                                </tr>
+                              );
+                            })
+                        ) : (
+                          // Fallback to legacy fields if customDetails is empty
+                          <>
+                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Lecture Duration</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.timing || 'Approx 150+ Hours'}</td>
+                            </tr>
+                            <tr className="hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">No. of Lectures</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
+                            </tr>
+                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Study Materials</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
+                            </tr>
+                            <tr className="hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Run On</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
+                            </tr>
+                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Language</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
+                            </tr>
+                            <tr className="hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Doubt Solving Medium</td>
+                              <td className="py-3.5 px-4 text-white font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
+                            </tr>
+                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Course Support</td>
+                              <td className="py-3.5 px-4 text-white font-medium flex flex-wrap gap-x-4 gap-y-1">
+                                {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-[#20b2aa]" /> {course.supportCall}</span>}
+                                {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-[#20b2aa]" /> {course.supportMail}</span>}
+                              </td>
+                            </tr>
+                          </>
                         )}
                         {course.instituteName && (
                           <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
@@ -480,13 +501,15 @@ const CourseFullDetailPage = () => {
                 <div className="space-y-4 mb-6">
                   {/* Mode Selector */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Select Mode</label>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                      {course.modeAttemptPricing?.[0]?.modeLabel || 'Select Mode'}
+                    </label>
                     <select
                       value={selectedMode}
                       onChange={(e) => handleModeChange(e.target.value)}
                       className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
                     >
-                      <option value="" disabled>Choose Learning Mode</option>
+                      <option value="" disabled>Choose option</option>
                       {course.modeAttemptPricing.map((modeData, idx) => (
                         <option key={idx} value={modeData.mode}>
                           {modeData.mode}
@@ -498,13 +521,15 @@ const CourseFullDetailPage = () => {
                   {/* Validity Selector */}
                   {selectedMode && getUniqueValiditiesForMode(selectedMode).length > 0 && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Select Validity</label>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                        {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.validityLabel || 'Select Validity'}
+                      </label>
                       <select
                         value={selectedValidity}
                         onChange={(e) => handleValidityChange(e.target.value)}
                         className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
                       >
-                        <option value="" disabled>Choose Validity</option>
+                        <option value="" disabled>Choose option</option>
                         {getUniqueValiditiesForMode(selectedMode).map((val, idx) => (
                           <option key={idx} value={val}>
                             {val}
@@ -517,13 +542,15 @@ const CourseFullDetailPage = () => {
                   {/* Attempt/Exam Term Selector */}
                   {selectedMode && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Exam Term / Attempt</label>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                        {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Exam Term / Attempt'}
+                      </label>
                       <select
                         value={selectedAttempt}
                         onChange={(e) => handleAttemptChange(e.target.value)}
                         className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
                       >
-                        <option value="" disabled>Choose Exam Term</option>
+                        <option value="" disabled>Choose option</option>
                         {getAttemptsForSelectedModeAndValidity().map((attempt, idx) => (
                           <option key={idx} value={attempt.attempt}>
                             {attempt.attempt}
@@ -532,6 +559,24 @@ const CourseFullDetailPage = () => {
                       </select>
                     </div>
                   )}
+
+                  {/* Description display block */}
+                  {(() => {
+                    const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
+                    const attemptData = modeData?.attempts?.find(a => 
+                      a.attempt === selectedAttempt && 
+                      (!selectedValidity || a.validity === selectedValidity)
+                    );
+                    const desc = attemptData?.description || '';
+                    if (desc) {
+                      return (
+                        <div className="bg-slate-950/60 border border-neutral-800 p-3.5 rounded-xl text-neutral-300 text-xs leading-relaxed mt-2 shadow-inner">
+                          {desc}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               ) : (
                 <div className="text-xs text-neutral-500 bg-neutral-950 p-4 rounded-2xl border border-neutral-850 mb-6">

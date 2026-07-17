@@ -34,6 +34,7 @@ function mapCourseToFrontend(course) {
     supportMail: course.support_mail,
     supportCall: course.support_call,
     validityStartFrom: course.validity_start_from,
+    customDetails: course.custom_details || [],
     isActive: course.is_active,
     createdAt: course.created_at,
     updatedAt: course.updated_at,
