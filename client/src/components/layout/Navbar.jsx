@@ -68,23 +68,23 @@ export default function Navbar() {
       <>
       {/* Top contact bar */}
       <div className="bg-gray-900 text-white text-xs w-full z-50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col sm:flex-row justify-between items-center">
-          <div className="flex flex-col xs:flex-row items-center space-y-1 xs:space-y-0 xs:space-x-3 sm:space-x-6 mb-1 sm:mb-0">
-            <div className="flex items-center space-x-1.5 sm:space-x-2">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex flex-row justify-start sm:justify-between items-center gap-3 overflow-x-auto whitespace-nowrap">
+          <div className="flex flex-row items-center gap-3 sm:gap-6 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
               </svg>
-              <span className="text-xs sm:text-sm">+91 9693320108</span>
+              <span className="text-xs sm:text-sm font-semibold">+91 9693320108</span>
             </div>
-            <div className="flex items-center space-x-1.5 sm:space-x-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
               </svg>
-              <span className="text-xs sm:text-sm break-all">support@academywale.com</span>
+              <span className="text-xs sm:text-sm font-semibold">support@academywale.com</span>
             </div>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
               <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
@@ -246,7 +246,7 @@ export default function Navbar() {
               <div className="space-y-1 max-h-96 overflow-y-auto">
                 <Link 
                   to="/" 
-                  className="block py-3 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition font-medium"
+                  className="block py-3 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
@@ -269,7 +269,7 @@ export default function Navbar() {
                     <div className="pl-4 space-y-1 bg-gray-50 rounded-lg py-2 mt-1">
                       <Link 
                         to="/ca/foundation-papers" 
-                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -279,7 +279,7 @@ export default function Navbar() {
                       </Link>
                       <Link 
                         to="/ca/inter-papers" 
-                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -289,7 +289,7 @@ export default function Navbar() {
                       </Link>
                       <Link 
                         to="/ca/final-papers" 
-                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -303,7 +303,7 @@ export default function Navbar() {
                 <div>
                   <button
                     onClick={() => setIsCmaDropdownOpen(!isCmaDropdownOpen)}
-                    className="w-full flex justify-between items-center font-semibold text-primary py-2 px-4 focus:outline-none"
+                    className="w-full flex justify-between items-center font-semibold text-primary py-2 px-4 focus:outline-none hover:bg-gray-50 rounded-lg transition"
                   >
                     CMA Courses
                     <svg
@@ -318,20 +318,20 @@ export default function Navbar() {
                     <div className="pl-4">
                       <Link 
                         to="/cma/foundation-papers" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Foundation
                       </Link>
                       <Link 
                         to="/cma/inter-papers" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Inter</Link>
                       <Link 
                         to="/cma/final-papers" 
-                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Final
@@ -339,22 +339,22 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-                <a href="#" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
+                <a href="#" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   Test Series
                 </a>
-                <Link to="/faculties" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
+                <Link to="/faculties" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   All Faculties
                 </Link>
-                <Link to="/about" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
+                <Link to="/about" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   About
                 </Link>
-                <Link to="/contact" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition">
+                <Link to="/contact" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   Contact
                 </Link>
                 {isAuthenticated && (
                   <Link
                     to="/dashboard"
-                    className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition"
+                    className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard
