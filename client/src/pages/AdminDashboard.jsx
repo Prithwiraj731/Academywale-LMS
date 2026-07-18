@@ -532,6 +532,124 @@ export default function AdminDashboard() {
     { label: 'Institute', value: '', fieldType: 'institute', displayOrder: 12, visible: true }
   ];
 
+  const defaultCreateOptions = [
+    { name: 'Mode', values: ['Google Drive', 'Pen Drive'] },
+    { name: 'Validity', values: ['12 Months', '6 Months'] },
+    { name: 'Mode of Books', values: ['Hard Copy', 'Soft Copy'] }
+  ];
+
+  const cartesian = (arrays) => {
+    return arrays.reduce((acc, curr) => {
+      return acc.flatMap(d => curr.map(e => [...d, e]));
+    }, [[]]);
+  };
+
+  const generateVariants = (currentOptions, existingPricing = []) => {
+    if (!currentOptions || currentOptions.length === 0) return [];
+    
+    const names = currentOptions.map(o => o.name);
+    const valueArrays = currentOptions.map(o => o.values.filter(Boolean));
+    
+    if (valueArrays.some(arr => arr.length === 0)) {
+      return [];
+    }
+
+    const combinations = cartesian(valueArrays);
+    const grouped = {};
+    
+    combinations.forEach(combo => {
+      const modeValue = combo[0];
+      const otherValues = combo.slice(1);
+      const attemptValue = otherValues.join(' / ') || 'Standard Package';
+      
+      if (!grouped[modeValue]) {
+        grouped[modeValue] = {
+          mode: modeValue,
+          modeLabel: names[0] || 'Mode',
+          attempts: []
+        };
+      }
+
+      let foundAttempt = null;
+      for (const m of existingPricing) {
+        if (m.mode === modeValue) {
+          const matchingAttempt = m.attempts?.find(a => a.attempt === attemptValue);
+          if (matchingAttempt) {
+            foundAttempt = matchingAttempt;
+            break;
+          }
+        }
+      }
+
+      grouped[modeValue].attempts.push({
+        attempt: attemptValue,
+        attemptLabel: names.slice(1).join(' / ') || 'Option',
+        validity: otherValues[0] || '',
+        validityLabel: names[1] || 'Validity',
+        costPrice: foundAttempt ? foundAttempt.costPrice : 0,
+        sellingPrice: foundAttempt ? foundAttempt.sellingPrice : 0,
+        description: foundAttempt ? foundAttempt.description : ''
+      });
+    });
+
+    return Object.values(grouped);
+  };
+
+  const reconstructOptionsFromPricing = (pricing) => {
+    if (!Array.isArray(pricing) || pricing.length === 0) {
+      return [
+        { name: 'Mode', values: ['Google Drive', 'Pen Drive'] },
+        { name: 'Validity', values: ['12 Months', '6 Months'] },
+        { name: 'Mode of Books', values: ['Hard Copy', 'Soft Copy'] }
+      ];
+    }
+
+    const options = [];
+
+    // 1. Reconstruct Option 1 (Mode)
+    const modeName = pricing[0].modeLabel || 'Mode';
+    const modeValues = Array.from(new Set(pricing.map(p => p.mode).filter(Boolean)));
+    options.push({ name: modeName, values: modeValues });
+
+    // 2. Reconstruct other options from attempts
+    const firstMode = pricing[0];
+    const firstAttempt = firstMode?.attempts?.[0];
+    
+    if (firstAttempt) {
+      const attemptLabel = firstAttempt.attemptLabel || 'Option';
+      const otherNames = attemptLabel.split(' / ');
+      
+      const otherValuesLists = otherNames.map(() => new Set());
+
+      pricing.forEach(m => {
+        (m.attempts || []).forEach(a => {
+          const parts = a.attempt ? a.attempt.split(' / ') : [];
+          parts.forEach((p, idx) => {
+            if (otherValuesLists[idx]) {
+              otherValuesLists[idx].add(p.trim());
+            }
+          });
+        });
+      });
+
+      otherNames.forEach((name, idx) => {
+        options.push({
+          name: name.trim(),
+          values: Array.from(otherValuesLists[idx] || [])
+        });
+      });
+    }
+
+    if (options.length === 0) {
+      options.push({ name: 'Mode', values: ['Recorded'] });
+    }
+
+    return options;
+  };
+
+  const [createOptions, setCreateOptions] = useState(defaultCreateOptions);
+  const [editOptions, setEditOptions] = useState([]);
+
   const [courseForm, setCourseForm] = useState({
     title: '', // Course title (required)
     category: '', // CA or CMA (required)
@@ -541,16 +659,30 @@ export default function AdminDashboard() {
     description: '',
     poster: null,
     customDetails: defaultCustomDetails,
-    modeAttemptPricing: [
-      {
-        mode: 'Live at Home With Hard Copy',
-        modeLabel: 'Mode',
-        attempts: [
-          { attempt: 'Dec 2026', attemptLabel: 'Exam Term / Attempt', validity: '12 Months', validityLabel: 'Validity', costPrice: 15999, sellingPrice: 13999, description: '' }
-        ]
-      }
-    ]
+    modeAttemptPricing: generateVariants(defaultCreateOptions)
   });
+
+  const handleOptionsChange = (newOptions, isEdit = false) => {
+    if (isEdit) {
+      setEditOptions(newOptions);
+      setEditCourseData(prev => {
+        const generated = generateVariants(newOptions, prev.modeAttemptPricing || []);
+        return {
+          ...prev,
+          modeAttemptPricing: generated
+        };
+      });
+    } else {
+      setCreateOptions(newOptions);
+      setCourseForm(prev => {
+        const generated = generateVariants(newOptions, prev.modeAttemptPricing || []);
+        return {
+          ...prev,
+          modeAttemptPricing: generated
+        };
+      });
+    }
+  };
 
   const [posterPreviewNew, setPosterPreviewNew] = useState(null);
 
@@ -1267,6 +1399,9 @@ export default function AdminDashboard() {
       customDetails: details,
       modeAttemptPricing: pricing
     });
+    
+    const reconstructedOptions = reconstructOptionsFromPricing(pricing);
+    setEditOptions(reconstructedOptions);
     
     setEditPoster(null);
     setEditPosterPreview(null);
@@ -2322,162 +2457,192 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Step 3: Mode & Attempt Pricing */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border-2 border-indigo-200">
-              <h3 className="text-xl font-semibold text-indigo-800 mb-4">Step 3: Mode & Attempt Pricing</h3>
+            {/* Step 3: Mode & Attempt Pricing (Shopify-like Variant Builder) */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border-2 border-indigo-200 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-200 pb-3">
+                <div>
+                  <h3 className="text-xl font-semibold text-indigo-850">Step 3: Variants & Options</h3>
+                  <p className="text-xs text-indigo-650">Add options like Mode, Validity, or Books to generate price variants.</p>
+                </div>
+              </div>
 
-              {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
-                <div key={modeIndex} className="bg-white p-4 rounded-lg border border-purple-200 mb-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold text-purple-700">Mode Block {modeIndex + 1}</h4>
-                    {courseForm.modeAttemptPricing.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeModeAttemptPricing(modeIndex, false)}
-                        className="text-red-600 hover:text-red-800 font-semibold"
-                      >
-                        Remove Mode
-                      </button>
-                    )}
+              {/* Options List */}
+              <div className="space-y-4">
+                {createOptions.map((option, optIdx) => (
+                  <div key={optIdx} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm relative">
+                    <div className="flex justify-between items-center gap-3">
+                      <div className="flex-grow">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Option Name</label>
+                        <input
+                          type="text"
+                          value={option.name}
+                          onChange={(e) => {
+                            const updated = [...createOptions];
+                            updated[optIdx].name = e.target.value;
+                            handleOptionsChange(updated, false);
+                          }}
+                          placeholder="e.g. Validity, Size, Books"
+                          className="w-full text-sm font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        />
+                      </div>
+                      {createOptions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = createOptions.filter((_, idx) => idx !== optIdx);
+                            handleOptionsChange(updated, false);
+                          }}
+                          className="text-red-500 hover:text-red-750 font-bold text-xs mt-4"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Option Values</label>
+                      
+                      {/* Tags Container */}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {option.values.map((val, valIdx) => (
+                          <span key={valIdx} className="inline-flex items-center bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-indigo-200">
+                            {val}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...createOptions];
+                                updated[optIdx].values = option.values.filter((_, idx) => idx !== valIdx);
+                                handleOptionsChange(updated, false);
+                              }}
+                              className="ml-1.5 inline-flex items-center justify-center text-indigo-400 hover:text-indigo-600 font-bold focus:outline-none"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Add Tag Input */}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Type value and press Enter or click Add"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const val = e.target.value.trim();
+                              if (val && !option.values.includes(val)) {
+                                const updated = [...createOptions];
+                                updated[optIdx].values = [...option.values, val];
+                                handleOptionsChange(updated, false);
+                                e.target.value = '';
+                              }
+                            }
+                          }}
+                          className="flex-grow text-xs bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            const inputEl = e.currentTarget.previousSibling;
+                            const val = inputEl.value.trim();
+                            if (val && !option.values.includes(val)) {
+                              const updated = [...createOptions];
+                              updated[optIdx].values = [...option.values, val];
+                              handleOptionsChange(updated, false);
+                              inputEl.value = '';
+                            }
+                          }}
+                          className="bg-indigo-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-750"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {createOptions.length < 4 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...createOptions, { name: `Option ${createOptions.length + 1}`, values: [] }];
+                      handleOptionsChange(updated, false);
+                    }}
+                    className="w-full border-2 border-dashed border-indigo-200 text-indigo-600 hover:border-indigo-400 font-semibold text-xs py-2.5 px-3 rounded-lg hover:bg-indigo-50/30 transition-all text-center"
+                  >
+                    + Add Another Option (e.g. Validity, Books Option)
+                  </button>
+                )}
+              </div>
+
+              {/* Variants Grid */}
+              {courseForm.modeAttemptPricing && courseForm.modeAttemptPricing.length > 0 ? (
+                <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+                  <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+                    <h4 className="font-bold text-sm text-gray-800">Variants Matrix</h4>
+                    <span className="text-xs text-gray-505 font-medium">Grouped by {createOptions[0]?.name || 'Mode'}</span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Mode Label (e.g. Mode, Media, Format)</label>
-                      <input
-                        value={modeData.modeLabel || 'Mode'}
-                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'modeLabel', e.target.value, false)}
-                        placeholder="e.g. Mode"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Mode Value (e.g. Recorded Video, Pendrive)</label>
-                      <input
-                        value={modeData.mode}
-                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value, false)}
-                        placeholder="e.g. Live at Home With Hard Copy"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h5 className="text-md font-semibold text-purple-600">Attempts & Pricing Options:</h5>
-                    {modeData.attempts.map((attempt, attemptIndex) => (
-                      <div key={attemptIndex} className="p-4 bg-purple-50 rounded-lg border border-purple-100 space-y-3">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Attempt Option Label</label>
-                            <input
-                              value={attempt.attemptLabel || 'Exam Term / Attempt'}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attemptLabel', e.target.value, false)}
-                              placeholder="e.g. Exam Term / Attempt"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Attempt Option Value</label>
-                            <input
-                              value={attempt.attempt}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value, false)}
-                              placeholder="e.g. Dec 2026"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Validity Label</label>
-                            <input
-                              value={attempt.validityLabel || 'Validity'}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validityLabel', e.target.value, false)}
-                              placeholder="e.g. Validity"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Validity Value</label>
-                            <input
-                              value={attempt.validity || ''}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value, false)}
-                              placeholder="e.g. 12 Months"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
+                  <div className="divide-y divide-gray-200 max-h-[450px] overflow-y-auto">
+                    {courseForm.modeAttemptPricing.map((modeData, modeIndex) => (
+                      <div key={modeIndex} className="p-4 space-y-3 bg-white">
+                        <div className="flex items-center gap-2 border-b border-gray-150 pb-2">
+                          <span className="font-bold text-sm text-indigo-700">{modeData.mode}</span>
+                          <span className="text-xs text-gray-400">({modeData.attempts?.length || 0} variants)</span>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Cost Price *</label>
-                            <input
-                              type="number"
-                              value={attempt.costPrice}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, false)}
-                              placeholder="15999"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">Selling Price *</label>
-                            <input
-                              type="number"
-                              value={attempt.sellingPrice}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, false)}
-                              placeholder="13999"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                              required
-                            />
-                          </div>
-                          <div className="flex items-end justify-end">
-                            {modeData.attempts.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex, false)}
-                                className="text-red-600 hover:text-red-800 text-xs font-semibold py-1 px-3 bg-red-100 rounded transition-colors"
-                              >
-                                Remove Attempt
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Option Description (Optional, e.g. Book details or access notes)</label>
-                          <textarea
-                            value={attempt.description || ''}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, false)}
-                            placeholder="e.g. Includes Multi-Coloured Books, MCQ Compiler, and WhatsApp Query support."
-                            className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400"
-                            rows={1}
-                          />
+                        
+                        <div className="space-y-3">
+                          {(modeData.attempts || []).map((attempt, attemptIndex) => (
+                            <div key={attemptIndex} className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center bg-gray-50/50 p-2.5 rounded-lg border border-gray-200/60">
+                              <div className="lg:col-span-4">
+                                <span className="text-[10px] font-semibold text-gray-400 block mb-0.5">Combination</span>
+                                <span className="text-xs text-gray-700 font-bold">{attempt.attempt}</span>
+                              </div>
+                              <div className="lg:col-span-2">
+                                <span className="text-[10px] font-semibold text-gray-500 block mb-0.5">Cost Price *</span>
+                                <input
+                                  type="number"
+                                  value={attempt.costPrice || ''}
+                                  onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, false)}
+                                  placeholder="e.g. 8000"
+                                  className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 font-medium"
+                                  required
+                                />
+                              </div>
+                              <div className="lg:col-span-2">
+                                <span className="text-[10px] font-semibold text-gray-500 block mb-0.5">Selling Price *</span>
+                                <input
+                                  type="number"
+                                  value={attempt.sellingPrice || ''}
+                                  onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, false)}
+                                  placeholder="e.g. 7000"
+                                  className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 font-medium"
+                                  required
+                                />
+                              </div>
+                              <div className="lg:col-span-4">
+                                <span className="text-[10px] font-semibold text-gray-500 block mb-0.5">Variant Note / Description</span>
+                                <input
+                                  type="text"
+                                  value={attempt.description || ''}
+                                  onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, false)}
+                                  placeholder="e.g. Video duration details..."
+                                  className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
-
-                    <button
-                      type="button"
-                      onClick={() => addAttemptToPricing(modeIndex, false)}
-                      className="text-purple-600 hover:text-purple-800 text-xs font-semibold py-1.5 px-3 bg-purple-100 hover:bg-purple-200 rounded transition-colors"
-                    >
-                      + Add Another Attempt Option
-                    </button>
                   </div>
                 </div>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => addModeAttemptPricing(false)}
-                className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-purple-700 transition-colors font-semibold text-sm sm:text-base mobile-touch-target w-full sm:w-auto"
-              >
-                + Add Another Mode Block
-              </button>
+              ) : (
+                <div className="bg-white border border-dashed border-gray-200 p-6 rounded-xl text-center text-sm text-gray-500">
+                  Define your options and option values above to generate course pricing variants.
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -3217,158 +3382,184 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          {/* Step 3: Pricing Block Editor */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-semibold text-purple-700 mb-3">Pricing Options</h3>
-            <div className="space-y-4">
-              {(editCourseData.modeAttemptPricing || []).map((modeData, modeIndex) => (
-                <div key={modeIndex} className="bg-purple-50/50 p-3 rounded border border-purple-200">
-                  
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-semibold text-purple-800 text-sm">Mode Block {modeIndex + 1}</span>
-                    {(editCourseData.modeAttemptPricing || []).length > 1 && (
+          {/* Step 3: Pricing Block Editor (Shopify-like Variant Builder) */}
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            <div className="flex flex-col gap-1 border-b border-indigo-100 pb-2">
+              <h3 className="text-lg font-bold text-purple-700">Pricing Options & Variants</h3>
+              <p className="text-[10px] text-gray-500">Edit options to automatically regenerate combinations, or input pricing details directly below.</p>
+            </div>
+
+            {/* Options List */}
+            <div className="space-y-3">
+              {(editOptions || []).map((option, optIdx) => (
+                <div key={optIdx} className="bg-purple-50/30 border border-purple-100 rounded-xl p-3.5 space-y-2.5 relative">
+                  <div className="flex justify-between items-center gap-3">
+                    <div className="flex-grow">
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Option Name</label>
+                      <input
+                        type="text"
+                        value={option.name}
+                        onChange={(e) => {
+                          const updated = [...editOptions];
+                          updated[optIdx].name = e.target.value;
+                          handleOptionsChange(updated, true);
+                        }}
+                        placeholder="e.g. Validity or Books"
+                        className="w-full text-xs font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+                    </div>
+                    {(editOptions || []).length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeModeAttemptPricing(modeIndex, true)}
-                        className="text-red-600 hover:text-red-800 text-xs font-semibold"
+                        onClick={() => {
+                          const updated = editOptions.filter((_, idx) => idx !== optIdx);
+                          handleOptionsChange(updated, true);
+                        }}
+                        className="text-red-500 hover:text-red-750 font-bold text-xs mt-3"
                       >
-                        Remove Mode Block
+                        Delete
                       </button>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Mode Label</label>
-                      <input
-                        value={modeData.modeLabel || 'Mode'}
-                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'modeLabel', e.target.value, true)}
-                        placeholder="Label"
-                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                        required
-                      />
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Option Values</label>
+                    
+                    {/* Tags Container */}
+                    <div className="flex flex-wrap gap-1.5 mb-1.5">
+                      {(option.values || []).map((val, valIdx) => (
+                        <span key={valIdx} className="inline-flex items-center bg-purple-100 text-purple-800 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-purple-200">
+                          {val}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...editOptions];
+                              updated[optIdx].values = option.values.filter((_, idx) => idx !== valIdx);
+                              handleOptionsChange(updated, true);
+                            }}
+                            className="ml-1 inline-flex items-center justify-center text-purple-450 hover:text-purple-650 font-bold focus:outline-none"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Mode Value</label>
+
+                    {/* Add Tag Input */}
+                    <div className="flex gap-2">
                       <input
-                        value={modeData.mode}
-                        onChange={(e) => updateModeAttemptPricing(modeIndex, 'mode', e.target.value, true)}
-                        placeholder="Value"
-                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                        required
+                        type="text"
+                        placeholder="Type value and press Enter or click Add"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = e.target.value.trim();
+                            if (val && !option.values.includes(val)) {
+                              const updated = [...editOptions];
+                              updated[optIdx].values = [...option.values, val];
+                              handleOptionsChange(updated, true);
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                        className="flex-grow text-xs bg-white border border-gray-300 rounded-lg px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-purple-400"
                       />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          const inputEl = e.currentTarget.previousSibling;
+                          const val = inputEl.value.trim();
+                          if (val && !option.values.includes(val)) {
+                            const updated = [...editOptions];
+                            updated[optIdx].values = [...option.values, val];
+                            handleOptionsChange(updated, true);
+                            inputEl.value = '';
+                          }
+                        }}
+                        className="bg-purple-600 text-white font-semibold text-xs px-2.5 py-1 rounded-lg hover:bg-purple-700"
+                      >
+                        Add
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="space-y-3 pl-2 border-l-2 border-purple-200">
-                    {modeData.attempts.map((attempt, attemptIndex) => (
-                      <div key={attemptIndex} className="p-3 bg-white rounded border border-gray-200 space-y-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Attempt Label</label>
-                            <input
-                              value={attempt.attemptLabel || 'Exam Term / Attempt'}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attemptLabel', e.target.value, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Attempt Value</label>
-                            <input
-                              value={attempt.attempt}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'attempt', e.target.value, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Validity Label</label>
-                            <input
-                              value={attempt.validityLabel || 'Validity'}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validityLabel', e.target.value, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Validity Value</label>
-                            <input
-                              value={attempt.validity || ''}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'validity', e.target.value, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Cost Price *</label>
-                            <input
-                              type="number"
-                              value={attempt.costPrice}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] text-gray-500 mb-1">Selling Price *</label>
-                            <input
-                              type="number"
-                              value={attempt.sellingPrice}
-                              onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, true)}
-                              className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                              required
-                            />
-                          </div>
-                          <div className="flex items-end justify-end">
-                            {modeData.attempts.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeAttemptFromPricing(modeIndex, attemptIndex, true)}
-                                className="text-red-600 hover:text-red-800 text-[10px] font-semibold py-0.5 px-2 bg-red-50 rounded"
-                              >
-                                Remove Attempt
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] text-gray-500 mb-1">Option Description (Optional)</label>
-                          <textarea
-                            value={attempt.description || ''}
-                            onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, true)}
-                            placeholder="Option notes..."
-                            className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs"
-                            rows={1}
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={() => addAttemptToPricing(modeIndex, true)}
-                      className="text-purple-600 hover:text-purple-800 text-xs font-semibold py-1 px-2 bg-purple-100 hover:bg-purple-200 rounded"
-                    >
-                      + Add Another Attempt Option
-                    </button>
                   </div>
                 </div>
               ))}
 
-              <button
-                type="button"
-                onClick={() => addModeAttemptPricing(true)}
-                className="bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 font-semibold text-xs mt-2"
-              >
-                + Add Another Mode Block
-              </button>
+              {(editOptions || []).length < 4 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = [...editOptions, { name: `Option ${editOptions.length + 1}`, values: [] }];
+                    handleOptionsChange(updated, true);
+                  }}
+                  className="w-full border-2 border-dashed border-purple-200 text-purple-600 hover:border-purple-400 font-semibold text-xs py-2 px-3 rounded-lg hover:bg-purple-50/30 transition-all text-center"
+                >
+                  + Add Another Option
+                </button>
+              )}
             </div>
 
+            {/* Variants Grid */}
+            {editCourseData.modeAttemptPricing && editCourseData.modeAttemptPricing.length > 0 ? (
+              <div className="border border-gray-200 rounded-xl overflow-hidden shadow-inner bg-white">
+                <div className="bg-gray-50 border-b border-gray-200 px-3 py-2 flex justify-between items-center">
+                  <h4 className="font-bold text-xs text-gray-800">Variants Matrix</h4>
+                  <span className="text-[10px] text-gray-505 font-medium">Grouped by {editOptions[0]?.name || 'Mode'}</span>
+                </div>
+
+                <div className="divide-y divide-gray-200 max-h-[350px] overflow-y-auto">
+                  {editCourseData.modeAttemptPricing.map((modeData, modeIndex) => (
+                    <div key={modeIndex} className="p-3 space-y-2 bg-white">
+                      <div className="flex items-center gap-1.5 border-b border-gray-150 pb-1.5">
+                        <span className="font-bold text-xs text-purple-700">{modeData.mode}</span>
+                        <span className="text-[10px] text-gray-400">({modeData.attempts?.length || 0} variants)</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {(modeData.attempts || []).map((attempt, attemptIndex) => (
+                          <div key={attemptIndex} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center bg-gray-50/50 p-2 rounded-lg border border-gray-250/60">
+                            <div className="md:col-span-4">
+                              <span className="text-[9px] font-semibold text-gray-400 block">Combination</span>
+                              <span className="text-xs text-gray-700 font-bold">{attempt.attempt}</span>
+                            </div>
+                            <div className="md:col-span-2">
+                              <span className="text-[9px] font-semibold text-gray-500 block">Cost Price *</span>
+                              <input
+                                type="number"
+                                value={attempt.costPrice || ''}
+                                onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'costPrice', parseInt(e.target.value) || 0, true)}
+                                className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-400"
+                                required
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <span className="text-[9px] font-semibold text-gray-500 block">Selling Price *</span>
+                              <input
+                                type="number"
+                                value={attempt.sellingPrice || ''}
+                                onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'sellingPrice', parseInt(e.target.value) || 0, true)}
+                                className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-400"
+                                required
+                              />
+                            </div>
+                            <div className="md:col-span-4">
+                              <span className="text-[9px] font-semibold text-gray-500 block">Variant Note / Description</span>
+                              <input
+                                type="text"
+                                value={attempt.description || ''}
+                                onChange={(e) => updateAttemptPricing(modeIndex, attemptIndex, 'description', e.target.value, true)}
+                                placeholder="notes..."
+                                className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {editError && <div className="text-red-600 text-center font-semibold">{editError}</div>}
