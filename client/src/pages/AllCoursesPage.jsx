@@ -9,40 +9,59 @@ import { API_URL } from '../api';
 
 // Horizontal slider/carousel for displaying course cards professionally
 const CourseSlider = ({ courses }) => {
-  const containerRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const desktopRef = useRef(null);
+  const mobileRef = useRef(null);
+  const [desktopScroll, setDesktopScroll] = useState({ left: false, right: true });
+  const [mobileScroll, setMobileScroll] = useState({ left: false, right: true });
 
-  const checkScroll = () => {
-    if (containerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+  const checkScroll = (ref, setScroll) => {
+    if (ref.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+      setScroll({
+        left: scrollLeft > 5,
+        right: scrollLeft + clientWidth < scrollWidth - 5
+      });
     }
   };
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      el.addEventListener('scroll', checkScroll);
-      checkScroll();
-      // Handle dynamic rendering / image loading
-      const timer = setTimeout(checkScroll, 500);
-      window.addEventListener('resize', checkScroll);
-      return () => {
-        el.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-        clearTimeout(timer);
-      };
+    const dEl = desktopRef.current;
+    const mEl = mobileRef.current;
+    
+    const handleDScroll = () => checkScroll(desktopRef, setDesktopScroll);
+    const handleMScroll = () => checkScroll(mobileRef, setMobileScroll);
+
+    if (dEl) {
+      dEl.addEventListener('scroll', handleDScroll);
+      checkScroll(desktopRef, setDesktopScroll);
     }
+    if (mEl) {
+      mEl.addEventListener('scroll', handleMScroll);
+      checkScroll(mobileRef, setMobileScroll);
+    }
+
+    const timer = setTimeout(() => {
+      checkScroll(desktopRef, setDesktopScroll);
+      checkScroll(mobileRef, setMobileScroll);
+    }, 500);
+
+    window.addEventListener('resize', handleDScroll);
+    window.addEventListener('resize', handleMScroll);
+
+    return () => {
+      if (dEl) dEl.removeEventListener('scroll', handleDScroll);
+      if (mEl) mEl.removeEventListener('scroll', handleMScroll);
+      window.removeEventListener('resize', handleDScroll);
+      window.removeEventListener('resize', handleMScroll);
+      clearTimeout(timer);
+    };
   }, [courses]);
 
-  const scroll = (direction) => {
-    if (containerRef.current) {
-      const { clientWidth } = containerRef.current;
-      // Scroll by 75% of container width for a smooth transition
+  const scroll = (ref, direction) => {
+    if (ref.current) {
+      const { clientWidth } = ref.current;
       const scrollAmount = direction === 'left' ? -clientWidth * 0.75 : clientWidth * 0.75;
-      containerRef.current.scrollBy({
+      ref.current.scrollBy({
         left: scrollAmount,
         behavior: 'smooth'
       });
@@ -51,57 +70,110 @@ const CourseSlider = ({ courses }) => {
 
   if (!courses || courses.length === 0) return null;
 
+  // Chunk courses into columns of 2 for mobile (2 rows)
+  const mobileColumns = [];
+  for (let i = 0; i < courses.length; i += 2) {
+    mobileColumns.push(courses.slice(i, i + 2));
+  }
+
   return (
-    <div className="relative group/slider w-full">
-      {/* Scrollable Grid Container */}
-      <div
-        ref={containerRef}
-        className="grid grid-rows-2 lg:grid-rows-1 grid-flow-col gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory no-scrollbar scroll-smooth"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        {courses.map((course, index) => (
-          <div
-            key={course._id || index}
-            className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)] flex-shrink-0 snap-start"
-          >
-            <CourseCard course={course} />
-          </div>
-        ))}
+    <>
+      {/* Desktop Slider (Visible on lg and up) */}
+      <div className="hidden lg:block relative group/slider w-full">
+        <div
+          ref={desktopRef}
+          className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory no-scrollbar scroll-smooth"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {courses.map((course, index) => (
+            <div
+              key={course._id || index}
+              className="w-[calc(25%-12px)] flex-shrink-0 snap-start"
+            >
+              <CourseCard course={course} />
+            </div>
+          ))}
+        </div>
+
+        {courses.length > 4 && (
+          <>
+            <button
+              onClick={() => scroll(desktopRef, 'left')}
+              disabled={!desktopScroll.left}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border shadow-lg flex items-center justify-center transition-all duration-300 ${
+                desktopScroll.left
+                  ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100'
+                  : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 pointer-events-none'
+              } group-hover/slider:opacity-100`}
+              aria-label="Scroll Left"
+            >
+              <FaChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scroll(desktopRef, 'right')}
+              disabled={!desktopScroll.right}
+              className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border shadow-lg flex items-center justify-center transition-all duration-300 ${
+                desktopScroll.right
+                  ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100'
+                  : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 pointer-events-none'
+              } group-hover/slider:opacity-100`}
+              aria-label="Scroll Right"
+            >
+              <FaChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Navigation Buttons - Left & Right */}
-      {courses.length > 1 && (
-        <>
-          <button
-            onClick={() => scroll('left')}
-            disabled={!canScrollLeft}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border shadow-lg flex items-center justify-center transition-all duration-350 ${
-              canScrollLeft
-                ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100 scale-100'
-                : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 scale-90 pointer-events-none'
-            } md:opacity-0 md:group-hover/slider:opacity-100`}
-            style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
-            aria-label="Scroll Left"
-          >
-            <FaChevronLeft className="w-4 h-4" />
-          </button>
+      {/* Mobile/Tablet Slider (Visible under lg) */}
+      <div className="block lg:hidden relative group/slider w-full">
+        <div
+          ref={mobileRef}
+          className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory no-scrollbar scroll-smooth"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {mobileColumns.map((column, colIndex) => (
+            <div
+              key={colIndex}
+              className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] flex-shrink-0 snap-start flex flex-col gap-4"
+            >
+              {column.map((course, index) => (
+                <CourseCard key={course._id || index} course={course} />
+              ))}
+            </div>
+          ))}
+        </div>
 
-          <button
-            onClick={() => scroll('right')}
-            disabled={!canScrollRight}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border shadow-lg flex items-center justify-center transition-all duration-350 ${
-              canScrollRight
-                ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100 scale-100'
-                : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 scale-90 pointer-events-none'
-            } md:opacity-0 md:group-hover/slider:opacity-100`}
-            style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
-            aria-label="Scroll Right"
-          >
-            <FaChevronRight className="w-4 h-4" />
-          </button>
-        </>
-      )}
-    </div>
+        {mobileColumns.length > 2 && (
+          <>
+            <button
+              onClick={() => scroll(mobileRef, 'left')}
+              disabled={!mobileScroll.left}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-sm border shadow-md flex items-center justify-center transition-all duration-300 ${
+                mobileScroll.left
+                  ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100'
+                  : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 pointer-events-none'
+              }`}
+              aria-label="Scroll Left"
+            >
+              <FaChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => scroll(mobileRef, 'right')}
+              disabled={!mobileScroll.right}
+              className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-sm border shadow-md flex items-center justify-center transition-all duration-300 ${
+                mobileScroll.right
+                  ? 'border-teal-500 text-teal-600 hover:bg-teal-600 hover:text-white cursor-pointer opacity-100'
+                  : 'border-gray-200 text-gray-300 cursor-not-allowed opacity-0 pointer-events-none'
+              }`}
+              aria-label="Scroll Right"
+            >
+              <FaChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
