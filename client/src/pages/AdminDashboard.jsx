@@ -1088,15 +1088,10 @@ export default function AdminDashboard() {
         const found = (courseForm.customDetails || []).find(d => d.label.toLowerCase() === label.toLowerCase());
         return found ? found.value : '';
       };
-      
-      const getDetailValByType = (type) => {
-        const found = (courseForm.customDetails || []).find(d => d.fieldType === type);
-        return found ? found.value : '';
-      };
 
-      const resolvedSubject = getDetailVal('subject') || courseForm.title;
-      const resolvedFacultySlug = getDetailValByType('faculty') || 'n-a';
-      const resolvedInstitute = getDetailValByType('institute') || '';
+      const resolvedSubject = courseForm.title;
+      const resolvedFacultySlug = courseForm.facultySlug || 'n-a';
+      const resolvedInstitute = courseForm.instituteName || '';
 
       const apiEndpoint = `${API_URL}/api/admin/courses`;
 
@@ -1135,8 +1130,15 @@ export default function AdminDashboard() {
 
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
 
+      // Build final customDetails including Faculty and Institute for full compatibility
+      const finalCustomDetails = [
+        ...(courseForm.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute'),
+        { label: 'Faculty', value: resolvedFacultySlug, fieldType: 'faculty', displayOrder: 99, visible: true },
+        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true }
+      ];
+
       // Serialize dynamic custom details and pricing blocks
-      formData.append('customDetails', JSON.stringify(courseForm.customDetails));
+      formData.append('customDetails', JSON.stringify(finalCustomDetails));
       formData.append('modeAttemptPricing', JSON.stringify(courseForm.modeAttemptPricing));
 
       console.log('📤 Sending FormData with fields:');
@@ -1178,16 +1180,10 @@ export default function AdminDashboard() {
           paperName: '',
           description: '',
           poster: null,
-          customDetails: defaultCustomDetails,
-          modeAttemptPricing: [
-            {
-              mode: 'Live at Home With Hard Copy',
-              modeLabel: 'Mode',
-              attempts: [
-                { attempt: 'Dec 2026', attemptLabel: 'Exam Term / Attempt', validity: '12 Months', validityLabel: 'Validity', costPrice: 15999, sellingPrice: 13999, description: '' }
-              ]
-            }
-          ]
+          facultySlug: '',
+          instituteName: '',
+          customDetails: [],
+          modeAttemptPricing: generateVariants(defaultCreateOptions)
         });
         setPosterPreviewNew(null);
         setTimeout(() => setSuccess(''), 3000);
@@ -1432,15 +1428,10 @@ export default function AdminDashboard() {
         const found = (editCourseData.customDetails || []).find(d => d.label.toLowerCase() === label.toLowerCase());
         return found ? found.value : '';
       };
-      
-      const getDetailValByType = (type) => {
-        const found = (editCourseData.customDetails || []).find(d => d.fieldType === type);
-        return found ? found.value : '';
-      };
 
-      const resolvedSubject = getDetailVal('subject') || editCourseData.title;
-      const resolvedFacultySlug = getDetailValByType('faculty') || 'n-a';
-      const resolvedInstitute = getDetailValByType('institute') || '';
+      const resolvedSubject = editCourseData.title;
+      const resolvedFacultySlug = editCourseData.facultySlug || 'n-a';
+      const resolvedInstitute = editCourseData.instituteName || '';
 
       formData.append('title', editCourseData.title);
       formData.append('category', editCourseData.category);
@@ -1469,7 +1460,14 @@ export default function AdminDashboard() {
         formData.append('poster', editPoster);
       }
 
-      formData.append('customDetails', JSON.stringify(editCourseData.customDetails));
+      // Build final customDetails including Faculty and Institute for full compatibility
+      const finalCustomDetails = [
+        ...(editCourseData.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute'),
+        { label: 'Faculty', value: resolvedFacultySlug, fieldType: 'faculty', displayOrder: 99, visible: true },
+        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true }
+      ];
+
+      formData.append('customDetails', JSON.stringify(finalCustomDetails));
       formData.append('modeAttemptPricing', JSON.stringify(editCourseData.modeAttemptPricing));
 
       const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
@@ -2214,11 +2212,12 @@ export default function AdminDashboard() {
 
           <form onSubmit={handleNewCourseSubmit} className="space-y-4 sm:space-y-6" encType="multipart/form-data">
 
-            {/* Step 1: Course Information */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl border-2 border-blue-200">
-              <h3 className="text-lg sm:text-xl font-semibold text-blue-800 mb-3 sm:mb-4">Step 1: Course Information</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                <div className="col-span-1">
+            {/* Section 1: General Course Information (Fixed Fields) */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl border-2 border-blue-200 space-y-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-blue-800 border-b border-blue-200 pb-2">Section 1: General Course Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                   <select
                     name="category"
@@ -2234,7 +2233,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="col-span-1">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
                   <select
                     name="subcategory"
@@ -2251,7 +2250,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
                   <select
                     name="paperId"
@@ -2270,14 +2269,8 @@ export default function AdminDashboard() {
                   </select>
                 </div>
               </div>
-            </div>
 
-            {/* Step 2: Course Details */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl border-2 border-green-200">
-              <h3 className="text-lg sm:text-xl font-semibold text-green-800 mb-3 sm:mb-4">Step 2: Course Details</h3>
-              
-              {/* Core Fixed Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Title *</label>
                   <input
@@ -2286,10 +2279,11 @@ export default function AdminDashboard() {
                     value={courseForm.title}
                     onChange={handleCourseFormChange}
                     placeholder="Enter course title"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
                     required
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Course Poster *</label>
                   <div className="flex gap-4 items-start">
@@ -2298,163 +2292,178 @@ export default function AdminDashboard() {
                       type="file"
                       accept="image/*"
                       onChange={handleCourseFormChange}
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 mobile-touch-target"
-                      required
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
+                      required={!courseForm.poster}
                     />
                     {posterPreviewNew && (
-                      <img src={posterPreviewNew} alt="Preview" className="w-16 h-16 object-cover rounded-xl border-2 border-green-200" />
+                      <img src={posterPreviewNew} alt="Preview" className="w-12 h-12 object-cover rounded-xl border-2 border-blue-200" />
                     )}
                   </div>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea
-                    name="description"
-                    value={courseForm.description}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Faculty *</label>
+                  <select
+                    name="facultySlug"
+                    value={courseForm.facultySlug}
                     onChange={handleCourseFormChange}
-                    placeholder="Course description"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
-                    rows={3}
-                  />
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
+                    required
+                  >
+                    <option value="">Select Faculty</option>
+                    {allFaculties.map(fac => (
+                      <option key={fac.slug} value={fac.slug}>
+                        {fac.isHardcoded ? fac.fullName : `${fac.firstName} ${fac.lastName || ''}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institute *</label>
+                  <select
+                    name="instituteName"
+                    value={courseForm.instituteName}
+                    onChange={handleCourseFormChange}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
+                    required
+                  >
+                    <option value="">Select Institute</option>
+                    <option value="N/A">N/A - No Institute</option>
+                    {institutes.map(inst => (
+                      <option key={inst.id || inst.name} value={inst.name}>
+                        {inst.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={courseForm.description}
+                  onChange={handleCourseFormChange}
+                  placeholder="Course description"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Section 2: Custom Course Details (Dynamic specifications) */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl border-2 border-green-200 space-y-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-green-800 border-b border-green-200 pb-2">Section 2: Custom Course Details</h3>
+              <p className="text-xs text-gray-600">Add custom details (e.g. Lectures, Duration, Study Materials, Language) below.</p>
+              
               {/* Dynamic Details List */}
-              <div className="border-t border-green-200 pt-4">
-                <h4 className="text-md font-semibold text-green-700 mb-3">Custom Fields / Details:</h4>
-                <div className="space-y-4">
-                  {(courseForm.customDetails || []).map((detail, idx) => (
-                    <div key={idx} className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-white p-3 rounded-lg border border-green-200 shadow-sm">
-                      
-                      {/* Reorder Buttons */}
-                      <div className="flex lg:flex-col gap-1">
-                        <button
-                          type="button"
-                          onClick={() => moveCustomDetail(idx, 'up', false)}
-                          disabled={idx === 0}
-                          className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
-                          title="Move Up"
-                        >
-                          ▲
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveCustomDetail(idx, 'down', false)}
-                          disabled={idx === (courseForm.customDetails || []).length - 1}
-                          className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
-                          title="Move Down"
-                        >
-                          ▼
-                        </button>
-                      </div>
-
-                      {/* Field Type selector */}
-                      <div className="w-full lg:w-40">
-                        <select
-                          value={detail.fieldType || 'text'}
-                          onChange={(e) => updateCustomDetail(idx, 'fieldType', e.target.value, false)}
-                          className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
-                        >
-                          <option value="text">Short Text</option>
-                          <option value="textarea">Long Text / Rich Text</option>
-                          <option value="faculty">Faculty Selector</option>
-                          <option value="institute">Institute Selector</option>
-                          <option value="image">Image URL</option>
-                        </select>
-                      </div>
-
-                      {/* Label/Heading */}
-                      <div className="w-full lg:w-48">
-                        <input
-                          type="text"
-                          value={detail.label}
-                          onChange={(e) => updateCustomDetail(idx, 'label', e.target.value, false)}
-                          placeholder="Field Label (e.g. Duration)"
-                          className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
-                          required
-                        />
-                      </div>
-
-                      {/* Value Input */}
-                      <div className="w-full lg:flex-1">
-                        {detail.fieldType === 'faculty' ? (
-                          <select
-                            value={detail.value}
-                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
-                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
-                          >
-                            <option value="">Select Faculty</option>
-                            <option value="n-a">N/A - No Faculty</option>
-                            {allFaculties.map(f => (
-                              <option key={f.slug} value={f.slug}>
-                                {f.isHardcoded ? f.fullName : `${f.firstName} ${f.lastName || ''}`}
-                              </option>
-                            ))}
-                          </select>
-                        ) : detail.fieldType === 'institute' ? (
-                          <select
-                            value={detail.value}
-                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
-                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
-                          >
-                            <option value="">Select Institute</option>
-                            <option value="N/A">N/A - No Institute</option>
-                            {institutes.map(inst => (
-                              <option key={inst._id || inst.name} value={inst.name}>{inst.name}</option>
-                            ))}
-                          </select>
-                        ) : detail.fieldType === 'textarea' ? (
-                          <textarea
-                            value={detail.value}
-                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
-                            placeholder="Field Value..."
-                            rows={1}
-                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={detail.value}
-                            onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
-                            placeholder="Field Value..."
-                            className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
-                          />
-                        )}
-                      </div>
-
-                      {/* Visibility checkbox */}
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="checkbox"
-                          id={`visible-${idx}`}
-                          checked={detail.visible !== false}
-                          onChange={(e) => updateCustomDetail(idx, 'visible', e.target.checked, false)}
-                          className="rounded border-gray-300 text-green-600 focus:ring-green-400"
-                        />
-                        <label htmlFor={`visible-${idx}`} className="text-xs text-gray-500 cursor-pointer select-none">Visible</label>
-                      </div>
-
-                      {/* Remove Button */}
+              <div className="space-y-4">
+                {(courseForm.customDetails || []).map((detail, idx) => (
+                  <div key={idx} className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                    
+                    {/* Reorder Buttons */}
+                    <div className="flex lg:flex-col gap-1">
                       <button
                         type="button"
-                        onClick={() => removeCustomDetail(idx, false)}
-                        className="text-red-500 hover:text-red-700 text-sm font-semibold mobile-touch-target"
+                        onClick={() => moveCustomDetail(idx, 'up', false)}
+                        disabled={idx === 0}
+                        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
+                        title="Move Up"
                       >
-                        Remove
+                        ▲
                       </button>
-
+                      <button
+                        type="button"
+                        onClick={() => moveCustomDetail(idx, 'down', false)}
+                        disabled={idx === (courseForm.customDetails || []).length - 1}
+                        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 text-xs"
+                        title="Move Down"
+                      >
+                        ▼
+                      </button>
                     </div>
-                  ))}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={() => addCustomDetail(false)}
-                  className="mt-4 text-green-700 hover:text-green-800 text-sm font-semibold py-2 px-4 bg-green-100 hover:bg-green-200 rounded-lg transition-colors mobile-touch-target"
-                >
-                  + Add Custom Detail Field
-                </button>
+                    {/* Field Type selector */}
+                    <div className="w-full lg:w-40">
+                      <select
+                        value={detail.fieldType || 'text'}
+                        onChange={(e) => updateCustomDetail(idx, 'fieldType', e.target.value, false)}
+                        className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                      >
+                        <option value="text">Short Text</option>
+                        <option value="textarea">Long Text</option>
+                        <option value="image">Image URL</option>
+                      </select>
+                    </div>
+
+                    {/* Label/Heading */}
+                    <div className="w-full lg:w-48">
+                      <input
+                        type="text"
+                        value={detail.label}
+                        onChange={(e) => updateCustomDetail(idx, 'label', e.target.value, false)}
+                        placeholder="Heading (e.g. Duration)"
+                        className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                        required
+                      />
+                    </div>
+
+                    {/* Value Input */}
+                    <div className="w-full lg:flex-1">
+                      {detail.fieldType === 'textarea' ? (
+                        <textarea
+                          value={detail.value}
+                          onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                          placeholder="Detail Value..."
+                          rows={1}
+                          className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={detail.value}
+                          onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, false)}
+                          placeholder="Detail Value..."
+                          className="w-full rounded border border-gray-300 px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 mobile-touch-target"
+                        />
+                      )}
+                    </div>
+
+                    {/* Visibility checkbox */}
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        id={`visible-${idx}`}
+                        checked={detail.visible !== false}
+                        onChange={(e) => updateCustomDetail(idx, 'visible', e.target.checked, false)}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-400"
+                      />
+                      <label htmlFor={`visible-${idx}`} className="text-xs text-gray-500 cursor-pointer select-none">Visible</label>
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() => removeCustomDetail(idx, false)}
+                      className="text-red-500 hover:text-red-700 text-sm font-semibold mobile-touch-target"
+                    >
+                      Remove
+                    </button>
+
+                  </div>
+                ))}
               </div>
+
+              <button
+                type="button"
+                onClick={() => addCustomDetail(false)}
+                className="mt-4 text-green-700 hover:text-green-800 text-sm font-semibold py-2 px-4 bg-green-100 hover:bg-green-200 rounded-lg transition-colors mobile-touch-target"
+              >
+                + Add Custom Detail Row
+              </button>
             </div>
 
             {/* Step 3: Mode & Attempt Pricing (Shopify-like Variant Builder) */}
@@ -3193,72 +3202,157 @@ export default function AdminDashboard() {
         <h2 className="text-2xl font-bold mb-4 text-blue-700">Edit Course</h2>
         <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Section 1: General Course Information (Fixed Fields) */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 sm:p-6 rounded-xl border border-blue-200 space-y-4">
+            <h3 className="text-lg font-semibold text-blue-800 border-b border-blue-200 pb-2">Section 1: General Course Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Category *</label>
+                <select
+                  name="category"
+                  value={editCourseData.category || ''}
+                  onChange={handleEditChange}
+                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Subcategory *</label>
+                <select
+                  name="subcategory"
+                  value={editCourseData.subcategory || ''}
+                  onChange={handleEditChange}
+                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                  required
+                  disabled={!editCourseData.category}
+                >
+                  <option value="">Select Subcategory</option>
+                  {subcategories.map(sub => (
+                    <option key={sub.value} value={sub.value}>{sub.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Paper *</label>
+                <select
+                  name="paperId"
+                  value={editCourseData.paperId || ''}
+                  onChange={handleEditChange}
+                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                  required
+                  disabled={!editCourseData.subcategory}
+                >
+                  <option value="">Select Paper</option>
+                  {getPapers(editCourseData.category, editCourseData.subcategory).map(paper => (
+                    <option key={paper.id} value={paper.id}>
+                      {paper.name} {paper.group ? `(${paper.group})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Course Title *</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={editCourseData.title || ''}
+                  onChange={handleEditChange}
+                  placeholder="Enter course title"
+                  className="w-full rounded border border-gray-350 px-3 py-1.5 text-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Course Poster</label>
+                <div className="flex gap-3 items-start">
+                  <input
+                    name="poster"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditChange}
+                    className="flex-1 rounded border border-gray-300 px-3 py-1 text-xs"
+                  />
+                  {editPosterPreview ? (
+                    <img src={editPosterPreview} alt="Preview" className="w-10 h-10 object-cover rounded-xl border" />
+                  ) : editCourseData.posterUrl ? (
+                    <img src={editCourseData.posterUrl} alt="Current Poster" className="w-10 h-10 object-cover rounded-xl border" />
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Faculty *</label>
+                <select
+                  name="facultySlug"
+                  value={editCourseData.facultySlug || ''}
+                  onChange={handleEditChange}
+                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                  required
+                >
+                  <option value="">Select Faculty</option>
+                  {allFaculties.map(fac => (
+                    <option key={fac.slug} value={fac.slug}>
+                      {fac.isHardcoded ? fac.fullName : `${fac.firstName} ${fac.lastName || ''}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Institute *</label>
+                <select
+                  name="instituteName"
+                  value={editCourseData.instituteName || ''}
+                  onChange={handleEditChange}
+                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
+                  required
+                >
+                  <option value="">Select Institute</option>
+                  <option value="N/A">N/A - No Institute</option>
+                  {institutes.map(inst => (
+                    <option key={inst.id || inst.name} value={inst.name}>
+                      {inst.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course Title *</label>
-              <input 
-                name="title" 
-                value={editCourseData.title || ''} 
-                onChange={handleEditChange} 
-                placeholder="Course Title" 
-                className="w-full rounded border border-gray-300 px-3 py-2" 
-                required 
+              <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                name="description"
+                value={editCourseData.description || ''}
+                onChange={handleEditChange}
+                placeholder="Course description"
+                className="w-full rounded border border-gray-300 px-3 py-1 text-sm"
+                rows={2}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Course Type *</label>
-              <select 
-                name="courseType" 
-                value={editCourseData.courseType || ''} 
-                onChange={handleEditChange} 
-                className="w-full rounded border border-gray-300 px-3 py-2" 
-                required
-              >
-                <option value="">Select Course Type</option>
-                <option value="CA Foundation">CA Foundation</option>
-                <option value="CMA Foundation">CMA Foundation</option>
-                <option value="CA Inter">CA Inter</option>
-                <option value="CMA Inter">CMA Inter</option>
-                <option value="CA Final">CA Final</option>
-                <option value="CMA Final">CMA Final</option>
-              </select>
-            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea 
-              name="description" 
-              value={editCourseData.description || ''} 
-              onChange={handleEditChange} 
-              placeholder="Description" 
-              className="w-full rounded border border-gray-300 px-3 py-2" 
-              rows={2}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Course Poster</label>
-            <input 
-              name="poster" 
-              type="file" 
-              accept="image/*" 
-              onChange={handleEditChange} 
-              className="w-full rounded border border-gray-300 px-3 py-2" 
-            />
-            {editPosterPreview ? (
-              <img src={editPosterPreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />
-            ) : editCourseData.posterUrl ? (
-              <img src={editCourseData.posterUrl} alt="Current Poster" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />
-            ) : null}
-          </div>
-
-          {/* Step 2: Custom Details Editor */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-semibold text-green-700 mb-3">Course Custom Fields</h3>
+          {/* Section 2: Custom Course Details (Dynamic specifications) */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl border border-green-200 space-y-4">
+            <h3 className="text-lg font-semibold text-green-800 border-b border-green-200 pb-2">Section 2: Custom Course Details</h3>
+            
+            {/* Dynamic Details List */}
             <div className="space-y-3">
               {(editCourseData.customDetails || []).map((detail, idx) => (
-                <div key={idx} className="flex flex-col lg:flex-row gap-2 items-start lg:items-center bg-gray-50 p-3 rounded border border-gray-200">
+                <div key={idx} className="flex flex-col lg:flex-row gap-2 items-start lg:items-center bg-white p-3 rounded border border-gray-200">
                   
                   {/* Reorder Buttons */}
                   <div className="flex lg:flex-col gap-1">
@@ -3288,8 +3382,6 @@ export default function AdminDashboard() {
                     >
                       <option value="text">Short Text</option>
                       <option value="textarea">Long Text</option>
-                      <option value="faculty">Faculty</option>
-                      <option value="institute">Institute</option>
                       <option value="image">Image URL</option>
                     </select>
                   </div>
@@ -3306,33 +3398,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="w-full lg:flex-1">
-                    {detail.fieldType === 'faculty' ? (
-                      <select
-                        value={detail.value}
-                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
-                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                      >
-                        <option value="">Select Faculty</option>
-                        <option value="n-a">N/A - No Faculty</option>
-                        {allFaculties.map(f => (
-                          <option key={f.slug} value={f.slug}>
-                            {f.isHardcoded ? f.fullName : `${f.firstName} ${f.lastName || ''}`}
-                          </option>
-                        ))}
-                      </select>
-                    ) : detail.fieldType === 'institute' ? (
-                      <select
-                        value={detail.value}
-                        onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
-                        className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                      >
-                        <option value="">Select Institute</option>
-                        <option value="N/A">N/A - No Institute</option>
-                        {institutes.map(inst => (
-                          <option key={inst._id || inst.name} value={inst.name}>{inst.name}</option>
-                        ))}
-                      </select>
-                    ) : detail.fieldType === 'textarea' ? (
+                    {detail.fieldType === 'textarea' ? (
                       <textarea
                         value={detail.value}
                         onChange={(e) => updateCustomDetail(idx, 'value', e.target.value, true)}
@@ -3359,13 +3425,13 @@ export default function AdminDashboard() {
                       onChange={(e) => updateCustomDetail(idx, 'visible', e.target.checked, true)}
                       className="rounded border-gray-300 text-green-600 focus:ring-green-400"
                     />
-                    <label htmlFor={`edit-visible-${idx}`} className="text-xs text-gray-500 cursor-pointer">Visible</label>
+                    <label htmlFor={`edit-visible-${idx}`} className="text-xs text-gray-505 cursor-pointer">Visible</label>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => removeCustomDetail(idx, true)}
-                    className="text-red-500 hover:text-red-700 text-xs font-semibold"
+                    className="text-red-500 hover:text-red-750 text-xs font-semibold"
                   >
                     Remove
                   </button>
@@ -3378,7 +3444,7 @@ export default function AdminDashboard() {
               onClick={() => addCustomDetail(true)}
               className="mt-3 text-green-700 hover:text-green-800 text-xs font-semibold py-1.5 px-3 bg-green-100 hover:bg-green-200 rounded"
             >
-              + Add Custom Detail Field
+              + Add Custom Detail Row
             </button>
           </div>
 
