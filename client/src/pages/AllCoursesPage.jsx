@@ -62,7 +62,7 @@ const CourseSlider = ({ courses }) => {
         {courses.map((course, index) => (
           <div
             key={course._id || index}
-            className="w-[82%] xs:w-[46%] md:w-[31%] lg:w-[calc(25%-12px)] flex-shrink-0 snap-start"
+            className="w-[calc(25%-12px)] flex-shrink-0 snap-start"
           >
             <CourseCard course={course} />
           </div>
