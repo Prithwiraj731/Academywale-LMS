@@ -671,19 +671,10 @@ exports.deleteCourse = async (req, res) => {
       return res.status(404).json({ error: 'Course not found' });
     }
 
-    let { error: deleteErr } = await supabaseAdmin
+    const { error: deleteErr } = await supabaseAdmin
       .from('courses')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .delete()
       .eq('id', targetCourse.id);
-
-    if (isMissingColumnError(deleteErr, 'updated_at')) {
-      console.warn('Course delete: courses.updated_at column is missing; retrying without updated_at');
-      const retry = await supabaseAdmin
-        .from('courses')
-        .update({ is_active: false })
-        .eq('id', targetCourse.id);
-      deleteErr = retry.error;
-    }
 
     if (deleteErr) throw deleteErr;
 
@@ -700,22 +691,11 @@ exports.deleteAllCourses = async (req, res) => {
   try {
     console.log('🧨 DELETING ALL COURSES FROM SUPABASE');
     
-    let { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('courses')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('is_active', true)
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
       .select('id');
-
-    if (isMissingColumnError(error, 'updated_at')) {
-      console.warn('Delete all courses: courses.updated_at column is missing; retrying without updated_at');
-      const retry = await supabaseAdmin
-        .from('courses')
-        .update({ is_active: false })
-        .eq('is_active', true)
-        .select('id');
-      data = retry.data;
-      error = retry.error;
-    }
 
     if (error) throw error;
 

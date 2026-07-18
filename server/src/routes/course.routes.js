@@ -10,6 +10,14 @@ router.post('/api/admin/courses', requireAdminCookie, upload.single('poster'), c
 router.post('/api/admin/courses/new', requireAdminCookie, upload.single('poster'), courseController.addNewCourseToFaculty);
 router.delete('/api/admin/courses/delete-all', requireAdminCookie, courseController.deleteAllCourses);
 router.delete('/api/admin/courses/deleteAll/confirm', requireAdminCookie, courseController.deleteAllCourses);
+router.put('/api/admin/course/:courseIndex', requireAdminCookie, upload.single('poster'), (req, res) => {
+  req.params.facultySlug = 'by-id';
+  return courseController.updateCourse(req, res);
+});
+router.delete('/api/admin/course/:courseIndex', requireAdminCookie, (req, res) => {
+  req.params.facultySlug = 'by-id';
+  return courseController.deleteCourse(req, res);
+});
 router.put('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, upload.single('poster'), courseController.updateCourse);
 router.delete('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, courseController.deleteCourse);
 router.post('/api/admin/courses/bulk-upload', requireAdminCookie, courseController.bulkUploadCourses);

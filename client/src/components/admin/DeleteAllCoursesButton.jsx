@@ -60,7 +60,7 @@ const DeleteAllCoursesButton = ({ onDeleteSuccess }) => {
           }
         }, 5000);
       } else {
-        setError(data.error || 'Failed to delete courses');
+        setError(data.message || data.error || 'Failed to delete courses');
       }
     } catch (err) {
       console.error('Error deleting courses:', err);

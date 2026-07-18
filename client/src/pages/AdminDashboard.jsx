@@ -1478,8 +1478,10 @@ export default function AdminDashboard() {
       formData.append('modeAttemptPricing', JSON.stringify(editCourseData.modeAttemptPricing));
 
       const courseId = editCourseData.id || editCourseData._id || editCourseIdx;
-      const routeFaculty = courseId ? 'by-id' : form.facultySlug;
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${encodeURIComponent(routeFaculty)}/${encodeURIComponent(courseId || editCourseIdx)}`, {
+      const editUrl = courseId
+        ? `${API_URL}/api/admin/course/${encodeURIComponent(courseId)}`
+        : `${API_URL}/api/admin/courses/${encodeURIComponent(form.facultySlug)}/${encodeURIComponent(editCourseIdx)}`;
+      const res = await fetchWithCredentials(editUrl, {
         method: 'PUT',
         body: formData
       });
@@ -1509,8 +1511,10 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this course?')) return;
     setLoading(true);
     try {
-      const routeFaculty = isIdDelete ? 'by-id' : facultySlug;
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${encodeURIComponent(routeFaculty)}/${encodeURIComponent(courseId)}`, { method: 'DELETE' });
+      const deleteUrl = isIdDelete
+        ? `${API_URL}/api/admin/course/${encodeURIComponent(courseId)}`
+        : `${API_URL}/api/admin/courses/${encodeURIComponent(facultySlug)}/${encodeURIComponent(courseId)}`;
+      const res = await fetchWithCredentials(deleteUrl, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         fetchCourses(form.facultySlug || facultySlug);
