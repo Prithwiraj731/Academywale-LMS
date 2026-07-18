@@ -53,10 +53,10 @@ const CourseSlider = ({ courses }) => {
 
   return (
     <div className="relative group/slider w-full">
-      {/* Scrollable Container */}
+      {/* Scrollable Grid Container */}
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory no-scrollbar scroll-smooth"
+        className="grid grid-rows-2 lg:grid-rows-1 grid-flow-col gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory no-scrollbar scroll-smooth"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {courses.map((course, index) => (
