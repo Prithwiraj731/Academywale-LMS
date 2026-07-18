@@ -4,13 +4,22 @@ const { supabaseAdmin } = require('../config/supabase.config');
 exports.createCoupon = async (req, res) => {
   try {
     const { code, discountPercent } = req.body;
-    if (!code || !discountPercent) return res.status(400).json({ error: 'Code and discountPercent are required.' });
+    const normalizedCode = String(code || '').trim().toUpperCase();
+    const parsedDiscount = Number.parseInt(discountPercent, 10);
+
+    if (!normalizedCode || Number.isNaN(parsedDiscount)) {
+      return res.status(400).json({ error: 'Code and discountPercent are required.' });
+    }
+
+    if (parsedDiscount < 1 || parsedDiscount > 100) {
+      return res.status(400).json({ error: 'Discount percent must be between 1 and 100.' });
+    }
     
     const { data: coupon, error } = await supabaseAdmin
       .from('coupons')
       .insert({
-        code: code.toUpperCase().trim(),
-        discount_percent: parseInt(discountPercent),
+        code: normalizedCode,
+        discount_percent: parsedDiscount,
         is_active: true
       })
       .select('*')
@@ -69,12 +78,13 @@ exports.deleteCoupon = async (req, res) => {
 exports.validateCoupon = async (req, res) => {
   try {
     const { code } = req.body;
-    if (!code) return res.status(400).json({ error: 'Coupon code required.' });
+    const normalizedCode = String(code || '').trim().toUpperCase();
+    if (!normalizedCode) return res.status(400).json({ error: 'Coupon code required.' });
     
     const { data: coupon, error } = await supabaseAdmin
       .from('coupons')
       .select('*')
-      .eq('code', code.toUpperCase())
+      .eq('code', normalizedCode)
       .eq('is_active', true)
       .maybeSingle();
 

@@ -299,7 +299,7 @@ exports.checkCoursePurchase = async (req, res) => {
 // @access  Private
 exports.upiPurchase = async (req, res) => {
   try {
-    const { userId, courseId, transactionId, amount, userDetails, courseDetails } = req.body;
+    const { userId, courseId, transactionId, amount, userDetails, courseDetails, coupon, discountPercent } = req.body;
 
     if (!userId || !courseId || !transactionId || !amount) {
       return res.status(400).json({
@@ -370,7 +370,9 @@ exports.upiPurchase = async (req, res) => {
           mode: courseDetails?.mode || '',
           validity: courseDetails?.validity || '',
           attempt: courseDetails?.attempt || '',
-          facultyName: course.faculty_name
+          facultyName: course.faculty_name,
+          coupon: coupon || courseDetails?.coupon || '',
+          discountPercent: Number(discountPercent || courseDetails?.discountPercent || 0)
         },
         access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       })
@@ -426,7 +428,7 @@ exports.upiPurchase = async (req, res) => {
 // @access  Private
 exports.cartPurchase = async (req, res) => {
   try {
-    const { userId, cartItems, transactionId, amount, userDetails } = req.body;
+    const { userId, cartItems, transactionId, amount, userDetails, coupon, discountPercent } = req.body;
 
     if (!userId || !Array.isArray(cartItems) || cartItems.length === 0 || !transactionId || !amount) {
       return res.status(400).json({
@@ -451,6 +453,7 @@ exports.cartPurchase = async (req, res) => {
 
     const createdPurchases = [];
     const skippedPurchases = [];
+    const couponDiscount = Math.max(0, Math.min(100, Number(discountPercent || 0)));
 
     // Process each item in the cart
     for (let idx = 0; idx < cartItems.length; idx++) {
@@ -489,6 +492,9 @@ exports.cartPurchase = async (req, res) => {
       // Unique transaction ID per row to bypass unique constraint
       const uniqueTxnId = `${transactionId}_${idx + 1}`;
 
+      const itemBaseAmount = Number(item.sellingPrice || item.price || 0);
+      const itemPayableAmount = Math.max(0, Math.round(itemBaseAmount * (1 - couponDiscount / 100)));
+
       // Create purchase record
       const { data: purchase, error: insertError } = await supabaseAdmin
         .from('purchases')
@@ -497,7 +503,7 @@ exports.cartPurchase = async (req, res) => {
           course_id: course.id,
           faculty_id: course.faculty_id,
           payment_method: 'UPI',
-          amount: Number(item.sellingPrice || item.price || 0),
+          amount: itemPayableAmount,
           transaction_id: uniqueTxnId,
           payment_status: 'pending_verification',
           course_details: {
@@ -505,7 +511,9 @@ exports.cartPurchase = async (req, res) => {
             subject: course.subject,
             mode: item.mode || '',
             validity: item.attempt || item.validity || '',
-            facultyName: course.faculty_name
+            facultyName: course.faculty_name,
+            coupon: coupon || '',
+            discountPercent: couponDiscount
           },
           access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         })

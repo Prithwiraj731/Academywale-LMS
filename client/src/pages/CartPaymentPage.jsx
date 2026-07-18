@@ -15,13 +15,19 @@ const CartPaymentPage = () => {
   const { user, isAuthenticated } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
   
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [error, setError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('mobile'); // 'mobile' or 'qr'
   const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [coupon, setCoupon] = useState('');
+  const [couponStatus, setCouponStatus] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
+
+  const payableAmount = Math.max(0, Math.round(Number(cartTotal || 0) * (1 - appliedDiscount / 100)));
 
   const stateUserDetails = location.state?.userDetails || {};
   const [userDetails, setUserDetails] = useState({
@@ -62,6 +68,13 @@ const CartPaymentPage = () => {
     }
   }, [user, location.state]);
 
+  useEffect(() => {
+    setCoupon('');
+    setCouponStatus('');
+    setAppliedDiscount(0);
+    setAppliedCouponCode('');
+  }, [cartTotal]);
+
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
   };
@@ -69,7 +82,7 @@ const CartPaymentPage = () => {
   const generateUpiLink = () => {
     if (cartItems.length === 0) return '';
     
-    const amount = cartTotal;
+    const amount = payableAmount;
     const courseNames = cartItems.map(item => item.subject || item.title).join(', ').slice(0, 50);
     const transactionRef = `AW${Date.now().toString().slice(-6)}`;
     
@@ -83,9 +96,38 @@ const CartPaymentPage = () => {
     });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUserDetails(prev => ({ ...prev, [name]: value }));
+  const handleApplyCoupon = async () => {
+    const code = coupon.trim().toUpperCase();
+    setCouponStatus('');
+
+    if (!code) {
+      setCouponStatus('Enter a coupon code.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        const discount = Number(data.discountPercent || 0);
+        setAppliedDiscount(discount);
+        setAppliedCouponCode(code);
+        setCouponStatus(`Coupon applied. ${discount}% discount added.`);
+      } else {
+        setAppliedDiscount(0);
+        setAppliedCouponCode('');
+        setCouponStatus(data.error || 'Invalid coupon code.');
+      }
+    } catch {
+      setAppliedDiscount(0);
+      setAppliedCouponCode('');
+      setCouponStatus('Server error while applying coupon.');
+    }
   };
 
   const handlePaymentVerification = async (e) => {
@@ -116,7 +158,9 @@ const CartPaymentPage = () => {
           userId: user?.id || user?._id,
           cartItems: cartItems,
           transactionId: transactionId,
-          amount: cartTotal,
+          amount: payableAmount,
+          coupon: appliedCouponCode || undefined,
+          discountPercent: appliedDiscount || undefined,
           userDetails: {
             name: userDetails.fullName || user?.name,
             email: userDetails.email || user?.email,
@@ -154,7 +198,9 @@ const CartPaymentPage = () => {
                 price: item.price || item.sellingPrice
               })),
               transactionId: transactionId,
-              amount: cartTotal
+              amount: payableAmount,
+              coupon: appliedCouponCode || undefined,
+              discountPercent: appliedDiscount || undefined
             })
           });
         } catch (emailErr) {
@@ -230,8 +276,8 @@ const CartPaymentPage = () => {
               <p className="text-teal-100 text-sm mt-1">UPI Payment Gateway</p>
             </div>
             <div className="text-right">
-              <span className="text-xs text-teal-100 block">Total Price ({cartItems.length} items)</span>
-              <span className="text-2xl font-extrabold">₹{cartTotal.toLocaleString()}</span>
+              <span className="text-xs text-teal-100 block">Payable ({cartItems.length} items)</span>
+              <span className="text-2xl font-extrabold">Rs. {payableAmount.toLocaleString('en-IN')}</span>
             </div>
           </div>
           
@@ -254,9 +300,48 @@ const CartPaymentPage = () => {
                         Mode: {item.mode || 'Standard'} | Exam Term: {item.attempt || 'Standard'}{item.validity ? ` | Validity: ${item.validity}` : ''} | Faculty: {item.facultyName}
                       </p>
                     </div>
-                    <span className="font-bold text-gray-900">₹{Number(item.price).toLocaleString()}</span>
+                    <span className="font-bold text-gray-900">Rs. {Number(item.price).toLocaleString('en-IN')}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="bg-green-50/70 rounded-xl p-4 mb-6 border border-green-100">
+              <h3 className="font-semibold text-green-800 mb-3">Apply Coupon Code</h3>
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+                <input
+                  type="text"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                  placeholder="Enter coupon code"
+                  className="w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm uppercase focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  className="bg-green-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-green-700"
+                >
+                  Apply Coupon
+                </button>
+              </div>
+              {couponStatus && (
+                <div className={`mt-2 text-sm font-semibold ${appliedDiscount ? 'text-green-700' : 'text-red-600'}`}>
+                  {couponStatus}
+                </div>
+              )}
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                <div className="bg-white rounded-lg border border-green-100 p-3">
+                  <span className="block text-gray-500">Cart Total</span>
+                  <span className="font-bold text-gray-900">Rs. {Number(cartTotal || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="bg-white rounded-lg border border-green-100 p-3">
+                  <span className="block text-gray-500">Discount</span>
+                  <span className="font-bold text-green-700">{appliedDiscount ? `${appliedDiscount}% (${appliedCouponCode})` : 'No coupon'}</span>
+                </div>
+                <div className="bg-white rounded-lg border border-green-100 p-3">
+                  <span className="block text-gray-500">Payable</span>
+                  <span className="font-bold text-gray-900">Rs. {payableAmount.toLocaleString('en-IN')}</span>
+                </div>
               </div>
             </div>
             
@@ -349,7 +434,7 @@ const CartPaymentPage = () => {
                 <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1.5 text-sm">
                   <li>Click the <strong>Pay Now</strong> button below.</li>
                   <li>It will open your default UPI payment app (PhonePe, GPay, Paytm, etc.).</li>
-                  <li>Complete the payment of <strong>₹{cartTotal.toLocaleString()}</strong>.</li>
+                  <li>Complete the payment of <strong>Rs. {payableAmount.toLocaleString('en-IN')}</strong>.</li>
                   <li>Return to this page, enter the transaction Reference ID, and click verify.</li>
                 </ul>
                 
@@ -360,7 +445,7 @@ const CartPaymentPage = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaMobileAlt className="mr-2 text-lg" /> Pay Now ₹{cartTotal.toLocaleString()}
+                    <FaMobileAlt className="mr-2 text-lg" /> Pay Now Rs. {payableAmount.toLocaleString('en-IN')}
                   </a>
                 </div>
               </div>
@@ -372,7 +457,7 @@ const CartPaymentPage = () => {
                 <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1.5 text-sm">
                   <li>Open any UPI app on your phone (GPay, PhonePe, Paytm, BHIM).</li>
                   <li>Scan the QR code below.</li>
-                  <li>Enter the exact amount: <strong>₹{cartTotal.toLocaleString()}</strong>.</li>
+                  <li>Enter the exact amount: <strong>Rs. {payableAmount.toLocaleString('en-IN')}</strong>.</li>
                   <li>Complete the payment and enter the Reference ID below.</li>
                 </ul>
                 

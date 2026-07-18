@@ -1310,18 +1310,25 @@ export default function AdminDashboard() {
   const [editPosterPreview, setEditPosterPreview] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
+  const [courseListRefreshKey, setCourseListRefreshKey] = useState(0);
 
   // Open edit modal
-  const openEditModal = (facultySlug, idx) => {
-    const facultyExists = allFaculties.some(f => f.slug === facultySlug);
-    if (!facultyExists) {
+  const openEditModal = (facultySlug, idx, courseOverride = null) => {
+    const course = courseOverride || courses[idx];
+    if (!course) {
+      alert('Course not found. Please refresh the course list and try again.');
+      return;
+    }
+
+    const courseFacultySlug = course.facultySlug || facultySlug || 'n-a';
+    const facultyExists = allFaculties.some(f => f.slug === courseFacultySlug);
+    if (courseFacultySlug && courseFacultySlug !== 'n-a' && !facultyExists && !courseOverride) {
       alert('Faculty not found. This course cannot be edited.');
       return;
     }
-    setForm(f => ({ ...f, facultySlug }));
-    setEditCourseIdx(idx);
-    
-    const course = courses[idx];
+
+    setForm(f => ({ ...f, facultySlug: courseFacultySlug }));
+    setEditCourseIdx(course.id || course._id || idx);
     
     // Parse custom details or construct defaults if missing
     let details = course.customDetails || course.custom_details || [];
@@ -1470,13 +1477,16 @@ export default function AdminDashboard() {
       formData.append('customDetails', JSON.stringify(finalCustomDetails));
       formData.append('modeAttemptPricing', JSON.stringify(editCourseData.modeAttemptPricing));
 
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${form.facultySlug}/${editCourseIdx}`, {
+      const courseId = editCourseData.id || editCourseData._id || editCourseIdx;
+      const routeFaculty = courseId ? 'by-id' : form.facultySlug;
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${encodeURIComponent(routeFaculty)}/${encodeURIComponent(courseId || editCourseIdx)}`, {
         method: 'PUT',
         body: formData
       });
       const data = await res.json();
       if (res.ok && data.success) {
         fetchCourses(form.facultySlug);
+        setCourseListRefreshKey(key => key + 1);
         setEditModalOpen(false);
       } else {
         setEditError(data.error || 'Failed to update course');
@@ -1488,19 +1498,23 @@ export default function AdminDashboard() {
     setEditLoading(false);
   };
   // Delete course
-  const handleDeleteCourse = async (facultySlug, idx) => {
+  const handleDeleteCourse = async (facultySlug, idx, courseOverride = null) => {
+    const courseId = courseOverride?.id || courseOverride?._id || idx;
+    const isIdDelete = facultySlug === 'by-id' || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(courseId));
     const facultyExists = faculties.some(f => f.slug === facultySlug);
-    if (!facultyExists) {
+    if (!isIdDelete && !facultyExists) {
       alert('Faculty not found. This course cannot be deleted.');
       return;
     }
     if (!window.confirm('Delete this course?')) return;
     setLoading(true);
     try {
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${facultySlug}/${idx}`, { method: 'DELETE' });
+      const routeFaculty = isIdDelete ? 'by-id' : facultySlug;
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${encodeURIComponent(routeFaculty)}/${encodeURIComponent(courseId)}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
-        fetchCourses(facultySlug);
+        if (!isIdDelete) fetchCourses(facultySlug);
+        setCourseListRefreshKey(key => key + 1);
       } else {
         alert(data.error || 'Failed to delete course');
       }
@@ -3182,6 +3196,7 @@ export default function AdminDashboard() {
         <CoursesByPaperSection
           onEditCourse={openEditModal}
           onDeleteCourse={handleDeleteCourse}
+          refreshKey={courseListRefreshKey}
         />
       </div>
       {/* Edit Course Modal */}

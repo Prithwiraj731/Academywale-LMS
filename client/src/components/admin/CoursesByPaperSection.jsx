@@ -1,447 +1,244 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../api';
 import DeleteAllCoursesButton from './DeleteAllCoursesButton';
 
-// Component to display courses organized by CA/CMA papers
-const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse }) => {
+const emptyGroups = () => ({
+  CA: { Foundation: [], Inter: [], Final: [] },
+  CMA: { Foundation: [], Inter: [], Final: [] }
+});
+
+const normalizeLevel = (value = '') => {
+  const lower = String(value).toLowerCase();
+  if (lower.includes('foundation')) return 'Foundation';
+  if (lower.includes('inter')) return 'Inter';
+  if (lower.includes('final')) return 'Final';
+  return 'Foundation';
+};
+
+const getCourseId = (course) => course?.id || course?._id || course?.mongo_id || '';
+
+const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 }) => {
   const [loading, setLoading] = useState(true);
-  const [coursesByType, setCoursesByType] = useState({
-    CA: {
-      Foundation: {},
-      Inter: {},
-      Final: {}
-    },
-    CMA: {
-      Foundation: {},
-      Inter: {},
-      Final: {}
-    }
-  });
-  
-  // Function to fetch all faculties with courses and reorganize by paper
-  const loadCoursesByPaper = async () => {
+  const [error, setError] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [query, setQuery] = useState('');
+
+  const loadCourses = async () => {
     setLoading(true);
+    setError('');
     try {
-      const res = await fetch(`${API_URL}/api/faculties?includeCourses=true`);
+      const res = await fetch(`${API_URL}/api/courses/all`);
       const data = await res.json();
-      
-      if (res.ok && data.faculties) {
-        // Create structure to organize courses by CA/CMA papers
-        const organizedCourses = {
-          CA: {
-            Foundation: {},
-            Inter: {},
-            Final: {}
-          },
-          CMA: {
-            Foundation: {},
-            Inter: {}
-          }
-        };
-        
-        // Process all faculties and their courses
-        data.faculties.forEach(faculty => {
-          if (faculty.courses && faculty.courses.length > 0) {
-            faculty.courses.forEach(course => {
-              // Skip courses without proper category/type information
-              if (!course.category || !course.courseType) return;
-              
-              const category = course.category; // 'CA' or 'CMA'
-              let level = course.subcategory || 'Foundation'; // 'Foundation', 'Inter', 'Final'
-              
-              // Normalize level
-              if (level.toLowerCase() === 'foundation') level = 'Foundation';
-              if (level.toLowerCase() === 'inter' || level.toLowerCase() === 'intermediate') level = 'Inter';
-              if (level.toLowerCase() === 'final') level = 'Final';
-              
-              // Extract paper ID from course
-              const paperId = course.paperId || extractPaperId(course);
-              
-              if (!paperId) return; // Skip if we can't determine a paper
-              
-              // Initialize paper if needed
-              if (!organizedCourses[category]?.[level]?.[paperId]) {
-                organizedCourses[category][level][paperId] = {
-                  name: getPaperName(category, level, paperId),
-                  courses: []
-                };
-              }
-              
-              // Add the course with faculty info
-              organizedCourses[category][level][paperId].courses.push({
-                ...course,
-                facultyName: `${faculty.firstName} ${faculty.lastName || ''}`.trim(),
-                facultyId: faculty._id,
-                facultySlug: faculty.slug
-              });
-            });
-          }
-        });
-        
-        setCoursesByType(organizedCourses);
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load courses');
       }
-    } catch (error) {
-      console.error('Error loading courses by paper:', error);
+
+      setCourses(Array.isArray(data.courses) ? data.courses : []);
+    } catch (err) {
+      setError(err.message || 'Failed to load courses');
+      setCourses([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCoursesByPaper();
-  }, []);
-  
-  // Helper function to extract paper ID from course
-  const extractPaperId = (course) => {
-    // Try to extract from subject or title
-    const paperMatch = (course.subject || course.title || '').match(/paper\s*(\d+)/i);
-    if (paperMatch) return paperMatch[1];
-    
-    // If no match, use a default
-    return 'Unknown';
-  };
-  
-  // Helper function to get paper name based on category, level and ID
-  const getPaperName = (category, level, paperId) => {
-    if (category === 'CA') {
-      if (level === 'Foundation') {
-        const papers = {
-          '1': 'Principles and Practice of Accounting',
-          '2': 'Business Laws and Business Correspondence and Reporting',
-          '3': 'Business Mathematics, Logical Reasoning & Statistics',
-          '4': 'Business Economics & Business and Commercial Knowledge'
-        };
-        return papers[paperId] || `Paper ${paperId}`;
-      } 
-      else if (level === 'Inter') {
-        const papers = {
-          '1': 'Accounting',
-          '2': 'Corporate and Other Laws',
-          '3': 'Cost and Management Accounting',
-          '4': 'Taxation',
-          '5': 'Advanced Accounting',
-          '6': 'Auditing and Assurance',
-          '7': 'Enterprise Information Systems & Strategic Management',
-          '8': 'Financial Management & Economics for Finance'
-        };
-        return papers[paperId] || `Paper ${paperId}`;
-      }
-    }
-    else if (category === 'CMA') {
-      if (level === 'Foundation') {
-        const papers = {
-          '1': 'Fundamentals of Economics & Management',
-          '2': 'Fundamentals of Accounting',
-          '3': 'Fundamentals of Laws & Ethics',
-          '4': 'Fundamentals of Business Mathematics & Statistics'
-        };
-        return papers[paperId] || `Paper ${paperId}`;
-      }
-    }
-    
-    return `Paper ${paperId}`;
-  };
-  
-  const handleEditCourse = (facultySlug, courseIndex) => {
-    // Call the parent component's edit function
+    loadCourses();
+  }, [refreshKey]);
+
+  const filteredCourses = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return courses;
+
+    return courses.filter(course => [
+      course.title,
+      course.subject,
+      course.facultyName,
+      course.instituteName,
+      course.category,
+      course.subcategory,
+      course.paperId,
+      course.paperName
+    ].some(value => String(value || '').toLowerCase().includes(term)));
+  }, [courses, query]);
+
+  const groupedCourses = useMemo(() => {
+    const grouped = emptyGroups();
+
+    filteredCourses.forEach(course => {
+      const category = String(course.category || '').toUpperCase() === 'CMA' ? 'CMA' : 'CA';
+      const level = normalizeLevel(course.subcategory || course.courseType);
+      grouped[category][level].push(course);
+    });
+
+    Object.values(grouped).forEach(levels => {
+      Object.values(levels).forEach(list => {
+        list.sort((a, b) => {
+          const paperA = Number(a.paperId || a.paper_id || 999);
+          const paperB = Number(b.paperId || b.paper_id || 999);
+          if (paperA !== paperB) return paperA - paperB;
+          return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
+        });
+      });
+    });
+
+    return grouped;
+  }, [filteredCourses]);
+
+  const handleEdit = (course) => {
+    const courseId = getCourseId(course);
     if (typeof onEditCourse === 'function') {
-      onEditCourse(facultySlug, courseIndex);
-    } else {
-      alert('Edit function not available');
+      onEditCourse(course.facultySlug || 'by-id', courseId, course);
     }
   };
-  
-  const handleDeleteCourse = (facultySlug, courseIndex) => {
-    // Call the parent component's delete function
+
+  const handleDelete = async (course) => {
+    const courseId = getCourseId(course);
     if (typeof onDeleteCourse === 'function') {
-      onDeleteCourse(facultySlug, courseIndex);
-    } else {
-      alert('Delete function not available');
+      await onDeleteCourse(course.facultySlug || 'by-id', courseId, course);
+      await loadCourses();
     }
   };
-  
-  // Render courses by category and paper
-  return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-purple-700">All Courses by CA/CMA Papers</h3>
-        <div className="flex space-x-2">
-          <button 
-            onClick={loadCoursesByPaper}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh
-          </button>
-        </div>
-      </div>
-      
-      <DeleteAllCoursesButton onDeleteSuccess={loadCoursesByPaper} />
-      
-      {loading && <div className="text-blue-500">Loading courses...</div>}
-      
-      {!loading && (
-        <div className="space-y-8">
-          {/* CA Courses */}
-          <div className="border-b pb-6">
-            <h4 className="text-lg font-bold text-blue-800 mb-4">CA Courses</h4>
-            
-            {/* CA Foundation */}
-            <div className="mb-6">
-              <h5 className="text-md font-semibold text-blue-700 border-b border-blue-200 pb-1 mb-3">Foundation</h5>
-              {Object.keys(coursesByType.CA.Foundation).length === 0 ? (
-                <div className="text-gray-500 italic">No CA Foundation courses found</div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(coursesByType.CA.Foundation).map(([paperId, paper]) => (
-                    <div key={`ca-foundation-${paperId}`} className="border-l-4 border-blue-500 pl-3 pb-2">
-                      <h6 className="text-md font-medium text-gray-800 mb-2">Paper {paperId}: {paper.name}</h6>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paper.courses.map((course, idx) => (
-                          <div key={`ca-f-${paperId}-${idx}`} className="bg-white rounded-xl shadow p-3 flex gap-3 items-start border border-blue-100">
-                            {course.posterUrl && (
-                              <img 
-                                src={course.posterUrl.startsWith('http') ? course.posterUrl : `${API_URL}${course.posterUrl}`} 
-                                alt="Poster" 
-                                className="w-16 h-16 object-cover rounded-lg border border-blue-200" 
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="font-bold text-blue-700 text-sm">{course.subject}</div>
-                              <div className="text-xs text-gray-600">By: {course.facultyName || 'N/A'}</div>
-                              <div className="text-xs text-gray-500">Price: ₹{course.sellingPrice || 0}</div>
-                              <div className="flex gap-2 mt-2">
-                                <button 
-                                  onClick={() => handleEditCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs hover:bg-yellow-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs hover:bg-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* CA Inter */}
-            <div className="mb-6">
-              <h5 className="text-md font-semibold text-blue-700 border-b border-blue-200 pb-1 mb-3">Intermediate</h5>
-              {Object.keys(coursesByType.CA.Inter).length === 0 ? (
-                <div className="text-gray-500 italic">No CA Inter courses found</div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(coursesByType.CA.Inter).map(([paperId, paper]) => (
-                    <div key={`ca-inter-${paperId}`} className="border-l-4 border-blue-500 pl-3 pb-2">
-                      <h6 className="text-md font-medium text-gray-800 mb-2">Paper {paperId}: {paper.name}</h6>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paper.courses.map((course, idx) => (
-                          <div key={`ca-i-${paperId}-${idx}`} className="bg-white rounded-xl shadow p-3 flex gap-3 items-start border border-blue-100">
-                            {course.posterUrl && (
-                              <img 
-                                src={course.posterUrl.startsWith('http') ? course.posterUrl : `${API_URL}${course.posterUrl}`} 
-                                alt="Poster" 
-                                className="w-16 h-16 object-cover rounded-lg border border-blue-200" 
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="font-bold text-blue-700 text-sm">{course.subject}</div>
-                              <div className="text-xs text-gray-600">By: {course.facultyName || 'N/A'}</div>
-                              <div className="text-xs text-gray-500">Price: ₹{course.sellingPrice || 0}</div>
-                              <div className="flex gap-2 mt-2">
-                                <button 
-                                  onClick={() => handleEditCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs hover:bg-yellow-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs hover:bg-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* CA Final */}
-            <div className="mb-6">
-              <h5 className="text-md font-semibold text-blue-700 border-b border-blue-200 pb-1 mb-3">Final</h5>
-              {Object.keys(coursesByType.CA.Final).length === 0 ? (
-                <div className="text-gray-500 italic">No CA Final courses found</div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(coursesByType.CA.Final).map(([paperId, paper]) => (
-                    <div key={`ca-final-${paperId}`} className="border-l-4 border-blue-500 pl-3 pb-2">
-                      <h6 className="text-md font-medium text-gray-800 mb-2">Paper {paperId}: {paper.name}</h6>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paper.courses.map((course, idx) => (
-                          <div key={`ca-f-${paperId}-${idx}`} className="bg-white rounded-xl shadow p-3 flex gap-3 items-start border border-blue-100">
-                            {course.posterUrl && (
-                              <img 
-                                src={course.posterUrl.startsWith('http') ? course.posterUrl : `${API_URL}${course.posterUrl}`} 
-                                alt="Poster" 
-                                className="w-16 h-16 object-cover rounded-lg border border-blue-200" 
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="font-bold text-blue-700 text-sm">{course.subject}</div>
-                              <div className="text-xs text-gray-600">By: {course.facultyName || 'N/A'}</div>
-                              <div className="text-xs text-gray-500">Price: ₹{course.sellingPrice || 0}</div>
-                              <div className="flex gap-2 mt-2">
-                                <button 
-                                  onClick={() => handleEditCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs hover:bg-yellow-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs hover:bg-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+
+  const renderCourseRow = (course) => {
+    const courseId = getCourseId(course);
+    const title = course.title || course.subject || 'Untitled Course';
+    const price = Number(course.sellingPrice || 0);
+    const cost = Number(course.costPrice || 0);
+
+    return (
+      <tr key={courseId || `${title}-${course.paperId}`} className="border-b border-gray-100 last:border-b-0 hover:bg-purple-50/40">
+        <td className="p-3 align-top">
+          <div className="flex items-start gap-3">
+            {course.posterUrl ? (
+              <img
+                src={course.posterUrl}
+                alt={title}
+                className="h-14 w-14 rounded-md border border-gray-200 object-cover bg-gray-50"
+              />
+            ) : (
+              <div className="h-14 w-14 rounded-md border border-dashed border-gray-300 bg-gray-50" />
+            )}
+            <div>
+              <div className="font-bold text-gray-900 leading-tight">{title}</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Paper {course.paperId || 'N/A'}{course.paperName ? ` - ${course.paperName}` : ''}
+              </div>
+              <div className="text-xs text-gray-500">
+                Faculty: {course.facultyName || 'N/A'} | Institute: {course.instituteName || 'N/A'}
+              </div>
             </div>
           </div>
-          
-          {/* CMA Courses */}
+        </td>
+        <td className="p-3 align-top text-sm text-gray-700">
+          <div className="font-semibold">{course.category || 'N/A'} {course.subcategory || ''}</div>
+          <div className="text-xs text-gray-500">{course.courseType || 'Course'}</div>
+        </td>
+        <td className="p-3 align-top text-sm">
+          <div className="font-bold text-green-700">Rs. {price.toLocaleString('en-IN')}</div>
+          {cost > price && <div className="text-xs text-gray-400 line-through">Rs. {cost.toLocaleString('en-IN')}</div>}
+        </td>
+        <td className="p-3 align-top">
+          <div className="flex flex-wrap gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => handleEdit(course)}
+              className="rounded-md bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-200"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(course)}
+              className="rounded-md bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-200"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
+  const renderLevel = (category, level, accentClass) => {
+    const list = groupedCourses[category][level];
+
+    return (
+      <section className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
+        <div className={`flex items-center justify-between px-4 py-3 ${accentClass}`}>
+          <h5 className="font-bold text-gray-900">{category} {level}</h5>
+          <span className="rounded-full bg-white/80 px-2.5 py-1 text-xs font-bold text-gray-700">
+            {list.length} courses
+          </span>
+        </div>
+        {list.length === 0 ? (
+          <div className="p-4 text-sm italic text-gray-500">No {category} {level} courses found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left">
+              <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th className="p-3">Course</th>
+                  <th className="p-3">Type</th>
+                  <th className="p-3">Price</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>{list.map(renderCourseRow)}</tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  return (
+    <div className="w-full space-y-5">
+      <div className="rounded-xl border border-purple-100 bg-white/90 p-4 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h4 className="text-lg font-bold text-green-800 mb-4">CMA Courses</h4>
-            
-            {/* CMA Foundation */}
-            <div className="mb-6">
-              <h5 className="text-md font-semibold text-green-700 border-b border-green-200 pb-1 mb-3">Foundation</h5>
-              {Object.keys(coursesByType.CMA.Foundation).length === 0 ? (
-                <div className="text-gray-500 italic">No CMA Foundation courses found</div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(coursesByType.CMA.Foundation).map(([paperId, paper]) => (
-                    <div key={`cma-foundation-${paperId}`} className="border-l-4 border-green-500 pl-3 pb-2">
-                      <h6 className="text-md font-medium text-gray-800 mb-2">Paper {paperId}: {paper.name}</h6>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paper.courses.map((course, idx) => (
-                          <div key={`cma-f-${paperId}-${idx}`} className="bg-white rounded-xl shadow p-3 flex gap-3 items-start border border-green-100">
-                            {course.posterUrl && (
-                              <img 
-                                src={course.posterUrl.startsWith('http') ? course.posterUrl : `${API_URL}${course.posterUrl}`} 
-                                alt="Poster" 
-                                className="w-16 h-16 object-cover rounded-lg border border-green-200" 
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="font-bold text-green-700 text-sm">{course.subject}</div>
-                              <div className="text-xs text-gray-600">By: {course.facultyName || 'N/A'}</div>
-                              <div className="text-xs text-gray-500">Price: ₹{course.sellingPrice || 0}</div>
-                              <div className="flex gap-2 mt-2">
-                                <button 
-                                  onClick={() => handleEditCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs hover:bg-yellow-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs hover:bg-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* CMA Inter */}
-            <div className="mb-6">
-              <h5 className="text-md font-semibold text-green-700 border-b border-green-200 pb-1 mb-3">Intermediate</h5>
-              {Object.keys(coursesByType.CMA.Inter).length === 0 ? (
-                <div className="text-gray-500 italic">No CMA Inter courses found</div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(coursesByType.CMA.Inter).map(([paperId, paper]) => (
-                    <div key={`cma-inter-${paperId}`} className="border-l-4 border-green-500 pl-3 pb-2">
-                      <h6 className="text-md font-medium text-gray-800 mb-2">Paper {paperId}: {paper.name}</h6>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paper.courses.map((course, idx) => (
-                          <div key={`cma-i-${paperId}-${idx}`} className="bg-white rounded-xl shadow p-3 flex gap-3 items-start border border-green-100">
-                            {course.posterUrl && (
-                              <img 
-                                src={course.posterUrl.startsWith('http') ? course.posterUrl : `${API_URL}${course.posterUrl}`} 
-                                alt="Poster" 
-                                className="w-16 h-16 object-cover rounded-lg border border-green-200" 
-                              />
-                            )}
-                            <div className="flex-1">
-                              <div className="font-bold text-green-700 text-sm">{course.subject}</div>
-                              <div className="text-xs text-gray-600">By: {course.facultyName || 'N/A'}</div>
-                              <div className="text-xs text-gray-500">Price: ₹{course.sellingPrice || 0}</div>
-                              <div className="flex gap-2 mt-2">
-                                <button 
-                                  onClick={() => handleEditCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs hover:bg-yellow-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteCourse(course.facultySlug, idx)} 
-                                  className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs hover:bg-red-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <h3 className="text-xl font-bold text-purple-700">All Admin Courses</h3>
+            <p className="text-sm text-gray-500">List view of courses saved in the course database.</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search courses..."
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+            />
+            <button
+              type="button"
+              onClick={loadCourses}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <DeleteAllCoursesButton onDeleteSuccess={loadCourses} />
+
+      {loading && <div className="rounded-lg bg-blue-50 p-4 text-blue-700">Loading courses...</div>}
+      {error && <div className="rounded-lg bg-red-50 p-4 text-red-700">{error}</div>}
+
+      {!loading && !error && (
+        <div className="space-y-6">
+          <div className="grid gap-4">
+            {renderLevel('CA', 'Foundation', 'bg-blue-50')}
+            {renderLevel('CA', 'Inter', 'bg-blue-50')}
+            {renderLevel('CA', 'Final', 'bg-blue-50')}
+          </div>
+          <div className="grid gap-4">
+            {renderLevel('CMA', 'Foundation', 'bg-green-50')}
+            {renderLevel('CMA', 'Inter', 'bg-green-50')}
+            {renderLevel('CMA', 'Final', 'bg-green-50')}
           </div>
         </div>
       )}
-      
-      {/* Button moved to top of component */}
     </div>
   );
 };

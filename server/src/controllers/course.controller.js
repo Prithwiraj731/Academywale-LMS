@@ -389,20 +389,38 @@ exports.updateCourse = async (req, res) => {
     const updateData = req.body;
     const idx = parseInt(courseIndex);
 
-    // Get courses for faculty, sorted by created_at
-    const { data: courses, error: fetchErr } = await supabaseAdmin
-      .from('courses')
-      .select('*')
-      .eq('faculty_slug', facultySlug)
-      .order('created_at', { ascending: true });
+    let targetCourse = null;
+    const isCourseUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseIndex);
+    const isMongoId = /^[0-9a-f]{24}$/i.test(courseIndex);
 
-    if (fetchErr) throw fetchErr;
+    if (facultySlug === 'by-id' || isCourseUuid || isMongoId) {
+      const idColumn = isCourseUuid ? 'id' : 'mongo_id';
+      const { data: course, error: fetchErr } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq(idColumn, courseIndex)
+        .maybeSingle();
 
-    if (!courses || idx < 0 || idx >= courses.length) {
-      return res.status(404).json({ error: 'Course not found at this index' });
+      if (fetchErr) throw fetchErr;
+      targetCourse = course;
+    } else {
+      // Legacy route support: get courses for faculty, sorted by created_at
+      const { data: courses, error: fetchErr } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq('faculty_slug', facultySlug)
+        .order('created_at', { ascending: true });
+
+      if (fetchErr) throw fetchErr;
+
+      if (courses && idx >= 0 && idx < courses.length) {
+        targetCourse = courses[idx];
+      }
     }
 
-    const targetCourse = courses[idx];
+    if (!targetCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
 
     // Handle poster file upload if present
     let posterUrl = targetCourse.poster_url;
@@ -586,20 +604,38 @@ exports.deleteCourse = async (req, res) => {
     const { facultySlug, courseIndex } = req.params;
     const idx = parseInt(courseIndex);
 
-    // Get courses for faculty, sorted by created_at
-    const { data: courses, error: fetchErr } = await supabaseAdmin
-      .from('courses')
-      .select('id')
-      .eq('faculty_slug', facultySlug)
-      .order('created_at', { ascending: true });
+    let targetCourse = null;
+    const isCourseUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseIndex);
+    const isMongoId = /^[0-9a-f]{24}$/i.test(courseIndex);
 
-    if (fetchErr) throw fetchErr;
+    if (facultySlug === 'by-id' || isCourseUuid || isMongoId) {
+      const idColumn = isCourseUuid ? 'id' : 'mongo_id';
+      const { data: course, error: fetchErr } = await supabaseAdmin
+        .from('courses')
+        .select('id')
+        .eq(idColumn, courseIndex)
+        .maybeSingle();
 
-    if (!courses || idx < 0 || idx >= courses.length) {
-      return res.status(404).json({ error: 'Course not found at this index' });
+      if (fetchErr) throw fetchErr;
+      targetCourse = course;
+    } else {
+      // Legacy route support: get courses for faculty, sorted by created_at
+      const { data: courses, error: fetchErr } = await supabaseAdmin
+        .from('courses')
+        .select('id')
+        .eq('faculty_slug', facultySlug)
+        .order('created_at', { ascending: true });
+
+      if (fetchErr) throw fetchErr;
+
+      if (courses && idx >= 0 && idx < courses.length) {
+        targetCourse = courses[idx];
+      }
     }
 
-    const targetCourse = courses[idx];
+    if (!targetCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
 
     const { error: deleteErr } = await supabaseAdmin
       .from('courses')

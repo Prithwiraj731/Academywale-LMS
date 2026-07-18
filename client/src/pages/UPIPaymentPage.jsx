@@ -22,6 +22,10 @@ const UPIPaymentPage = () => {
   const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [coupon, setCoupon] = useState('');
+  const [couponStatus, setCouponStatus] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
   
   // Get details passed from the previous page
   const selectedMode = location.state?.selectedMode || '';
@@ -29,6 +33,8 @@ const UPIPaymentPage = () => {
   const selectedAttempt = location.state?.selectedAttempt || '';
   const userDetails = location.state?.userDetails || {};
   const priceFromState = location.state?.price;
+  const baseAmount = Number(priceFromState || course?.sellingPrice || 0);
+  const payableAmount = Math.max(0, Math.round(baseAmount * (1 - appliedDiscount / 100)));
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -71,10 +77,51 @@ const UPIPaymentPage = () => {
     setPaymentMethod(method);
   };
 
+  useEffect(() => {
+    setCoupon('');
+    setCouponStatus('');
+    setAppliedDiscount(0);
+    setAppliedCouponCode('');
+  }, [courseId, priceFromState]);
+
+  const handleApplyCoupon = async () => {
+    const code = coupon.trim().toUpperCase();
+    setCouponStatus('');
+
+    if (!code) {
+      setCouponStatus('Enter a coupon code.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        const discount = Number(data.discountPercent || 0);
+        setAppliedDiscount(discount);
+        setAppliedCouponCode(code);
+        setCouponStatus(`Coupon applied. ${discount}% discount added.`);
+      } else {
+        setAppliedDiscount(0);
+        setAppliedCouponCode('');
+        setCouponStatus(data.error || 'Invalid coupon code.');
+      }
+    } catch {
+      setAppliedDiscount(0);
+      setAppliedCouponCode('');
+      setCouponStatus('Server error while applying coupon.');
+    }
+  };
+
   const generateUpiLink = () => {
     if (!course) return '';
     
-    const amount = priceFromState || course.sellingPrice || 0;
+    const amount = payableAmount;
     const courseName = course.title || course.subject || 'Course Payment';
     const transactionRef = `AW${Date.now().toString().slice(-6)}`;
     
@@ -110,8 +157,10 @@ const UPIPaymentPage = () => {
           userId: user?._id || user?.id,
           courseId: courseId,
           transactionId: transactionId,
-          amount: priceFromState || (course?.sellingPrice || 0),
+          amount: payableAmount,
           paymentMethod: 'UPI',
+          coupon: appliedCouponCode || undefined,
+          discountPercent: appliedDiscount || undefined,
           userDetails: {
             name: userDetails.fullName || user?.name,
             email: userDetails.email || user?.email,
@@ -122,7 +171,9 @@ const UPIPaymentPage = () => {
             courseName: course?.title || course?.subject,
             mode: selectedMode,
             validity: selectedValidity,
-            attempt: selectedAttempt
+            attempt: selectedAttempt,
+            coupon: appliedCouponCode || '',
+            discountPercent: appliedDiscount || 0
           }
         })
       });
@@ -153,7 +204,9 @@ const UPIPaymentPage = () => {
                 attempt: selectedAttempt
               },
               transactionId: transactionId,
-              amount: priceFromState || (course?.sellingPrice || 0)
+              amount: payableAmount,
+              coupon: appliedCouponCode || undefined,
+              discountPercent: appliedDiscount || undefined
             })
           });
         } catch (emailErr) {
@@ -270,8 +323,43 @@ const UPIPaymentPage = () => {
                   </>
                 )}
                 
-                <div className="text-gray-600">Amount:</div>
-                <div className="text-gray-900 font-bold">₹{priceFromState || course?.sellingPrice}</div>
+                <div className="text-gray-600">Course Price:</div>
+                <div className="text-gray-900 font-bold">Rs. {baseAmount.toLocaleString('en-IN')}</div>
+
+                <div className="text-gray-600">Coupon:</div>
+                <div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="text"
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className="rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className="rounded-md bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {couponStatus && (
+                    <div className={`mt-1 text-xs font-medium ${appliedDiscount ? 'text-green-700' : 'text-red-600'}`}>
+                      {couponStatus}
+                    </div>
+                  )}
+                </div>
+
+                {appliedDiscount > 0 && (
+                  <>
+                    <div className="text-gray-600">Discount:</div>
+                    <div className="text-green-700 font-bold">{appliedDiscount}% off ({appliedCouponCode})</div>
+                  </>
+                )}
+
+                <div className="text-gray-600">Payable Amount:</div>
+                <div className="text-gray-900 font-bold">Rs. {payableAmount.toLocaleString('en-IN')}</div>
               </div>
             </div>
 
@@ -364,7 +452,7 @@ const UPIPaymentPage = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaMobileAlt className="mr-2" /> Pay Now ₹{priceFromState || course?.sellingPrice}
+                    <FaMobileAlt className="mr-2" /> Pay Now Rs. {payableAmount.toLocaleString('en-IN')}
                   </a>
                 </div>
               </div>
@@ -376,7 +464,7 @@ const UPIPaymentPage = () => {
                 <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
                   <li>Open any UPI app on your mobile phone</li>
                   <li>Scan the QR code shown below</li>
-                  <li>Pay the amount: ₹{priceFromState || course?.sellingPrice}</li>
+                  <li>Pay the amount: Rs. {payableAmount.toLocaleString('en-IN')}</li>
                   <li>Enter the UPI Reference ID below</li>
                 </ol>
                 
@@ -406,7 +494,7 @@ const UPIPaymentPage = () => {
                 <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
                   <li>Open any UPI app on your mobile phone</li>
                   <li>Scan the QR code shown below or use the UPI ID</li>
-                  <li>Pay amount: ₹{priceFromState || course?.sellingPrice}</li>
+                  <li>Pay amount: Rs. {payableAmount.toLocaleString('en-IN')}</li>
                   <li>Enter transaction reference number below</li>
                 </ol>
                 
