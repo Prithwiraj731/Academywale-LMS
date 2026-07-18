@@ -92,9 +92,9 @@ const CourseCard = ({
       </div>
 
       {/* Content Section */}
-      <div className="p-1.5 xs:p-2 sm:p-4 flex flex-col flex-grow">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow">
         {/* Course Title */}
-        <h3 className="text-[9px] xs:text-xs sm:text-sm md:text-base font-bold text-gray-900 mb-0.5 sm:mb-2 line-clamp-2 min-h-[1.5rem] xs:min-h-[2rem] sm:min-h-[2.5rem]">
+        <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem]">
           {course.subject || course.title}
         </h3>
 
@@ -102,20 +102,20 @@ const CourseCard = ({
         <div className="flex-grow"></div>
 
         {/* Pricing Section */}
-        <div className="mb-1 sm:mb-3">
-          <div className="flex items-baseline gap-0.5 sm:gap-2 flex-wrap">
-            <span className="text-[10px] xs:text-sm sm:text-base md:text-lg font-extrabold text-black">
+        <div className="mb-2 sm:mb-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-base md:text-lg font-extrabold text-black">
               ₹{sellingPrice?.toLocaleString() || '0'}
             </span>
             {costPrice > sellingPrice && (
-              <span className="text-[7px] xs:text-[10px] text-gray-400 line-through">
-                ₹{costPrice?.toLocaleString()}
-              </span>
-            )}
-            {costPrice > sellingPrice && (
-              <span className="text-[6px] xs:text-[9px] sm:text-xs bg-green-100 text-green-800 px-0.5 sm:px-1 py-0.2 rounded font-medium">
-                {Math.round(((costPrice - sellingPrice) / costPrice) * 100)}% off
-              </span>
+              <>
+                <span className="text-xs text-gray-400 line-through">
+                  ₹{costPrice?.toLocaleString()}
+                </span>
+                <span className="text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded font-medium">
+                  {Math.round(((costPrice - sellingPrice) / costPrice) * 100)}% off
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -123,7 +123,7 @@ const CourseCard = ({
         {/* View Details Button */}
         <button
           onClick={handleCourseClick}
-          className="w-full bg-teal-600 text-white py-1 sm:py-1.5 rounded sm:rounded-lg text-[8px] xs:text-xs sm:text-sm font-semibold hover:bg-teal-700 transition-colors duration-200"
+          className="w-full bg-teal-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors duration-200"
         >
           View Details
         </button>
