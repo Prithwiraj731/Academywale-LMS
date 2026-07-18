@@ -80,7 +80,7 @@ const CourseCard = ({
   return (
     <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
       {/* Image Section */}
-      <div className="relative w-full aspect-[4/5] bg-gray-50 border-b border-gray-100 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full aspect-square bg-gray-50 border-b border-gray-100 overflow-hidden flex items-center justify-center">
         <img
           src={getPosterUrl(course)}
           alt={course.subject || 'Course'}
