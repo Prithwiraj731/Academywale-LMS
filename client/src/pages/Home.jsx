@@ -68,8 +68,17 @@ export default function Home() {
         />
 
         <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+          <div className="text-center mb-12 flex flex-col items-center">
+            <div className="mb-6">
+              <MorphyButton
+                onClick={() => navigate('/courses/all')}
+                size="lg"
+                className="shadow-xl hover:shadow-2xl font-extrabold"
+              >
+                🎓 Browse All Available Courses
+              </MorphyButton>
+            </div>
+            <h2 className="text-lg xs:text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-white whitespace-nowrap">
               Choose Your Learning Path
             </h2>
             <p className="text-neutral-400 mt-4 text-base sm:text-lg max-w-2xl mx-auto">
@@ -175,15 +184,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 text-center flex justify-center">
-            <MorphyButton
-              onClick={() => navigate('/courses/all')}
-              size="lg"
-              className="shadow-xl hover:shadow-2xl font-extrabold"
-            >
-              🎓 Browse All Available Courses
-            </MorphyButton>
-          </div>
+          {/* Button moved to top of section */}
         </div>
       </div>
       {/* End rearranged section */}
