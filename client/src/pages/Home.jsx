@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import Hero from '../components/home/Hero';
-import Categories from '../components/home/Categories';
 import Numbers from '../components/home/Numbers';
 import SearchBy from '../components/home/SearchBy';
 import Partners from '../components/home/Partners';
@@ -78,7 +77,7 @@ export default function Home() {
                 🎓 Browse All Available Courses
               </MorphyButton>
             </div>
-            <h2 className="text-lg xs:text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-white whitespace-nowrap">
+            <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter text-white whitespace-nowrap">
               Choose Your Learning Path
             </h2>
             <p className="text-neutral-400 mt-4 text-base sm:text-lg max-w-2xl mx-auto">
@@ -188,7 +187,6 @@ export default function Home() {
         </div>
       </div>
       {/* End rearranged section */}
-      <Categories />
       {/* Restore Meet Our Expert Faculties section */}
       <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">
