@@ -368,11 +368,6 @@ const CourseFullDetailPage = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-150">
-                        {/* Always show Applicable For as it's part of Course Information */}
-                        <tr className="hover:bg-gray-55/50 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-gray-600 w-1/3">Applicable For</td>
-                          <td className="py-3.5 px-4 text-gray-900 font-medium">{course.category} {course.subcategory} level exams</td>
-                        </tr>
                         {/* Render Dynamic Details */}
                         {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
                           course.customDetails
