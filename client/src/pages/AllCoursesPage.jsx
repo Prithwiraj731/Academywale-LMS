@@ -138,8 +138,13 @@ const CourseSlider = ({ courses }) => {
               className="w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] flex-shrink-0 snap-start flex flex-col gap-4"
             >
               {column.map((course, index) => (
-                <CourseCard key={course._id || index} course={course} />
+                <div key={course._id || index} className="flex-1 flex flex-col h-full">
+                  <CourseCard course={course} />
+                </div>
               ))}
+              {column.length === 1 && (
+                <div className="flex-1 flex flex-col h-full invisible pointer-events-none" />
+              )}
             </div>
           ))}
         </div>
