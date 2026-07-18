@@ -95,7 +95,7 @@ const styles = `
 `;
 
 // Import testimonial images
-import testimonial1 from "../../assets/testimonial/1.jpg";
+import testimonial1 from "../../assets/testimonial/1.jpeg";
 import testimonial2 from "../../assets/testimonial/2.jpg";
 import testimonial3 from "../../assets/testimonial/3.jpg";
 import testimonial4 from "../../assets/testimonial/4.jpg";
@@ -105,11 +105,11 @@ import testimonial6 from "../../assets/testimonial/6.jpg";
 const testimonials = [
   {
     id: 1,
-    name: "Sourav Pathak",
+    name: "Gourav Pathak",
     role: "CMA Final Student",
     review: "AcademyWale made my CA/CMA journey so much smoother! I was able to purchase top faculty courses at discounted prices, with flexible validity and instant access. The support team is very responsive, and the whole process is super easy. Highly recommended for every CA/CMA aspirant looking for quality classes at affordable rates!",
     avatar: testimonial1,
-    handle: "@sourav_pathak",
+    handle: "@gourav_pathak",
   },
   {
     id: 2,
