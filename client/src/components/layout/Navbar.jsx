@@ -103,7 +103,9 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo only */}
             <div className="flex-shrink-0">
-              <img src="/academywale.svg" alt="Academywale Logo" className="h-8 sm:h-12 lg:h-16 w-auto object-contain" />
+              <Link to="/">
+                <img src="/academywale.svg" alt="Academywale Logo" className="h-8 sm:h-12 lg:h-16 w-auto object-contain" />
+              </Link>
             </div>
 
             {/* Desktop Navigation */}
