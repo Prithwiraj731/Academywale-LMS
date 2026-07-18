@@ -363,7 +363,7 @@ const CourseFullDetailPage = () => {
                     <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden border border-gray-100">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500">
-                          <th className="py-3.5 px-4 font-bold">Parameter</th>
+                          <th className="py-3.5 px-4 font-bold"></th>
                           <th className="py-3.5 px-4 font-bold">Details</th>
                         </tr>
                       </thead>
