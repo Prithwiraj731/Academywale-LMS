@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
-import CourseCard from '../components/common/CourseCard/CourseCard';
+import CourseCard from '../components/common/CourseCard';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 

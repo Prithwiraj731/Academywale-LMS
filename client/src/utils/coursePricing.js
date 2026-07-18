@@ -7,22 +7,29 @@ export function normalizeModeAttemptPricing(modeAttemptPricing) {
     if (!option || typeof option !== 'object') return;
 
     const mode = option.mode || 'Default';
+    const modeLabel = option.modeLabel || 'Mode';
     const attempts = Array.isArray(option.attempts)
       ? option.attempts
       : [{
           attempt: option.attempt || option.validity || '',
+          attemptLabel: option.attemptLabel || 'Exam Term / Attempt',
           validity: option.validity || '',
+          validityLabel: option.validityLabel || 'Validity',
           costPrice: option.costPrice,
           sellingPrice: option.sellingPrice,
+          description: option.description || '',
         }];
 
     if (!grouped.has(mode)) {
-      grouped.set(mode, { mode, attempts: [] });
+      grouped.set(mode, { mode, modeLabel, attempts: [] });
     }
 
     attempts.forEach((attempt) => {
       grouped.get(mode).attempts.push({
         ...attempt,
+        attemptLabel: attempt.attemptLabel || 'Exam Term / Attempt',
+        validityLabel: attempt.validityLabel || 'Validity',
+        description: attempt.description || '',
         costPrice: Number(attempt.costPrice) || 0,
         sellingPrice: Number(attempt.sellingPrice) || 0,
       });

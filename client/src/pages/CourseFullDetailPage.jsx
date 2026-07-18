@@ -246,10 +246,10 @@ const CourseFullDetailPage = () => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
-        <div className="bg-slate-950/80 border border-slate-800 p-8 rounded-2xl shadow-2xl backdrop-blur-md max-w-sm w-full text-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white/90 border border-gray-200 p-8 rounded-2xl shadow-xl backdrop-blur-md max-w-sm w-full text-center">
           <LoadingSpinner size="lg" />
-          <div className="text-gray-400 mt-4 font-semibold">Loading course details...</div>
+          <div className="text-gray-500 mt-4 font-semibold">Loading course details...</div>
         </div>
       </div>
     );
@@ -257,18 +257,18 @@ const CourseFullDetailPage = () => {
 
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-slate-900 p-4 flex items-center justify-center">
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center text-white">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 p-4 flex items-center justify-center">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 max-w-md w-full text-center text-gray-900">
           <div className="text-red-500 mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-4">{error ? 'Error' : 'Course Not Found'}</h2>
-          <p className="text-gray-400 mb-6">{error || "The course you're looking for doesn't exist or has been removed."}</p>
+          <p className="text-gray-500 mb-6">{error || "The course you're looking for doesn't exist or has been removed."}</p>
           <button
             onClick={() => navigate(-1)}
-            className="w-full bg-[#20b2aa] hover:bg-[#17817a] text-white font-bold py-3 rounded-xl transition-all shadow-lg"
+            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg"
           >
             Go Back
           </button>
