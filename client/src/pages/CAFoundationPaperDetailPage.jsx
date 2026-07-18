@@ -334,6 +334,11 @@ const CAFoundationPaperDetailPage = () => {
         }
         
         // Set final results
+        foundCourses = foundCourses.filter(course => {
+          const coursePaperId = String(course.paperId ?? course.paper_id ?? '').replace(/\D/g, '');
+          return coursePaperId === String(paperId);
+        });
+
         if (foundCourses.length > 0) {
           console.log(`🎉 FINAL RESULT: Setting ${foundCourses.length} courses`);
           setCourses(normalizeCoursesPricing(foundCourses));
