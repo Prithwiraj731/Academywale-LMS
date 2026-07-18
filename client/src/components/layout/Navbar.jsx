@@ -249,14 +249,14 @@ export default function Navbar() {
                   className="block py-3 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  🏠 Home
+                  Home
                 </Link>
                 <div>
                   <button
                     onClick={() => setIsCaDropdownOpen(!isCaDropdownOpen)}
                     className="w-full flex justify-between items-center font-semibold text-primary py-3 px-4 focus:outline-none hover:bg-gray-50 rounded-lg transition"
                   >
-                    📚 CA Courses
+                    CA Courses
                     <svg
                       className={`w-5 h-5 ml-1 transform transition-transform duration-200 ${isCaDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
                       fill="currentColor"
@@ -275,7 +275,7 @@ export default function Navbar() {
                           setIsCaDropdownOpen(false);
                         }}
                       >
-                        📝 CA Foundation
+                        CA Foundation
                       </Link>
                       <Link 
                         to="/ca/inter-papers" 
@@ -285,7 +285,7 @@ export default function Navbar() {
                           setIsCaDropdownOpen(false);
                         }}
                       >
-                        📊 CA Inter
+                        CA Inter
                       </Link>
                       <Link 
                         to="/ca/final-papers" 
@@ -295,7 +295,7 @@ export default function Navbar() {
                           setIsCaDropdownOpen(false);
                         }}
                       >
-                        🎓 CA Final
+                        CA Final
                       </Link>
                     </div>
                   )}
