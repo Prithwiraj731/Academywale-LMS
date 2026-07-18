@@ -1436,14 +1436,14 @@ export default function AdminDashboard() {
         return found ? found.value : '';
       };
 
-      const resolvedSubject = editCourseData.title;
-      const resolvedFacultySlug = editCourseData.facultySlug || 'n-a';
-      const resolvedInstitute = editCourseData.instituteName || '';
+      const resolvedSubject = (editCourseData.title || '').trim();
+      const resolvedFacultySlug = (editCourseData.facultySlug || '').trim();
+      const resolvedInstitute = (editCourseData.instituteName || '').trim();
 
-      formData.append('title', editCourseData.title);
-      formData.append('category', editCourseData.category);
-      formData.append('subcategory', editCourseData.subcategory);
-      formData.append('paperId', editCourseData.paperId);
+      formData.append('title', resolvedSubject);
+      formData.append('category', editCourseData.category || '');
+      formData.append('subcategory', editCourseData.subcategory || '');
+      formData.append('paperId', editCourseData.paperId || '');
       formData.append('paperName', editCourseData.paperName || '');
       formData.append('description', editCourseData.description || '');
       formData.append('courseType', editCourseData.courseType || `${editCourseData.category} ${editCourseData.subcategory}`);
@@ -1489,7 +1489,7 @@ export default function AdminDashboard() {
         setCourseListRefreshKey(key => key + 1);
         setEditModalOpen(false);
       } else {
-        setEditError(data.error || 'Failed to update course');
+        setEditError(data.message || data.error || 'Failed to update course');
       }
     } catch (err) {
       console.error('❌ Error updating course:', err);
@@ -1513,13 +1513,13 @@ export default function AdminDashboard() {
       const res = await fetchWithCredentials(`${API_URL}/api/admin/courses/${encodeURIComponent(routeFaculty)}/${encodeURIComponent(courseId)}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
-        if (!isIdDelete) fetchCourses(facultySlug);
+        fetchCourses(form.facultySlug || facultySlug);
         setCourseListRefreshKey(key => key + 1);
       } else {
-        alert(data.error || 'Failed to delete course');
+        alert(data.message || data.error || 'Failed to delete course');
       }
-    } catch {
-      alert('Server error');
+    } catch (err) {
+      alert(`Server error: ${err.message || 'Failed to delete course'}`);
     }
     setLoading(false);
   };

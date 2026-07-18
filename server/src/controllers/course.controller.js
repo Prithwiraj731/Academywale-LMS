@@ -27,6 +27,10 @@ const handleControllerError = (error, operation, res) => {
   });
 };
 
+const isMissingColumnError = (error, columnName) => {
+  const message = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`;
+  return (error?.code === 'PGRST204' || error?.code === '42703') && message.includes(columnName);
+};
 
 // Hardcoded faculties database fallback
 const hardcodedFaculties = [
@@ -505,16 +509,35 @@ exports.updateCourse = async (req, res) => {
       resolvedSubject = subjectField.value;
     }
 
+    const normalizeString = (value, fallback = '') => {
+      if (value === undefined || value === null) return fallback;
+      return String(value).trim();
+    };
+
+    const normalizedCategory = updateData.category
+      ? normalizeString(updateData.category).toUpperCase()
+      : targetCourse.category;
+    const rawSubcategory = updateData.subcategory
+      ? normalizeString(updateData.subcategory)
+      : targetCourse.subcategory;
+    const normalizedSubcategory = rawSubcategory
+      ? rawSubcategory.charAt(0).toUpperCase() + rawSubcategory.slice(1).toLowerCase()
+      : '';
+    const resolvedCourseType = normalizeString(updateData.courseType, targetCourse.course_type)
+      || `${normalizedCategory || ''} ${normalizedSubcategory || ''}`.trim()
+      || targetCourse.course_type
+      || 'Course';
+
     // Map properties from body
     const sqlData = {
-      title: updateData.title || targetCourse.title,
+      title: normalizeString(updateData.title, targetCourse.title) || 'Untitled Course',
       subject: resolvedSubject || '',
       description: updateData.description !== undefined ? updateData.description : targetCourse.description,
-      category: updateData.category ? updateData.category.toUpperCase() : targetCourse.category,
-      subcategory: updateData.subcategory ? updateData.subcategory.charAt(0).toUpperCase() + updateData.subcategory.slice(1).toLowerCase() : targetCourse.subcategory,
+      category: normalizedCategory,
+      subcategory: normalizedSubcategory,
       paper_id: updateData.paperId !== undefined ? String(updateData.paperId) : targetCourse.paper_id,
       paper_name: updateData.paperName || targetCourse.paper_name,
-      course_type: updateData.courseType || targetCourse.course_type,
+      course_type: resolvedCourseType,
       // Dynamic details
       custom_details: parsedCustomDetails,
       faculty_id: resolvedFacultyId,
@@ -535,7 +558,7 @@ exports.updateCourse = async (req, res) => {
       poster_url: posterUrl,
       poster_public_id: posterPath,
       is_active: updateData.isActive !== undefined ? updateData.isActive : targetCourse.is_active,
-      updated_at: new Date()
+      updated_at: new Date().toISOString()
     };
 
     if (updateData.modeAttemptPricing) {
@@ -583,10 +606,21 @@ exports.updateCourse = async (req, res) => {
       }
     }
 
-    const { error: updateErr } = await supabaseAdmin
+    let { error: updateErr } = await supabaseAdmin
       .from('courses')
       .update(sqlData)
       .eq('id', targetCourse.id);
+
+    if (isMissingColumnError(updateErr, 'updated_at')) {
+      console.warn('âš ï¸ courses.updated_at column is missing; retrying course update without updated_at');
+      const retryData = { ...sqlData };
+      delete retryData.updated_at;
+      const retry = await supabaseAdmin
+        .from('courses')
+        .update(retryData)
+        .eq('id', targetCourse.id);
+      updateErr = retry.error;
+    }
 
     if (updateErr) throw updateErr;
 
@@ -637,10 +671,19 @@ exports.deleteCourse = async (req, res) => {
       return res.status(404).json({ error: 'Course not found' });
     }
 
-    const { error: deleteErr } = await supabaseAdmin
+    let { error: deleteErr } = await supabaseAdmin
       .from('courses')
-      .delete()
+      .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('id', targetCourse.id);
+
+    if (isMissingColumnError(deleteErr, 'updated_at')) {
+      console.warn('Course delete: courses.updated_at column is missing; retrying without updated_at');
+      const retry = await supabaseAdmin
+        .from('courses')
+        .update({ is_active: false })
+        .eq('id', targetCourse.id);
+      deleteErr = retry.error;
+    }
 
     if (deleteErr) throw deleteErr;
 
@@ -657,16 +700,31 @@ exports.deleteAllCourses = async (req, res) => {
   try {
     console.log('🧨 DELETING ALL COURSES FROM SUPABASE');
     
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from('courses')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('is_active', true)
+      .select('id');
+
+    if (isMissingColumnError(error, 'updated_at')) {
+      console.warn('Delete all courses: courses.updated_at column is missing; retrying without updated_at');
+      const retry = await supabaseAdmin
+        .from('courses')
+        .update({ is_active: false })
+        .eq('is_active', true)
+        .select('id');
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) throw error;
+
+    const deletedCount = Array.isArray(data) ? data.length : 0;
     
     res.status(200).json({ 
       success: true, 
-      message: `Successfully removed all courses from database`
+      deletedCount,
+      message: `Successfully deleted ${deletedCount} courses`
     });
   } catch (error) {
     return handleControllerError(error, 'All courses deletion', res);

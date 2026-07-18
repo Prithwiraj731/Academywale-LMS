@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_URL } from '../../api';
+import { API_URL, fetchWithCredentials } from '../../api';
 
 const DeleteAllCoursesButton = ({ onDeleteSuccess }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -18,7 +18,7 @@ const DeleteAllCoursesButton = ({ onDeleteSuccess }) => {
     
     try {
       console.log('Sending delete request to:', `${API_URL}/api/admin/courses/delete-all`);
-      const response = await fetch(`${API_URL}/api/admin/courses/delete-all`, {
+      const response = await fetchWithCredentials(`${API_URL}/api/admin/courses/delete-all`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
