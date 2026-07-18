@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
+import CourseCard from '../components/common/CourseCard/CourseCard';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 
@@ -81,75 +82,10 @@ export default function CoursesPage() {
         )}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
           {filteredCourses.map((course, idx) => (
-            <div key={idx} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-102">
-              <div className="relative">
-                <img 
-                  src={getPosterUrl(course)} 
-                  alt={course.subject} 
-                  className="w-full aspect-[16/10] object-cover"
-                  onError={(e) => {
-                    e.target.src = '/logo.svg';
-                  }}
-                />
-                {course.courseType && (
-                  <div className="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-md text-xs font-semibold">
-                    {course.courseType}
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4">
-                <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                  {course.subject}
-                </h3>
-                
-                {course.facultyName && (
-                  <p className="text-sm text-gray-600 mb-3">
-                    by <span className="font-medium">{course.facultyName}</span>
-                  </p>
-                )}
-                
-                {course.noOfLecture && (
-                  <p className="text-xs text-gray-500 mb-2">
-                    {course.noOfLecture}
-                  </p>
-                )}
-                
-                {/* Quick Info */}
-                <div className="flex flex-wrap gap-2 text-xs mb-3">
-                  {course.mode && (
-                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                      {course.mode}
-                    </span>
-                  )}
-                  {course.videoLanguage && (
-                    <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded">
-                      {course.videoLanguage}
-                    </span>
-                  )}
-                </div>
-                
-                {/* Pricing */}
-                <div className="mt-3">
-                  <div className="text-sm text-gray-500">Price:</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-teal-600">
-                      ₹{course.sellingPrice}
-                    </span>
-                    <span className="text-sm text-gray-400 line-through">
-                      ₹{course.costPrice}
-                    </span>
-                  </div>
-                </div>
-                
-                <button
-                  onClick={() => navigate(`/course-details/${encodeURIComponent(type)}/${course._id}`)}
-                  className="w-full mt-4 bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors text-center"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
+            <CourseCard
+              key={course._id || idx}
+              course={course}
+            />
           ))}
         </div>
       </div>

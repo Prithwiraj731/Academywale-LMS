@@ -283,49 +283,47 @@ const CourseFullDetailPage = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-[#20b2aa]/30">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 text-gray-900 font-sans selection:bg-[#20b2aa]/30 py-8">
       
-      {/* 1. Header Banner Area */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-neutral-900 border-b border-neutral-900 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* 1. Header Banner Area */}
+        <div className="bg-white/85 backdrop-blur-md border border-gray-200/60 rounded-3xl p-6 sm:p-8 mb-8 shadow-md">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors duration-200 mb-6 bg-slate-900 px-4 py-2 rounded-full border border-neutral-800"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-600 hover:text-teal-600 transition-colors duration-200 mb-6 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 shadow-sm"
           >
             <FaArrowLeft /> Back to Courses
           </button>
           
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="bg-[#20b2aa]/10 text-[#20b2aa] px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-[#20b2aa]/20 shadow-sm uppercase">
+            <span className="bg-[#20b2aa]/10 text-teal-800 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-teal-500/20 shadow-sm uppercase">
               {course.category} {course.subcategory}
             </span>
             {course.paper_id && (
-              <span className="bg-slate-800 text-neutral-300 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-neutral-750">
+              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-purple-200 shadow-sm">
                 Paper {course.paper_id}
               </span>
             )}
           </div>
           
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight max-w-4xl">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight max-w-4xl">
             {course.title || course.subject}
           </h1>
         </div>
-      </div>
 
-      {/* 2. Main content split columns */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        {/* 2. Main content split columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* LEFT COLUMN: Media, Product Info Table, Highlights */}
           <div className="lg:col-span-8 space-y-8">
             
             {/* Banner/Poster container (Mobile/Tablet only) */}
-            <div className="block lg:hidden bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-2xl backdrop-blur-sm flex justify-center items-center">
-              <div className="w-full max-w-[360px] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
+            <div className="block lg:hidden bg-white border border-gray-200/60 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-lg backdrop-blur-sm flex justify-center items-center">
+              <div className="w-full max-w-[360px] aspect-[4/5] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center relative border border-gray-200/40 group shadow-inner">
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject || course.title} 
-                  className="w-full max-h-[220px] object-contain p-1 group-hover:scale-102 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
                     e.target.src = '/logo.svg'; 
                   }}
@@ -334,14 +332,14 @@ const CourseFullDetailPage = () => {
             </div>
 
             {/* TABBED BOX: Spec table & Highlights */}
-            <div className="bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
-              <div className="flex border-b border-neutral-850 bg-neutral-950/40">
+            <div className="bg-white border border-gray-200/60 rounded-3xl overflow-hidden shadow-lg">
+              <div className="flex border-b border-gray-200 bg-gray-50/50">
                 <button
                   onClick={() => setActiveTab('info')}
                   className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
                     activeTab === 'info' 
-                      ? 'border-[#20b2aa] text-[#20b2aa] bg-neutral-900/30' 
-                      : 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-900/10'
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white' 
+                      : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-55/40'
                   }`}
                 >
                   <FaBookOpen /> Product Info
@@ -350,8 +348,8 @@ const CourseFullDetailPage = () => {
                   onClick={() => setActiveTab('highlights')}
                   className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
                     activeTab === 'highlights' 
-                      ? 'border-[#20b2aa] text-[#20b2aa] bg-neutral-900/30' 
-                      : 'border-transparent text-neutral-400 hover:text-white hover:bg-neutral-900/10'
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white' 
+                      : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-55/40'
                   }`}
                 >
                   <FaChalkboardTeacher /> Highlights & Features
@@ -362,80 +360,74 @@ const CourseFullDetailPage = () => {
                 {activeTab === 'info' ? (
                   /* SPECIFICATIONS TABLE */
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden">
+                    <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden border border-gray-100">
                       <thead>
-                        <tr className="bg-neutral-950 border-b border-neutral-850 text-xs font-bold uppercase tracking-wider text-neutral-400">
-                          <th className="py-3.5 px-4 font-bold"></th>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500">
+                          <th className="py-3.5 px-4 font-bold">Parameter</th>
                           <th className="py-3.5 px-4 font-bold">Details</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-850">
+                      <tbody className="divide-y divide-gray-150">
                         {/* Always show Applicable For as it's part of Course Information */}
-                        <tr className="hover:bg-neutral-900/40 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-neutral-400 w-1/3">Applicable For</td>
-                          <td className="py-3.5 px-4 text-white font-medium">{course.category} {course.subcategory} level exams</td>
+                        <tr className="hover:bg-gray-55/50 transition-colors">
+                          <td className="py-3.5 px-4 font-semibold text-gray-600 w-1/3">Applicable For</td>
+                          <td className="py-3.5 px-4 text-gray-900 font-medium">{course.category} {course.subcategory} level exams</td>
                         </tr>
                         {/* Render Dynamic Details */}
                         {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
                           course.customDetails
-                            .filter(detail => detail.visible !== false && detail.value)
+                            .filter(detail => detail.visible !== false && detail.value && detail.fieldType !== 'faculty' && detail.fieldType !== 'institute')
                             .map((detail, index) => {
                               const isAlternateColor = index % 2 === 0; // Alternating background colors
-                              const rowClass = isAlternateColor ? "bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors" : "hover:bg-neutral-900/40 transition-colors";
+                              const rowClass = isAlternateColor ? "bg-gray-50/30 hover:bg-gray-50/80 transition-colors" : "hover:bg-gray-50/80 transition-colors";
                               
-                              let displayVal = detail.value;
-                              
-                              if (detail.fieldType === 'faculty') {
-                                displayVal = course.facultyName || detail.value;
-                              }
-
                               return (
                                 <tr key={index} className={rowClass}>
-                                  <td className="py-3.5 px-4 font-semibold text-neutral-400">{detail.label}</td>
-                                  <td className="py-3.5 px-4 text-white font-medium">{displayVal}</td>
+                                  <td className="py-3.5 px-4 font-semibold text-gray-600">{detail.label}</td>
+                                  <td className="py-3.5 px-4 text-gray-900 font-medium">{detail.value}</td>
                                 </tr>
                               );
                             })
                         ) : (
                           // Fallback to legacy fields if customDetails is empty
                           <>
-                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Lecture Duration</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.timing || 'Approx 150+ Hours'}</td>
+                            <tr className="bg-gray-50/30 hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Lecture Duration</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.timing || 'Approx 150+ Hours'}</td>
                             </tr>
-                            <tr className="hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">No. of Lectures</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
+                            <tr className="hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">No. of Lectures</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
                             </tr>
-                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Study Materials</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
+                            <tr className="bg-gray-50/30 hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Study Materials</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
                             </tr>
-                            <tr className="hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Run On</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
+                            <tr className="hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Video Run On</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
                             </tr>
-                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Video Language</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
+                            <tr className="bg-gray-50/30 hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Video Language</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
                             </tr>
-                            <tr className="hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Doubt Solving Medium</td>
-                              <td className="py-3.5 px-4 text-white font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
+                            <tr className="hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Doubt Solving Medium</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
                             </tr>
-                            <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                              <td className="py-3.5 px-4 font-semibold text-neutral-400">Course Support</td>
-                              <td className="py-3.5 px-4 text-white font-medium flex flex-wrap gap-x-4 gap-y-1">
-                                {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-[#20b2aa]" /> {course.supportCall}</span>}
-                                {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-[#20b2aa]" /> {course.supportMail}</span>}
+                            <tr className="bg-gray-50/30 hover:bg-gray-50/80 transition-colors">
+                              <td className="py-3.5 px-4 font-semibold text-gray-600">Course Support</td>
+                              <td className="py-3.5 px-4 text-gray-900 font-medium flex flex-wrap gap-x-4 gap-y-1">
+                                {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-teal-600" /> {course.supportCall}</span>}
+                                {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-teal-600" /> {course.supportMail}</span>}
                               </td>
                             </tr>
                           </>
                         )}
                         {course.instituteName && (
-                          <tr className="bg-neutral-900/10 hover:bg-neutral-900/40 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-neutral-400">Institute Affiliation</td>
-                            <td className="py-3.5 px-4 text-[#20b2aa] font-bold">{course.instituteName}</td>
+                          <tr className="bg-gray-50/30 hover:bg-gray-50/80 transition-colors">
+                            <td className="py-3.5 px-4 font-semibold text-gray-600">Institute Affiliation</td>
+                            <td className="py-3.5 px-4 text-teal-600 font-bold">{course.instituteName}</td>
                           </tr>
                         )}
                       </tbody>
@@ -445,19 +437,17 @@ const CourseFullDetailPage = () => {
                   /* HIGHLIGHTS & DESCRIPTION */
                   <div className="space-y-6">
                     {course.description && (
-                      <div className="prose prose-invert prose-teal max-w-none">
-                        <h4 className="text-lg font-bold text-white mb-2">Detailed Overview</h4>
-                        <div className="text-neutral-300 space-y-4 text-sm sm:text-base leading-relaxed">
-                          {course.description.split('\n').map((paragraph, index) => (
-                            <p key={index}>{paragraph}</p>
-                          ))}
+                      <div className="prose prose-teal max-w-none">
+                        <h4 className="text-lg font-bold text-gray-900 mb-2">Detailed Overview</h4>
+                        <div className="text-gray-700 space-y-4 text-sm sm:text-base leading-relaxed">
+                          {course.description}
                         </div>
                       </div>
                     )}
                     
-                    <div className="border-t border-neutral-850 pt-6">
-                      <h4 className="text-lg font-bold text-white mb-4">Key Course Benefits</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-neutral-300 text-sm">
+                    <div className="border-t border-gray-150 pt-6">
+                      <h4 className="text-md font-bold text-gray-900 mb-4">Included Features</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-sm">
                         <div className="flex items-center gap-2.5">
                           <FaCheckCircle className="text-green-500 shrink-0" />
                           <span>100% syllabus coverage based on ICAI/ICMAI</span>
@@ -486,12 +476,12 @@ const CourseFullDetailPage = () => {
           <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
             
             {/* Banner/Poster container (Desktop only) */}
-            <div className="hidden lg:flex bg-neutral-900/40 border border-neutral-850 rounded-3xl p-4 overflow-hidden shadow-2xl backdrop-blur-sm justify-center items-center">
-              <div className="w-full aspect-[16/10] rounded-2xl overflow-hidden bg-slate-950/80 flex items-center justify-center relative border border-neutral-800 group shadow-inner">
+            <div className="hidden lg:flex bg-white border border-gray-200/60 rounded-3xl p-4 overflow-hidden shadow-lg backdrop-blur-sm justify-center items-center">
+              <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center relative border border-gray-200/40 group shadow-inner">
                 <img 
                   src={getPosterUrl(course)} 
                   alt={course.subject || course.title} 
-                  className="w-full h-full object-contain p-1 group-hover:scale-102 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
                     e.target.src = '/logo.svg'; 
                   }}
@@ -500,12 +490,12 @@ const CourseFullDetailPage = () => {
             </div>
             
             {/* ACTION CARD */}
-            <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden">
+            <div className="bg-white border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-[#20b2aa]/10 rounded-full blur-2xl"></div>
               
               <div className="flex justify-between items-center mb-6">
-                <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Purchase Options</span>
-                <span className="bg-[#20b2aa] text-black font-extrabold text-[10px] px-2 py-0.5 rounded shadow uppercase tracking-wide">
+                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Purchase Options</span>
+                <span className="bg-[#20b2aa] text-white font-extrabold text-[10px] px-2.5 py-1 rounded shadow uppercase tracking-wide">
                   Best Price
                 </span>
               </div>
@@ -515,13 +505,13 @@ const CourseFullDetailPage = () => {
                 <div className="space-y-4 mb-6">
                   {/* Mode Selector */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                       {course.modeAttemptPricing?.[0]?.modeLabel || 'Select Mode'}
                     </label>
                     <select
                       value={selectedMode}
                       onChange={(e) => handleModeChange(e.target.value)}
-                      className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-900 font-medium transition-all shadow-sm"
                     >
                       <option value="" disabled>Choose option</option>
                       {course.modeAttemptPricing.map((modeData, idx) => (
@@ -535,13 +525,13 @@ const CourseFullDetailPage = () => {
                   {/* Validity Selector */}
                   {selectedMode && getUniqueValiditiesForMode(selectedMode).length > 0 && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                         {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.validityLabel || 'Select Validity'}
                       </label>
                       <select
                         value={selectedValidity}
                         onChange={(e) => handleValidityChange(e.target.value)}
-                        className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-900 font-medium transition-all shadow-sm"
                       >
                         <option value="" disabled>Choose option</option>
                         {getUniqueValiditiesForMode(selectedMode).map((val, idx) => (
@@ -556,13 +546,13 @@ const CourseFullDetailPage = () => {
                   {/* Attempt/Exam Term Selector */}
                   {selectedMode && (
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                         {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Exam Term / Attempt'}
                       </label>
                       <select
                         value={selectedAttempt}
                         onChange={(e) => handleAttemptChange(e.target.value)}
-                        className="w-full bg-slate-950 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-white font-medium transition-all"
+                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] text-gray-900 font-medium transition-all shadow-sm"
                       >
                         <option value="" disabled>Choose option</option>
                         {getAttemptsForSelectedModeAndValidity().map((attempt, idx) => (
@@ -584,7 +574,7 @@ const CourseFullDetailPage = () => {
                     const desc = attemptData?.description || '';
                     if (desc) {
                       return (
-                        <div className="bg-slate-950/60 border border-neutral-800 p-3.5 rounded-xl text-neutral-300 text-xs leading-relaxed mt-2 shadow-inner">
+                        <div className="bg-teal-50/40 border border-teal-150 p-3.5 rounded-xl text-teal-900 text-xs leading-relaxed mt-2 shadow-inner">
                           {desc}
                         </div>
                       );
@@ -593,37 +583,37 @@ const CourseFullDetailPage = () => {
                   })()}
                 </div>
               ) : (
-                <div className="text-xs text-neutral-500 bg-neutral-950 p-4 rounded-2xl border border-neutral-850 mb-6">
+                <div className="text-xs text-gray-500 bg-gray-50 p-4 rounded-2xl border border-gray-150 mb-6">
                   Standard course package pricing applies.
                 </div>
               )}
 
               {/* Pricing breakdown */}
-              <div className="border-t border-neutral-850 pt-6 mb-6">
+              <div className="border-t border-gray-200 pt-6 mb-6">
                 <div className="flex flex-wrap items-baseline gap-2 mb-2">
                   {selectedPrice.selling > 0 ? (
                     <>
-                      <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-teal-600 tracking-tight">
                         ₹{selectedPrice.selling.toLocaleString()}
                       </span>
                       {selectedPrice.cost > selectedPrice.selling && (
                         <>
-                          <span className="text-base text-neutral-500 line-through">
+                          <span className="text-base text-gray-400 line-through">
                             ₹{selectedPrice.cost.toLocaleString()}
                           </span>
-                          <span className="bg-[#20b2aa]/15 text-[#20b2aa] text-xs px-2.5 py-0.5 rounded font-bold border border-[#20b2aa]/20">
+                          <span className="bg-[#20b2aa]/10 text-teal-700 text-xs px-2.5 py-0.5 rounded font-bold border border-teal-200">
                             {discountPercent}% OFF
                           </span>
                         </>
                       )}
                     </>
                   ) : (
-                    <span className="text-2xl font-extrabold text-neutral-400">
+                    <span className="text-2xl font-extrabold text-gray-400">
                       Contact for pricing
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-neutral-500 font-medium">Inclusive of all local taxes and GST.</p>
+                <p className="text-[10px] text-gray-500 font-medium">Inclusive of all local taxes and GST.</p>
               </div>
 
               {/* Buttons */}
@@ -631,10 +621,10 @@ const CourseFullDetailPage = () => {
                 <button
                   onClick={handleProceedToPay}
                   disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
-                  className={`w-full font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center text-sm transition-all duration-300 ${
+                  className={`w-full font-bold py-4 px-6 rounded-2xl shadow-md flex items-center justify-center text-sm transition-all duration-300 ${
                     (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
-                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-850'
-                      : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] hover:from-[#17817a] hover:to-[#0f5752] text-white hover:scale-[1.01] hover:shadow-[#20b2aa]/10'
+                      ? 'bg-gray-105 text-gray-400 cursor-not-allowed border border-gray-200'
+                      : 'bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white hover:scale-[1.01] hover:shadow-teal-600/10'
                   }`}
                 >
                   {isAuthenticated ? (
@@ -651,10 +641,10 @@ const CourseFullDetailPage = () => {
                   disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
                   className={`w-full font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center text-sm border-2 transition-all duration-300 ${
                     (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
-                      ? 'bg-neutral-900/30 text-neutral-600 border-neutral-850 cursor-not-allowed'
+                      ? 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed'
                       : isInCart(course.id || course._id, selectedMode, selectedAttempt, selectedValidity)
-                      ? 'bg-[#20b2aa]/10 text-[#20b2aa] border-[#20b2aa]'
-                      : 'bg-transparent text-white border-neutral-750 hover:bg-neutral-800 hover:border-neutral-700'
+                      ? 'bg-[#20b2aa]/10 text-teal-600 border-[#20b2aa]'
+                      : 'bg-transparent text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
                   }`}
                 >
                   <FaShoppingCart className="mr-2 text-xs" />
@@ -665,8 +655,8 @@ const CourseFullDetailPage = () => {
               {addedMessage && (
                 <div className={`mt-4 text-xs font-semibold p-3 rounded-xl text-center border transition-all duration-300 animate-fade-in ${
                   addedMessage.includes('successfully') 
-                    ? 'bg-teal-950/20 text-[#20b2aa] border-teal-900/50' 
-                    : 'bg-amber-950/20 text-amber-400 border-amber-900/50'
+                    ? 'bg-teal-50 text-teal-850 border-teal-200' 
+                    : 'bg-amber-50 text-amber-800 border-amber-200'
                 }`}>
                   {addedMessage}
                 </div>
@@ -675,27 +665,27 @@ const CourseFullDetailPage = () => {
 
             {/* FACULTY SHORT CARD */}
             {course.facultyName && (
-              <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
-                <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-4">Course Instructor</h4>
+              <div className="bg-white border border-gray-200/60 rounded-3xl p-6 shadow-lg">
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Course Instructor</h4>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-tr from-[#20b2aa] to-indigo-500 rounded-full flex items-center justify-center text-xl font-extrabold text-white uppercase shrink-0 border border-neutral-700 shadow-md">
+                  <div className="w-14 h-14 bg-gradient-to-tr from-[#20b2aa] to-indigo-500 rounded-full flex items-center justify-center text-xl font-extrabold text-white uppercase shrink-0 border border-white shadow-md">
                     {course.facultyName[0]}
                   </div>
                   <div>
-                    <h5 className="font-bold text-white text-base leading-snug">{course.facultyName}</h5>
-                    <p className="text-xs text-[#20b2aa] font-semibold mt-0.5">Subject Expert</p>
+                    <h5 className="font-bold text-gray-900 text-base leading-snug">{course.facultyName}</h5>
+                    <p className="text-xs text-teal-600 font-semibold mt-0.5">Subject Expert</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* CALLOUT HELPLINE CARD */}
-            <div className="bg-[#20b2aa]/5 border border-[#20b2aa]/15 rounded-3xl p-6 shadow-xl backdrop-blur-sm text-center">
-              <p className="text-xs text-neutral-300 font-bold mb-3 flex items-center justify-center gap-1.5">
-                <FaQuestionCircle className="text-[#20b2aa]" /> Need Guidance or Offers?
+            <div className="bg-teal-50/50 border border-teal-100 rounded-3xl p-6 shadow-md text-center">
+              <p className="text-xs text-gray-600 font-bold mb-3 flex items-center justify-center gap-1.5">
+                <FaQuestionCircle className="text-teal-600" /> Need Guidance or Offers?
               </p>
-              <h4 className="text-lg font-extrabold text-white mb-2">+91 9693320108</h4>
-              <p className="text-[11px] text-neutral-400">Call or WhatsApp our counselors directly for assistance.</p>
+              <h4 className="text-lg font-extrabold text-teal-800 mb-2">+91 9693320108</h4>
+              <p className="text-[11px] text-gray-500">Call or WhatsApp our counselors directly for assistance.</p>
             </div>
 
           </div>
@@ -704,8 +694,8 @@ const CourseFullDetailPage = () => {
 
         {/* 3. Related Courses Section */}
         {relatedCourses.length > 0 && (
-          <div className="mt-16 pt-12 border-t border-neutral-900">
-            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-8">
+          <div className="mt-16 pt-12 border-t border-gray-200">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-8">
               Similar Related Courses
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 w-full">
@@ -715,6 +705,8 @@ const CourseFullDetailPage = () => {
             </div>
           </div>
         )}
+      </div>
+
       {showCheckoutModal && (
         <CheckoutModal
           user={user}
@@ -731,8 +723,6 @@ const CourseFullDetailPage = () => {
           }}
         />
       )}
-      </div>
-
     </div>
   );
 };
