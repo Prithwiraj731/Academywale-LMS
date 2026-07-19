@@ -123,9 +123,9 @@ const UPIPaymentPage = () => {
     
     const amount = payableAmount;
     const courseName = course.title || course.subject || 'Course Payment';
-    const transactionRef = `AW${Date.now().toString().slice(-6)}`;
+    const cleanCourseName = courseName.replace(/[^a-zA-Z0-9 ]/g, '').slice(0, 20);
     
-    return `upi://pay?pa=${UPI_ID}&pn=AcademyWale&mc=0000&tid=${transactionRef}&tr=${courseId}&tn=${encodeURIComponent(courseName)}&am=${amount}&cu=INR`;
+    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('AcademyWale')}&am=${amount}&cu=INR&tn=${encodeURIComponent(cleanCourseName)}`;
   };
 
   const copyUpiId = () => {

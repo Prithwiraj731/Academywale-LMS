@@ -3221,7 +3221,7 @@ export default function AdminDashboard() {
                           <div className="text-[10px] text-gray-400">Mode: {p.course_details?.mode} | {p.course_details?.validity}</div>
                         </td>
                         <td className="p-3 font-mono text-xs text-gray-700">
-                          <div>{p.transaction_id}</div>
+                          <div>{p.transaction_id ? p.transaction_id.replace(/_\d+$/, '') : ''}</div>
                           <div className="text-[10px] text-gray-400 font-sans font-semibold uppercase">{p.payment_method}</div>
                         </td>
                         <td className="p-3">

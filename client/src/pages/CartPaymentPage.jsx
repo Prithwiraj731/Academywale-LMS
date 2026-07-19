@@ -83,10 +83,8 @@ const CartPaymentPage = () => {
     if (cartItems.length === 0) return '';
     
     const amount = payableAmount;
-    const courseNames = cartItems.map(item => item.subject || item.title).join(', ').slice(0, 50);
-    const transactionRef = `AW${Date.now().toString().slice(-6)}`;
     
-    return `upi://pay?pa=${UPI_ID}&pn=AcademyWale&mc=0000&tid=${transactionRef}&tn=${encodeURIComponent(courseNames)}&am=${amount}&cu=INR`;
+    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('AcademyWale')}&am=${amount}&cu=INR&tn=${encodeURIComponent('AcademyWale Cart')}`;
   };
 
   const copyUpiId = () => {
