@@ -310,7 +310,13 @@ exports.resendOTP = async (req, res) => {
     if (updateError) throw updateError;
 
     // Send OTP email
-    await sendOTPEmail(email.toLowerCase(), user.name, otp);
+    const emailResult = await sendOTPEmail(email.toLowerCase(), user.name, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({
+        status: 'error',
+        message: emailResult.error || 'Failed to send verification code. Please try again.'
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -382,7 +388,7 @@ exports.forgotPassword = async (req, res) => {
     if (!emailResult.success) {
       return res.status(500).json({
         status: 'error',
-        message: 'Could not send password reset code. Please try again.'
+        message: emailResult.error || 'Could not send password reset code. Please try again.'
       });
     }
 
