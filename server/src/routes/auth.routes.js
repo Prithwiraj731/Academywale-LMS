@@ -15,6 +15,8 @@ router.post('/register', authController.register); // Legacy compatibility
 router.post('/login', authController.login);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/resend-otp', authController.resendOTP);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 // Protected routes
 router.post('/logout', protect, authController.logout);

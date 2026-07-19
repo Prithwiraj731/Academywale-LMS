@@ -86,6 +86,12 @@ export default function Login() {
         )}
 
         <div className="mt-6 text-center text-sm text-neutral-400 border-t border-neutral-800 pt-4">
+          <Link to="/forgot-password" className="text-[#20b2aa] font-semibold hover:underline">
+            Forgot password?
+          </Link>
+        </div>
+
+        <div className="mt-3 text-center text-sm text-neutral-400">
           New to AcademyWale?{" "}
           <Link to="/register" className="text-[#20b2aa] font-semibold hover:underline">
             Create Account

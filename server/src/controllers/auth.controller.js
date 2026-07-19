@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { supabaseAdmin } = require('../config/supabase.config');
-const { sendOTPEmail } = require('../utils/email.utils');
+const { sendOTPEmail, sendPasswordResetOTPEmail } = require('../utils/email.utils');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
@@ -321,6 +321,161 @@ exports.resendOTP = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: error.message || 'Error resending verification code'
+    });
+  }
+};
+
+// @desc    Request password reset OTP
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email is required'
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, is_active')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+
+    if (!user) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'If an account exists with this email, a password reset code has been sent.'
+      });
+    }
+
+    if (!user.is_active) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'This account is not active. Please verify your account or contact support.'
+      });
+    }
+
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    const { error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        otp_code: otp,
+        otp_expires_at: otpExpires
+      })
+      .eq('id', user.id);
+
+    if (updateError) throw updateError;
+
+    const emailResult = await sendPasswordResetOTPEmail(normalizedEmail, user.name, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Could not send password reset code. Please try again.'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password reset code sent to your email.'
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Error sending password reset code'
+    });
+  }
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    if (!email || !otp || !password) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Email, OTP, and new password are required'
+      });
+    }
+
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    if (!user.is_active) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'This account is not active. Please verify your account or contact support.'
+      });
+    }
+
+    if (!user.otp_code || user.otp_code !== String(otp).trim()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Incorrect password reset code'
+      });
+    }
+
+    if (!user.otp_expires_at || new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Password reset code has expired. Please request a new one.'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const { error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        password: hashedPassword,
+        otp_code: null,
+        otp_expires_at: null
+      })
+      .eq('id', user.id);
+
+    if (updateError) throw updateError;
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password updated successfully. You can now login with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Error resetting password'
     });
   }
 };

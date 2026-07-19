@@ -205,6 +205,41 @@ const sendOTPEmail = async (userEmail, userName, otp) => {
   }
 };
 
+// Send OTP email for password reset
+const sendPasswordResetOTPEmail = async (userEmail, userName, otp) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: emailConfig.from,
+      to: userEmail,
+      subject: `${otp} is your AcademyWale Password Reset Code`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #0d9488; text-align: center; font-weight: bold;">AcademyWale Password Reset</h2>
+          <p>Dear ${userName || 'AcademyWale User'},</p>
+          <p>Use the following One-Time Password (OTP) to reset your AcademyWale account password:</p>
+          <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0d9488;">${otp}</span>
+          </div>
+          <p style="color: #64748b; font-size: 14px;">This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="color: #64748b; font-size: 12px; text-align: center;">
+            Best regards,<br /><strong>The AcademyWale Team</strong><br />
+            <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a>
+          </p>
+        </div>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Password reset OTP email sending error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Send beautiful HTML notification email to admin
 const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, cartItems, transactionId, amount }) => {
   try {
@@ -403,5 +438,6 @@ module.exports = {
   sendEnrollmentEmail,
   sendPurchaseInvoiceEmail,
   sendOTPEmail,
+  sendPasswordResetOTPEmail,
   sendAdminNotificationEmail
 }; 

@@ -441,10 +441,10 @@ export default function AdminDashboard() {
         fetchCoupons();
         setTimeout(() => setCouponSuccess(''), 2000);
       } else {
-        setCouponError(data.error || 'Failed to add coupon');
+        setCouponError(data.message || data.error || 'Failed to add coupon');
       }
-    } catch {
-      setCouponError('Server error');
+    } catch (err) {
+      setCouponError(err.message || 'Server error');
     }
   };
 

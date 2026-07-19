@@ -18,6 +18,7 @@ import FacultyDetailPage from './pages/FacultyDetailPage';
 import InstitutesPage from './pages/InstitutesPage';
 import InstituteDetailPage from './pages/InstituteDetailPage';
 import LoginPage from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
 import RegisterPage from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
 import CartPaymentPage from './pages/CartPaymentPage';
@@ -101,6 +102,7 @@ const App = () => {
 
       {/* Routes WITHOUT global Header/Footer (admin/auth - own full-screen layouts) */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
