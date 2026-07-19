@@ -23,7 +23,7 @@ const password = cleanEnvValue(process.env.EMAIL_PASSWORD) || cleanEnvValue(proc
 const service = cleanEnvValue(process.env.EMAIL_SERVICE) || null;
 
 // Resend "from" address (use verified domain or default Resend sender)
-const resendFrom = cleanEnvValue(process.env.RESEND_FROM) || 'AcademyWale <onboarding@resend.dev>';
+const resendFrom = cleanEnvValue(process.env.RESEND_FROM) || `AcademyWale <${user}>`;
 
 const emailConfig = {
   resendApiKey,
