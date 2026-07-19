@@ -628,3 +628,83 @@ exports.getPurchaseStats = async (req, res) => {
     });
   }
 };
+
+// @desc    Get all purchases (admin only)
+// @route   GET /api/purchase/admin/all
+// @access  Private/Admin
+exports.getAllPurchases = async (req, res) => {
+  try {
+    const { data: purchases, error } = await supabaseAdmin
+      .from('purchases')
+      .select('*, users(name, email, mobile)')
+      .order('purchase_date', { ascending: false });
+
+    if (error) throw error;
+
+    res.status(200).json({
+      success: true,
+      purchases
+    });
+  } catch (error) {
+    console.error('Get all purchases error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch purchases',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Verify/Update payment status (admin only)
+// @route   PUT /api/purchase/verify/:purchaseId
+// @access  Private/Admin
+exports.verifyPurchase = async (req, res) => {
+  try {
+    const { purchaseId } = req.params;
+    const { status } = req.body; // 'completed' or 'rejected'
+
+    if (!status || !['completed', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be completed or rejected'
+      });
+    }
+
+    // Update purchase record
+    const { data: purchase, error: updateError } = await supabaseAdmin
+      .from('purchases')
+      .update({ payment_status: status })
+      .eq('id', purchaseId)
+      .select('*, users(name, email)')
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Send enrollment confirmation email if approved
+    const { sendEnrollmentEmail } = require('../utils/email.utils');
+    if (status === 'completed' && purchase.users) {
+      try {
+        await sendEnrollmentEmail(
+          purchase.users.email,
+          purchase.users.name,
+          purchase.course_details?.title || purchase.course_details?.subject
+        );
+      } catch (emailErr) {
+        console.error('Failed to send enrollment email:', emailErr);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Purchase status updated to ${status}`,
+      purchase
+    });
+  } catch (error) {
+    console.error('Verify purchase error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update purchase status',
+      error: error.message
+    });
+  }
+};
