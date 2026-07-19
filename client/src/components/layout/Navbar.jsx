@@ -173,7 +173,7 @@ export default function Navbar() {
               <Link to="/contact" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Contact</Link>
               {isAuthenticated && (
                 <MorphyButton asChild size="default" className="shadow-lg font-bold">
-                  <Link to="/student-dashboard">
+                  <Link to={user?.role === 'admin' ? "/admin-dashboard" : "/student-dashboard"}>
                     Dashboard
                   </Link>
                 </MorphyButton>
@@ -193,7 +193,7 @@ export default function Navbar() {
               ) : (
                 <div className="relative profile-menu-container flex items-center gap-2">
                   <MorphyButton asChild size="sm" className="shadow-md font-bold sm:flex lg:hidden flex">
-                    <Link to="/student-dashboard">
+                    <Link to={user?.role === 'admin' ? "/admin-dashboard" : "/student-dashboard"}>
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                       </svg>
@@ -353,7 +353,7 @@ export default function Navbar() {
                 </Link>
                 {isAuthenticated && (
                   <Link
-                    to="/dashboard"
+                    to={user?.role === 'admin' ? "/admin-dashboard" : "/student-dashboard"}
                     className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
