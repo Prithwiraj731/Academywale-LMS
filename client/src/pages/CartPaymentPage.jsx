@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaCheckCircle, FaMobileAlt, FaDesktop, FaQrcode, FaShoppingBag } from 'react-icons/fa';
+import { FaArrowLeft, FaCheckCircle, FaShoppingBag, FaCreditCard, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
-import upiQrCode from '../assets/AcademyWale_UPI.jpeg';
-
-const UPI_ID = 'academywale01@oksbi';
+import { loadRazorpayCheckout } from '../utils/RazorpayCheckout';
 
 const CartPaymentPage = () => {
   const navigate = useNavigate();
@@ -18,10 +16,7 @@ const CartPaymentPage = () => {
   const [loading] = useState(false);
   const [error, setError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('mobile'); // 'mobile' or 'qr'
-  const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [coupon, setCoupon] = useState('');
   const [couponStatus, setCouponStatus] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -75,25 +70,6 @@ const CartPaymentPage = () => {
     setAppliedCouponCode('');
   }, [cartTotal]);
 
-  const handlePaymentMethodChange = (method) => {
-    setPaymentMethod(method);
-  };
-
-  const generateUpiLink = () => {
-    if (cartItems.length === 0) return '';
-    
-    const amount = payableAmount;
-    
-    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('AcademyWale')}&am=${amount}&cu=INR&tn=${encodeURIComponent('AcademyWale Cart')}`;
-  };
-
-  const copyUpiId = () => {
-    navigator.clipboard.writeText(UPI_ID).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    });
-  };
-
   const handleApplyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
     setCouponStatus('');
@@ -128,25 +104,15 @@ const CartPaymentPage = () => {
     }
   };
 
-  const handlePaymentVerification = async (e) => {
+  const handleInitiatePayment = async (e) => {
     e.preventDefault();
-    
-    if (!transactionId) {
-      alert('Please enter your UPI transaction ID/reference number');
-      return;
-    }
-
-    if (!userDetails.phone) {
-      alert('Please provide a contact phone number for verification updates');
-      return;
-    }
     
     setSubmitting(true);
     setError('');
     
     try {
-      // Record all purchases from cart in the database
-      const purchaseRes = await fetch(`${API_URL}/api/purchase/cart-purchase`, {
+      // Create Razorpay Order on server
+      const orderRes = await fetch(`${API_URL}/api/purchase/razorpay-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,71 +120,51 @@ const CartPaymentPage = () => {
         },
         body: JSON.stringify({
           userId: user?.id || user?._id,
-          cartItems: cartItems,
-          transactionId: transactionId,
-          amount: payableAmount,
-          coupon: appliedCouponCode || undefined,
-          discountPercent: appliedDiscount || undefined,
-          userDetails: {
-            name: userDetails.fullName || user?.name,
-            email: userDetails.email || user?.email,
-            phone: userDetails.phone,
-            address: userDetails.address
-          }
+          amount: payableAmount
         })
       });
-      
-      const data = await purchaseRes.json();
-      
-      if (purchaseRes.ok) {
-        // Send email notification to admin about successful purchase
-        try {
-          await fetch(`${API_URL}/api/notify/payment`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              to: 'support@academywale.com',
-              subject: 'New Course Purchase - Cart Checkout',
-              userDetails: {
-                fullName: userDetails.fullName || user?.name,
-                email: userDetails.email || user?.email,
-                phone: userDetails.phone,
-                address: userDetails.address
-              },
-              cartItems: cartItems.map(item => ({
-                title: item.title || item.subject,
-                subject: item.subject,
-                mode: item.mode || 'Standard',
-                validity: item.attempt || item.validity || 'Standard',
-                facultyName: item.facultyName,
-                price: item.price || item.sellingPrice
-              })),
-              transactionId: transactionId,
-              amount: payableAmount,
-              coupon: appliedCouponCode || undefined,
-              discountPercent: appliedDiscount || undefined
-            })
-          });
-        } catch (emailErr) {
-          console.error('Failed to send payment notification email:', emailErr);
-        }
 
-        // Clear cart
-        clearCart();
-        
-        // Show success and redirect
-        setPaymentSuccess(true);
-        setTimeout(() => {
-          navigate('/student-dashboard');
-        }, 4000);
-      } else {
-        setError(data.message || 'Failed to submit payment verification request.');
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || 'Failed to create payment order');
       }
+
+      const { order } = orderData;
+
+      // Load checkout popup
+      await loadRazorpayCheckout({
+        amount: order.amount,
+        currency: order.currency,
+        orderId: order.id,
+        userId: user?.id || user?._id,
+        payableAmount: payableAmount,
+        cartItems: cartItems,
+        coupon: appliedCouponCode || undefined,
+        discountPercent: appliedDiscount || undefined,
+        userDetails: {
+          name: userDetails.fullName || user?.name,
+          email: userDetails.email || user?.email,
+          phone: userDetails.phone,
+          address: userDetails.address
+        },
+        prefillName: userDetails.fullName || user?.name || '',
+        prefillEmail: userDetails.email || user?.email || '',
+        prefillPhone: userDetails.phone || user?.mobile || '',
+        description: 'AcademyWale Cart Checkout'
+      });
+
+      // Clear cart
+      clearCart();
+      
+      // Show success and redirect
+      setPaymentSuccess(true);
+      setTimeout(() => {
+        navigate('/student-dashboard');
+      }, 3000);
+
     } catch (err) {
       console.error('Payment verification error:', err);
-      setError('Server error during payment submission. Please check your internet connection.');
+      setError(err.message || 'Payment initiation failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -239,13 +185,12 @@ const CartPaymentPage = () => {
           <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FaCheckCircle className="text-[#20b2aa] text-5xl" />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-800 mb-3">Payment Submitted!</h2>
+          <h2 className="text-3xl font-extrabold text-gray-800 mb-3">Payment Successful!</h2>
           <p className="text-gray-600 mb-6 leading-relaxed">
-            Your verification request has been successfully recorded. 
-            Our admin team will verify the payment against Transaction ID: <strong className="text-gray-800">{transactionId}</strong>.
-            Your courses will be activated shortly.
+            Your payment has been successfully verified. Your course purchases are now active.
+            You will be redirected to your dashboard shortly.
           </p>
-          <div className="text-sm text-gray-500 animate-pulse">
+          <div className="text-sm text-gray-500 animate-pulse font-semibold">
             Redirecting to student dashboard...
           </div>
         </div>
@@ -256,7 +201,6 @@ const CartPaymentPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e0f7f4] via-purple-50 to-yellow-50 py-8 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
-        {/* Back link */}
         <button 
           onClick={() => navigate(-1)}
           className="flex items-center text-teal-700 hover:text-teal-800 font-semibold mb-6 transition-all"
@@ -271,7 +215,7 @@ const CartPaymentPage = () => {
               <h1 className="text-2xl font-bold flex items-center">
                 <FaShoppingBag className="mr-3" /> Checkout Cart
               </h1>
-              <p className="text-teal-100 text-sm mt-1">UPI Payment Gateway</p>
+              <p className="text-teal-100 text-sm mt-1">Pay via Razorpay</p>
             </div>
             <div className="text-right">
               <span className="text-xs text-teal-100 block">Payable ({cartItems.length} items)</span>
@@ -281,8 +225,9 @@ const CartPaymentPage = () => {
           
           <div className="p-6">
             {error && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 border border-red-200">
-                {error}
+              <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 border border-red-200 flex items-center gap-2 font-bold text-xs">
+                <FaExclamationTriangle className="text-red-500 text-sm flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
             
@@ -343,7 +288,7 @@ const CartPaymentPage = () => {
               </div>
             </div>
             
-            {/* User Details Verification Form */}
+            {/* User Details Verification Info */}
             <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100/50 mb-6">
               <h3 className="font-semibold text-[#126862] mb-3">Billing & Verification Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -392,126 +337,19 @@ const CartPaymentPage = () => {
                 </div>
               )}
             </div>
-            
-            {/* Payment Method Selection */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-800 mb-3">Choose Payment Method</h3>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  type="button"
-                  onClick={() => handlePaymentMethodChange('mobile')}
-                  className={`flex-1 flex items-center justify-center py-3.5 rounded-xl border-2 transition-all ${
-                    paymentMethod === 'mobile' 
-                      ? 'border-[#20b2aa] bg-teal-50 text-[#126862]' 
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  <FaMobileAlt className="mr-2 text-lg" />
-                  <span className="font-bold">Pay via Mobile UPI App</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handlePaymentMethodChange('qr')}
-                  className={`flex-1 flex items-center justify-center py-3.5 rounded-xl border-2 transition-all ${
-                    paymentMethod === 'qr' 
-                      ? 'border-[#20b2aa] bg-teal-50 text-[#126862]' 
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  <FaQrcode className="mr-2 text-lg" />
-                  <span className="font-bold">Scan QR Code</span>
-                </button>
-              </div>
-            </div>
-            
-            {/* Payment Instructions */}
-            {paymentMethod === 'mobile' && (
-              <div className="bg-teal-50/70 p-5 rounded-xl mb-6 border border-teal-100">
-                <h3 className="font-bold text-[#126862] mb-3">Pay using Mobile UPI App</h3>
-                <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1.5 text-sm">
-                  <li>Click the <strong>Pay Now</strong> button below.</li>
-                  <li>It will open your default UPI payment app (PhonePe, GPay, Paytm, etc.).</li>
-                  <li>Complete the payment of <strong>Rs. {payableAmount.toLocaleString('en-IN')}</strong>.</li>
-                  <li>Return to this page, enter the transaction Reference ID, and click verify.</li>
-                </ul>
-                
-                <div className="flex justify-center my-3">
-                  <a 
-                    href={generateUpiLink()}
-                    className="bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:shadow-lg flex items-center justify-center"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaMobileAlt className="mr-2 text-lg" /> Pay Now Rs. {payableAmount.toLocaleString('en-IN')}
-                  </a>
-                </div>
-              </div>
-            )}
-            
-            {paymentMethod === 'qr' && (
-              <div className="bg-teal-50/70 p-5 rounded-xl mb-6 border border-teal-100">
-                <h3 className="font-bold text-[#126862] mb-3">Scan QR Code to Pay</h3>
-                <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1.5 text-sm">
-                  <li>Open any UPI app on your phone (GPay, PhonePe, Paytm, BHIM).</li>
-                  <li>Scan the QR code below.</li>
-                  <li>Enter the exact amount: <strong>Rs. {payableAmount.toLocaleString('en-IN')}</strong>.</li>
-                  <li>Complete the payment and enter the Reference ID below.</li>
-                </ul>
-                
-                <div className="flex flex-col items-center my-4">
-                  <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-150 mb-3">
-                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600">UPI ID: <strong className="text-gray-900">{UPI_ID}</strong></p>
-                    <button
-                      type="button"
-                      onClick={copyUpiId}
-                      className={`text-xs font-bold mt-1 ${copySuccess ? 'text-green-600' : 'text-teal-600 hover:text-teal-800'}`}
-                    >
-                      {copySuccess ? 'Copied ✓' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Transaction Verification Form */}
-            <form onSubmit={handlePaymentVerification} className="border-t border-gray-200 pt-6">
-              <div className="mb-5">
-                <label className="block text-sm font-bold text-gray-800 mb-2">
-                  Enter UPI Transaction ID / Reference Number
-                </label>
-                <input
-                  type="text"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder="e.g. 320492847293 or UTR number"
-                  className="w-full border border-gray-300 rounded-xl py-3 px-4 text-gray-800 focus:outline-none focus:border-[#20b2aa] focus:ring-1 focus:ring-[#20b2aa] font-medium"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Usually a 12-digit numeric reference code found in your payment transaction details.
-                </p>
-              </div>
-              
-              <button
-                type="submit"
-                disabled={submitting}
-                className={`w-full font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center text-lg ${
-                  submitting
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:from-[#17817a] hover:to-[#105c56]'
-                }`}
-              >
-                {submitting ? (
-                  <span>Verifying Payment...</span>
-                ) : (
-                  <span>Verify and Activate Courses</span>
-                )}
-              </button>
-            </form>
+
+            <button
+              onClick={handleInitiatePayment}
+              disabled={submitting}
+              className={`w-full font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center text-lg gap-2 ${
+                submitting
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:from-[#17817a] hover:to-[#105c56]'
+              }`}
+            >
+              <FaCreditCard />
+              <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
+            </button>
           </div>
         </div>
       </div>

@@ -20,10 +20,10 @@ router.get('/check/:userId/:facultyName/:courseIndex', purchaseController.checkC
 // Get purchase statistics (admin only)
 router.get('/stats', purchaseController.getPurchaseStats);
 
-// Get all purchases (admin only)
-router.get('/admin/all', purchaseController.getAllPurchases);
+// Create Razorpay Order
+router.post('/razorpay-order', purchaseController.createRazorpayOrder);
 
-// Verify/Update payment status (admin only)
-router.put('/verify/:purchaseId', purchaseController.verifyPurchase);
+// Verify Razorpay Payment Signature
+router.post('/razorpay-verify', purchaseController.verifyRazorpayPayment);
 
 module.exports = router; 

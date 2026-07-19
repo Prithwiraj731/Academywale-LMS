@@ -708,3 +708,261 @@ exports.verifyPurchase = async (req, res) => {
     });
   }
 };
+
+// @desc    Create Razorpay Order
+// @route   POST /api/purchase/razorpay-order
+// @access  Private
+exports.createRazorpayOrder = async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+
+    if (!userId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: userId, amount'
+      });
+    }
+
+    // Resolve user UUID
+    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    let userQuery = isUserUuid ? 'id' : 'mongo_id';
+    
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq(userQuery, userId)
+      .maybeSingle();
+
+    if (userError || !user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { razorpay } = require('../config/razorpay.config');
+    const amountInPaise = Math.round(Number(amount) * 100);
+
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.status(200).json({
+      success: true,
+      order: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency
+      }
+    });
+
+  } catch (error) {
+    console.error('Create Razorpay Order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create payment order',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Verify Razorpay Payment Signature and finalize purchase
+// @route   POST /api/purchase/razorpay-verify
+// @access  Private
+exports.verifyRazorpayPayment = async (req, res) => {
+  try {
+    const {
+      userId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      courseId,
+      cartItems,
+      amount,
+      coupon,
+      discountPercent,
+      userDetails
+    } = req.body;
+
+    if (!userId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required validation fields'
+      });
+    }
+
+    const { keySecret } = require('../config/razorpay.config');
+    const crypto = require('crypto');
+
+    // Verify cryptographic signature
+    const text = razorpay_order_id + '|' + razorpay_payment_id;
+    const generated_signature = crypto
+      .createHmac('sha256', keySecret)
+      .update(text)
+      .digest('hex');
+
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment verification failed: Invalid signature'
+      });
+    }
+
+    // Resolve user UUID
+    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    let userQuery = isUserUuid ? 'id' : 'mongo_id';
+    
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email')
+      .eq(userQuery, userId)
+      .maybeSingle();
+
+    if (userError || !user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const createdPurchases = [];
+    const skippedPurchases = [];
+    const isCart = Array.isArray(cartItems) && cartItems.length > 0;
+    const coursesToProcess = isCart ? cartItems : [{ id: courseId }];
+    const couponDiscount = Math.max(0, Math.min(100, Number(discountPercent || 0)));
+
+    const { sendEnrollmentEmail } = require('../utils/email.utils');
+
+    for (let idx = 0; idx < coursesToProcess.length; idx++) {
+      const item = coursesToProcess[idx];
+      const targetCourseId = item.id;
+
+      // Resolve course UUID
+      const isCourseUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetCourseId);
+      let courseQuery = isCourseUuid ? 'id' : 'mongo_id';
+
+      const { data: course, error: courseError } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq(courseQuery, targetCourseId)
+        .maybeSingle();
+
+      if (courseError || !course) {
+        skippedPurchases.push({ id: targetCourseId, reason: 'Course not found' });
+        continue;
+      }
+
+      // Check if user already purchased this course
+      const { data: existingPurchase, error: checkError } = await supabaseAdmin
+        .from('purchases')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!checkError && existingPurchase) {
+        skippedPurchases.push({ title: course.subject, reason: 'Already active' });
+        continue;
+      }
+
+      // Handle amount calculations
+      const itemBaseAmount = isCart 
+        ? Number(item.sellingPrice || item.price || 0)
+        : Number(amount);
+      const itemPayableAmount = isCart 
+        ? Math.max(0, Math.round(itemBaseAmount * (1 - couponDiscount / 100)))
+        : Number(amount);
+
+      // Create purchase record marked as completed instantly
+      const { data: purchase, error: insertError } = await supabaseAdmin
+        .from('purchases')
+        .insert({
+          user_id: user.id,
+          course_id: course.id,
+          faculty_id: course.faculty_id,
+          payment_method: 'Razorpay',
+          amount: itemPayableAmount,
+          transaction_id: `${razorpay_payment_id}${isCart ? `_${idx + 1}` : ''}`,
+          payment_status: 'completed',
+          course_details: {
+            title: course.title || course.subject,
+            subject: course.subject,
+            mode: item.mode || req.body.courseDetails?.mode || '',
+            validity: item.attempt || item.validity || req.body.courseDetails?.validity || '',
+            facultyName: course.faculty_name,
+            coupon: coupon || '',
+            discountPercent: couponDiscount
+          },
+          access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        })
+        .select('*')
+        .single();
+
+      if (!insertError && purchase) {
+        createdPurchases.push(purchase);
+        
+        // Trigger enrollment confirmation email
+        try {
+          await sendEnrollmentEmail(
+            user.email,
+            user.name,
+            course.title || course.subject
+          );
+        } catch (emailErr) {
+          console.error('Failed to send enrollment email:', emailErr);
+        }
+      } else {
+        console.error('Error inserting payment record:', insertError);
+        skippedPurchases.push({ title: course.subject, reason: insertError?.message || 'Failed to insert' });
+      }
+    }
+
+    if (createdPurchases.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No courses could be activated. They might be already active.',
+        skipped: skippedPurchases
+      });
+    }
+
+    // Send admin notification about automatic payment success
+    try {
+      const { sendAdminNotificationEmail } = require('../utils/email.utils');
+      await sendAdminNotificationEmail({
+        type: 'purchase',
+        userDetails: {
+          fullName: userDetails?.name || user?.name || 'Student',
+          email: userDetails?.email || user?.email,
+          phone: userDetails?.phone || '',
+          address: userDetails?.address
+        },
+        cartItems: createdPurchases.map(p => ({
+          title: p.course_details.title || p.course_details.subject,
+          subject: p.course_details.subject,
+          mode: p.course_details.mode,
+          validity: p.course_details.validity,
+          facultyName: p.course_details.facultyName,
+          price: p.amount
+        })),
+        transactionId: razorpay_payment_id,
+        amount
+      });
+    } catch (adminEmailErr) {
+      console.error('Failed to send admin notification email:', adminEmailErr);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment verified and courses activated successfully.',
+      purchases: createdPurchases.map(p => ({ id: p.id, transactionId: p.transaction_id })),
+      skipped: skippedPurchases
+    });
+
+  } catch (error) {
+    console.error('Verify Razorpay Payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during payment verification',
+      error: error.message
+    });
+  }
+};

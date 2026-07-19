@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaCheckCircle, FaMobileAlt, FaDesktop, FaQrcode } from 'react-icons/fa';
+import { FaArrowLeft, FaCheckCircle, FaExclamationTriangle, FaCreditCard } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
-import upiQrCode from '../assets/AcademyWale_UPI.jpeg';
-
-const UPI_ID = 'academywale01@oksbi';
+import { loadRazorpayCheckout } from '../utils/RazorpayCheckout';
 
 const UPIPaymentPage = () => {
   const { courseId, courseType } = useParams();
@@ -18,10 +16,7 @@ const UPIPaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('mobile'); // 'mobile' or 'qr'
-  const [transactionId, setTransactionId] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [coupon, setCoupon] = useState('');
   const [couponStatus, setCouponStatus] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -73,10 +68,6 @@ const UPIPaymentPage = () => {
     }
   }, [isAuthenticated, loading, navigate, courseId, courseType]);
 
-  const handlePaymentMethodChange = (method) => {
-    setPaymentMethod(method);
-  };
-
   useEffect(() => {
     setCoupon('');
     setCouponStatus('');
@@ -118,112 +109,70 @@ const UPIPaymentPage = () => {
     }
   };
 
-  const generateUpiLink = () => {
-    if (!course) return '';
-    
-    const amount = payableAmount;
-    const courseName = course.title || course.subject || 'Course Payment';
-    const cleanCourseName = courseName.replace(/[^a-zA-Z0-9 ]/g, '').slice(0, 20);
-    
-    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent('AcademyWale')}&am=${amount}&cu=INR&tn=${encodeURIComponent(cleanCourseName)}`;
-  };
-
-  const copyUpiId = () => {
-    navigator.clipboard.writeText(UPI_ID).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    });
-  };
-
-  const handlePaymentVerification = async (e) => {
-    e.preventDefault();
-    
-    if (!transactionId) {
-      alert('Please enter your UPI transaction ID/reference number');
-      return;
-    }
-    
-    setSubmitting(true);
-    
+  const handleInitiatePayment = async () => {
     try {
-      // Record the purchase in the database
-      const purchaseRes = await fetch(`${API_URL}/api/purchase/upi-purchase`, {
+      setSubmitting(true);
+      setError('');
+
+      // Create Razorpay Order on server
+      const orderRes = await fetch(`${API_URL}/api/purchase/razorpay-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Include auth token
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          userId: user?._id || user?.id,
-          courseId: courseId,
-          transactionId: transactionId,
-          amount: payableAmount,
-          paymentMethod: 'UPI',
-          coupon: appliedCouponCode || undefined,
-          discountPercent: appliedDiscount || undefined,
-          userDetails: {
-            name: userDetails.fullName || user?.name,
-            email: userDetails.email || user?.email,
-            phone: userDetails.phone || user?.phone || user?.mobile,
-            address: userDetails.address
-          },
-          courseDetails: {
-            courseName: course?.title || course?.subject,
-            mode: selectedMode,
-            validity: selectedValidity,
-            attempt: selectedAttempt,
-            coupon: appliedCouponCode || '',
-            discountPercent: appliedDiscount || 0
-          }
+          userId: user?.id || user?._id,
+          amount: payableAmount
         })
       });
-      
-      const data = await purchaseRes.json();
-      
-      if (purchaseRes.ok) {
-        // Send email notification
-        try {
-          await fetch(`${API_URL}/api/notify/payment`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              to: 'support@academywale.com',
-              subject: 'New Course Purchase',
-              userDetails: {
-                fullName: userDetails.fullName || user?.name,
-                email: userDetails.email || user?.email,
-                phone: userDetails.phone || user?.phone || user?.mobile,
-                address: userDetails.address
-              },
-              courseDetails: {
-                courseName: course?.title || course?.subject,
-                mode: selectedMode,
-                validity: selectedValidity,
-                attempt: selectedAttempt
-              },
-              transactionId: transactionId,
-              amount: payableAmount,
-              coupon: appliedCouponCode || undefined,
-              discountPercent: appliedDiscount || undefined
-            })
-          });
-        } catch (emailErr) {
-          console.error('Failed to send payment notification email:', emailErr);
-        }
-        
-        // Show success and redirect
-        setPaymentSuccess(true);
-        setTimeout(() => {
-          navigate('/student-dashboard');
-        }, 3000);
-      } else {
-        setError(data.message || 'Failed to verify payment');
+
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.success) {
+        throw new Error(orderData.message || 'Failed to create payment order');
       }
+
+      const { order } = orderData;
+
+      // Load checkout popup
+      await loadRazorpayCheckout({
+        amount: order.amount,
+        currency: order.currency,
+        orderId: order.id,
+        userId: user?.id || user?._id,
+        courseId: courseId,
+        payableAmount: payableAmount,
+        coupon: appliedCouponCode || undefined,
+        discountPercent: appliedDiscount || undefined,
+        userDetails: {
+          name: userDetails.fullName || user?.name,
+          email: userDetails.email || user?.email,
+          phone: userDetails.phone || user?.mobile || '',
+          address: userDetails.address
+        },
+        courseDetails: {
+          courseName: course?.title || course?.subject,
+          mode: selectedMode,
+          validity: selectedValidity,
+          attempt: selectedAttempt,
+          coupon: appliedCouponCode || '',
+          discountPercent: appliedDiscount || 0
+        },
+        prefillName: userDetails.fullName || user?.name || '',
+        prefillEmail: userDetails.email || user?.email || '',
+        prefillPhone: userDetails.phone || user?.mobile || '',
+        description: course?.title || course?.subject || 'Course Purchase'
+      });
+
+      // Show success
+      setPaymentSuccess(true);
+      setTimeout(() => {
+        navigate('/student-dashboard');
+      }, 3000);
+
     } catch (err) {
-      console.error('Payment verification error:', err);
-      setError('Server error during payment verification');
+      console.error('Payment flow error:', err);
+      setError(err.message || 'Payment initiation failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -240,21 +189,18 @@ const UPIPaymentPage = () => {
   if (paymentSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-xl p-8 text-center">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-green-200">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FaCheckCircle className="text-green-500 text-4xl" />
+            <FaCheckCircle className="text-green-500 text-5xl" />
           </div>
-          <h2 className="text-2xl font-bold text-green-600 mb-4">Payment Successful!</h2>
-          <p className="text-gray-700 mb-6">
-            Your payment has been received and your course purchase is complete. You will be redirected to your dashboard shortly.
+          <h2 className="text-3xl font-extrabold text-green-600 mb-3">Payment Successful!</h2>
+          <p className="text-gray-600 mb-6 leading-relaxed font-medium">
+            Your payment has been successfully verified. Your course purchase is complete and active.
+            You will be redirected to your dashboard shortly.
           </p>
-          <div className="animate-pulse mb-6">
-            <div className="h-2 bg-green-100 rounded-full mb-2"></div>
-            <div className="h-2 bg-green-100 rounded-full"></div>
-          </div>
           <button
             onClick={() => navigate('/student-dashboard')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium"
+            className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white py-3 rounded-xl font-bold transition-all shadow-md"
           >
             Go to Dashboard
           </button>
@@ -278,293 +224,122 @@ const UPIPaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-6"
+          className="flex items-center text-blue-600 hover:text-blue-800 mb-6 font-semibold"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
         
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
-            <h1 className="text-2xl font-bold">Complete Your Payment</h1>
-            <p className="opacity-90">Follow the steps below to complete your purchase</p>
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-100">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 sm:p-8">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Checkout Details</h1>
+            <p className="opacity-90 text-sm mt-1">Review your summary and complete your payment securely via Razorpay.</p>
           </div>
           
-          <div className="p-6">
+          <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Course Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-medium text-gray-800">Order Summary</h3>
-              <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div className="text-gray-600">Course:</div>
-                <div className="text-gray-900 font-medium">{course?.title || course?.subject}</div>
-                
-                {selectedMode && (
-                  <>
-                    <div className="text-gray-600">Mode:</div>
-                    <div className="text-gray-900">{selectedMode}</div>
-                  </>
-                )}
-                
-                {selectedValidity && (
-                  <>
-                    <div className="text-gray-600">Validity:</div>
-                    <div className="text-gray-900">{selectedValidity}</div>
-                  </>
-                )}
-                
-                {selectedAttempt && (
-                  <>
-                    <div className="text-gray-600">Exam Term:</div>
-                    <div className="text-gray-900">{selectedAttempt}</div>
-                  </>
-                )}
-                
-                <div className="text-gray-600">Course Price:</div>
-                <div className="text-gray-900 font-bold">Rs. {baseAmount.toLocaleString('en-IN')}</div>
-
-                <div className="text-gray-600">Coupon:</div>
+            <div>
+              <h3 className="font-extrabold text-gray-800 text-lg mb-4">Order Summary</h3>
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-150 space-y-4">
                 <div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <label className="block text-xs font-bold text-gray-400 uppercase">Course Title</label>
+                  <p className="text-gray-800 font-extrabold leading-snug">{course?.title || course?.subject}</p>
+                </div>
+                {selectedMode && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase">Mode</label>
+                    <p className="text-gray-800 font-semibold text-sm">{selectedMode}</p>
+                  </div>
+                )}
+                {selectedValidity && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase">Validity</label>
+                    <p className="text-gray-800 font-semibold text-sm">{selectedValidity}</p>
+                  </div>
+                )}
+                {selectedAttempt && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase">Attempt</label>
+                    <p className="text-gray-800 font-semibold text-sm">{selectedAttempt}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase">Faculty</label>
+                  <p className="text-teal-700 font-bold text-sm">{course?.faculty_name || course?.facultyName}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing & Checkout */}
+            <div className="flex flex-col justify-between">
+              <div>
+                <h3 className="font-extrabold text-gray-800 text-lg mb-4">Payment Summary</h3>
+                <div className="bg-gradient-to-tr from-blue-50/50 to-purple-50/50 rounded-2xl p-5 border border-blue-100/50 space-y-3 mb-6">
+                  <div className="flex justify-between text-sm text-gray-600 font-medium">
+                    <span>Base Amount</span>
+                    <span>₹{baseAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                  {appliedDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600 font-bold">
+                      <span>Coupon Discount</span>
+                      <span>-{appliedDiscount}%</span>
+                    </div>
+                  )}
+                  <div className="border-t border-dashed border-gray-200 pt-3 flex justify-between items-center">
+                    <span className="font-extrabold text-gray-800">Total Payable</span>
+                    <span className="text-2xl font-black text-purple-700">₹{payableAmount.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+
+                {/* Coupon Code Section */}
+                <div className="mb-6">
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Apply Coupon Code</label>
+                  <div className="flex gap-2">
                     <input
                       type="text"
+                      placeholder="Enter Coupon (e.g. SAVE10)"
                       value={coupon}
                       onChange={(e) => setCoupon(e.target.value)}
-                      placeholder="Enter coupon code"
-                      className="rounded-md border border-gray-300 px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-green-400"
+                      disabled={submitting}
+                      className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                     <button
                       type="button"
                       onClick={handleApplyCoupon}
-                      className="rounded-md bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
+                      disabled={submitting}
+                      className="bg-blue-600 text-white px-5 rounded-xl text-sm font-bold shadow hover:bg-blue-700 transition-colors"
                     >
                       Apply
                     </button>
                   </div>
                   {couponStatus && (
-                    <div className={`mt-1 text-xs font-medium ${appliedDiscount ? 'text-green-700' : 'text-red-600'}`}>
+                    <p className={`text-xs mt-2 font-bold ${appliedDiscount > 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {couponStatus}
-                    </div>
+                    </p>
                   )}
                 </div>
+              </div>
 
-                {appliedDiscount > 0 && (
-                  <>
-                    <div className="text-gray-600">Discount:</div>
-                    <div className="text-green-700 font-bold">{appliedDiscount}% off ({appliedCouponCode})</div>
-                  </>
-                )}
-
-                <div className="text-gray-600">Payable Amount:</div>
-                <div className="text-gray-900 font-bold">Rs. {payableAmount.toLocaleString('en-IN')}</div>
-              </div>
-            </div>
-
-            {/* User Billing & Address Details */}
-            <div className="bg-blue-50/30 border border-blue-100 p-4 rounded-lg mb-6">
-              <h3 className="font-medium text-gray-800 mb-2">Billing & Shipping Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
-                <div>
-                  <span className="text-gray-500 font-medium">Name:</span> {userDetails.fullName || user?.name}
-                </div>
-                <div>
-                  <span className="text-gray-500 font-medium">Email:</span> {userDetails.email || user?.email}
-                </div>
-                <div>
-                  <span className="text-gray-500 font-medium">Phone:</span> {userDetails.phone || user?.mobile}
-                </div>
-                {userDetails.address && (
-                  <div className="md:col-span-2 mt-2 pt-2 border-t border-blue-100/50">
-                    <span className="text-gray-500 font-medium block mb-1">Shipping Address:</span>
-                    <div className="bg-white p-2.5 rounded border border-gray-150 text-xs">
-                      <p className="font-semibold text-gray-800">{userDetails.address.street}</p>
-                      <p className="text-gray-500">{userDetails.address.city}, {userDetails.address.state} - {userDetails.address.pinCode}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Payment Method Selection */}
-            <div className="mb-6">
-              <h3 className="font-medium text-gray-800 mb-3">Choose Payment Method</h3>
-              <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => handlePaymentMethodChange('mobile')}
-                  className={`flex items-center px-4 py-3 rounded-lg border-2 ${
-                    paymentMethod === 'mobile' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <FaMobileAlt className={`mr-2 ${paymentMethod === 'mobile' ? 'text-blue-500' : 'text-gray-500'}`} />
-                  <span className={paymentMethod === 'mobile' ? 'font-medium' : ''}>Mobile UPI App</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handlePaymentMethodChange('qr')}
-                  className={`flex items-center px-4 py-3 rounded-lg border-2 ${
-                    paymentMethod === 'qr' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <FaQrcode className={`mr-2 ${paymentMethod === 'qr' ? 'text-blue-500' : 'text-gray-500'}`} />
-                  <span className={paymentMethod === 'qr' ? 'font-medium' : ''}>Scan QR Code</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => handlePaymentMethodChange('desktop')}
-                  className={`flex items-center px-4 py-3 rounded-lg border-2 ${
-                    paymentMethod === 'desktop' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <FaDesktop className={`mr-2 ${paymentMethod === 'desktop' ? 'text-blue-500' : 'text-gray-500'}`} />
-                  <span className={paymentMethod === 'desktop' ? 'font-medium' : ''}>Desktop</span>
-                </button>
-              </div>
-            </div>
-            
-            {/* Payment Instructions */}
-            {paymentMethod === 'mobile' && (
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <h3 className="font-medium text-blue-800 mb-2">Pay using UPI App</h3>
-                <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
-                  <li>Click the "Pay Now" button below</li>
-                  <li>It will open your UPI app automatically</li>
-                  <li>Complete the payment in your UPI app</li>
-                  <li>Return here and enter the UPI Reference ID</li>
-                  <li>Click "Verify Payment" to complete your purchase</li>
-                </ol>
-                
-                <div className="flex justify-center my-4">
-                  <a 
-                    href={generateUpiLink()}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaMobileAlt className="mr-2" /> Pay Now Rs. {payableAmount.toLocaleString('en-IN')}
-                  </a>
-                </div>
-              </div>
-            )}
-            
-            {paymentMethod === 'qr' && (
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <h3 className="font-medium text-blue-800 mb-2">Pay by scanning QR Code</h3>
-                <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
-                  <li>Open any UPI app on your mobile phone</li>
-                  <li>Scan the QR code shown below</li>
-                  <li>Pay the amount: Rs. {payableAmount.toLocaleString('en-IN')}</li>
-                  <li>Enter the UPI Reference ID below</li>
-                </ol>
-                
-                <div className="flex justify-center my-4">
-                  <div className="bg-white p-4 rounded-lg shadow-md">
-                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center text-center mb-2">
-                  <div>
-                    <p className="text-gray-700 mb-1">UPI ID: <span className="font-medium">{UPI_ID}</span></p>
-                    <button
-                      onClick={copyUpiId}
-                      className={`text-sm ${copySuccess ? 'text-green-600' : 'text-blue-600 hover:text-blue-800'}`}
-                    >
-                      {copySuccess ? 'Copied!' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {paymentMethod === 'desktop' && (
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <h3 className="font-medium text-blue-800 mb-2">Pay from Desktop</h3>
-                <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
-                  <li>Open any UPI app on your mobile phone</li>
-                  <li>Scan the QR code shown below or use the UPI ID</li>
-                  <li>Pay amount: Rs. {payableAmount.toLocaleString('en-IN')}</li>
-                  <li>Enter transaction reference number below</li>
-                </ol>
-                
-                <div className="flex justify-center my-4">
-                  <div className="bg-white p-4 rounded-lg shadow-md">
-                    <img src={upiQrCode} alt="UPI QR Code" className="w-48 h-48 object-contain" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center text-center mb-2">
-                  <div>
-                    <p className="text-gray-700 mb-1">UPI ID: <span className="font-medium">{UPI_ID}</span></p>
-                    <button
-                      onClick={copyUpiId}
-                      className={`text-sm ${copySuccess ? 'text-green-600' : 'text-blue-600 hover:text-blue-800'}`}
-                    >
-                      {copySuccess ? 'Copied!' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Transaction ID Form */}
-            <form onSubmit={handlePaymentVerification} className="mb-6">
-              <h3 className="font-medium text-gray-800 mb-3">Verify Your Payment</h3>
-              <div className="mb-4">
-                <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Enter UPI Reference/Transaction ID
-                </label>
-                <input
-                  type="text"
-                  id="transactionId"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. 123456789012"
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500">You can find this in your UPI payment confirmation</p>
-              </div>
-              
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md mb-4">
-                  {error}
+                <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl p-3 mb-4 flex items-center gap-2">
+                  <FaExclamationTriangle className="text-red-500 text-sm flex-shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
-              
+
               <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium flex items-center justify-center disabled:opacity-70"
+                type="button"
+                onClick={handleInitiatePayment}
                 disabled={submitting}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-75"
               >
-                {submitting ? (
-                  <>
-                    <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle className="mr-2" /> Verify Payment
-                  </>
-                )}
+                <FaCreditCard />
+                <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
               </button>
-            </form>
-            
-            {/* Help Text */}
-            <div className="text-sm text-gray-600 border-t border-gray-200 pt-4">
-              <p className="mb-2">Having trouble with payment? Contact our support:</p>
-              <p className="font-medium">Email: support@academywale.com</p>
             </div>
           </div>
         </div>

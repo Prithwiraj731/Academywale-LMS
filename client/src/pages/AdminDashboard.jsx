@@ -3173,145 +3173,36 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
-
-      {activePanel === 'payments' && (
-        <div className="w-full max-w-5xl bg-white/95 rounded-2xl shadow-2xl p-6 sm:p-8 border border-blue-100 mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-4 text-center">Verify Pending Payments</h2>
-          <p className="text-gray-600 text-sm text-center max-w-xl mx-auto mb-6">
-            Review UPI payments submitted by students. Verify the transaction ID in your bank account/UPI wallet before approving.
-          </p>
-
-          {purchasesLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="text-gray-500 mt-2 text-sm">Loading purchase records...</p>
-            </div>
-          ) : purchasesError ? (
-            <div className="text-red-500 text-center py-4 font-semibold">{purchasesError}</div>
-          ) : purchasesList.length === 0 ? (
-            <div className="text-gray-500 text-center py-8 font-medium">No purchase records found.</div>
-          ) : (
-            <div className="overflow-x-auto border border-gray-200 rounded-xl">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-gray-100 border-b border-gray-200 font-semibold text-gray-700">
-                  <tr>
-                    <th className="p-3">Student Details</th>
-                    <th className="p-3">Course / Price</th>
-                    <th className="p-3">Transaction ID / Method</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {purchasesList.map((p) => {
-                    const studentName = p.users?.name || 'Unknown Student';
-                    const studentEmail = p.users?.email || '';
-                    const studentPhone = p.users?.mobile || '';
-                    
-                    return (
-                      <tr key={p.id} className="hover:bg-slate-50/50">
-                        <td className="p-3">
-                          <div className="font-bold text-gray-800">{studentName}</div>
-                          <div className="text-xs text-gray-500">{studentEmail}</div>
-                          <div className="text-xs text-gray-500">{studentPhone}</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="font-semibold text-gray-800">{p.course_details?.title || p.course_details?.subject}</div>
-                          <div className="text-xs text-teal-600 font-bold">₹{p.amount}</div>
-                          <div className="text-[10px] text-gray-400">Mode: {p.course_details?.mode} | {p.course_details?.validity}</div>
-                        </td>
-                        <td className="p-3 font-mono text-xs text-gray-700">
-                          <div>{p.transaction_id ? p.transaction_id.replace(/_\d+$/, '') : ''}</div>
-                          <div className="text-[10px] text-gray-400 font-sans font-semibold uppercase">{p.payment_method}</div>
-                        </td>
-                        <td className="p-3">
-                          {p.payment_status === 'completed' && (
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
-                              Completed / Active
-                            </span>
-                          )}
-                          {p.payment_status === 'pending_verification' && (
-                            <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm animate-pulse">
-                              Pending Verification
-                            </span>
-                          )}
-                          {p.payment_status === 'rejected' && (
-                            <span className="bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
-                              Rejected
-                            </span>
-                          )}
-                          {p.payment_status !== 'completed' && p.payment_status !== 'pending_verification' && p.payment_status !== 'rejected' && (
-                            <span className="bg-gray-50 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
-                              {p.payment_status}
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-3 text-right">
-                          {p.payment_status === 'pending_verification' ? (
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                disabled={purchaseActionLoading === p.id}
-                                onClick={() => handleVerifyPurchase(p.id, 'completed')}
-                                className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-xs font-bold disabled:opacity-50"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                disabled={purchaseActionLoading === p.id}
-                                onClick={() => handleVerifyPurchase(p.id, 'rejected')}
-                                className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold disabled:opacity-50"
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400 font-semibold">Done</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+      <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
+        <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Coupon Codes</h2>
+        <form onSubmit={handleAddCoupon} className="flex flex-col sm:flex-row gap-4 mb-4">
+          <input name="code" value={couponForm.code} onChange={handleCouponChange} placeholder="Coupon Code (e.g. OFF5)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
+          <input name="discountPercent" value={couponForm.discountPercent} onChange={handleCouponChange} placeholder="Discount % (e.g. 5)" type="number" min="1" max="100" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
+          <button type="submit" className="bg-green-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-green-600 transition-all">Add Coupon</button>
+        </form>
+        {couponSuccess && <div className="text-green-600 text-center font-semibold mb-2">{couponSuccess}</div>}
+        {couponError && <div className="text-red-600 text-center font-semibold mb-2">{couponError}</div>}
+        <div>
+          <h3 className="text-lg font-bold mb-2">Active Coupons</h3>
+          {coupons.length === 0 && <div className="text-gray-500">No coupons found.</div>}
+          <ul className="divide-y divide-gray-200">
+            {coupons.map(c => (
+              <li key={c.code} className="flex items-center justify-between py-2">
+                <span className="font-mono text-base">{c.code}</span>
+                <span className="text-green-700 font-bold">{c.discountPercent}% off</span>
+                <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline ml-4">Delete</button>
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
-
-      {activePanel !== 'payments' && (
-        <>
-          <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
-            <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Coupon Codes</h2>
-            <form onSubmit={handleAddCoupon} className="flex flex-col sm:flex-row gap-4 mb-4">
-              <input name="code" value={couponForm.code} onChange={handleCouponChange} placeholder="Coupon Code (e.g. OFF5)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-              <input name="discountPercent" value={couponForm.discountPercent} onChange={handleCouponChange} placeholder="Discount % (e.g. 5)" type="number" min="1" max="100" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-              <button type="submit" className="bg-green-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-green-600 transition-all">Add Coupon</button>
-            </form>
-            {couponSuccess && <div className="text-green-600 text-center font-semibold mb-2">{couponSuccess}</div>}
-            {couponError && <div className="text-red-600 text-center font-semibold mb-2">{couponError}</div>}
-            <div>
-              <h3 className="text-lg font-bold mb-2">Active Coupons</h3>
-              {coupons.length === 0 && <div className="text-gray-500">No coupons found.</div>}
-              <ul className="divide-y divide-gray-200">
-                {coupons.map(c => (
-                  <li key={c.code} className="flex items-center justify-between py-2">
-                    <span className="font-mono text-base">{c.code}</span>
-                    <span className="text-green-700 font-bold">{c.discountPercent}% off</span>
-                    <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline ml-4">Delete</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="w-full max-w-3xl">
-            <CoursesByPaperSection
-              onEditCourse={openEditModal}
-              onDeleteCourse={handleDeleteCourse}
-              refreshKey={courseListRefreshKey}
-            />
-          </div>
-        </>
-      )}
+      </div>
+      <div className="w-full max-w-3xl">
+        <CoursesByPaperSection
+          onEditCourse={openEditModal}
+          onDeleteCourse={handleDeleteCourse}
+          refreshKey={courseListRefreshKey}
+        />
+      </div>
       {/* Edit Course Modal */}
       <Modal
         isOpen={editModalOpen}
