@@ -2,15 +2,49 @@ const nodemailer = require('nodemailer');
 const emailConfig = require('../config/email.config');
 
 // Create transporter for sending emails
+// Uses Resend HTTP API when RESEND_API_KEY is set (required for Render free tier)
+// Falls back to SMTP for local development
 const createTransporter = () => {
-  console.log('Creating email transporter with config:', {
+  // --- Resend HTTP API (works on all cloud platforms) ---
+  if (emailConfig.resendApiKey) {
+    console.log('📧 Using Resend HTTP API for email delivery');
+    return {
+      sendMail: async (mailOptions) => {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${emailConfig.resendApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: emailConfig.resendFrom,
+            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+            subject: mailOptions.subject,
+            html: mailOptions.html || undefined,
+            text: mailOptions.text || undefined
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Resend API error:', data);
+          throw new Error(data.message || `Resend API error: ${response.status}`);
+        }
+
+        console.log('✅ Email sent via Resend:', data.id);
+        return { messageId: data.id };
+      }
+    };
+  }
+
+  // --- SMTP fallback (local development) ---
+  console.log('📧 Using SMTP for email delivery:', {
     host: emailConfig.host,
     port: emailConfig.port,
     secure: emailConfig.secure,
     user: emailConfig.user,
-    passwordSet: !!emailConfig.password,
-    service: emailConfig.service,
-    from: emailConfig.from
+    passwordSet: !!emailConfig.password
   });
 
   if (emailConfig.service) {
@@ -25,7 +59,7 @@ const createTransporter = () => {
       socketTimeout: 10000
     });
   }
-  
+
   return nodemailer.createTransport({
     host: emailConfig.host,
     port: emailConfig.port,
@@ -35,7 +69,7 @@ const createTransporter = () => {
       pass: emailConfig.password
     },
     tls: {
-      rejectUnauthorized: false // Required for some Hostinger SMTP setups
+      rejectUnauthorized: false
     },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
