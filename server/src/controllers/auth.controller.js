@@ -351,6 +351,9 @@ exports.forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(200).json({
         status: 'success',
+        // Do not reveal whether an email is registered, but let the UI avoid
+        // showing an OTP form when no email was actually dispatched.
+        emailSent: false,
         message: 'If an account exists with this email, a password reset code has been sent.'
       });
     }
@@ -385,6 +388,7 @@ exports.forgotPassword = async (req, res) => {
 
     res.status(200).json({
       status: 'success',
+      emailSent: true,
       message: 'Password reset code sent to your email.'
     });
   } catch (error) {

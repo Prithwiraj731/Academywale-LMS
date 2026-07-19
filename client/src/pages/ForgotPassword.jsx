@@ -32,9 +32,11 @@ export default function ForgotPassword() {
       });
       const data = await res.json();
 
-      if (res.ok) {
+      if (res.ok && data.emailSent) {
         setSuccess(data.message || 'Password reset code sent to your email.');
         setStep('reset');
+      } else if (res.ok) {
+        setError('We could not send an OTP for this email. Please use the email address registered to your AcademyWale account.');
       } else {
         setError(data.message || 'Failed to send password reset code.');
       }

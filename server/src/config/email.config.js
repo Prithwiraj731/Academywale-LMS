@@ -4,14 +4,29 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
+// Helper to strip surrounding quotes from env variables (common on Render etc.)
+const cleanEnvValue = (val) => {
+  if (typeof val === 'string') {
+    return val.replace(/^["']|["']$/g, '').trim();
+  }
+  return val;
+};
+
+const host = cleanEnvValue(process.env.EMAIL_HOST) || 'smtp.hostinger.com';
+const port = parseInt(cleanEnvValue(process.env.EMAIL_PORT), 10) || 587;
+const secure = (cleanEnvValue(process.env.EMAIL_SECURE) === 'true');
+const user = cleanEnvValue(process.env.EMAIL_USER) || 'support@academywale.com';
+const password = cleanEnvValue(process.env.EMAIL_PASSWORD);
+const service = cleanEnvValue(process.env.EMAIL_SERVICE) || null;
+
 const emailConfig = {
-  host: process.env.EMAIL_HOST || 'smtp.hostinger.com',
-  port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-  secure: (process.env.EMAIL_SECURE === 'true'), // false for 587 (STARTTLS), true for 465 (SSL)
-  user: process.env.EMAIL_USER || 'support@academywale.com',
-  password: process.env.EMAIL_PASSWORD,
-  service: process.env.EMAIL_SERVICE || null,
-  from: `"AcademyWale" <${process.env.EMAIL_USER || 'support@academywale.com'}>`,
+  host,
+  port,
+  secure,
+  user,
+  password,
+  service,
+  from: `"AcademyWale" <${user}>`,
   to: 'support@academywale.com'
 };
 
