@@ -5,6 +5,42 @@ const emailConfig = require('../config/email.config');
 // Uses Resend HTTP API when RESEND_API_KEY is set (required for Render free tier)
 // Falls back to SMTP for local development
 const createTransporter = () => {
+  // --- Brevo HTTP API (works on all cloud platforms) ---
+  if (emailConfig.brevoApiKey) {
+    console.log('📧 Using Brevo HTTP API for email delivery');
+    return {
+      sendMail: async (mailOptions) => {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': emailConfig.brevoApiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: 'AcademyWale', email: emailConfig.user },
+            to: Array.isArray(mailOptions.to) 
+              ? mailOptions.to.map(email => ({ email })) 
+              : [{ email: mailOptions.to }],
+            subject: mailOptions.subject,
+            htmlContent: mailOptions.html || undefined,
+            textContent: mailOptions.text || undefined
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Brevo API error:', data);
+          throw new Error(data.message || `Brevo API error: ${response.status}`);
+        }
+
+        console.log('✅ Email sent via Brevo:', data.messageId);
+        return { messageId: data.messageId };
+      }
+    };
+  }
+
   // --- Resend HTTP API (works on all cloud platforms) ---
   if (emailConfig.resendApiKey) {
     console.log('📧 Using Resend HTTP API for email delivery');

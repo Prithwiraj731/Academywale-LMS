@@ -1,5 +1,5 @@
 // Email Configuration
-// Supports Resend HTTP API (for cloud hosting like Render) and SMTP fallback (local dev)
+// Supports Brevo/Resend HTTP APIs (for cloud hosting like Render) and SMTP fallback (local dev)
 
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
@@ -12,6 +12,7 @@ const cleanEnvValue = (val) => {
   return val;
 };
 
+const brevoApiKey = cleanEnvValue(process.env.BREVO_API_KEY) || null;
 const resendApiKey = cleanEnvValue(process.env.RESEND_API_KEY) || null;
 
 // SMTP settings (fallback for local development)
@@ -26,6 +27,7 @@ const service = cleanEnvValue(process.env.EMAIL_SERVICE) || null;
 const resendFrom = cleanEnvValue(process.env.RESEND_FROM) || `AcademyWale <${user}>`;
 
 const emailConfig = {
+  brevoApiKey,
   resendApiKey,
   resendFrom,
   host,

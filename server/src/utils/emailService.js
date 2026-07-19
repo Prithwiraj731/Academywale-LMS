@@ -3,6 +3,36 @@ const emailConfig = require('../config/email.config');
 
 // Create transporter for sending emails
 const createTransporter = () => {
+  // --- Brevo HTTP API ---
+  if (emailConfig.brevoApiKey) {
+    return {
+      sendMail: async (mailOptions) => {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': emailConfig.brevoApiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: { name: 'AcademyWale', email: emailConfig.user },
+            to: Array.isArray(mailOptions.to) 
+              ? mailOptions.to.map(email => ({ email })) 
+              : [{ email: mailOptions.to }],
+            subject: mailOptions.subject,
+            htmlContent: mailOptions.html || undefined,
+            textContent: mailOptions.text || undefined
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || `Brevo API error: ${response.status}`);
+        }
+        return { messageId: data.messageId };
+      }
+    };
+  }
+
   // --- Resend HTTP API ---
   if (emailConfig.resendApiKey) {
     return {
