@@ -88,6 +88,94 @@ const CourseFullDetailPage = () => {
   const [appliedCoupons, setAppliedCoupons] = useState([]);
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
+  // Fetch course details
+  useEffect(() => {
+    async function fetchCourseDetails() {
+      setLoading(true);
+      setError('');
+      try {
+        let apiUrl = `${API_URL}/api/courses/details/${courseId}`;
+        if (courseType) {
+          apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
+        }
+
+        console.log(`Fetching course details from: ${apiUrl}`);
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch course details: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.course) {
+          throw new Error('Invalid course data received');
+        }
+
+        const normalizedCourse = normalizeCoursePricing(data.course);
+        setCourse(normalizedCourse);
+
+        // Initialize mode, validity, and attempt selection
+        if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
+          const firstMode = normalizedCourse.modeAttemptPricing[0];
+          setSelectedMode(firstMode.mode);
+          if (firstMode.attempts && firstMode.attempts.length > 0) {
+            const firstAttempt = firstMode.attempts[0];
+            setSelectedValidity(firstAttempt.validity || '');
+            setSelectedAttempt(firstAttempt.attempt || '');
+            setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+          }
+        } else {
+          setSelectedPrice({
+            selling: data.course.sellingPrice || 0,
+            cost: data.course.costPrice || 0
+          });
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching course details:', err);
+        setError(err.message || 'Failed to load course details');
+        setLoading(false);
+      }
+    }
+
+    if (courseId) {
+      fetchCourseDetails();
+    }
+  }, [courseId, courseType]);
+
+  // Fetch related courses
+  useEffect(() => {
+    if (course) {
+      async function fetchRelated() {
+        try {
+          const res = await fetch(`${API_URL}/api/courses/all`);
+          const data = await res.json();
+          if (res.ok && data.courses) {
+            const filtered = data.courses.filter(c =>
+              c.category === course.category &&
+              c.subcategory === course.subcategory &&
+              c._id !== (course.id || course._id) &&
+              c.id !== (course.id || course._id)
+            );
+            setRelatedCourses(filtered.slice(0, 4));
+          }
+        } catch (err) {
+          console.log('Error fetching related courses:', err);
+        }
+      }
+      fetchRelated();
+    }
+  }, [course]);
+
+  // Reset coupons when option choices change
+  useEffect(() => {
+    setAppliedCoupons([]);
+    setCouponStatus('');
+    setCouponCode('');
+  }, [selectedMode, selectedValidity, selectedAttempt]);
+
   // Fetch visible public coupons for this course
   useEffect(() => {
     async function fetchVisibleCoupons() {
@@ -103,7 +191,7 @@ const CourseFullDetailPage = () => {
       }
     }
     if (course) fetchVisibleCoupons();
-  }, [course, courseId]);
+  }, [course?.id, course?._id, courseId]);
 
   // Handle Apply Coupon with specific code
   const handleApplyCouponWithCode = async (codeToApply) => {
