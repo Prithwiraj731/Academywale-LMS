@@ -8,6 +8,14 @@ import { API_URL } from '../api';
 // Razorpay script loader
 function loadRazorpayScript(src) {
   return new Promise((resolve) => {
+    if (window.Razorpay) {
+      return resolve(true);
+    }
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+    if (existingScript) {
+      existingScript.onload = () => resolve(true);
+      return resolve(true);
+    }
     const script = document.createElement('script');
     script.src = src;
     script.onload = () => resolve(true);

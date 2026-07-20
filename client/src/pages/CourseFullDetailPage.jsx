@@ -71,6 +71,12 @@ const renderFormattedText = (val) => {
   return <span className="whitespace-pre-wrap leading-relaxed">{str}</span>;
 };
 
+const safeFormatPrice = (val) => {
+  const num = Number(val);
+  if (isNaN(num)) return '0';
+  return num.toLocaleString();
+};
+
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
@@ -130,12 +136,15 @@ const CourseFullDetailPage = () => {
             const firstAttempt = firstMode.attempts[0];
             setSelectedValidity(firstAttempt.validity || '');
             setSelectedAttempt(firstAttempt.attempt || '');
-            setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
+            setSelectedPrice({
+              selling: Number(firstAttempt.sellingPrice || 0),
+              cost: Number(firstAttempt.costPrice || 0)
+            });
           }
         } else {
           setSelectedPrice({
-            selling: data.course.sellingPrice || 0,
-            cost: data.course.costPrice || 0
+            selling: Number(data.course.sellingPrice || data.course.selling_price || 0),
+            cost: Number(data.course.costPrice || data.course.cost_price || 0)
           });
         }
 
@@ -174,7 +183,7 @@ const CourseFullDetailPage = () => {
       }
       fetchRelated();
     }
-  }, [course]);
+  }, [course?.id, course?._id, course?.category, course?.subcategory]);
 
   // Reset coupons when option choices change
   useEffect(() => {
@@ -223,7 +232,8 @@ const CourseFullDetailPage = () => {
       const data = await res.json();
       if (res.ok && data.success) {
         const discountPct = Number(data.discountPercent || 0);
-        const savingsRupees = Math.round(selectedPrice.selling * (discountPct / 100));
+        const currentSelling = Number(selectedPrice?.selling || 0);
+        const savingsRupees = Math.round(currentSelling * (discountPct / 100));
         const newCoupon = {
           code: data.code || code,
           discountPercent: discountPct,
@@ -231,7 +241,7 @@ const CourseFullDetailPage = () => {
         };
         setAppliedCoupons(prev => [...prev, newCoupon]);
         setCouponCode('');
-        setCouponStatus(`✅ Coupon ${code} applied! Saved ₹${savingsRupees.toLocaleString()}!`);
+        setCouponStatus(`✅ Coupon ${code} applied! Saved ₹${safeFormatPrice(savingsRupees)}!`);
         setTimeout(() => setCouponStatus(''), 3000);
       } else {
         setCouponStatus(data.error || 'Invalid coupon code.');
@@ -248,6 +258,9 @@ const CourseFullDetailPage = () => {
     setCouponStatus('');
   };
 
+  const baseSellingPrice = Number(selectedPrice?.selling || 0);
+  const baseCostPrice = Number(selectedPrice?.cost || 0);
+
   // Stacked discount percent & rupee savings calculation
   const totalCouponDiscountPercent = Math.min(
     95,
@@ -255,10 +268,10 @@ const CourseFullDetailPage = () => {
   );
 
   const discountedSellingPrice = totalCouponDiscountPercent > 0
-    ? Math.round(selectedPrice.selling * (1 - totalCouponDiscountPercent / 100))
-    : selectedPrice.selling;
+    ? Math.round(baseSellingPrice * (1 - totalCouponDiscountPercent / 100))
+    : baseSellingPrice;
 
-  const totalSavingsInRupees = selectedPrice.selling - discountedSellingPrice;
+  const totalSavingsInRupees = Math.max(0, baseSellingPrice - discountedSellingPrice);
 
   // Handle proceed to payment (opens CheckoutModal)
   const handleProceedToPay = () => {
@@ -552,7 +565,7 @@ const CourseFullDetailPage = () => {
                 <span className="flex items-center gap-1.5"><FaTag className="text-teal-600" /> Apply Coupon Code (if any)</span>
                 {totalSavingsInRupees > 0 && (
                   <span className="text-xs text-green-700 font-extrabold bg-green-100 px-2 py-0.5 rounded border border-green-200">
-                    ₹{totalSavingsInRupees.toLocaleString()} OFF APPLIED
+                    ₹{safeFormatPrice(totalSavingsInRupees)} OFF APPLIED
                   </span>
                 )}
               </label>
@@ -564,7 +577,7 @@ const CourseFullDetailPage = () => {
                   <div className="flex flex-wrap gap-2">
                     {availableCoupons.map((coupon) => {
                       const isAlreadyApplied = appliedCoupons.some(c => c.code === coupon.code);
-                      const discountAmount = Math.round(selectedPrice.selling * (coupon.discountPercent / 100));
+                      const discountAmount = Math.round(baseSellingPrice * ((coupon.discountPercent || 0) / 100));
                       return (
                         <button
                           key={coupon.code}
@@ -580,7 +593,7 @@ const CourseFullDetailPage = () => {
                               : 'bg-teal-50 hover:bg-teal-100 text-teal-800 border-teal-300 hover:border-teal-400 cursor-pointer'
                           }`}
                         >
-                          <span>Apply <strong className="font-mono text-teal-900">{coupon.code}</strong> to get {discountAmount > 0 ? `₹${discountAmount.toLocaleString()} Off` : `${coupon.discountPercent}% Off`}</span>
+                          <span>Apply <strong className="font-mono text-teal-900">{coupon.code}</strong> to get {discountAmount > 0 ? `₹${safeFormatPrice(discountAmount)} Off` : `${coupon.discountPercent}% Off`}</span>
                         </button>
                       );
                     })}
@@ -616,7 +629,7 @@ const CourseFullDetailPage = () => {
               {appliedCoupons.length > 0 && (
                 <div className="space-y-2 mt-2 pt-2 border-t border-gray-150">
                   {appliedCoupons.map((c) => {
-                    const couponSavings = Math.round(selectedPrice.selling * (c.discountPercent / 100));
+                    const couponSavings = Math.round(baseSellingPrice * ((c.discountPercent || 0) / 100));
                     return (
                       <div key={c.code} className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
@@ -624,7 +637,7 @@ const CourseFullDetailPage = () => {
                             <FaCheckCircle className="text-green-500 text-xs shrink-0" />
                             <span className="text-sm font-extrabold text-green-800 font-mono">{c.code}</span>
                             <span className="bg-green-200 text-green-900 text-xs px-2.5 py-0.5 rounded font-extrabold">
-                              ₹{couponSavings.toLocaleString()} OFF
+                              ₹{safeFormatPrice(couponSavings)} OFF
                             </span>
                           </div>
                           {c.message && (
@@ -650,31 +663,31 @@ const CourseFullDetailPage = () => {
             {/* Price Display */}
             <div className="pt-2 border-t border-gray-200">
               <div className="flex items-baseline gap-3">
-                {selectedPrice.selling > 0 ? (
+                {baseSellingPrice > 0 ? (
                   <>
                     {totalCouponDiscountPercent > 0 ? (
                       <>
                         <span className="text-base text-gray-400 line-through font-semibold">
-                          ₹{selectedPrice.selling.toLocaleString()}
+                          ₹{safeFormatPrice(baseSellingPrice)}
                         </span>
                         <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
-                          ₹{discountedSellingPrice.toLocaleString()}
+                          ₹{safeFormatPrice(discountedSellingPrice)}
                         </span>
                         <span className="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded font-extrabold border border-green-200">
-                          ₹{totalSavingsInRupees.toLocaleString()} OFF APPLIED
+                          ₹{safeFormatPrice(totalSavingsInRupees)} OFF APPLIED
                         </span>
                       </>
                     ) : (
                       <>
-                        {selectedPrice.cost > selectedPrice.selling && (
+                        {baseCostPrice > baseSellingPrice && (
                           <span className="text-lg text-gray-400 line-through font-semibold">
-                            ₹{selectedPrice.cost.toLocaleString()}
+                            ₹{safeFormatPrice(baseCostPrice)}
                           </span>
                         )}
                         <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
-                          ₹{selectedPrice.selling.toLocaleString()}
+                          ₹{safeFormatPrice(baseSellingPrice)}
                         </span>
-                        {selectedPrice.cost > selectedPrice.selling && (
+                        {baseCostPrice > baseSellingPrice && (
                           <span className="bg-teal-50 text-teal-700 text-xs px-2.5 py-0.5 rounded font-bold border border-teal-200">
                             {discountPercent}% OFF
                           </span>
