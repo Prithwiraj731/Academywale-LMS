@@ -4,7 +4,7 @@ import {
   FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt,
   FaCheckCircle, FaUser, FaGraduationCap, FaChalkboardTeacher,
   FaShoppingCart, FaPhoneAlt, FaEnvelope, FaLaptop, FaQuestionCircle,
-  FaExternalLinkAlt, FaBookOpen
+  FaExternalLinkAlt, FaBookOpen, FaTag
 } from 'react-icons/fa';
 import { MdVideoLibrary } from 'react-icons/md';
 import LoadingSpinner from '../components/common/LoadingSpinner';
