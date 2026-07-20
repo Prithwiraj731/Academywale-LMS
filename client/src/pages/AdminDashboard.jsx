@@ -338,7 +338,8 @@ export default function AdminDashboard() {
   const [facultyQueried, setFacultyQueried] = useState('');
 
   // Coupon management state
-  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '', message: '' });
+  // Coupon management state
+  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '', message: '', isVisible: true });
   const [coupons, setCoupons] = useState([]);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [couponError, setCouponError] = useState('');
@@ -414,8 +415,8 @@ export default function AdminDashboard() {
   };
 
   const handleCouponChange = e => {
-    const { name, value } = e.target;
-    setCouponForm(f => ({ ...f, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setCouponForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleAddCoupon = async e => {
@@ -432,15 +433,16 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: couponForm.code.trim().toUpperCase(),
-          discountPercent: Number(couponForm.discountPercent),
+          discountPercent: Number.parseFloat(couponForm.discountPercent),
           courseId: couponForm.courseId || undefined,
-          message: couponForm.message.trim() || undefined
+          message: couponForm.message.trim() || undefined,
+          isVisible: couponForm.isVisible
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setCouponSuccess('Coupon added!');
-        setCouponForm({ code: '', discountPercent: '', courseId: '', message: '' });
+        setCouponForm({ code: '', discountPercent: '', courseId: '', message: '', isVisible: true });
         fetchCoupons();
         setTimeout(() => setCouponSuccess(''), 2000);
       } else {
@@ -3223,9 +3225,21 @@ export default function AdminDashboard() {
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
             />
           </div>
-          <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all self-end">
-            Add Coupon
-          </button>
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                name="isVisible"
+                checked={couponForm.isVisible}
+                onChange={handleCouponChange}
+                className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+              />
+              <span>Show in Course Details Page (Visible to Students)</span>
+            </label>
+            <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all">
+              Add Coupon
+            </button>
+          </div>
         </form>
         {couponSuccess && <div className="text-green-600 text-center font-semibold mb-2">{couponSuccess}</div>}
         {couponError && <div className="text-red-600 text-center font-semibold mb-2">{couponError}</div>}
@@ -3238,8 +3252,13 @@ export default function AdminDashboard() {
               return (
                 <li key={c.code} className="flex items-center justify-between py-2.5">
                   <div className="flex flex-col">
-                    <span className="font-mono font-bold text-base text-gray-850">{c.code}</span>
-                    <span className="text-xs text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-base text-gray-850">{c.code}</span>
+                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.isVisible !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                        {c.isVisible !== false ? '👁️ Visible on Course Page' : '🙈 Hidden'}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 mt-0.5">
                       {linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses'}
                     </span>
                     {c.message && (

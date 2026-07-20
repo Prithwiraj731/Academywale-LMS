@@ -8,7 +8,8 @@ router.post('/api/admin/coupons', requireAdminCookie, couponController.createCou
 router.get('/api/admin/coupons', requireAdminCookie, couponController.getCoupons);
 router.delete('/api/admin/coupons/:code', requireAdminCookie, couponController.deleteCoupon);
 
-// Student endpoint
+// Student endpoints
 router.post('/api/coupons/validate', couponController.validateCoupon);
+router.get('/api/coupons/public', couponController.getPublicVisibleCoupons);
 
-module.exports = router; 
+module.exports = router;

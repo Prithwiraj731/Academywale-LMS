@@ -34,168 +34,32 @@ const CourseFullDetailPage = () => {
   const [relatedCourses, setRelatedCourses] = useState([]);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
-  // Multi-Coupon Stacking State
+  // Multi-Coupon Stacking & Visible Coupons State
   const [couponCode, setCouponCode] = useState('');
   const [couponStatus, setCouponStatus] = useState('');
   const [appliedCoupons, setAppliedCoupons] = useState([]);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
 
-  // Fetch course details
+  // Fetch visible public coupons for this course
   useEffect(() => {
-    async function fetchCourseDetails() {
-      setLoading(true);
-      setError('');
+    async function fetchVisibleCoupons() {
       try {
-        let apiUrl = `${API_URL}/api/courses/details/${courseId}`;
-        if (courseType) {
-          apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
+        const targetId = course?.id || course?._id || courseId;
+        const res = await fetch(`${API_URL}/api/coupons/public?courseId=${encodeURIComponent(targetId)}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setAvailableCoupons(data.coupons || []);
         }
-
-        console.log(`Fetching course details from: ${apiUrl}`);
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch course details: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data || !data.course) {
-          throw new Error('Invalid course data received');
-        }
-
-        const normalizedCourse = normalizeCoursePricing(data.course);
-        setCourse(normalizedCourse);
-
-        // Initialize mode, validity, and attempt selection
-        if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
-          const firstMode = normalizedCourse.modeAttemptPricing[0];
-          setSelectedMode(firstMode.mode);
-          if (firstMode.attempts && firstMode.attempts.length > 0) {
-            const firstAttempt = firstMode.attempts[0];
-            setSelectedValidity(firstAttempt.validity || '');
-            setSelectedAttempt(firstAttempt.attempt || '');
-            setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
-          }
-        } else {
-          setSelectedPrice({
-            selling: data.course.sellingPrice || 0,
-            cost: data.course.costPrice || 0
-          });
-        }
-
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching course details:', err);
-        setError(err.message || 'Failed to load course details');
-        setLoading(false);
+        console.log('Error fetching visible coupons:', err);
       }
     }
+    if (course) fetchVisibleCoupons();
+  }, [course, courseId]);
 
-    fetchCourseDetails();
-  }, [courseId, courseType]);
-
-  // Fetch related courses
-  useEffect(() => {
-    if (course) {
-      async function fetchRelated() {
-        try {
-          const res = await fetch(`${API_URL}/api/courses/all`);
-          const data = await res.json();
-          if (res.ok && data.courses) {
-            const filtered = data.courses.filter(c =>
-              c.category === course.category &&
-              c.subcategory === course.subcategory &&
-              c._id !== (course.id || course._id) &&
-              c.id !== (course.id || course._id)
-            );
-            setRelatedCourses(filtered.slice(0, 4));
-          }
-        } catch (err) {
-          console.log('Error fetching related courses:', err);
-        }
-      }
-      fetchRelated();
-    }
-  }, [course]);
-
-  // Reset coupons when option choices change
-  useEffect(() => {
-    setAppliedCoupons([]);
-    setCouponStatus('');
-    setCouponCode('');
-  }, [selectedMode, selectedValidity, selectedAttempt]);
-
-  const getUniqueValiditiesForMode = (modeName) => {
-    const modeData = course?.modeAttemptPricing?.find(m => m.mode === modeName);
-    if (!modeData || !modeData.attempts) return [];
-    return Array.from(new Set(modeData.attempts.map(a => a.validity).filter(Boolean)));
-  };
-
-  const getAttemptsForSelectedModeAndValidity = () => {
-    const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
-    if (!modeData || !modeData.attempts) return [];
-    const validities = getUniqueValiditiesForMode(selectedMode);
-    if (validities.length > 0) {
-      return modeData.attempts.filter(a => a.validity === selectedValidity);
-    }
-    return modeData.attempts;
-  };
-
-  // Handle mode selection
-  const handleModeChange = (mode) => {
-    setSelectedMode(mode);
-    const modeData = course.modeAttemptPricing.find(m => m.mode === mode);
-    if (modeData && modeData.attempts && modeData.attempts.length > 0) {
-      const validities = Array.from(new Set(modeData.attempts.map(a => a.validity).filter(Boolean)));
-      if (validities.length > 0) {
-        const firstValidity = validities[0];
-        setSelectedValidity(firstValidity);
-        const attemptsForVal = modeData.attempts.filter(a => a.validity === firstValidity);
-        if (attemptsForVal.length > 0) {
-          const firstAttempt = attemptsForVal[0];
-          setSelectedAttempt(firstAttempt.attempt);
-          setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
-        }
-      } else {
-        setSelectedValidity('');
-        const firstAttempt = modeData.attempts[0];
-        setSelectedAttempt(firstAttempt.attempt);
-        setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
-      }
-    }
-  };
-
-  // Handle validity selection
-  const handleValidityChange = (validity) => {
-    setSelectedValidity(validity);
-    const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-    if (modeData && modeData.attempts) {
-      const attemptsForVal = modeData.attempts.filter(a => a.validity === validity);
-      if (attemptsForVal.length > 0) {
-        const firstAttempt = attemptsForVal[0];
-        setSelectedAttempt(firstAttempt.attempt);
-        setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
-      }
-    }
-  };
-
-  // Handle attempt selection  
-  const handleAttemptChange = (attempt) => {
-    setSelectedAttempt(attempt);
-    const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-    if (modeData && modeData.attempts) {
-      const attemptData = modeData.attempts.find(a =>
-        a.attempt === attempt &&
-        (!selectedValidity || a.validity === selectedValidity)
-      );
-      if (attemptData) {
-        setSelectedPrice({ selling: attemptData.sellingPrice, cost: attemptData.costPrice });
-      }
-    }
-  };
-
-  const handleApplyCoupon = async () => {
-    const code = couponCode.trim().toUpperCase();
+  // Handle Apply Coupon with specific code
+  const handleApplyCouponWithCode = async (codeToApply) => {
+    const code = String(codeToApply || '').trim().toUpperCase();
     setCouponStatus('');
     if (!code) {
       setCouponStatus('Enter a coupon code.');
@@ -211,18 +75,20 @@ const CourseFullDetailPage = () => {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, courseId: course?.id || course?._id })
+        body: JSON.stringify({ code, courseId: course?.id || course?._id || courseId })
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        const discountPct = Number(data.discountPercent || 0);
+        const savingsRupees = Math.round(selectedPrice.selling * (discountPct / 100));
         const newCoupon = {
           code: data.code || code,
-          discountPercent: Number(data.discountPercent || 0),
+          discountPercent: discountPct,
           message: data.message || null
         };
         setAppliedCoupons(prev => [...prev, newCoupon]);
         setCouponCode('');
-        setCouponStatus(`✅ Coupon ${code} applied successfully!`);
+        setCouponStatus(`✅ Coupon ${code} applied! Saved ₹${savingsRupees.toLocaleString()}!`);
         setTimeout(() => setCouponStatus(''), 3000);
       } else {
         setCouponStatus(data.error || 'Invalid coupon code.');
@@ -232,12 +98,14 @@ const CourseFullDetailPage = () => {
     }
   };
 
+  const handleApplyCoupon = () => handleApplyCouponWithCode(couponCode);
+
   const handleRemoveCoupon = (codeToRemove) => {
     setAppliedCoupons(prev => prev.filter(c => c.code !== codeToRemove));
     setCouponStatus('');
   };
 
-  // Stacked discount percent calculation
+  // Stacked discount percent & rupee savings calculation
   const totalCouponDiscountPercent = Math.min(
     95,
     appliedCoupons.reduce((sum, c) => sum + (c.discountPercent || 0), 0)
@@ -246,6 +114,8 @@ const CourseFullDetailPage = () => {
   const discountedSellingPrice = totalCouponDiscountPercent > 0
     ? Math.round(selectedPrice.selling * (1 - totalCouponDiscountPercent / 100))
     : selectedPrice.selling;
+
+  const totalSavingsInRupees = selectedPrice.selling - discountedSellingPrice;
 
   // Handle proceed to payment (opens CheckoutModal)
   const handleProceedToPay = () => {
@@ -537,21 +407,52 @@ const CourseFullDetailPage = () => {
             <div className="pt-2 border-t border-gray-200">
               <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 flex items-center justify-between">
                 <span className="flex items-center gap-1.5"><FaTag className="text-teal-600" /> Apply Coupon Code (if any)</span>
-                {appliedCoupons.length > 0 && (
-                  <span className="text-xs text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded border border-green-200">
-                    {totalCouponDiscountPercent}% Off ({appliedCoupons.length} applied)
+                {totalSavingsInRupees > 0 && (
+                  <span className="text-xs text-green-700 font-extrabold bg-green-100 px-2 py-0.5 rounded border border-green-200">
+                    ₹{totalSavingsInRupees.toLocaleString()} OFF APPLIED
                   </span>
                 )}
               </label>
 
+              {/* Clickable Visible Available Coupon Badges */}
+              {availableCoupons.length > 0 && (
+                <div className="mb-3 space-y-1.5">
+                  <div className="text-[11px] font-extrabold text-teal-800 uppercase tracking-wider">Available Coupons:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {availableCoupons.map((coupon) => {
+                      const isAlreadyApplied = appliedCoupons.some(c => c.code === coupon.code);
+                      const discountAmount = Math.round(selectedPrice.selling * (coupon.discountPercent / 100));
+                      return (
+                        <button
+                          key={coupon.code}
+                          type="button"
+                          disabled={isAlreadyApplied}
+                          onClick={() => {
+                            setCouponCode(coupon.code);
+                            handleApplyCouponWithCode(coupon.code);
+                          }}
+                          className={`text-xs px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-all shadow-xs ${
+                            isAlreadyApplied
+                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                              : 'bg-teal-50 hover:bg-teal-100 text-teal-800 border-teal-300 hover:border-teal-400 cursor-pointer'
+                          }`}
+                        >
+                          <span>Apply <strong className="font-mono text-teal-900">{coupon.code}</strong> to get {discountAmount > 0 ? `₹${discountAmount.toLocaleString()} Off` : `${coupon.discountPercent}% Off`}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
-                  placeholder="Enter Coupon Code"
+                  placeholder="Enter Coupon Code (e.g. ACAD5)"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] bg-white"
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] bg-white font-medium"
                 />
                 <button
                   type="button"
@@ -563,39 +464,42 @@ const CourseFullDetailPage = () => {
               </div>
 
               {couponStatus && (
-                <p className={`text-xs mb-2 font-medium ${couponStatus.includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
+                <p className={`text-xs mb-2 font-bold ${couponStatus.includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
                   {couponStatus}
                 </p>
               )}
 
-              {/* Applied Coupons Badges */}
+              {/* Applied Coupons List with Rupee Savings */}
               {appliedCoupons.length > 0 && (
                 <div className="space-y-2 mt-2 pt-2 border-t border-gray-150">
-                  {appliedCoupons.map((c) => (
-                    <div key={c.code} className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <FaCheckCircle className="text-green-500 text-xs shrink-0" />
-                          <span className="text-sm font-extrabold text-green-800">{c.code}</span>
-                          <span className="bg-green-200 text-green-900 text-[11px] px-2 py-0.5 rounded font-bold">
-                            {c.discountPercent}% OFF
-                          </span>
+                  {appliedCoupons.map((c) => {
+                    const couponSavings = Math.round(selectedPrice.selling * (c.discountPercent / 100));
+                    return (
+                      <div key={c.code} className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-green-500 text-xs shrink-0" />
+                            <span className="text-sm font-extrabold text-green-800 font-mono">{c.code}</span>
+                            <span className="bg-green-200 text-green-900 text-xs px-2.5 py-0.5 rounded font-extrabold">
+                              ₹{couponSavings.toLocaleString()} OFF
+                            </span>
+                          </div>
+                          {c.message && (
+                            <p className="text-xs text-teal-800 font-medium mt-1 pl-5">
+                              💬 {c.message}
+                            </p>
+                          )}
                         </div>
-                        {c.message && (
-                          <p className="text-xs text-teal-800 font-medium mt-1 pl-5">
-                            💬 {c.message}
-                          </p>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCoupon(c.code)}
+                          className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          Remove
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCoupon(c.code)}
-                        className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -613,8 +517,8 @@ const CourseFullDetailPage = () => {
                         <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
                           ₹{discountedSellingPrice.toLocaleString()}
                         </span>
-                        <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-bold border border-green-200">
-                          {totalCouponDiscountPercent}% TOTAL DISCOUNT
+                        <span className="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded font-extrabold border border-green-200">
+                          ₹{totalSavingsInRupees.toLocaleString()} OFF APPLIED
                         </span>
                       </>
                     ) : (
@@ -655,7 +559,7 @@ const CourseFullDetailPage = () => {
               >
                 {isAuthenticated ? (
                   <span className="flex items-center justify-center gap-2">
-                    <FaExternalLinkAlt className="text-xs" /> Login to proceed / Buy Now
+                    <FaExternalLinkAlt className="text-xs" /> Buy Now
                   </span>
                 ) : (
                   'Login to proceed'
