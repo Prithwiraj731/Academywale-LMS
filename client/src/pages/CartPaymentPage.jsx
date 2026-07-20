@@ -133,6 +133,7 @@ const CartPaymentPage = () => {
 
       // Load checkout popup
       await loadRazorpayCheckout({
+        key: orderData.keyId,
         amount: order.amount,
         currency: order.currency,
         orderId: order.id,
@@ -249,29 +250,12 @@ const CartPaymentPage = () => {
               </div>
             </div>
 
-            <div className="bg-green-50/70 rounded-xl p-4 mb-6 border border-green-100">
-              <h3 className="font-semibold text-green-800 mb-3">Apply Coupon Code</h3>
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
-                <input
-                  type="text"
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                  placeholder="Enter coupon code"
-                  className="w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm uppercase focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleApplyCoupon}
-                  className="bg-green-600 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-green-700"
-                >
-                  Apply Coupon
-                </button>
+            {appliedDiscount > 0 && (
+              <div className="bg-green-50/70 rounded-xl p-3 mb-4 border border-green-100 flex items-center gap-2 text-green-800 text-xs font-bold">
+                <FaCheckCircle className="text-green-500 text-sm shrink-0" />
+                <span>Coupon Applied: {appliedCouponCode} ({appliedDiscount}% OFF)</span>
               </div>
-              {couponStatus && (
-                <div className={`mt-2 text-sm font-semibold ${appliedDiscount ? 'text-green-700' : 'text-red-600'}`}>
-                  {couponStatus}
-                </div>
-              )}
+            )}
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                 <div className="bg-white rounded-lg border border-green-100 p-3">
                   <span className="block text-gray-500">Cart Total</span>
@@ -286,7 +270,6 @@ const CartPaymentPage = () => {
                   <span className="font-bold text-gray-900">Rs. {payableAmount.toLocaleString('en-IN')}</span>
                 </div>
               </div>
-            </div>
             
             {/* User Details Verification Info */}
             <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100/50 mb-6">

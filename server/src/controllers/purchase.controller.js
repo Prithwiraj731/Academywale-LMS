@@ -723,7 +723,8 @@ exports.createRazorpayOrder = async (req, res) => {
       });
     }
 
-    const { razorpay } = require('../config/razorpay.config');
+    const { getRazorpayInstance, getKeyId } = require('../config/razorpay.config');
+    const razorpay = getRazorpayInstance();
     const amountInPaise = Math.round(Number(amount) * 100);
 
     const options = {
@@ -736,6 +737,7 @@ exports.createRazorpayOrder = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      keyId: getKeyId(),
       order: {
         id: order.id,
         amount: order.amount,
@@ -747,7 +749,7 @@ exports.createRazorpayOrder = async (req, res) => {
     console.error('Create Razorpay Order error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create payment order',
+      message: error.message || 'Failed to create payment order',
       error: error.message
     });
   }
@@ -778,7 +780,8 @@ exports.verifyRazorpayPayment = async (req, res) => {
       });
     }
 
-    const { keySecret } = require('../config/razorpay.config');
+    const { getKeySecret } = require('../config/razorpay.config');
+    const keySecret = getKeySecret();
     const crypto = require('crypto');
 
     // Verify cryptographic signature

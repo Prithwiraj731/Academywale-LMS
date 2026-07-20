@@ -547,7 +547,7 @@ const CourseFullDetailPage = () => {
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
-                  placeholder="Enter Coupon (e.g. RANJAN5)"
+                  placeholder="Enter Coupon Code"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}

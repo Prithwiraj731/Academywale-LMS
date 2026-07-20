@@ -136,6 +136,7 @@ const UPIPaymentPage = () => {
 
       // Load checkout popup
       await loadRazorpayCheckout({
+        key: orderData.keyId,
         amount: order.amount,
         currency: order.currency,
         orderId: order.id,
@@ -295,33 +296,13 @@ const UPIPaymentPage = () => {
                   </div>
                 </div>
 
-                {/* Coupon Code Section */}
-                <div className="mb-6">
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Apply Coupon Code</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Coupon (e.g. SAVE10)"
-                      value={coupon}
-                      onChange={(e) => setCoupon(e.target.value)}
-                      disabled={submitting}
-                      className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyCoupon}
-                      disabled={submitting}
-                      className="bg-blue-600 text-white px-5 rounded-xl text-sm font-bold shadow hover:bg-blue-700 transition-colors"
-                    >
-                      Apply
-                    </button>
+                {/* Coupon Applied Notification Tag */}
+                {appliedDiscount > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-6 flex items-center gap-2 text-green-800 text-xs font-bold shadow-xs">
+                    <FaCheckCircle className="text-green-500 text-sm shrink-0" />
+                    <span>Applied Coupon Discount ({appliedDiscount}% OFF)</span>
                   </div>
-                  {couponStatus && (
-                    <p className={`text-xs mt-2 font-bold ${appliedDiscount > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      {couponStatus}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
 
               {error && (
