@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { FaAward, FaLightbulb, FaBullseye, FaHandshake, FaBookOpen, FaUsers, FaGraduationCap, FaArrowRight } from 'react-icons/fa';
 import { MorphyButton } from '../components/ui/morphy-button';
 
+import souravImg from '../assets/about/sourav.jpeg';
+import prihwiImg from '../assets/about/prihwi.jpg';
+
 export default function About() {
   const navigate = useNavigate();
 
@@ -193,71 +196,60 @@ export default function About() {
         </section>
 
         {/* TEAM SECTION */}
-        <section className="mt-16">
+        <section className="mt-16 sm:mt-24">
           <div className="text-center mb-16">
             <div className="group inline-flex flex-col items-center">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm font-heading">
                 Meet Our <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Executive Team</span>
               </h2>
-              <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
+              <div className="h-1.5 w-16 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-3 rounded-full" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 lg:gap-10">
-            {/* Team Member 1 */}
-            <div className="group relative bg-white rounded-[32px] p-8 border border-gray-200/60 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:border-[#20b2aa]/30 flex flex-col items-center text-center">
-              {/* Modern Custom Avatar */}
-              <div className="relative w-28 h-28 mb-6 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-400 to-[#20b2aa] rounded-[24px] blur-md opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-300" />
-                <div className="relative w-full h-full bg-gradient-to-br from-teal-50 to-[#20b2aa]/15 border-2 border-white rounded-[24px] flex items-center justify-center shadow-md overflow-hidden transform group-hover:rotate-3 transition-transform duration-300">
-                  <span className="text-4xl font-black text-[#20b2aa]">SP</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 max-w-4xl mx-auto px-4">
+            {/* Executive 1: Sourav Pathak */}
+            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 border border-teal-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-[#20b2aa]/40 flex flex-col items-center text-center">
+              {/* Photo Container */}
+              <div className="relative w-36 h-36 mb-6">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#20b2aa] to-teal-400 rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative w-full h-full rounded-full p-1 bg-gradient-to-tr from-[#20b2aa] via-teal-300 to-blue-400 shadow-md">
+                  <img
+                    src={souravImg}
+                    alt="Sourav Pathak"
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
               </div>
-              
-              <h3 className="text-xl font-bold text-gray-805 mb-1">Sourav Pathak</h3>
-              <p className="text-[10px] font-extrabold text-[#20b2aa] uppercase tracking-widest bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-100/50 shadow-sm mb-4">
+
+              <h3 className="text-2xl font-black text-gray-900 mb-1">Sourav Pathak</h3>
+              <p className="text-xs font-black text-[#20b2aa] uppercase tracking-widest bg-teal-50 px-4 py-1.5 rounded-full border border-teal-200/60 shadow-sm mb-4">
                 Founder
               </p>
-              <p className="text-gray-500 text-sm leading-relaxed max-w-[220px]">
-                Providing strategic direction, fostering partnerships, and steering the growth of AcademyWale.
+              <p className="text-gray-600 text-sm leading-relaxed max-w-xs font-medium">
+                Providing strategic direction, fostering partnerships, and steering the overall vision and growth of AcademyWale.
               </p>
             </div>
 
-            {/* Team Member 2 */}
-            <div className="group relative bg-white rounded-[32px] p-8 border border-gray-200/60 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:border-[#20b2aa]/30 flex flex-col items-center text-center">
-              {/* Modern Custom Avatar */}
-              <div className="relative w-28 h-28 mb-6 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-[24px] blur-md opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-300" />
-                <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100/15 border-2 border-white rounded-[24px] flex items-center justify-center shadow-md overflow-hidden transform group-hover:rotate-3 transition-transform duration-300">
-                  <span className="text-4xl font-black text-blue-600">PM</span>
+            {/* Executive 2: Prithwiraj Mazumdar */}
+            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 border border-blue-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40 flex flex-col items-center text-center">
+              {/* Photo Container */}
+              <div className="relative w-36 h-36 mb-6">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
+                <div className="relative w-full h-full rounded-full p-1 bg-gradient-to-tr from-blue-600 via-cyan-400 to-[#20b2aa] shadow-md">
+                  <img
+                    src={prihwiImg}
+                    alt="Prithwiraj Mazumdar"
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
               </div>
-              
-              <h3 className="text-xl font-bold text-gray-850 mb-1">Prithwiraj Mazumdar</h3>
-              <p className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100/50 shadow-sm mb-4">
+
+              <h3 className="text-2xl font-black text-gray-900 mb-1">Prithwiraj Mazumdar</h3>
+              <p className="text-xs font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-full border border-blue-200/60 shadow-sm mb-4">
                 Tech Lead
               </p>
-              <p className="text-gray-500 text-sm leading-relaxed max-w-[220px]">
-                Architecting core learning technologies, course playback portals, and database services.
-              </p>
-            </div>
-
-            {/* Team Member 3 */}
-            <div className="group relative bg-white rounded-[32px] p-8 border border-gray-200/60 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:border-[#20b2aa]/30 flex flex-col items-center text-center">
-              {/* Modern Custom Avatar */}
-              <div className="relative w-28 h-28 mb-6 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-[24px] blur-md opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-300" />
-                <div className="relative w-full h-full bg-gradient-to-br from-amber-50 to-amber-100/15 border-2 border-white rounded-[24px] flex items-center justify-center shadow-md overflow-hidden transform group-hover:rotate-3 transition-transform duration-300">
-                  <span className="text-4xl font-black text-amber-500">RP</span>
-                </div>
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-850 mb-1">Raj Pathak</h3>
-              <p className="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-100/50 shadow-sm mb-4">
-                Sales Executive
-              </p>
-              <p className="text-gray-500 text-sm leading-relaxed max-w-[220px]">
-                Assisting students with customized course recommendations and enrollment procedures.
+              <p className="text-gray-600 text-sm leading-relaxed max-w-xs font-medium">
+                Architecting core learning technologies, high-performance course playback systems, and database infrastructure.
               </p>
             </div>
           </div>
