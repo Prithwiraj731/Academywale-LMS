@@ -3,32 +3,61 @@ const { supabaseAdmin } = require('../config/supabase.config');
 // Admin: Create a new coupon
 exports.createCoupon = async (req, res) => {
   try {
-    const { code, discountPercent } = req.body;
+    const { code, discountPercent, courseId } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
-    const parsedDiscount = Number.parseInt(discountPercent, 10);
+    const parsedDiscount = Number.parseFloat(discountPercent);
 
     if (!normalizedCode || Number.isNaN(parsedDiscount)) {
-      return res.status(400).json({ error: 'Code and discountPercent are required.' });
+      return res.status(400).json({ error: 'Code and valid discountPercent are required.' });
     }
 
-    if (parsedDiscount < 1 || parsedDiscount > 100) {
-      return res.status(400).json({ error: 'Discount percent must be between 1 and 100.' });
+    if (parsedDiscount <= 0 || parsedDiscount > 100) {
+      return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
     }
     
-    const { data: coupon, error } = await supabaseAdmin
-      .from('coupons')
-      .insert({
-        code: normalizedCode,
-        discount_percent: parsedDiscount,
-        is_active: true
-      })
-      .select('*')
-      .single();
+    const insertPayload = {
+      code: normalizedCode,
+      discount_percent: parsedDiscount,
+      is_active: true
+    };
 
-    if (error) throw error;
-    res.status(201).json({ success: true, coupon });
+    if (courseId && String(courseId).trim() !== '') {
+      insertPayload.course_id = String(courseId).trim();
+    }
+
+    let couponData = null;
+    let dbError = null;
+
+    try {
+      const result = await supabaseAdmin
+        .from('coupons')
+        .insert(insertPayload)
+        .select('*')
+        .single();
+      couponData = result.data;
+      dbError = result.error;
+    } catch (err) {
+      dbError = err;
+    }
+
+    // Fallback if course_id column doesn't exist yet in Supabase schema
+    if (dbError && (dbError.message?.includes('course_id') || dbError.details?.includes('course_id'))) {
+      delete insertPayload.course_id;
+      const fallbackResult = await supabaseAdmin
+        .from('coupons')
+        .insert(insertPayload)
+        .select('*')
+        .single();
+      couponData = fallbackResult.data;
+      dbError = fallbackResult.error;
+    }
+
+    if (dbError) throw dbError;
+
+    res.status(201).json({ success: true, coupon: couponData });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Error creating coupon:', err);
+    res.status(400).json({ error: err.message || 'Failed to create coupon' });
   }
 };
 
@@ -42,12 +71,12 @@ exports.getCoupons = async (req, res) => {
 
     if (error) throw error;
 
-    // Map database fields to front-end camelCase expectations if needed
-    const formattedCoupons = coupons.map(c => ({
+    const formattedCoupons = (coupons || []).map(c => ({
       _id: c.id,
       id: c.id,
       code: c.code,
-      discountPercent: c.discount_percent,
+      discountPercent: Number(c.discount_percent),
+      courseId: c.course_id || null,
       isActive: c.is_active,
       createdAt: c.created_at
     }));
@@ -77,7 +106,7 @@ exports.deleteCoupon = async (req, res) => {
 // Student: Validate a coupon code
 exports.validateCoupon = async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, courseId } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
     if (!normalizedCode) return res.status(400).json({ error: 'Coupon code required.' });
     
@@ -89,9 +118,21 @@ exports.validateCoupon = async (req, res) => {
       .maybeSingle();
 
     if (error) throw error;
-    if (!coupon) return res.status(404).json({ error: 'Invalid or expired coupon.' });
+    if (!coupon) return res.status(404).json({ error: 'Invalid or expired coupon code.' });
+
+    // Check course-specific restriction if coupon has a course_id set
+    if (coupon.course_id) {
+      if (!courseId || String(coupon.course_id).trim() !== String(courseId).trim()) {
+        return res.status(400).json({ error: 'This coupon code is not valid for this course.' });
+      }
+    }
     
-    res.json({ success: true, discountPercent: coupon.discount_percent });
+    res.json({ 
+      success: true, 
+      discountPercent: Number(coupon.discount_percent),
+      code: coupon.code,
+      courseId: coupon.course_id || null
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

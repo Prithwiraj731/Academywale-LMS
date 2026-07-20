@@ -4,31 +4,31 @@ const { supabaseAdmin } = require('../config/supabase.config');
 
 async function runBackfill() {
   console.log('🚀 Starting course data backfill migration...');
-  
+
   try {
     // Fetch all courses
     const { data: courses, error: fetchError } = await supabaseAdmin
       .from('courses')
       .select('*');
-      
+
     if (fetchError) {
       throw fetchError;
     }
-    
+
     console.log(`📋 Found ${courses.length} courses to process.`);
-    
+
     let updatedCount = 0;
-    
+
     for (const c of courses) {
       // If custom_details is already populated and has items, skip it (unless we want to overwrite)
       if (c.custom_details && Array.isArray(c.custom_details) && c.custom_details.length > 0) {
         console.log(`⏭️ Course "${c.title}" already has custom details. Skipping.`);
         continue;
       }
-      
+
       const customDetails = [];
       let order = 1;
-      
+
       if (c.subject) {
         customDetails.push({
           label: 'Subject',
@@ -38,7 +38,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.no_of_lecture) {
         customDetails.push({
           label: 'Lectures',
@@ -48,7 +48,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.timing) {
         customDetails.push({
           label: 'Duration',
@@ -58,7 +58,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.books) {
         customDetails.push({
           label: 'Study Materials',
@@ -68,7 +68,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.video_language) {
         customDetails.push({
           label: 'Language',
@@ -78,7 +78,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.video_run_on) {
         customDetails.push({
           label: 'Video Run On',
@@ -88,7 +88,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.doubt_solving) {
         customDetails.push({
           label: 'Doubt Solving',
@@ -98,7 +98,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.support_mail) {
         customDetails.push({
           label: 'Support Mail',
@@ -108,7 +108,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.support_call) {
         customDetails.push({
           label: 'Support Call',
@@ -118,7 +118,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.validity_start_from) {
         customDetails.push({
           label: 'Validity',
@@ -128,7 +128,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.faculty_slug && c.faculty_slug !== 'n-a' && c.faculty_slug !== '') {
         customDetails.push({
           label: 'Faculty',
@@ -138,7 +138,7 @@ async function runBackfill() {
           visible: true
         });
       }
-      
+
       if (c.institute_name && c.institute_name !== 'N/A' && c.institute_name !== '') {
         customDetails.push({
           label: 'Institute',
@@ -163,9 +163,9 @@ async function runBackfill() {
           description: option.description || ''
         };
       });
-      
+
       console.log(`✍️ Backfilling course "${c.title}" with ${customDetails.length} details.`);
-      
+
       const { error: updateError } = await supabaseAdmin
         .from('courses')
         .update({
@@ -173,14 +173,14 @@ async function runBackfill() {
           mode_attempt_pricing: updatedPricing
         })
         .eq('id', c.id);
-        
+
       if (updateError) {
         console.error(`❌ Failed to update course "${c.title}":`, updateError.message);
       } else {
         updatedCount++;
       }
     }
-    
+
     console.log(`✅ Backfill complete. Successfully updated ${updatedCount} courses.`);
   } catch (err) {
     console.error('❌ Migration failed:', err.message);

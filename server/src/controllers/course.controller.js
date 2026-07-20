@@ -5,13 +5,13 @@ const { mapCourseToFrontend, mapCoursesToFrontend } = require('../utils/courseMa
 // Standardized error handler with deep RLS diagnostics
 const handleControllerError = (error, operation, res) => {
   console.error(`❌ ${operation} error:`, error);
-  
+
   const errMsg = error.message || '';
   if (errMsg.includes('row-level security') || errMsg.includes('RLS') || (error.code === '42501')) {
     const diagnostic = !isServiceKeyAvailable
       ? 'The SUPABASE_SERVICE_ROLE_KEY is missing or invalid in the server environment configuration, forcing the admin client to fall back to anonymous public permissions.'
       : 'A row-level security policy restriction was violated on the database table. Please check your Supabase schema settings and permissions.';
-    
+
     return res.status(500).json({
       success: false,
       error: 'Database Security Violation (RLS)',
@@ -19,7 +19,7 @@ const handleControllerError = (error, operation, res) => {
       diagnostic
     });
   }
-  
+
   return res.status(500).json({
     success: false,
     error: `${operation} failed`,
@@ -65,7 +65,7 @@ const hardcodedFaculties = [
  */
 async function uploadToSupabaseStorage(file, folder) {
   if (!file) return { url: '', publicId: '' };
-  
+
   const fileName = `${folder}/${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`;
   const { data, error } = await supabaseAdmin.storage
     .from('academywale-media')
@@ -73,16 +73,16 @@ async function uploadToSupabaseStorage(file, folder) {
       contentType: file.mimetype,
       upsert: true
     });
-    
+
   if (error) {
     console.error('❌ Supabase storage upload error:', error.message);
     throw error;
   }
-  
+
   const { data: { publicUrl } } = supabaseAdmin.storage
     .from('academywale-media')
     .getPublicUrl(fileName);
-    
+
   return { url: publicUrl, publicId: fileName };
 }
 
@@ -93,7 +93,7 @@ exports.addCourseToFaculty = async (req, res) => {
   try {
     console.log('🎯 Course controller: addCourseToFaculty called');
     console.log('📋 Request body:', req.body);
-    
+
     const {
       category, subcategory, paperId, paperName, subject, facultySlug,
       institute, description, noOfLecture, books, videoLanguage,
@@ -144,7 +144,7 @@ exports.addCourseToFaculty = async (req, res) => {
           const facultyNameParts = hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, '').split(' ');
           const firstName = facultyNameParts[0];
           const lastName = facultyNameParts.slice(1).join(' ') || '';
-          
+
           const { data: newFac, error: createFacError } = await supabaseAdmin
             .from('faculties')
             .insert({
@@ -294,14 +294,14 @@ exports.addCourseToFaculty = async (req, res) => {
     if (insertError) throw insertError;
 
     console.log('✅ Course added successfully in Supabase!');
-    
+
     // Map response model keys to mimic Mongo course schema for client compatibility
     const responseCourse = mapCourseToFrontend(savedCourse);
 
-    res.status(201).json({ 
-      success: true, 
-      message: 'Course added successfully', 
-      course: responseCourse 
+    res.status(201).json({
+      success: true,
+      message: 'Course added successfully',
+      course: responseCourse
     });
 
   } catch (error) {
@@ -315,7 +315,7 @@ exports.addCourseToFaculty = async (req, res) => {
 exports.getCoursesByFaculty = async (req, res) => {
   try {
     const { facultySlug } = req.params;
-    
+
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
@@ -327,7 +327,7 @@ exports.getCoursesByFaculty = async (req, res) => {
 
     // Map snake_case DB fields to camelCase for frontend compatibility
     const mappedCourses = mapCoursesToFrontend(courses);
-    
+
     res.status(200).json({ courses: mappedCourses });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -342,11 +342,11 @@ exports.getCoursesByPaper = async (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
+
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
-    
+
     const { category, subcategory, paperId } = req.params;
     console.log(`🔍 Querying Supabase courses for Category=${category}, Subcategory=${subcategory}, Paper=${paperId}`);
 
@@ -690,7 +690,7 @@ exports.deleteCourse = async (req, res) => {
 exports.deleteAllCourses = async (req, res) => {
   try {
     console.log('🧨 DELETING ALL COURSES FROM SUPABASE');
-    
+
     const { data, error } = await supabaseAdmin
       .from('courses')
       .delete()
@@ -700,9 +700,9 @@ exports.deleteAllCourses = async (req, res) => {
     if (error) throw error;
 
     const deletedCount = Array.isArray(data) ? data.length : 0;
-    
-    res.status(200).json({ 
-      success: true, 
+
+    res.status(200).json({
+      success: true,
       deletedCount,
       message: `Successfully deleted ${deletedCount} courses`
     });
@@ -726,7 +726,7 @@ exports.getCoursesByInstitute = async (req, res) => {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    
+
     const mapped = mapCoursesToFrontend(courses);
 
     res.status(200).json({ courses: mapped });
@@ -742,18 +742,18 @@ exports.bulkUploadCourses = async (req, res) => {
   try {
     console.log('🎯 Course controller: bulkUploadCourses called');
     const { courses } = req.body;
-    
+
     if (!courses || !Array.isArray(courses)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid input. An array of courses is required.' 
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input. An array of courses is required.'
       });
     }
 
     if (courses.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'No courses provided.' 
+      return res.status(400).json({
+        success: false,
+        message: 'No courses provided.'
       });
     }
 
@@ -767,8 +767,8 @@ exports.bulkUploadCourses = async (req, res) => {
       if (!name) return 'n-a';
       return name.trim()
         .toLowerCase()
-        .replace(/\s+/g, '-') 
-        .replace(/[^\w-]/g, '') 
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '')
         .replace(/^(ca|cma|cs)-/, '');
     };
 
@@ -800,7 +800,7 @@ exports.bulkUploadCourses = async (req, res) => {
     for (let i = 0; i < courses.length; i++) {
       const rowNum = i + 1;
       const c = courses[i];
-      
+
       // Basic validation
       const title = c.title || c.subject || 'Untitled Course';
       const category = c.category ? c.category.toUpperCase().trim() : '';
@@ -845,8 +845,8 @@ exports.bulkUploadCourses = async (req, res) => {
 
         // Merge standard CSV columns into customDetails if they aren't already represented
         const ignoredKeys = [
-          'category', 'subcategory', 'paper_id', 'paper_name', 'title', 'course_type', 
-          'custom_details', 'mode_attempt_pricing', 'cost_price', 'selling_price', 
+          'category', 'subcategory', 'paper_id', 'paper_name', 'title', 'course_type',
+          'custom_details', 'mode_attempt_pricing', 'cost_price', 'selling_price',
           'status', 'rownum', 'isvalid', 'validationerror', 'mode', 'attempt', 'validity'
         ];
 
@@ -855,7 +855,7 @@ exports.bulkUploadCourses = async (req, res) => {
           if (ignoredKeys.includes(normKey) || val === undefined || val === '') return;
 
           const label = getLabelFromKey(normKey);
-          
+
           // Check if already in customDetails
           const exists = customDetails.some(d => d.label === label);
           if (!exists) {
@@ -878,7 +878,7 @@ exports.bulkUploadCourses = async (req, res) => {
         const facultyField = customDetails.find(d => d.fieldType === 'faculty');
         let facultyName = c.faculty_name || (facultyField ? facultyField.value : '');
         let resolvedFacultySlug = c.faculty_slug || '';
-        
+
         let faculty = null;
         let facultyFullName = null;
         let resolvedFacultyId = null;
@@ -899,7 +899,7 @@ exports.bulkUploadCourses = async (req, res) => {
             let firstName = '';
             let lastName = '';
             let bio = '';
-            
+
             if (hardcodedFaculty) {
               const parts = hardcodedFaculty.name.replace(/^(CA|CMA|CS)\s+/, '').split(' ');
               firstName = parts[0];
@@ -934,7 +934,7 @@ exports.bulkUploadCourses = async (req, res) => {
             resolvedFacultyId = faculty.id;
             facultyFullName = faculty.first_name + (faculty.last_name ? ' ' + faculty.last_name : '');
             resolvedFacultySlug = faculty.slug;
-            
+
             // Sync value back to dynamic detail
             if (facultyField) {
               facultyField.value = resolvedFacultySlug;
@@ -1043,7 +1043,7 @@ exports.bulkUploadCourses = async (req, res) => {
           const costPrice = Number(c.cost_price) || sellingPrice;
           const mode = c.mode || 'Recorded Video';
           const attempt = c.attempt || '1.5 Views & 6 Months Validity';
-          
+
           flatPricing = [{
             mode,
             modeLabel: 'Mode',

@@ -88,7 +88,7 @@ const UPIPaymentPage = () => {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ code, courseId: courseId || course?.id || course?._id })
       });
       const data = await res.json();
 

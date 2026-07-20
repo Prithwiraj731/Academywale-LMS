@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt, 
+import {
+  FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt,
   FaCheckCircle, FaUser, FaGraduationCap, FaChalkboardTeacher,
   FaShoppingCart, FaPhoneAlt, FaEnvelope, FaLaptop, FaQuestionCircle,
   FaExternalLinkAlt, FaBookOpen
@@ -21,7 +21,7 @@ const CourseFullDetailPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { addToCart, isInCart } = useCart();
-  
+
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,23 +44,23 @@ const CourseFullDetailPage = () => {
         if (courseType) {
           apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
         }
-        
+
         console.log(`Fetching course details from: ${apiUrl}`);
         const response = await fetch(apiUrl);
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch course details: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (!data || !data.course) {
           throw new Error('Invalid course data received');
         }
-        
+
         const normalizedCourse = normalizeCoursePricing(data.course);
         setCourse(normalizedCourse);
-        
+
         // Initialize mode, validity, and attempt selection
         if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
           const firstMode = normalizedCourse.modeAttemptPricing[0];
@@ -72,12 +72,12 @@ const CourseFullDetailPage = () => {
             setSelectedPrice({ selling: firstAttempt.sellingPrice, cost: firstAttempt.costPrice });
           }
         } else {
-          setSelectedPrice({ 
-            selling: data.course.sellingPrice || 0, 
-            cost: data.course.costPrice || 0 
+          setSelectedPrice({
+            selling: data.course.sellingPrice || 0,
+            cost: data.course.costPrice || 0
           });
         }
-        
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching course details:', err);
@@ -85,7 +85,7 @@ const CourseFullDetailPage = () => {
         setLoading(false);
       }
     }
-    
+
     fetchCourseDetails();
   }, [courseId, courseType]);
 
@@ -97,10 +97,10 @@ const CourseFullDetailPage = () => {
           const res = await fetch(`${API_URL}/api/courses/all`);
           const data = await res.json();
           if (res.ok && data.courses) {
-            const filtered = data.courses.filter(c => 
-              c.category === course.category && 
-              c.subcategory === course.subcategory && 
-              c._id !== (course.id || course._id) && 
+            const filtered = data.courses.filter(c =>
+              c.category === course.category &&
+              c.subcategory === course.subcategory &&
+              c._id !== (course.id || course._id) &&
               c.id !== (course.id || course._id)
             );
             setRelatedCourses(filtered.slice(0, 4));
@@ -172,8 +172,8 @@ const CourseFullDetailPage = () => {
     setSelectedAttempt(attempt);
     const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
     if (modeData && modeData.attempts) {
-      const attemptData = modeData.attempts.find(a => 
-        a.attempt === attempt && 
+      const attemptData = modeData.attempts.find(a =>
+        a.attempt === attempt &&
         (!selectedValidity || a.validity === selectedValidity)
       );
       if (attemptData) {
@@ -194,12 +194,12 @@ const CourseFullDetailPage = () => {
       return;
     }
 
-    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && 
-        (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
+      (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
       alert('Please select mode, validity, and attempt before proceeding.');
       return;
     }
-    
+
     setShowCheckoutModal(true);
   };
 
@@ -224,8 +224,8 @@ const CourseFullDetailPage = () => {
 
   // Handle Add to Cart
   const handleAddToCart = () => {
-    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && 
-        (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
+      (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
       alert('Please select mode, validity, and attempt before adding to cart.');
       return;
     }
@@ -239,11 +239,11 @@ const CourseFullDetailPage = () => {
       setTimeout(() => setAddedMessage(''), 3000);
     }
   };
-  
+
   const getPosterUrl = (course) => {
     return getCourseImageUrl(course);
   };
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 flex flex-col items-center justify-center p-4">
@@ -277,14 +277,36 @@ const CourseFullDetailPage = () => {
     );
   }
 
+  const formatBatchOptionText = (text) => {
+    if (!text) return '';
+    if (text.includes(' / ')) {
+      const parts = text.split(' / ');
+      return parts[parts.length - 1].trim();
+    }
+    if (text.includes('/')) {
+      const parts = text.split('/');
+      return parts[parts.length - 1].trim();
+    }
+    return text;
+  };
+
+  const formatBatchLabelText = (label) => {
+    if (!label || label === 'Exam Term / Attempt' || label === 'Option') return 'Batch';
+    if (label.includes('/')) {
+      const parts = label.split('/');
+      return parts[parts.length - 1].trim();
+    }
+    return label;
+  };
+
   // Pre-calculated discount percentage
-  const discountPercent = selectedPrice.cost > selectedPrice.selling 
+  const discountPercent = selectedPrice.cost > selectedPrice.selling
     ? Math.round(((selectedPrice.cost - selectedPrice.selling) / selectedPrice.cost) * 100)
     : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 text-gray-900 font-sans selection:bg-[#20b2aa]/30 py-8">
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* 1. Header Banner Area */}
         <div className="bg-white/85 backdrop-blur-md border border-gray-200/60 rounded-3xl p-6 sm:p-8 mb-8 shadow-md">
@@ -294,7 +316,7 @@ const CourseFullDetailPage = () => {
           >
             <FaArrowLeft /> Back to Courses
           </button>
-          
+
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <span className="bg-[#20b2aa]/10 text-teal-800 px-3 py-1 rounded-full text-xs font-bold tracking-wide border border-teal-500/20 shadow-sm uppercase">
               {course.category} {course.subcategory}
@@ -305,7 +327,7 @@ const CourseFullDetailPage = () => {
               </span>
             )}
           </div>
-          
+
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight max-w-4xl">
             {course.title || course.subject}
           </h1>
@@ -313,19 +335,19 @@ const CourseFullDetailPage = () => {
 
         {/* 2. Main content split columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
+
           {/* LEFT COLUMN: Media, Product Info Table, Highlights */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* Banner/Poster container (Mobile/Tablet only) */}
             <div className="block lg:hidden bg-white border border-gray-200/60 rounded-3xl p-4 sm:p-6 overflow-hidden shadow-lg backdrop-blur-sm flex justify-center items-center">
               <div className="w-full max-w-[360px] aspect-[4/5] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center relative border border-gray-200/40 group shadow-inner">
-                <img 
-                  src={getPosterUrl(course)} 
-                  alt={course.subject || course.title} 
+                <img
+                  src={getPosterUrl(course)}
+                  alt={course.subject || course.title}
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
-                    e.target.src = '/logo.svg'; 
+                    e.target.src = '/logo.svg';
                   }}
                 />
               </div>
@@ -336,21 +358,19 @@ const CourseFullDetailPage = () => {
               <div className="flex border-b border-gray-200 bg-gray-50/50">
                 <button
                   onClick={() => setActiveTab('info')}
-                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
-                    activeTab === 'info' 
-                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white' 
+                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'info'
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
                       : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-55/40'
-                  }`}
+                    }`}
                 >
                   <FaBookOpen /> Product Info
                 </button>
                 <button
                   onClick={() => setActiveTab('highlights')}
-                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${
-                    activeTab === 'highlights' 
-                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white' 
+                  className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'highlights'
+                      ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
                       : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-55/40'
-                  }`}
+                    }`}
                 >
                   <FaChalkboardTeacher /> Highlights & Features
                 </button>
@@ -375,7 +395,7 @@ const CourseFullDetailPage = () => {
                             .map((detail, index) => {
                               const isAlternateColor = index % 2 === 0; // Alternating background colors
                               const rowClass = isAlternateColor ? "bg-gray-50/30 hover:bg-gray-50/80 transition-colors" : "hover:bg-gray-50/80 transition-colors";
-                              
+
                               return (
                                 <tr key={index} className={rowClass}>
                                   <td className="py-3.5 px-4 font-semibold text-gray-600">{detail.label}</td>
@@ -439,7 +459,7 @@ const CourseFullDetailPage = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="border-t border-gray-150 pt-6">
                       <h4 className="text-md font-bold text-gray-900 mb-4">Included Features</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-sm">
@@ -466,35 +486,35 @@ const CourseFullDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* RIGHT COLUMN: Selection actions, pricing, faculty card */}
           <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
-            
+
             {/* Banner/Poster container (Desktop only) */}
             <div className="hidden lg:flex bg-white border border-gray-200/60 rounded-3xl p-4 overflow-hidden shadow-lg backdrop-blur-sm justify-center items-center">
               <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center relative border border-gray-200/40 group shadow-inner">
-                <img 
-                  src={getPosterUrl(course)} 
-                  alt={course.subject || course.title} 
+                <img
+                  src={getPosterUrl(course)}
+                  alt={course.subject || course.title}
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
                   onError={(e) => {
-                    e.target.src = '/logo.svg'; 
+                    e.target.src = '/logo.svg';
                   }}
                 />
               </div>
             </div>
-            
+
             {/* ACTION CARD */}
             <div className="bg-white border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-[#20b2aa]/10 rounded-full blur-2xl"></div>
-              
+
               <div className="flex justify-between items-center mb-6">
                 <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Purchase Options</span>
                 <span className="bg-[#20b2aa] text-white font-extrabold text-[10px] px-2.5 py-1 rounded shadow uppercase tracking-wide">
                   Best Price
                 </span>
               </div>
-              
+
               {/* Selectors */}
               {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 ? (
                 <div className="space-y-4 mb-6">
@@ -538,11 +558,11 @@ const CourseFullDetailPage = () => {
                     </div>
                   )}
 
-                  {/* Attempt/Exam Term Selector */}
+                  {/* Batch Selector */}
                   {selectedMode && (
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Exam Term / Attempt'}
+                        {formatBatchLabelText(course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel)}
                       </label>
                       <select
                         value={selectedAttempt}
@@ -552,7 +572,7 @@ const CourseFullDetailPage = () => {
                         <option value="" disabled>Choose option</option>
                         {getAttemptsForSelectedModeAndValidity().map((attempt, idx) => (
                           <option key={idx} value={attempt.attempt}>
-                            {attempt.attempt}
+                            {formatBatchOptionText(attempt.attempt)}
                           </option>
                         ))}
                       </select>
@@ -562,8 +582,8 @@ const CourseFullDetailPage = () => {
                   {/* Description display block */}
                   {(() => {
                     const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
-                    const attemptData = modeData?.attempts?.find(a => 
-                      a.attempt === selectedAttempt && 
+                    const attemptData = modeData?.attempts?.find(a =>
+                      a.attempt === selectedAttempt &&
                       (!selectedValidity || a.validity === selectedValidity)
                     );
                     const desc = attemptData?.description || '';
@@ -616,11 +636,10 @@ const CourseFullDetailPage = () => {
                 <button
                   onClick={handleProceedToPay}
                   disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
-                  className={`w-full font-bold py-4 px-6 rounded-2xl shadow-md flex items-center justify-center text-sm transition-all duration-300 ${
-                    (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
+                  className={`w-full font-bold py-4 px-6 rounded-2xl shadow-md flex items-center justify-center text-sm transition-all duration-300 ${(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
                       ? 'bg-gray-105 text-gray-400 cursor-not-allowed border border-gray-200'
                       : 'bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white hover:scale-[1.01] hover:shadow-teal-600/10'
-                  }`}
+                    }`}
                 >
                   {isAuthenticated ? (
                     <span className="flex items-center justify-center gap-2">
@@ -634,13 +653,12 @@ const CourseFullDetailPage = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0}
-                  className={`w-full font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center text-sm border-2 transition-all duration-300 ${
-                    (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
+                  className={`w-full font-bold py-3.5 px-6 rounded-2xl flex items-center justify-center text-sm border-2 transition-all duration-300 ${(!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity)) && course.modeAttemptPricing?.length > 0
                       ? 'bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed'
                       : isInCart(course.id || course._id, selectedMode, selectedAttempt, selectedValidity)
-                      ? 'bg-[#20b2aa]/10 text-teal-600 border-[#20b2aa]'
-                      : 'bg-transparent text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                  }`}
+                        ? 'bg-[#20b2aa]/10 text-teal-600 border-[#20b2aa]'
+                        : 'bg-transparent text-gray-800 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                    }`}
                 >
                   <FaShoppingCart className="mr-2 text-xs" />
                   {isInCart(course.id || course._id, selectedMode, selectedAttempt, selectedValidity) ? 'Item in Cart ✓' : 'Add to Cart'}
@@ -648,11 +666,10 @@ const CourseFullDetailPage = () => {
               </div>
 
               {addedMessage && (
-                <div className={`mt-4 text-xs font-semibold p-3 rounded-xl text-center border transition-all duration-300 animate-fade-in ${
-                  addedMessage.includes('successfully') 
-                    ? 'bg-teal-50 text-teal-850 border-teal-200' 
+                <div className={`mt-4 text-xs font-semibold p-3 rounded-xl text-center border transition-all duration-300 animate-fade-in ${addedMessage.includes('successfully')
+                    ? 'bg-teal-50 text-teal-850 border-teal-200'
                     : 'bg-amber-50 text-amber-800 border-amber-200'
-                }`}>
+                  }`}>
                   {addedMessage}
                 </div>
               )}

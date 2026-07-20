@@ -332,14 +332,15 @@ export default function CheckoutModal({
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Phone Number (Cannot be changed)</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Phone Number</label>
                 <input
                   type="tel"
                   name="phone"
                   value={personalDetails.phone}
-                  className="w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-700 cursor-not-allowed focus:outline-none"
-                  readOnly
-                  disabled
+                  onChange={handleInputChange}
+                  placeholder="Enter phone number"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
+                  required
                 />
               </div>
             </div>

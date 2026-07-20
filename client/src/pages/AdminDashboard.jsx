@@ -338,8 +338,9 @@ export default function AdminDashboard() {
   const [facultyQueried, setFacultyQueried] = useState('');
 
   // Coupon management state
-  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '' });
+  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '' });
   const [coupons, setCoupons] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]);
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
 
@@ -431,13 +432,14 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: couponForm.code.trim().toUpperCase(),
-          discountPercent: Number(couponForm.discountPercent)
+          discountPercent: Number(couponForm.discountPercent),
+          courseId: couponForm.courseId || undefined
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setCouponSuccess('Coupon added!');
-        setCouponForm({ code: '', discountPercent: '' });
+        setCouponForm({ code: '', discountPercent: '', courseId: '' });
         fetchCoupons();
         setTimeout(() => setCouponSuccess(''), 2000);
       } else {
@@ -3175,10 +3177,45 @@ export default function AdminDashboard() {
       )}
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
         <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Coupon Codes</h2>
-        <form onSubmit={handleAddCoupon} className="flex flex-col sm:flex-row gap-4 mb-4">
-          <input name="code" value={couponForm.code} onChange={handleCouponChange} placeholder="Coupon Code (e.g. OFF5)" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-          <input name="discountPercent" value={couponForm.discountPercent} onChange={handleCouponChange} placeholder="Discount % (e.g. 5)" type="number" min="1" max="100" className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" required />
-          <button type="submit" className="bg-green-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-green-600 transition-all">Add Coupon</button>
+        <form onSubmit={handleAddCoupon} className="flex flex-col gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input 
+              name="code" 
+              value={couponForm.code} 
+              onChange={handleCouponChange} 
+              placeholder="Coupon Code (e.g. SPECIAL10)" 
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" 
+              required 
+            />
+            <input 
+              name="discountPercent" 
+              value={couponForm.discountPercent} 
+              onChange={handleCouponChange} 
+              placeholder="Discount % (e.g. 6.66)" 
+              type="number" 
+              step="0.01"
+              min="0.01" 
+              max="100" 
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" 
+              required 
+            />
+            <select
+              name="courseId"
+              value={couponForm.courseId}
+              onChange={handleCouponChange}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+            >
+              <option value="">All Courses (Global)</option>
+              {availableCourses.map((c) => (
+                <option key={c.id || c._id} value={c.id || c._id}>
+                  {c.title || c.subject} ({c.category || 'Course'})
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all self-end">
+            Add Coupon
+          </button>
         </form>
         {couponSuccess && <div className="text-green-600 text-center font-semibold mb-2">{couponSuccess}</div>}
         {couponError && <div className="text-red-600 text-center font-semibold mb-2">{couponError}</div>}
@@ -3186,13 +3223,23 @@ export default function AdminDashboard() {
           <h3 className="text-lg font-bold mb-2">Active Coupons</h3>
           {coupons.length === 0 && <div className="text-gray-500">No coupons found.</div>}
           <ul className="divide-y divide-gray-200">
-            {coupons.map(c => (
-              <li key={c.code} className="flex items-center justify-between py-2">
-                <span className="font-mono text-base">{c.code}</span>
-                <span className="text-green-700 font-bold">{c.discountPercent}% off</span>
-                <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline ml-4">Delete</button>
-              </li>
-            ))}
+            {coupons.map(c => {
+              const linkedCourse = c.courseId ? availableCourses.find(ac => (ac.id || ac._id) === c.courseId) : null;
+              return (
+                <li key={c.code} className="flex items-center justify-between py-2.5">
+                  <div className="flex flex-col">
+                    <span className="font-mono font-bold text-base text-gray-850">{c.code}</span>
+                    <span className="text-xs text-gray-500">
+                      {linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-green-700 font-extrabold">{c.discountPercent}% off</span>
+                    <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline text-sm font-semibold">Delete</button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

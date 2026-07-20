@@ -12,14 +12,14 @@ const CourseDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  
+
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMode, setSelectedMode] = useState('');
   const [selectedValidity, setSelectedValidity] = useState('');
   const [price, setPrice] = useState({ original: 0, final: 0 });
-  
+
   // User details for checkout
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [userDetails, setUserDetails] = useState({
@@ -32,23 +32,23 @@ const CourseDetailPage = () => {
   const safeSetState = useCallback((setter, value) => {
     setter(value);
   }, []);
-  
+
   // Fetch the course details with proper error handling
   useEffect(() => {
     // Flag to prevent state updates after component unmounts
     let isMounted = true;
-    
+
     const fetchCourse = async () => {
       // Safe state setter that only works if component is still mounted
       const setSafeState = (stateSetter, value) => {
         if (isMounted) stateSetter(value);
       };
-      
+
       try {
         // Set loading state
         setSafeState(setLoading, true);
         setSafeState(setError, '');
-        
+
         // Validate courseId
         if (!courseId) {
           console.error('No courseId provided in URL parameters');
@@ -56,36 +56,36 @@ const CourseDetailPage = () => {
           setSafeState(setLoading, false);
           return;
         }
-        
+
         console.log(`Fetching course details for courseId: ${courseId}, courseType: ${courseType || 'none'}`);
-        
+
         // Determine if this is a MongoDB ObjectId or a slugified ID
         const isSlugifiedId = courseId.includes('-') && !courseId.match(/^[0-9a-f]{24}$/i);
-        
+
         // Build the API URL with courseType as a query parameter if available
         let apiUrl = `${API_URL}/api/courses/details/${courseId}`;
         if (courseType) {
           apiUrl += `?courseType=${encodeURIComponent(courseType)}`;
         }
-        
+
         console.log(`API URL: ${apiUrl}`);
-        
+
         // Primary API call for course details
         let response;
         let data;
         let isError = false;
-        
+
         try {
           // Fetch with timeout to prevent hanging
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-          
+
           response = await fetch(apiUrl, {
             signal: controller.signal
           });
-          
+
           clearTimeout(timeoutId);
-          
+
           // Check if response is OK
           if (response.ok) {
             // Check content type to ensure we're getting JSON
@@ -104,10 +104,10 @@ const CourseDetailPage = () => {
             }
           } else {
             console.log(`API call failed with status: ${response.status}`);
-            
+
             // Try to get JSON error details if possible
             let errorMessage = `Course not found: ${courseId}`;
-            
+
             try {
               const contentType = response.headers.get('content-type');
               if (contentType && contentType.includes('application/json')) {
@@ -119,7 +119,7 @@ const CourseDetailPage = () => {
             } catch (errorParseError) {
               console.warn('Failed to parse error response:', errorParseError);
             }
-            
+
             // Set error flag to try alternative search
             isError = true;
             throw new Error(errorMessage);
@@ -127,7 +127,7 @@ const CourseDetailPage = () => {
         } catch (fetchError) {
           console.error('Primary API call error:', fetchError);
           isError = true;
-          
+
           // If this isn't an AbortController error (timeout), try the alternative search
           if (fetchError.name !== 'AbortError') {
             throw fetchError;
@@ -135,48 +135,48 @@ const CourseDetailPage = () => {
             throw new Error('Request timed out. Please try again later.');
           }
         }
-        
+
         // If we need to try an alternative search method
         if (isError && isSlugifiedId) {
           console.log('Falling back to course search API...');
-          
+
           try {
             // Parse the slugified ID and construct a search query
             const parts = courseId.split('-');
             const searchParams = new URLSearchParams();
-            
+
             // Construct an appropriate search query
             let searchQuery = '';
-            
+
             // Special case for paper-X format
             if (courseId.toLowerCase().includes('paper')) {
               const paperMatch = courseId.match(/paper-(\d+)/i);
               const paperNumber = paperMatch ? paperMatch[1] : null;
-              
+
               if (paperNumber && courseType) {
                 // Format like "CMA Final Paper 13"
                 let courseCategory = courseType;
-                
+
                 // Handle courseType with slashes like "cma/final"
                 if (courseType.includes('/')) {
                   courseCategory = courseType.split('/')
                     .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
                     .join(' ');
                 }
-                
+
                 searchQuery = `${courseCategory} Paper ${paperNumber}`;
               } else if (paperNumber) {
                 searchQuery = `Paper ${paperNumber}`;
               }
             }
-            
+
             // If we couldn't construct a specific paper query, use a general one
             if (!searchQuery) {
               searchQuery = parts.join(' ')
                 .replace(/-/g, ' ')
                 .replace(/\s+/g, ' ')
                 .trim();
-              
+
               // Add category filter if available
               if (courseType) {
                 searchParams.append('category', courseType
@@ -188,55 +188,55 @@ const CourseDetailPage = () => {
                 );
               }
             }
-            
+
             searchParams.append('query', searchQuery);
-            
+
             const searchUrl = `${API_URL}/api/courses/search?${searchParams.toString()}`;
             console.log(`Search URL: ${searchUrl}`);
-            
+
             // Make the search API call
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
-            
+
             const searchResponse = await fetch(searchUrl, {
               signal: controller.signal
             });
-            
+
             clearTimeout(timeoutId);
-            
+
             if (!searchResponse.ok) {
               throw new Error(`Search failed with status: ${searchResponse.status}`);
             }
-            
+
             // Parse the JSON response
             const searchData = await searchResponse.json();
-            
+
             // Find the best matching course
             if (searchData && searchData.courses && searchData.courses.length > 0) {
               console.log(`Found ${searchData.courses.length} matching courses`);
-              
+
               let bestMatch = searchData.courses[0];
-              
+
               // Try to find a better match for paper-specific searches
               if (courseId.toLowerCase().includes('paper')) {
                 const paperMatch = courseId.match(/paper-(\d+)/i);
                 const paperNumber = paperMatch ? parseInt(paperMatch[1]) : null;
-                
+
                 if (paperNumber) {
                   // Find a course with matching paper number
-                  const exactPaperMatch = searchData.courses.find(c => 
-                    c.paperNumber === paperNumber || 
+                  const exactPaperMatch = searchData.courses.find(c =>
+                    c.paperNumber === paperNumber ||
                     (c.subject && c.subject.toLowerCase().includes(`paper ${paperNumber}`)) ||
                     (c.paperName && c.paperName.toLowerCase().includes(`paper ${paperNumber}`))
                   );
-                  
+
                   if (exactPaperMatch) {
                     console.log(`Found exact paper match: ${exactPaperMatch.subject || exactPaperMatch.title}`);
                     bestMatch = exactPaperMatch;
                   }
                 }
               }
-              
+
               data = { course: bestMatch };
             } else {
               throw new Error('No matching courses found');
@@ -246,27 +246,27 @@ const CourseDetailPage = () => {
             throw searchError;
           }
         }
-        
+
         // Process the course data once we have it
         if (data && data.course) {
           console.log('Successfully retrieved course data');
           const normalizedCourse = normalizeCoursePricing(data.course);
-          
+
           // Update course state
           setSafeState(setCourse, normalizedCourse);
-          
+
           // Set default mode and validity if available
           if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
             // Set default mode
             const firstMode = normalizedCourse.modeAttemptPricing[0].mode;
             setSafeState(setSelectedMode, firstMode);
-            
+
             // Set default validity option
-            if (normalizedCourse.modeAttemptPricing[0].attempts && 
-                normalizedCourse.modeAttemptPricing[0].attempts.length > 0) {
+            if (normalizedCourse.modeAttemptPricing[0].attempts &&
+              normalizedCourse.modeAttemptPricing[0].attempts.length > 0) {
               const firstAttempt = normalizedCourse.modeAttemptPricing[0].attempts[0].attempt;
               setSafeState(setSelectedValidity, firstAttempt);
-              
+
               // Set initial price
               setSafeState(setPrice, {
                 original: normalizedCourse.modeAttemptPricing[0].attempts[0].costPrice || 0,
@@ -281,7 +281,7 @@ const CourseDetailPage = () => {
             if (normalizedCourse.durations && normalizedCourse.durations.length > 0) {
               setSafeState(setSelectedValidity, normalizedCourse.durations[0]);
             }
-            
+
             // Set fallback price
             setSafeState(setPrice, {
               original: normalizedCourse.costPrice || 0,
@@ -294,7 +294,7 @@ const CourseDetailPage = () => {
       } catch (error) {
         // Create a user-friendly error message
         console.error('Error fetching course details:', error);
-        
+
         const errorMessage = error?.message || 'Could not load the course. Please try again later.';
         setSafeState(setError, errorMessage);
       } finally {
@@ -306,7 +306,7 @@ const CourseDetailPage = () => {
     if (courseId) {
       fetchCourse();
     }
-    
+
     // Cleanup function
     return () => {
       isMounted = false; // Prevent state updates after unmount
@@ -327,22 +327,22 @@ const CourseDetailPage = () => {
   // Safe mode selection handler
   const handleModeChange = useCallback((mode) => {
     if (!course) return;
-    
+
     setSelectedMode(mode);
-    
+
     // Reset validity selection when mode changes
     setSelectedValidity('');
-    
+
     try {
       // Set default validity if available for this mode
       if (course.modeAttemptPricing && Array.isArray(course.modeAttemptPricing)) {
         const modeData = course.modeAttemptPricing.find(m => m.mode === mode);
-        
+
         if (modeData && modeData.attempts && modeData.attempts.length > 0) {
           // Set first attempt as default
           const firstAttempt = modeData.attempts[0].attempt;
           setSelectedValidity(firstAttempt);
-          
+
           // Update price based on the selected mode and first validity option
           setPrice({
             original: modeData.attempts[0].costPrice || 0,
@@ -369,17 +369,17 @@ const CourseDetailPage = () => {
   // Safe validity selection handler
   const handleValidityChange = useCallback((validity) => {
     if (!course || !selectedMode) return;
-    
+
     setSelectedValidity(validity);
-    
+
     try {
       // Update price based on selected validity
       if (course.modeAttemptPricing && Array.isArray(course.modeAttemptPricing)) {
         const modeData = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-        
+
         if (modeData && modeData.attempts && Array.isArray(modeData.attempts)) {
           const attemptData = modeData.attempts.find(a => a.attempt === validity);
-          
+
           if (attemptData) {
             setPrice({
               original: attemptData.costPrice || 0,
@@ -401,11 +401,11 @@ const CourseDetailPage = () => {
       alert('Please select both Mode and Validity before proceeding');
       return;
     }
-    
+
     if (!isAuthenticated) {
       // Redirect to login with return path
-      navigate('/login', { 
-        state: { 
+      navigate('/login', {
+        state: {
           from: courseType ? `/course/${courseType}/${courseId}` : `/course/${courseId}`,
           message: 'Please log in to purchase this course',
           courseData: {
@@ -413,11 +413,11 @@ const CourseDetailPage = () => {
             selectedValidity,
             price: price.final
           }
-        } 
+        }
       });
       return;
     }
-    
+
     // Show checkout modal
     setShowCheckoutModal(true);
   }, [selectedMode, selectedValidity, isAuthenticated, courseType, courseId, price.final, navigate]);
@@ -434,29 +434,29 @@ const CourseDetailPage = () => {
   // Handle payment button click from the CheckoutModal
   const handleCheckoutProceed = useCallback((details, address) => {
     setShowCheckoutModal(false);
-    navigate(courseType ? 
-      `/payment/${courseType}/${courseId}` : 
-      `/payment/${courseId}`, 
-    { 
-      state: { 
-        selectedMode,
-        selectedValidity,
-        price: price.final,
-        userDetails: {
-          fullName: details.fullName,
-          email: details.email,
-          phone: details.phone,
-          address
-        },
-        courseName: course.title || course.subject
-      }
-    });
+    navigate(courseType ?
+      `/payment/${courseType}/${courseId}` :
+      `/payment/${courseId}`,
+      {
+        state: {
+          selectedMode,
+          selectedValidity,
+          price: price.final,
+          userDetails: {
+            fullName: details.fullName,
+            email: details.email,
+            phone: details.phone,
+            address
+          },
+          courseName: course.title || course.subject
+        }
+      });
   }, [course, courseId, courseType, selectedMode, selectedValidity, price.final, navigate]);
-  
+
   // Save user details to backend
   const saveUserDetails = useCallback(async () => {
     if (!course) return false;
-    
+
     try {
       // Send API request with error handling
       const response = await fetch(`${API_URL}/api/notify/course-interest`, {
@@ -473,12 +473,12 @@ const CourseDetailPage = () => {
           price: price.final
         }),
       });
-      
+
       if (!response.ok) {
         console.error('API error:', response.status);
         return false;
       }
-      
+
       return true;
     } catch (error) {
       console.error('Failed to save user details:', error);
@@ -512,7 +512,7 @@ const CourseDetailPage = () => {
             Course Not Available
           </h2>
           <p className="text-gray-600 mb-6 text-center">{error}</p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
             {/* Safe back button using React Router */}
             <button
@@ -524,7 +524,7 @@ const CourseDetailPage = () => {
               </svg>
               Go Back
             </button>
-            
+
             {/* Safe navigation using React Router */}
             <button
               onClick={() => navigate('/courses')}
@@ -580,18 +580,18 @@ const CourseDetailPage = () => {
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
-        
+
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           {/* Course header with hero image */}
           <div className="relative">
             {/* Banner image with overlay gradient */}
             <div className="h-48 md:h-64 lg:h-80 w-full bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
               {course.posterUrl && (
-                <img 
-                  src={course.posterUrl.startsWith('http') 
-                    ? course.posterUrl 
-                    : course.posterUrl.startsWith('/uploads') 
-                      ? `${API_URL}${course.posterUrl}` 
+                <img
+                  src={course.posterUrl.startsWith('http')
+                    ? course.posterUrl
+                    : course.posterUrl.startsWith('/uploads')
+                      ? `${API_URL}${course.posterUrl}`
                       : '/logo.svg'
                   }
                   alt={course.title || course.subject}
@@ -601,7 +601,7 @@ const CourseDetailPage = () => {
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
             </div>
-            
+
             {/* Course title and info overlaid */}
             <div className="absolute bottom-0 left-0 right-0 text-white p-4 md:p-8">
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 drop-shadow-lg">
@@ -625,7 +625,7 @@ const CourseDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Course content */}
           <div className="p-4 md:p-8">
             {/* Mobile/Tablet - Purchase options first for smaller screens */}
@@ -634,97 +634,93 @@ const CourseDetailPage = () => {
                 <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4 flex items-center">
                   <MdModeEdit className="mr-2 text-teal-600" /> Course Options
                 </h3>
-                
+
                 {/* Mode selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaBook className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.[0]?.modeLabel || 'Mode'}:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {course.modeAttemptPricing 
+                    {course.modeAttemptPricing
                       ? course.modeAttemptPricing.map((modeData) => (
-                          <button
-                            key={modeData.mode}
-                            type="button"
-                            onClick={() => handleModeChange(modeData.mode)}
-                            className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                              selectedMode === modeData.mode
-                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
+                        <button
+                          key={modeData.mode}
+                          type="button"
+                          onClick={() => handleModeChange(modeData.mode)}
+                          className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${selectedMode === modeData.mode
+                              ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                              : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
                             }`}
-                          >
-                            {modeData.mode}
-                          </button>
-                        ))
+                        >
+                          {modeData.mode}
+                        </button>
+                      ))
                       : (course.modes || ['Recorded', 'Live', 'Pendrive']).map((mode) => (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => handleModeChange(mode)}
-                            className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                              selectedMode === mode
-                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
-                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => handleModeChange(mode)}
+                          className={`py-3 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${selectedMode === mode
+                              ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                              : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
                             }`}
-                          >
-                            {mode}
-                          </button>
-                        ))
+                        >
+                          {mode}
+                        </button>
+                      ))
                     }
                   </div>
                 </div>
-                
+
                 {/* Validity selection - Enhanced UI */}
                 <div className="mb-4 md:mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                     <FaRegClock className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Views & Validity'}:
                   </label>
-                  
+
                   {!selectedMode ? (
                     <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-center text-sm">
                       Please select a Mode first to view available plans
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-2">
-                      {selectedMode && course.modeAttemptPricing 
+                      {selectedMode && course.modeAttemptPricing
                         ? course.modeAttemptPricing
-                            .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
-                              <button
-                                key={attempt.attempt}
-                                type="button"
-                                onClick={() => handleValidityChange(attempt.attempt)}
-                                className={`py-3 px-4 rounded-lg text-sm font-medium relative ${
-                                  selectedValidity === attempt.attempt
-                                    ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
-                                    : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span>{attempt.attempt}</span>
-                                  <span className="font-bold">₹{attempt.sellingPrice}</span>
-                                </div>
-                                
-                                {attempt.costPrice > attempt.sellingPrice && (
-                                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                                    {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
-                                  </div>
-                                )}
-                              </button>
-                            ))
-                        : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
+                          .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
                             <button
-                              key={validity}
+                              key={attempt.attempt}
                               type="button"
-                              onClick={() => handleValidityChange(validity)}
-                              className={`py-3 px-4 rounded-lg text-sm font-medium ${
-                                selectedValidity === validity
+                              onClick={() => handleValidityChange(attempt.attempt)}
+                              className={`py-3 px-4 rounded-lg text-sm font-medium relative ${selectedValidity === attempt.attempt
                                   ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
                                   : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
-                              }`}
+                                }`}
                             >
-                              {validity}
+                              <div className="flex justify-between items-center">
+                                <span>{attempt.attempt.includes('/') ? attempt.attempt.split('/').pop().trim() : attempt.attempt}</span>
+                                <span className="font-bold">₹{attempt.sellingPrice}</span>
+                              </div>
+
+                              {attempt.costPrice > attempt.sellingPrice && (
+                                <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                  {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                </div>
+                              )}
                             </button>
                           ))
+                        : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
+                          <button
+                            key={validity}
+                            type="button"
+                            onClick={() => handleValidityChange(validity)}
+                            className={`py-3 px-4 rounded-lg text-sm font-medium ${selectedValidity === validity
+                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
+                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200'
+                              }`}
+                          >
+                            {validity}
+                          </button>
+                        ))
                       }
                     </div>
                   )}
@@ -744,7 +740,7 @@ const CourseDetailPage = () => {
                     return null;
                   })()}
                 </div>
-                
+
                 {/* Price - Enhanced UI */}
                 <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg mb-4 md:mb-6">
                   <div>
@@ -762,7 +758,7 @@ const CourseDetailPage = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Buy Now button - Enhanced UI */}
                 <button
                   onClick={handleBuyNow}
@@ -801,7 +797,7 @@ const CourseDetailPage = () => {
                             <div>
                               <h4 className="text-blue-800 font-medium mb-1">Course Description</h4>
                               <p className="text-blue-700 text-sm">
-                                This course covers comprehensive content for {course.subject || course.title}. 
+                                This course covers comprehensive content for {course.subject || course.title}.
                                 Contact our support team for detailed curriculum information.
                               </p>
                             </div>
@@ -809,7 +805,7 @@ const CourseDetailPage = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                       {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
                         course.customDetails
@@ -839,7 +835,7 @@ const CourseDetailPage = () => {
                               <p className="text-gray-600">{course.noOfLecture || 'N/A'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start">
                             <FaRegClock className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
                             <div>
@@ -847,7 +843,7 @@ const CourseDetailPage = () => {
                               <p className="text-gray-600">{course.timing || 'N/A'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start">
                             <FaBook className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
                             <div>
@@ -855,7 +851,7 @@ const CourseDetailPage = () => {
                               <p className="text-gray-600">{course.books || 'N/A'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start">
                             <FaLanguage className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
                             <div>
@@ -863,7 +859,7 @@ const CourseDetailPage = () => {
                               <p className="text-gray-600">{course.videoLanguage || 'N/A'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start">
                             <FaCalendarAlt className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
                             <div>
@@ -871,7 +867,7 @@ const CourseDetailPage = () => {
                               <p className="text-gray-600">{course.validityStartFrom || 'N/A'}</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-start">
                             <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
                             <div>
@@ -884,7 +880,7 @@ const CourseDetailPage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Syllabus information (if available) */}
                 {course.syllabus && course.syllabus.trim() !== '' && (
                   <div className="mb-6 md:mb-8">
@@ -894,7 +890,7 @@ const CourseDetailPage = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Additional course information if needed */}
                 {course.highlights && course.highlights.trim() !== '' && (
                   <div className="mb-6 md:mb-8">
@@ -909,117 +905,113 @@ const CourseDetailPage = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Right column - Purchase options (hidden on mobile/tablet, shown on desktop) */}
               <div className="hidden lg:block">
                 <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 sticky top-4">
                   <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <MdModeEdit className="mr-2 text-teal-600" /> Course Options
                   </h3>
-                  
+
                   {/* Mode selection - Enhanced Desktop UI */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                       <FaBook className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.[0]?.modeLabel || 'Mode'}:
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {course.modeAttemptPricing 
+                      {course.modeAttemptPricing
                         ? course.modeAttemptPricing.map((modeData) => (
-                            <button
-                              key={modeData.mode}
-                              type="button"
-                              onClick={() => handleModeChange(modeData.mode)}
-                              className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                selectedMode === modeData.mode
-                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
-                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
+                          <button
+                            key={modeData.mode}
+                            type="button"
+                            onClick={() => handleModeChange(modeData.mode)}
+                            className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${selectedMode === modeData.mode
+                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
                               }`}
-                            >
-                              {modeData.mode}
-                            </button>
-                          ))
+                          >
+                            {modeData.mode}
+                          </button>
+                        ))
                         : (course.modes || ['Recorded', 'Live', 'Pendrive']).map((mode) => (
-                            <button
-                              key={mode}
-                              type="button"
-                              onClick={() => handleModeChange(mode)}
-                              className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                selectedMode === mode
-                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
-                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => handleModeChange(mode)}
+                            className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${selectedMode === mode
+                                ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
                               }`}
-                            >
-                              {mode}
-                            </button>
-                          ))
+                          >
+                            {mode}
+                          </button>
+                        ))
                       }
                     </div>
                   </div>
-                  
+
                   {/* Validity selection - Enhanced Desktop UI */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                       <FaRegClock className="mr-1 text-teal-600" /> {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel || 'Views & Validity'}:
                     </label>
-                    
+
                     {!selectedMode ? (
                       <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-center text-sm">
                         Please select a Mode first to view available plans
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
-                        {selectedMode && course.modeAttemptPricing 
+                        {selectedMode && course.modeAttemptPricing
                           ? course.modeAttemptPricing
-                              .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
-                                <button
-                                  key={attempt.attempt}
-                                  type="button"
-                                  onClick={() => handleValidityChange(attempt.attempt)}
-                                  className={`py-3 px-4 rounded-lg transition-all duration-200 relative ${
-                                    selectedValidity === attempt.attempt
-                                      ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
-                                      : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
-                                  }`}
-                                >
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium">{attempt.attempt}</span>
-                                    <span className="font-bold">₹{attempt.sellingPrice}</span>
-                                  </div>
-                                  
-                                  {attempt.costPrice > attempt.sellingPrice && selectedValidity !== attempt.attempt && (
-                                    <div className="text-xs text-gray-500 flex items-center justify-between mt-1">
-                                      <span className="line-through">₹{attempt.costPrice}</span>
-                                      <span className="text-green-600 font-medium">
-                                        {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  {attempt.costPrice > attempt.sellingPrice && selectedValidity === attempt.attempt && (
-                                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                      {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
-                                    </div>
-                                  )}
-                                </button>
-                              ))
-                          : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
+                            .find(m => m.mode === selectedMode)?.attempts.map((attempt) => (
                               <button
-                                key={validity}
+                                key={attempt.attempt}
                                 type="button"
-                                onClick={() => handleValidityChange(validity)}
-                                className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                  selectedValidity === validity
+                                onClick={() => handleValidityChange(attempt.attempt)}
+                                className={`py-3 px-4 rounded-lg transition-all duration-200 relative ${selectedValidity === attempt.attempt
                                     ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
                                     : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
-                                }`}
+                                  }`}
                               >
-                                {validity}
+                                <div className="flex justify-between items-center">
+                                  <span className="font-medium">{attempt.attempt}</span>
+                                  <span className="font-bold">₹{attempt.sellingPrice}</span>
+                                </div>
+
+                                {attempt.costPrice > attempt.sellingPrice && selectedValidity !== attempt.attempt && (
+                                  <div className="text-xs text-gray-500 flex items-center justify-between mt-1">
+                                    <span className="line-through">₹{attempt.costPrice}</span>
+                                    <span className="text-green-600 font-medium">
+                                      {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                    </span>
+                                  </div>
+                                )}
+
+                                {attempt.costPrice > attempt.sellingPrice && selectedValidity === attempt.attempt && (
+                                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                    {Math.round(((attempt.costPrice - attempt.sellingPrice) / attempt.costPrice) * 100)}% OFF
+                                  </div>
+                                )}
                               </button>
                             ))
+                          : (course.durations || ['1.5 Views & 12 Months Validity', '2.5 Views & 24 Months Validity']).map((validity) => (
+                            <button
+                              key={validity}
+                              type="button"
+                              onClick={() => handleValidityChange(validity)}
+                              className={`py-3 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${selectedValidity === validity
+                                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md transform scale-[1.02]'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100 border border-gray-200 hover:border-teal-300'
+                                }`}
+                            >
+                              {validity}
+                            </button>
+                          ))
                         }
                       </div>
                     )}
-                    
+
                     {/* Selected Option Description */}
                     {(() => {
                       const modeData = course?.modeAttemptPricing?.find(m => m.mode === selectedMode);
@@ -1035,7 +1027,7 @@ const CourseDetailPage = () => {
                       return null;
                     })()}
                   </div>
-                  
+
                   {/* Price - Enhanced UI */}
                   <div className="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between items-center">
                     <div>
@@ -1053,21 +1045,20 @@ const CourseDetailPage = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Buy Now button - Enhanced UI */}
                   <button
                     onClick={handleBuyNow}
                     disabled={!selectedMode || !selectedValidity}
-                    className={`w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-[1.02] flex items-center justify-center ${
-                      (!selectedMode || !selectedValidity) ? 'opacity-70 cursor-not-allowed' : ''
-                    }`}
+                    className={`w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold py-3.5 px-4 rounded-lg shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-[1.02] flex items-center justify-center ${(!selectedMode || !selectedValidity) ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
                   >
                     {isAuthenticated ? 'Buy Now' : 'Login to Purchase'}
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </button>
-                  
+
                   {(!selectedMode || !selectedValidity) && (
                     <p className="text-center text-xs text-amber-600 mt-2">
                       Please select both Mode and Validity to proceed
