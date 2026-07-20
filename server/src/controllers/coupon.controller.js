@@ -21,75 +21,29 @@ exports.createCoupon = async (req, res) => {
       return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
     }
 
-    // 1. Prepare Supabase payload using integer rounding as fail-safe for integer DB schema
-    const isFloat = !Number.isInteger(parsedDiscount);
-    const intDiscount = isFloat ? Math.round(parsedDiscount) : parsedDiscount;
+    // Prepare integer discount for PostgreSQL INTEGER column in Supabase
+    const intDiscount = Math.round(parsedDiscount);
 
+    // Guaranteed clean DB payload matching standard Supabase schema
     const insertPayload = {
       code: normalizedCode,
       discount_percent: intDiscount,
       is_active: true
     };
 
-    if (customMessage) {
-      insertPayload.message = customMessage;
-    }
+    // 1. Insert into Supabase coupons table
+    const { data: couponData, error: dbError } = await supabaseAdmin
+      .from('coupons')
+      .insert(insertPayload)
+      .select('*')
+      .single();
 
-    if (courseId && String(courseId).trim() !== '') {
-      insertPayload.course_id = String(courseId).trim();
-    }
-
-    let couponData = null;
-    let dbError = null;
-
-    // First try inserting exact float in case DB column type is numeric
-    try {
-      const result = await supabaseAdmin
-        .from('coupons')
-        .insert({ ...insertPayload, discount_percent: parsedDiscount })
-        .select('*')
-        .single();
-      if (!result.error) {
-        couponData = result.data;
-      } else {
-        dbError = result.error;
-      }
-    } catch (err) {
-      dbError = err;
-    }
-
-    // If integer syntax error or column missing, fallback to inserting integer payload
     if (dbError) {
-      const fallbackResult = await supabaseAdmin
-        .from('coupons')
-        .insert(insertPayload)
-        .select('*')
-        .single();
-      
-      if (fallbackResult.error && (
-        fallbackResult.error.message?.includes('course_id') || 
-        fallbackResult.error.details?.includes('course_id') ||
-        fallbackResult.error.message?.includes('message') || 
-        fallbackResult.error.details?.includes('message')
-      )) {
-        delete insertPayload.course_id;
-        delete insertPayload.message;
-        const basicResult = await supabaseAdmin
-          .from('coupons')
-          .insert(insertPayload)
-          .select('*')
-          .single();
-        couponData = basicResult.data;
-        dbError = basicResult.error;
-      } else {
-        couponData = fallbackResult.data;
-        dbError = fallbackResult.error;
-      }
+      console.error('Supabase coupon insert error:', dbError);
+      return res.status(400).json({ error: dbError.message || 'Database failed to save coupon.' });
     }
 
-    if (dbError) throw dbError;
-
-    // 2. Persist full metadata (exact decimal discount, courseId, message)
+    // 2. Save full metadata (exact decimal percentage e.g. 60.77, courseId restriction, custom message)
     setCouponMetadata(normalizedCode, {
       exactDiscountPercent: parsedDiscount,
       courseId: courseId || null,
@@ -98,7 +52,7 @@ exports.createCoupon = async (req, res) => {
 
     const responseCoupon = {
       ...couponData,
-      _id: couponData.id,
+      _id: couponData?.id,
       code: normalizedCode,
       discountPercent: parsedDiscount,
       courseId: courseId || null,
@@ -125,7 +79,7 @@ exports.getCoupons = async (req, res) => {
 
     const formattedCoupons = (coupons || []).map(c => {
       const meta = getCouponMetadata(c.code) || {};
-      const discountPercent = meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null
+      const discountPercent = (meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null)
         ? Number(meta.exactDiscountPercent)
         : Number(c.discount_percent);
 
@@ -187,7 +141,7 @@ exports.validateCoupon = async (req, res) => {
 
     const meta = getCouponMetadata(normalizedCode) || {};
     const effectiveCourseId = meta.courseId || coupon.course_id || null;
-    const discountPercent = meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null
+    const discountPercent = (meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null)
       ? Number(meta.exactDiscountPercent)
       : Number(coupon.discount_percent);
     const message = meta.message || coupon.message || coupon.description || null;
