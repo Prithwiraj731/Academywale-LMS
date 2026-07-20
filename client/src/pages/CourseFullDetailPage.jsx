@@ -101,6 +101,95 @@ const CourseFullDetailPage = () => {
   const [appliedCoupons, setAppliedCoupons] = useState([]);
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
+  // Helper functions for Mode / Validity / Attempt options selection
+  const getUniqueValiditiesForMode = (mode) => {
+    if (!course || !course.modeAttemptPricing) return [];
+    const modeObj = course.modeAttemptPricing.find(m => m.mode === mode);
+    if (!modeObj || !modeObj.attempts) return [];
+    const validities = modeObj.attempts
+      .map(a => a.validity)
+      .filter(v => v !== undefined && v !== null && v !== '');
+    return Array.from(new Set(validities));
+  };
+
+  const getAttemptsForSelectedModeAndValidity = () => {
+    if (!course || !course.modeAttemptPricing || !selectedMode) return [];
+    const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
+    if (!modeObj || !modeObj.attempts) return [];
+    const validities = getUniqueValiditiesForMode(selectedMode);
+    if (validities.length > 0 && selectedValidity) {
+      return modeObj.attempts.filter(a => a.validity === selectedValidity);
+    }
+    return modeObj.attempts;
+  };
+
+  const handleModeChange = (newMode) => {
+    setSelectedMode(newMode);
+    if (!course || !course.modeAttemptPricing) return;
+    const modeObj = course.modeAttemptPricing.find(m => m.mode === newMode);
+    if (!modeObj || !modeObj.attempts || modeObj.attempts.length === 0) {
+      setSelectedValidity('');
+      setSelectedAttempt('');
+      setSelectedPrice({ selling: 0, cost: 0 });
+      return;
+    }
+    const validities = modeObj.attempts
+      .map(a => a.validity)
+      .filter(v => v !== undefined && v !== null && v !== '');
+    const uniqueValidities = Array.from(new Set(validities));
+    const defaultValidity = uniqueValidities.length > 0 ? uniqueValidities[0] : '';
+    setSelectedValidity(defaultValidity);
+
+    const matchingAttempts = defaultValidity
+      ? modeObj.attempts.filter(a => a.validity === defaultValidity)
+      : modeObj.attempts;
+
+    if (matchingAttempts.length > 0) {
+      const firstAttempt = matchingAttempts[0];
+      setSelectedAttempt(firstAttempt.attempt || '');
+      setSelectedPrice({
+        selling: Number(firstAttempt.sellingPrice || 0),
+        cost: Number(firstAttempt.costPrice || 0)
+      });
+    } else {
+      setSelectedAttempt('');
+      setSelectedPrice({ selling: 0, cost: 0 });
+    }
+  };
+
+  const handleValidityChange = (newValidity) => {
+    setSelectedValidity(newValidity);
+    if (!course || !course.modeAttemptPricing || !selectedMode) return;
+    const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
+    if (!modeObj || !modeObj.attempts) return;
+    const matchingAttempts = modeObj.attempts.filter(a => a.validity === newValidity);
+    if (matchingAttempts.length > 0) {
+      const firstAttempt = matchingAttempts[0];
+      setSelectedAttempt(firstAttempt.attempt || '');
+      setSelectedPrice({
+        selling: Number(firstAttempt.sellingPrice || 0),
+        cost: Number(firstAttempt.costPrice || 0)
+      });
+    }
+  };
+
+  const handleAttemptChange = (newAttempt) => {
+    setSelectedAttempt(newAttempt);
+    if (!course || !course.modeAttemptPricing || !selectedMode) return;
+    const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
+    if (!modeObj || !modeObj.attempts) return;
+    const matchingAttempt = modeObj.attempts.find(a =>
+      a.attempt === newAttempt &&
+      (!selectedValidity || a.validity === selectedValidity)
+    );
+    if (matchingAttempt) {
+      setSelectedPrice({
+        selling: Number(matchingAttempt.sellingPrice || 0),
+        cost: Number(matchingAttempt.costPrice || 0)
+      });
+    }
+  };
+
   // Fetch course details
   useEffect(() => {
     async function fetchCourseDetails() {
@@ -132,9 +221,20 @@ const CourseFullDetailPage = () => {
         if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
           const firstMode = normalizedCourse.modeAttemptPricing[0];
           setSelectedMode(firstMode.mode);
-          if (firstMode.attempts && firstMode.attempts.length > 0) {
-            const firstAttempt = firstMode.attempts[0];
-            setSelectedValidity(firstAttempt.validity || '');
+
+          const validities = (firstMode.attempts || [])
+            .map(a => a.validity)
+            .filter(v => v !== undefined && v !== null && v !== '');
+          const uniqueValidities = Array.from(new Set(validities));
+          const defaultValidity = uniqueValidities.length > 0 ? uniqueValidities[0] : '';
+          setSelectedValidity(defaultValidity);
+
+          const matchingAttempts = defaultValidity
+            ? (firstMode.attempts || []).filter(a => a.validity === defaultValidity)
+            : (firstMode.attempts || []);
+
+          if (matchingAttempts.length > 0) {
+            const firstAttempt = matchingAttempts[0];
             setSelectedAttempt(firstAttempt.attempt || '');
             setSelectedPrice({
               selling: Number(firstAttempt.sellingPrice || 0),
