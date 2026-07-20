@@ -9,31 +9,38 @@ import { normalizeCoursePricing } from '../utils/coursePricing';
 import CheckoutModal from '../components/common/CheckoutModal';
 
 const renderFormattedText = (val) => {
-  if (!val || typeof val !== 'string') return val;
-
-  const trimmed = val.trim();
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') {
+    try {
+      val = JSON.stringify(val);
+    } catch {
+      return '';
+    }
+  }
+  const str = String(val).trim();
+  if (!str) return '';
 
   // If web URL
-  if (/^https?:\/\//i.test(trimmed)) {
+  if (/^https?:\/\//i.test(str)) {
     return (
       <a
-        href={trimmed}
+        href={str}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:underline font-semibold break-all inline-flex items-center gap-1"
       >
-        {trimmed}
+        {str}
       </a>
     );
   }
 
   // 1. First split by newlines if present
-  let lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  let lines = str.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
   // 2. If single line, check if it contains inline numbered items like "1. ... 2. ... 3. ..."
   if (lines.length === 1) {
     const splitRegex = /(?=\b\d+[\.\)]\s+)/;
-    const parts = trimmed.split(splitRegex).map(p => p.trim()).filter(Boolean);
+    const parts = str.split(splitRegex).map(p => p.trim()).filter(Boolean);
     if (parts.length > 1) {
       lines = parts;
     }
@@ -52,7 +59,7 @@ const renderFormattedText = (val) => {
     );
   }
 
-  return <span className="whitespace-pre-wrap leading-relaxed">{trimmed}</span>;
+  return <span className="whitespace-pre-wrap leading-relaxed">{str}</span>;
 };
 
 const CourseDetailPage = () => {
