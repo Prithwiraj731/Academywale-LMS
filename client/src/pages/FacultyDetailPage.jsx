@@ -113,7 +113,12 @@ export default function FacultyDetailPage() {
               alt={displayFacultyName}
               className="object-cover w-full h-full"
               onError={(e) => {
-                e.target.src = '/logo.svg';
+                const matched = getFacultyBySlug(slug);
+                if (matched && matched.image && e.target.src !== matched.image) {
+                  e.target.src = matched.image;
+                } else {
+                  e.target.src = '/logo.svg';
+                }
               }}
             />
           </div>

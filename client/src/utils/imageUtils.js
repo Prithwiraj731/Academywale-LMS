@@ -1,4 +1,5 @@
 import { API_URL } from '../api';
+import { hardcodedFaculties } from '../data/hardcodedFaculties';
 
 /**
  * Get the full image URL for faculty images
@@ -6,31 +7,48 @@ import { API_URL } from '../api';
 export const getFacultyImageUrl = (faculty) => {
   if (!faculty) return '/logo.svg';
 
-  if (faculty.imageUrl && faculty.imageUrl.startsWith('https://res.cloudinary.com/')) {
-    return faculty.imageUrl;
+  // 1. Direct string passed or raw url properties
+  const rawUrl = typeof faculty === 'string' ? faculty : (faculty.imageUrl || faculty.image || faculty.image_url);
+
+  if (rawUrl && typeof rawUrl === 'string') {
+    const trimmed = rawUrl.trim();
+    if (
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://') ||
+      trimmed.startsWith('data:') ||
+      trimmed.startsWith('/assets/') ||
+      trimmed.startsWith('/static/') ||
+      trimmed.includes('/assets/')
+    ) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('/uploads/')) {
+      return `${API_URL}${trimmed}`;
+    }
   }
 
-  if (faculty.public_id && faculty.public_id.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${faculty.public_id}`;
+  // 2. Check hardcodedFaculties by slug or name if available
+  const facultySlug = faculty.slug || (typeof faculty.name === 'string' ? faculty.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
+  if (facultySlug) {
+    const matched = hardcodedFaculties.find(f => f.slug === facultySlug || f.name?.toLowerCase() === faculty.name?.toLowerCase());
+    if (matched && matched.image) {
+      return matched.image;
+    }
   }
 
-  if (faculty.image && faculty.image.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${faculty.image}`;
+  // 3. Cloudinary public_id
+  if (faculty.public_id && typeof faculty.public_id === 'string' && faculty.public_id.trim() !== '') {
+    const pid = faculty.public_id.trim();
+    if (pid.startsWith('http')) return pid;
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${pid}`;
   }
 
-  if (faculty.imageUrl && faculty.imageUrl.startsWith('http')) {
-    return faculty.imageUrl;
+  // 4. Short filename string (without slashes)
+  if (typeof faculty.image === 'string' && faculty.image.trim() !== '' && !faculty.image.includes('/')) {
+    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/faculty/${faculty.image.trim()}`;
   }
 
-  if (faculty.imageUrl && faculty.imageUrl.startsWith('/uploads')) {
-    return `${API_URL}${faculty.imageUrl}`;
-  }
-
-  if (faculty.imageUrl && faculty.imageUrl.startsWith('/static')) {
-    return faculty.imageUrl;
-  }
-
-  return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMDAgMjAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSIjOUNBM0FGIi8+PHBhdGggZD0iTTYwIDE3MEM2MCAxMzcuOTA5IDg3LjkwOSAxMTAgMTIwIDExMEMxNTIuMDkxIDExMCAxODAgOTkuOTA5IDE4MCAxMzBMMTgwIDE3MEg2MFoiIGZpbGw9IiM5Q0EzQUYiLz48L3N2Zz4K';
+  return '/logo.svg';
 };
 
 export const getFacultyCloudinaryId = (faculty) => {
