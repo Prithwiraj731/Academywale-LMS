@@ -150,38 +150,38 @@ exports.getUserPurchases = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Resolve user UUID
+    let targetUserId = userId;
     const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
     let userQuery = isUserUuid ? 'id' : 'mongo_id';
     
-    const { data: user, error: userError } = await supabaseAdmin
+    const { data: user } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq(userQuery, userId)
       .maybeSingle();
 
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (user && user.id) {
+      targetUserId = user.id;
     }
 
     const { data: purchases, error } = await supabaseAdmin
       .from('purchases')
       .select('*, faculties(first_name, last_name)')
-      .eq('user_id', user.id)
+      .or(`user_id.eq.${targetUserId},user_id.eq.${userId}`)
       .eq('is_active', true)
       .order('purchase_date', { ascending: false });
 
     if (error) throw error;
 
     const formattedPurchases = (purchases || []).map(p => {
-      const fName = p.faculties ? `${p.faculties.first_name} ${p.faculties.last_name || ''}`.trim() : p.course_details.facultyName;
+      const fName = p.faculties ? `${p.faculties.first_name} ${p.faculties.last_name || ''}`.trim() : (p.course_details?.facultyName || 'Faculty');
       return {
         id: p.id,
         transactionId: p.transaction_id,
-        courseDetails: p.course_details,
+        courseDetails: p.course_details || {},
         purchaseDate: p.purchase_date,
         accessExpiry: p.access_expiry,
-        paymentStatus: p.payment_status,
+        paymentStatus: p.payment_status || 'completed',
         amount: p.amount,
         facultyName: fName,
         isExpired: new Date() > new Date(p.access_expiry)
@@ -921,7 +921,29 @@ exports.verifyRazorpayPayment = async (req, res) => {
       });
     }
 
-    // Send admin notification about automatic payment success
+    // 1. Send Professional HTML Receipt Email to Student
+    try {
+      const { sendPurchaseInvoiceEmail } = require('../utils/email.utils');
+      await sendPurchaseInvoiceEmail({
+        userEmail: userDetails?.email || user?.email,
+        userName: userDetails?.name || user?.name || 'Student',
+        purchases: createdPurchases,
+        transactionId: razorpay_payment_id,
+        amount: amount,
+        paymentMethod: 'Razorpay Online',
+        couponCode: coupon || '',
+        discountPercent: couponDiscount,
+        userDetails: {
+          phone: userDetails?.phone || '',
+          address: userDetails?.address
+        }
+      });
+      console.log('✅ Student purchase receipt email sent to:', userDetails?.email || user?.email);
+    } catch (studentEmailErr) {
+      console.error('Failed to send student receipt email:', studentEmailErr);
+    }
+
+    // 2. Send Admin Purchase Confirmation Email
     try {
       const { sendAdminNotificationEmail } = require('../utils/email.utils');
       await sendAdminNotificationEmail({
@@ -943,6 +965,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
         transactionId: razorpay_payment_id,
         amount
       });
+      console.log('✅ Admin purchase notification email sent to support@academywale.com');
     } catch (adminEmailErr) {
       console.error('Failed to send admin notification email:', adminEmailErr);
     }

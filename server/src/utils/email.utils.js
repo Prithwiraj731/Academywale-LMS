@@ -213,35 +213,184 @@ const sendEnrollmentEmail = async (userEmail, userName, courseName) => {
   }
 };
 
-// Send purchase invoice email
-const sendPurchaseInvoiceEmail = async (userEmail, userName, course, transactionId, purchaseDate, amount) => {
+// Send purchase invoice email (Professional HTML Receipt)
+const sendPurchaseInvoiceEmail = async (options) => {
   try {
     const transporter = createTransporter();
+    
+    // Normalize parameters
+    let userEmail = options.userEmail || options.email;
+    let userName = options.userName || options.name || 'Valued Student';
+    let purchases = options.purchases || options.courses || [];
+    let transactionId = options.transactionId || options.transaction_id || 'N/A';
+    let amount = options.amount || 0;
+    let paymentMethod = options.paymentMethod || 'Razorpay Online';
+    let couponCode = options.couponCode || options.coupon || '';
+    let discountPercent = options.discountPercent || 0;
+    let userDetails = options.userDetails || {};
+
+    if (!Array.isArray(purchases)) {
+      purchases = [purchases];
+    }
+
+    const formattedDate = new Date().toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const itemsTableRowsHtml = purchases.map((item, idx) => {
+      const title = item.title || item.subject || item.course_details?.title || item.course_details?.subject || 'Course Package';
+      const mode = item.mode || item.course_details?.mode || 'Standard';
+      const validity = item.validity || item.course_details?.validity || 'Standard';
+      const faculty = item.facultyName || item.course_details?.facultyName || 'AcademyWale Mentor';
+      const itemPrice = item.amount || item.price || amount;
+
+      return `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
+            <strong style="color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</strong><br/>
+            <span style="font-size: 12px; color: #64748b; font-weight: 500;">
+              Mode: <strong>${mode}</strong> | Validity: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>
+            </span>
+          </td>
+          <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
+            ₹${Number(itemPrice).toLocaleString('en-IN')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
+        <div style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Header Banner -->
+          <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 32px 25px; text-align: center; color: #ffffff;">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">AcademyWale</h1>
+            <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
+              Official Tax Invoice & Course Payment Receipt
+            </p>
+          </div>
+
+          <!-- Status Bar -->
+          <div style="background-color: #f0fdfa; border-bottom: 1px solid #ccfbf1; padding: 14px 25px; font-size: 13px; color: #0f766e;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>STATUS:</strong> <span style="color: #16a34a; font-weight: 800;">VERIFIED & PAID</span></span>
+              <span><strong>Transaction ID:</strong> ${transactionId}</span>
+            </div>
+          </div>
+
+          <!-- Body Content -->
+          <div style="padding: 28px 25px;">
+            
+            <p style="font-size: 15px; color: #1e293b; margin-top: 0; margin-bottom: 15px;">
+              Dear <strong>${userName}</strong>,
+            </p>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 22px;">
+              Thank you for purchasing with <strong>AcademyWale</strong>! Your payment has been successfully confirmed and your course access is now activated on your Student Dashboard.
+            </p>
+
+            <!-- Metadata Box -->
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Receipt Date:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${formattedDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Payment Mode:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${paymentMethod}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Registered Email:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userEmail}</td>
+                </tr>
+                ${userDetails.phone ? `
+                  <tr>
+                    <td style="padding: 4px 0; color: #64748b;"><strong>Mobile Number:</strong></td>
+                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userDetails.phone}</td>
+                  </tr>
+                ` : ''}
+              </table>
+            </div>
+
+            <!-- Items Purchased Table -->
+            <h3 style="font-size: 15px; font-weight: 800; color: #0f766e; margin-bottom: 10px; margin-top: 0;">
+              Enrolled Courses & Packages
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+              <thead>
+                <tr style="background-color: #f8fafc; text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase;">
+                  <th style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">Description</th>
+                  <th style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsTableRowsHtml}
+              </tbody>
+            </table>
+
+            <!-- Summary Total Box -->
+            <div style="background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                ${discountPercent > 0 ? `
+                  <tr>
+                    <td style="padding: 4px 0; color: #0f766e;"><strong>Applied Discount (${couponCode || 'Coupon'}):</strong></td>
+                    <td style="padding: 4px 0; color: #16a34a; font-weight: bold; text-align: right;">-${discountPercent}% OFF</td>
+                  </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 6px 0; font-size: 16px; font-weight: 800; color: #0f766e;">Total Amount Paid:</td>
+                  <td style="padding: 6px 0; font-size: 20px; font-weight: 900; color: #0d9488; text-align: right;">
+                    ₹${Number(amount).toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Next Steps Callout -->
+            <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 0 10px 10px 0; margin-bottom: 25px;">
+              <h4 style="margin: 0 0 6px 0; color: #1e3a8a; font-size: 14px;">🎓 Accessing Your Course:</h4>
+              <ol style="margin: 0; padding-left: 18px; font-size: 13px; color: #1e40af; line-height: 1.6;">
+                <li>Log in at <a href="https://academywale.com/login" style="color: #2563eb; font-weight: bold;">academywale.com</a></li>
+                <li>Go to your <strong>Student Dashboard</strong> under <strong>My Courses</strong></li>
+                <li>Start streaming lectures & accessing course materials!</li>
+              </ol>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="https://academywale.com/student-dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 13px 30px; border-radius: 10px; text-decoration: none; font-size: 14px; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);">
+                Go to Student Dashboard
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 25px; text-align: center; font-size: 12px; color: #64748b;">
+            <p style="margin: 0 0 4px 0; font-weight: bold; color: #334155;">AcademyWale Learning Management System</p>
+            <p style="margin: 0;">Need assistance? Contact <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a> or Call <strong>+91 9693320108</strong></p>
+          </div>
+
+        </div>
+      </div>
+    `;
+
     const mailOptions = {
       from: emailConfig.from,
       to: userEmail,
-      subject: `Invoice for Your Course Purchase - ${course.subject}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">AcademyWale - Course Purchase Invoice</h2>
-          <p>Dear ${userName},</p>
-          <p>Thank you for your purchase! Here are your invoice details:</p>
-          <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <p><strong>Course:</strong> ${course.subject}</p>
-            <p><strong>Faculty:</strong> ${course.facultyName}</p>
-            <p><strong>Amount Paid:</strong> ₹${amount}</p>
-            <p><strong>Transaction ID:</strong> ${transactionId}</p>
-            <p><strong>Purchase Date:</strong> ${new Date(purchaseDate).toLocaleString()}</p>
-          </div>
-          <p>You now have access to your course. If you have any questions, contact us at <a href="mailto:support@academywale.com">support@academywale.com</a>.</p>
-          <p>Best regards,<br>The AcademyWale Team</p>
-        </div>
-      `
+      subject: `Receipt: Course Purchase Confirmed - AcademyWale (Txn: ${transactionId})`,
+      html: htmlContent
     };
+
     const result = await transporter.sendMail(mailOptions);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Invoice email sending error:', error);
+    console.error('Invoice receipt email sending error:', error);
     return { success: false, error: error.message };
   }
 };
