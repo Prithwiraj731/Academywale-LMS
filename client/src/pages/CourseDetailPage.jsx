@@ -8,6 +8,53 @@ import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
 import CheckoutModal from '../components/common/CheckoutModal';
 
+const renderFormattedText = (val) => {
+  if (!val || typeof val !== 'string') return val;
+
+  const trimmed = val.trim();
+
+  // If web URL
+  if (/^https?:\/\//i.test(trimmed)) {
+    return (
+      <a
+        href={trimmed}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline font-semibold break-all inline-flex items-center gap-1"
+      >
+        {trimmed}
+      </a>
+    );
+  }
+
+  // 1. First split by newlines if present
+  let lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  // 2. If single line, check if it contains inline numbered items like "1. ... 2. ... 3. ..."
+  if (lines.length === 1) {
+    const splitRegex = /(?=\b\d+[\.\)]\s+)/;
+    const parts = trimmed.split(splitRegex).map(p => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      lines = parts;
+    }
+  }
+
+  // If multiple items, render line-by-line numberwise
+  if (lines.length > 1) {
+    return (
+      <div className="flex flex-col gap-1 py-0.5 w-full">
+        {lines.map((line, idx) => (
+          <div key={idx} className="text-gray-700 font-medium leading-relaxed">
+            {line}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <span className="whitespace-pre-wrap leading-relaxed">{trimmed}</span>;
+};
+
 const CourseDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
@@ -817,10 +864,10 @@ const CourseDetailPage = () => {
                             }
                             return (
                               <div key={index} className="flex items-start">
-                                <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2" />
+                                <MdModeEdit className="text-blue-600 text-lg md:text-xl mt-1 mr-2 shrink-0" />
                                 <div>
                                   <h4 className="font-medium text-gray-800">{detail.label}</h4>
-                                  <p className="text-gray-600">{displayVal}</p>
+                                  <div className="text-gray-600">{renderFormattedText(displayVal)}</div>
                                 </div>
                               </div>
                             );

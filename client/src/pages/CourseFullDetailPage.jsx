@@ -16,6 +16,54 @@ import { useCart } from '../context/CartContext';
 import CourseCard from '../components/common/CourseCard/CourseCard';
 import CheckoutModal from '../components/common/CheckoutModal';
 
+// Helper to split numbered lists (1. ... 2. ...) and multiline strings into clean line-by-line blocks
+const renderFormattedText = (val) => {
+  if (!val || typeof val !== 'string') return val;
+
+  const trimmed = val.trim();
+
+  // If web URL
+  if (/^https?:\/\//i.test(trimmed)) {
+    return (
+      <a
+        href={trimmed}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#20b2aa] hover:underline font-semibold break-all inline-flex items-center gap-1"
+      >
+        {trimmed} <FaExternalLinkAlt className="text-[10px] shrink-0 inline" />
+      </a>
+    );
+  }
+
+  // 1. First split by newlines if present
+  let lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  // 2. If single line, check if it contains inline numbered items like "1. ... 2. ... 3. ..."
+  if (lines.length === 1) {
+    const splitRegex = /(?=\b\d+[\.\)]\s+)/;
+    const parts = trimmed.split(splitRegex).map(p => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      lines = parts;
+    }
+  }
+
+  // If multiple items, render line-by-line numberwise
+  if (lines.length > 1) {
+    return (
+      <div className="flex flex-col gap-1.5 py-0.5 w-full">
+        {lines.map((line, idx) => (
+          <div key={idx} className="text-gray-900 font-medium leading-relaxed flex items-start gap-1.5">
+            <span>{line}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <span className="whitespace-pre-wrap leading-relaxed">{trimmed}</span>;
+};
+
 const CourseFullDetailPage = () => {
   const { courseId, courseType } = useParams();
   const navigate = useNavigate();
@@ -625,8 +673,8 @@ const CourseFullDetailPage = () => {
                   <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden border border-gray-150">
                     <thead>
                       <tr className="bg-gray-100 border-b border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-600">
-                        <th className="py-3.5 px-4 font-bold">Feature</th>
-                        <th className="py-3.5 px-4 font-bold">Details</th>
+                        <th className="py-3.5 px-4 font-bold w-1/3 sm:w-1/4">Feature</th>
+                        <th className="py-3.5 px-4 font-bold w-2/3 sm:w-3/4">Details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-150">
@@ -639,40 +687,40 @@ const CourseFullDetailPage = () => {
 
                             return (
                               <tr key={index} className={rowClass}>
-                                <td className="py-3.5 px-4 font-semibold text-gray-700">{detail.label}</td>
-                                <td className="py-3.5 px-4 text-gray-900 font-medium">{detail.value}</td>
+                                <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">{detail.label}</td>
+                                <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(detail.value)}</td>
                               </tr>
                             );
                           })
                       ) : (
                         <>
                           <tr className="bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Lecture Duration</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.timing || 'Approx 150+ Hours'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Lecture Duration</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.timing || 'Approx 150+ Hours')}</td>
                           </tr>
                           <tr className="hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">No. of Lectures</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.noOfLecture || '50+ comprehensive sessions'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">No. of Lectures</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.noOfLecture || '50+ comprehensive sessions')}</td>
                           </tr>
                           <tr className="bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Study Materials</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.books || 'ICMAI / ICAI based books'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Study Materials</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.books || 'ICMAI / ICAI based books')}</td>
                           </tr>
                           <tr className="hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Video Run On</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.videoRunOn || 'Windows Laptop / Android Phone'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Video Run On</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.videoRunOn || 'Windows Laptop / Android Phone')}</td>
                           </tr>
                           <tr className="bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Video Language</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.videoLanguage || 'Hindi + English mix'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Video Language</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.videoLanguage || 'Hindi + English mix')}</td>
                           </tr>
                           <tr className="hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Doubt Solving Medium</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium">{course.doubtSolving || 'WhatsApp with mentor'}</td>
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Doubt Solving Medium</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium align-top">{renderFormattedText(course.doubtSolving || 'WhatsApp with mentor')}</td>
                           </tr>
                           <tr className="bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                            <td className="py-3.5 px-4 font-semibold text-gray-700">Course Support</td>
-                            <td className="py-3.5 px-4 text-gray-900 font-medium flex flex-wrap gap-x-4 gap-y-1">
+                            <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Course Support</td>
+                            <td className="py-3.5 px-4 text-gray-900 font-medium flex flex-wrap gap-x-4 gap-y-1 align-top">
                               {course.supportCall && <span className="flex items-center gap-1"><FaPhoneAlt className="text-xs text-teal-600" /> {course.supportCall}</span>}
                               {course.supportMail && <span className="flex items-center gap-1"><FaEnvelope className="text-xs text-teal-600" /> {course.supportMail}</span>}
                             </td>
@@ -681,8 +729,8 @@ const CourseFullDetailPage = () => {
                       )}
                       {course.instituteName && (
                         <tr className="bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold text-gray-700">Institute Affiliation</td>
-                          <td className="py-3.5 px-4 text-teal-600 font-bold">{course.instituteName}</td>
+                          <td className="py-3.5 px-4 font-semibold text-gray-700 align-top">Institute Affiliation</td>
+                          <td className="py-3.5 px-4 text-teal-600 font-bold align-top">{course.instituteName}</td>
                         </tr>
                       )}
                     </tbody>
@@ -695,7 +743,7 @@ const CourseFullDetailPage = () => {
                     <div className="prose prose-teal max-w-none">
                       <h4 className="text-lg font-bold text-gray-900 mb-2">Detailed Overview</h4>
                       <div className="text-gray-700 space-y-4 text-sm sm:text-base leading-relaxed">
-                        {course.description}
+                        {renderFormattedText(course.description)}
                       </div>
                     </div>
                   )}
