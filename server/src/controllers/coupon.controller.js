@@ -1,4 +1,9 @@
 const { supabaseAdmin } = require('../config/supabase.config');
+const {
+  setCouponMetadata,
+  getCouponMetadata,
+  deleteCouponMetadata
+} = require('../utils/couponMetadata');
 
 // Admin: Create a new coupon
 exports.createCoupon = async (req, res) => {
@@ -15,10 +20,14 @@ exports.createCoupon = async (req, res) => {
     if (parsedDiscount <= 0 || parsedDiscount > 100) {
       return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
     }
-    
+
+    // 1. Prepare Supabase payload using integer rounding as fail-safe for integer DB schema
+    const isFloat = !Number.isInteger(parsedDiscount);
+    const intDiscount = isFloat ? Math.round(parsedDiscount) : parsedDiscount;
+
     const insertPayload = {
       code: normalizedCode,
-      discount_percent: parsedDiscount,
+      discount_percent: intDiscount,
       is_active: true
     };
 
@@ -33,39 +42,71 @@ exports.createCoupon = async (req, res) => {
     let couponData = null;
     let dbError = null;
 
+    // First try inserting exact float in case DB column type is numeric
     try {
       const result = await supabaseAdmin
         .from('coupons')
-        .insert(insertPayload)
+        .insert({ ...insertPayload, discount_percent: parsedDiscount })
         .select('*')
         .single();
-      couponData = result.data;
-      dbError = result.error;
+      if (!result.error) {
+        couponData = result.data;
+      } else {
+        dbError = result.error;
+      }
     } catch (err) {
       dbError = err;
     }
 
-    // Fallback if course_id or message column doesn't exist yet in Supabase schema
-    if (dbError && (
-      dbError.message?.includes('course_id') || 
-      dbError.details?.includes('course_id') ||
-      dbError.message?.includes('message') || 
-      dbError.details?.includes('message')
-    )) {
-      delete insertPayload.course_id;
-      delete insertPayload.message;
+    // If integer syntax error or column missing, fallback to inserting integer payload
+    if (dbError) {
       const fallbackResult = await supabaseAdmin
         .from('coupons')
         .insert(insertPayload)
         .select('*')
         .single();
-      couponData = fallbackResult.data;
-      dbError = fallbackResult.error;
+      
+      if (fallbackResult.error && (
+        fallbackResult.error.message?.includes('course_id') || 
+        fallbackResult.error.details?.includes('course_id') ||
+        fallbackResult.error.message?.includes('message') || 
+        fallbackResult.error.details?.includes('message')
+      )) {
+        delete insertPayload.course_id;
+        delete insertPayload.message;
+        const basicResult = await supabaseAdmin
+          .from('coupons')
+          .insert(insertPayload)
+          .select('*')
+          .single();
+        couponData = basicResult.data;
+        dbError = basicResult.error;
+      } else {
+        couponData = fallbackResult.data;
+        dbError = fallbackResult.error;
+      }
     }
 
     if (dbError) throw dbError;
 
-    res.status(201).json({ success: true, coupon: couponData });
+    // 2. Persist full metadata (exact decimal discount, courseId, message)
+    setCouponMetadata(normalizedCode, {
+      exactDiscountPercent: parsedDiscount,
+      courseId: courseId || null,
+      message: customMessage || null
+    });
+
+    const responseCoupon = {
+      ...couponData,
+      _id: couponData.id,
+      code: normalizedCode,
+      discountPercent: parsedDiscount,
+      courseId: courseId || null,
+      message: customMessage || null,
+      isActive: true
+    };
+
+    res.status(201).json({ success: true, coupon: responseCoupon });
   } catch (err) {
     console.error('Error creating coupon:', err);
     res.status(400).json({ error: err.message || 'Failed to create coupon' });
@@ -82,16 +123,23 @@ exports.getCoupons = async (req, res) => {
 
     if (error) throw error;
 
-    const formattedCoupons = (coupons || []).map(c => ({
-      _id: c.id,
-      id: c.id,
-      code: c.code,
-      discountPercent: Number(c.discount_percent),
-      courseId: c.course_id || null,
-      message: c.message || c.description || null,
-      isActive: c.is_active,
-      createdAt: c.created_at
-    }));
+    const formattedCoupons = (coupons || []).map(c => {
+      const meta = getCouponMetadata(c.code) || {};
+      const discountPercent = meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null
+        ? Number(meta.exactDiscountPercent)
+        : Number(c.discount_percent);
+
+      return {
+        _id: c.id,
+        id: c.id,
+        code: c.code,
+        discountPercent,
+        courseId: meta.courseId || c.course_id || null,
+        message: meta.message || c.message || c.description || null,
+        isActive: c.is_active,
+        createdAt: c.created_at
+      };
+    });
 
     res.json({ success: true, coupons: formattedCoupons });
   } catch (err) {
@@ -103,12 +151,17 @@ exports.getCoupons = async (req, res) => {
 exports.deleteCoupon = async (req, res) => {
   try {
     const { code } = req.params;
+    const normalizedCode = String(code || '').trim().toUpperCase();
+
     const { error } = await supabaseAdmin
       .from('coupons')
       .delete()
-      .eq('code', code.toUpperCase());
+      .eq('code', normalizedCode);
 
     if (error) throw error;
+
+    deleteCouponMetadata(normalizedCode);
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -132,19 +185,26 @@ exports.validateCoupon = async (req, res) => {
     if (error) throw error;
     if (!coupon) return res.status(404).json({ error: 'Invalid or expired coupon code.' });
 
+    const meta = getCouponMetadata(normalizedCode) || {};
+    const effectiveCourseId = meta.courseId || coupon.course_id || null;
+    const discountPercent = meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null
+      ? Number(meta.exactDiscountPercent)
+      : Number(coupon.discount_percent);
+    const message = meta.message || coupon.message || coupon.description || null;
+
     // Check course-specific restriction if coupon has a course_id set
-    if (coupon.course_id) {
-      if (!courseId || String(coupon.course_id).trim() !== String(courseId).trim()) {
+    if (effectiveCourseId) {
+      if (!courseId || String(effectiveCourseId).trim() !== String(courseId).trim()) {
         return res.status(400).json({ error: 'This coupon code is not valid for this course.' });
       }
     }
-    
+
     res.json({ 
       success: true, 
-      discountPercent: Number(coupon.discount_percent),
+      discountPercent,
       code: coupon.code,
-      courseId: coupon.course_id || null,
-      message: coupon.message || coupon.description || null
+      courseId: effectiveCourseId,
+      message
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
