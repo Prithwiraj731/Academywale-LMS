@@ -114,6 +114,12 @@ const contactRoutes = require('./src/routes/contact.routes.js');
 const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
 const imageMigrationRoutes = require('./src/routes/image-migration.routes.js');
 
+const purchaseController = require('./src/controllers/purchase.controller.js');
+app.options('/api/purchase/razorpay-order', cors());
+app.post('/api/purchase/razorpay-order', purchaseController.createRazorpayOrder);
+app.options('/api/purchase/razorpay-verify', cors());
+app.post('/api/purchase/razorpay-verify', purchaseController.verifyRazorpayPayment);
+
 app.use('/api/auth', authRoutes);
 app.use('/', courseDetailRoutes);
 app.use('/', courseSearchRoutes);
