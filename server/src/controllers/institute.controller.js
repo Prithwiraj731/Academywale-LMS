@@ -54,42 +54,74 @@ exports.getAllInstitutes = async (req, res) => {
 exports.getInstituteByName = async (req, res) => {
   try {
     const { name } = req.params;
+    const cleanName = decodeURIComponent(name).replace(/_/g, ' ').trim();
 
-    // Fetch the institute
-    const { data: institute, error: instError } = await supabaseAdmin
+    // 1. Fetch institute from DB by exact or ilike match
+    let { data: institute } = await supabaseAdmin
       .from('institutes')
       .select('*')
-      .ilike('name', `%${name}%`)
+      .ilike('name', `%${cleanName}%`)
       .maybeSingle();
 
-    if (instError) throw instError;
+    // Fallback search by first word (e.g. "Aaditya", "SJC", "Avinash")
     if (!institute) {
-      return res.status(404).json({ message: 'Institute not found' });
+      const firstWord = cleanName.split(' ')[0];
+      if (firstWord && firstWord.length > 2) {
+        const { data: instFallback } = await supabaseAdmin
+          .from('institutes')
+          .select('*')
+          .ilike('name', `%${firstWord}%`)
+          .maybeSingle();
+        institute = instFallback;
+      }
     }
 
-    // Fetch courses linked to this institute
+    // Dynamic institute object if not present in database table
+    if (!institute) {
+      institute = {
+        id: cleanName.toLowerCase().replace(/\s+/g, '-'),
+        name: cleanName.replace(/\b\w/g, l => l.toUpperCase()),
+        image_url: '',
+        address: 'Premier Coaching Institute'
+      };
+    }
+
+    // 2. Fetch courses linked to this institute by institute_name or faculty_name
+    const searchTerms = Array.from(new Set([
+      cleanName,
+      cleanName.replace(/\s+classes|\s+tutorial|\s+education/gi, '').trim(),
+      institute.name,
+      institute.name?.replace(/\s+classes|\s+tutorial|\s+education/gi, '').trim()
+    ].filter(Boolean)));
+
+    const ilikeConditions = searchTerms
+      .map(term => `institute_name.ilike.%${term}%,faculty_name.ilike.%${term}%`)
+      .join(',');
+
     const { data: courses, error: courseError } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('institute_name', institute.name)
-      .eq('is_active', true);
+      .or(ilikeConditions)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
 
-    if (courseError) throw courseError;
+    if (courseError) {
+      console.error('Error fetching institute courses:', courseError);
+    }
 
-    const mappedCourses = (courses || []).map(c => ({
-      ...c,
-      _id: c.id
-    }));
+    const { mapCoursesToFrontend } = require('../utils/courseMapper');
+    const mappedCourses = mapCoursesToFrontend(courses || []);
 
     const instituteWithCourses = {
       ...institute,
       _id: institute.id,
-      image: institute.public_id,
+      imageUrl: institute.image_url || institute.image || '',
       courses: mappedCourses
     };
 
     res.status(200).json({ institute: instituteWithCourses });
   } catch (error) {
+    console.error('getInstituteByName error:', error);
     res.status(500).json({ message: error.message });
   }
 };

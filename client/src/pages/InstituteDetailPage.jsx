@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 
 import BackButton from '../components/common/BackButton';
-import { getCourseImageUrl } from '../utils/imageUtils';
+import { getInstituteImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
+import CourseCard from '../components/common/CourseCard/CourseCard';
 
 export default function InstituteDetailPage() {
   const { slug } = useParams();
@@ -15,14 +16,15 @@ export default function InstituteDetailPage() {
   useEffect(() => {
     async function fetchInstitute() {
       try {
-        const res = await fetch(`${API_URL}/api/institutes/${slug}`);
+        const res = await fetch(`${API_URL}/api/institutes/${encodeURIComponent(slug)}`);
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok && data.institute) {
           setInstitute(data.institute);
         } else {
           setError(data.message || 'Institute not found');
         }
       } catch (err) {
+        console.error('Error fetching institute details:', err);
         setError('Server error');
       }
       setLoading(false);
@@ -30,144 +32,81 @@ export default function InstituteDetailPage() {
     fetchInstitute();
   }, [slug]);
 
-  const getImageUrl = (url) => {
-    if (!url) return '/logo.svg';
-    if (url.startsWith('http')) return url;
-    return `${API_URL}${url}`;
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-gray-500 font-bold text-lg">Loading institute details...</div>
+      </div>
+    );
+  }
 
-  const getPosterUrl = (course) => {
-    return getCourseImageUrl(course);
-  };
-
-  if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
-  if (!institute) return <div className="text-center py-10">Institute not found.</div>;
+  if (error || !institute) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 text-center">
+        <div className="text-red-500 text-xl font-bold mb-4">{error || 'Institute Not Found'}</div>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-[#20b2aa] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-teal-700 shadow"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-teal-50/50 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="mb-6">
+          <BackButton />
+        </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <BackButton />
-        <div className="bg-white/90 rounded-3xl shadow-2xl p-8 border border-gray-100 mb-8">
+        {/* Institute Header Box */}
+        <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-gray-200/80 mb-10">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-            <img
-              src={getImageUrl(institute.imageUrl)}
-              alt={institute.name}
-              className="w-48 h-48 rounded-2xl object-contain border-4 border-teal-500 bg-gray-50"
-            />
-            <div className="text-center md:text-left flex-1">
-              <h1 className="text-4xl font-bold mb-4 text-gray-900">{institute.name}</h1>
+            <div className="w-48 h-48 rounded-2xl overflow-hidden border-4 border-[#20b2aa] bg-white shadow-md flex items-center justify-center p-3 shrink-0">
+              <img
+                src={getInstituteImageUrl(institute)}
+                alt={institute.name}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.target.src = '/logo.svg';
+                }}
+              />
+            </div>
+            <div className="text-center md:text-left flex-1 space-y-3">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+                {institute.name}
+              </h1>
               {institute.address && (
-                <p className="text-gray-600 text-lg mb-4">{institute.address}</p>
+                <p className="text-gray-600 text-sm sm:text-base font-medium">{institute.address}</p>
               )}
-              <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
-                <span className="text-teal-700 font-semibold">
-                  {institute.courses?.length || 0} courses available
-                </span>
+              <div className="inline-block bg-teal-50 px-4 py-2 rounded-xl border border-teal-200 text-teal-800 text-sm font-bold">
+                {institute.courses?.length || 0} courses available
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/90 rounded-3xl shadow-2xl p-8 border border-gray-100">
-          <h2 className="text-3xl font-bold mb-6 text-purple-700">Courses Offered</h2>
-          
+        {/* Courses Offered Section */}
+        <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-gray-200/80">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-8">
+            Courses Offered
+          </h2>
+
           {(!institute.courses || institute.courses.length === 0) ? (
-            <div className="text-center py-12">
-              <div className="text-gray-500 text-lg">No courses available for this institute yet.</div>
+            <div className="text-center py-16 bg-gray-50 rounded-2xl border border-gray-200">
+              <div className="text-gray-500 font-semibold text-base">No courses available for this institute yet.</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {institute.courses.map((course, index) => (
-                <div key={index} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 border border-blue-200">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Course Poster */}
-                    <div className="w-full sm:w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center">
-                      {course.posterUrl ? (
-                        <img 
-                          src={getPosterUrl(course)} 
-                          alt="Course Poster" 
-                          className="object-cover w-full h-full" 
-                        />
-                      ) : (
-                        <div className="text-gray-400 text-sm">No Poster</div>
-                      )}
-                    </div>
-                    
-                    {/* Course Details */}
-                    <div className="flex-1 flex flex-col">
-                      <h3 className="text-xl font-bold mb-2 text-gray-900">{course.subject}</h3>
-                      
-                      {course.courseType && (
-                        <span className="inline-block bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full mb-2 w-fit">
-                          {course.courseType}
-                        </span>
-                      )}
-                      
-                      <div className="text-sm text-gray-600 mb-3 space-y-1">
-                        {course.facultyName && (
-                          <div>
-                            <span className="font-semibold">Faculty:</span> 
-                            {course.facultySlug ? (
-                              <Link 
-                                to={`/faculty/${course.facultySlug}`}
-                                className="text-blue-600 hover:underline ml-1"
-                              >
-                                {course.facultyName}
-                              </Link>
-                            ) : (
-                              <span className="ml-1">{course.facultyName}</span>
-                            )}
-                          </div>
-                        )}
-                        {course.noOfLecture && (
-                          <div><span className="font-semibold">Lectures:</span> {course.noOfLecture}</div>
-                        )}
-                        {course.videoLanguage && (
-                          <div><span className="font-semibold">Language:</span> {course.videoLanguage}</div>
-                        )}
-                      </div>
-                      
-                      {/* Price */}
-                      {(course.costPrice || course.sellingPrice) && (
-                        <div className="flex items-center gap-3 mb-3">
-                          {course.costPrice && course.sellingPrice && course.costPrice > course.sellingPrice ? (
-                            <>
-                              <span className="text-lg font-semibold text-gray-400 line-through">₹{course.costPrice}</span>
-                              <span className="text-xl font-bold text-green-600">₹{course.sellingPrice}</span>
-                              <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">
-                                {Math.round(((course.costPrice - course.sellingPrice) / course.costPrice) * 100)}% off
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-xl font-bold text-blue-600">₹{course.sellingPrice || course.costPrice}</span>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* Action Button */}
-                      <button
-                        onClick={() => {
-                          if (course.facultySlug) {
-                            navigate(`/faculty/${course.facultySlug}`);
-                          } else {
-                            alert('Faculty information not available');
-                          }
-                        }}
-                        className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm w-fit"
-                      >
-                        View Course Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
+              {institute.courses.map((course) => (
+                <CourseCard key={course.id || course._id} course={course} />
               ))}
             </div>
           )}
         </div>
       </main>
-
     </div>
   );
-} 
+}
