@@ -338,7 +338,7 @@ export default function AdminDashboard() {
   const [facultyQueried, setFacultyQueried] = useState('');
 
   // Coupon management state
-  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '' });
+  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '', message: '' });
   const [coupons, setCoupons] = useState([]);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [couponError, setCouponError] = useState('');
@@ -433,13 +433,14 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           code: couponForm.code.trim().toUpperCase(),
           discountPercent: Number(couponForm.discountPercent),
-          courseId: couponForm.courseId || undefined
+          courseId: couponForm.courseId || undefined,
+          message: couponForm.message.trim() || undefined
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setCouponSuccess('Coupon added!');
-        setCouponForm({ code: '', discountPercent: '', courseId: '' });
+        setCouponForm({ code: '', discountPercent: '', courseId: '', message: '' });
         fetchCoupons();
         setTimeout(() => setCouponSuccess(''), 2000);
       } else {
@@ -3184,7 +3185,7 @@ export default function AdminDashboard() {
               value={couponForm.code} 
               onChange={handleCouponChange} 
               placeholder="Coupon Code (e.g. SPECIAL10)" 
-              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" 
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
               required 
             />
             <input 
@@ -3196,7 +3197,7 @@ export default function AdminDashboard() {
               step="0.01"
               min="0.01" 
               max="100" 
-              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400" 
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
               required 
             />
             <select
@@ -3212,6 +3213,15 @@ export default function AdminDashboard() {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <input 
+              name="message" 
+              value={couponForm.message} 
+              onChange={handleCouponChange} 
+              placeholder="Custom Note / Faculty Tag (e.g. 5% discount by Ranjan Periwal Sir)" 
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
+            />
           </div>
           <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all self-end">
             Add Coupon
@@ -3232,6 +3242,9 @@ export default function AdminDashboard() {
                     <span className="text-xs text-gray-500">
                       {linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses'}
                     </span>
+                    {c.message && (
+                      <span className="text-xs text-teal-700 font-semibold mt-0.5">💬 {c.message}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-green-700 font-extrabold">{c.discountPercent}% off</span>

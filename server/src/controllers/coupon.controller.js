@@ -3,9 +3,10 @@ const { supabaseAdmin } = require('../config/supabase.config');
 // Admin: Create a new coupon
 exports.createCoupon = async (req, res) => {
   try {
-    const { code, discountPercent, courseId } = req.body;
+    const { code, discountPercent, courseId, message } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
     const parsedDiscount = Number.parseFloat(discountPercent);
+    const customMessage = String(message || '').trim();
 
     if (!normalizedCode || Number.isNaN(parsedDiscount)) {
       return res.status(400).json({ error: 'Code and valid discountPercent are required.' });
@@ -20,6 +21,10 @@ exports.createCoupon = async (req, res) => {
       discount_percent: parsedDiscount,
       is_active: true
     };
+
+    if (customMessage) {
+      insertPayload.message = customMessage;
+    }
 
     if (courseId && String(courseId).trim() !== '') {
       insertPayload.course_id = String(courseId).trim();
@@ -40,9 +45,15 @@ exports.createCoupon = async (req, res) => {
       dbError = err;
     }
 
-    // Fallback if course_id column doesn't exist yet in Supabase schema
-    if (dbError && (dbError.message?.includes('course_id') || dbError.details?.includes('course_id'))) {
+    // Fallback if course_id or message column doesn't exist yet in Supabase schema
+    if (dbError && (
+      dbError.message?.includes('course_id') || 
+      dbError.details?.includes('course_id') ||
+      dbError.message?.includes('message') || 
+      dbError.details?.includes('message')
+    )) {
       delete insertPayload.course_id;
+      delete insertPayload.message;
       const fallbackResult = await supabaseAdmin
         .from('coupons')
         .insert(insertPayload)
@@ -77,6 +88,7 @@ exports.getCoupons = async (req, res) => {
       code: c.code,
       discountPercent: Number(c.discount_percent),
       courseId: c.course_id || null,
+      message: c.message || c.description || null,
       isActive: c.is_active,
       createdAt: c.created_at
     }));
@@ -131,7 +143,8 @@ exports.validateCoupon = async (req, res) => {
       success: true, 
       discountPercent: Number(coupon.discount_percent),
       code: coupon.code,
-      courseId: coupon.course_id || null
+      courseId: coupon.course_id || null,
+      message: coupon.message || coupon.description || null
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -182,6 +182,71 @@ const CourseFullDetailPage = () => {
     }
   };
 
+  // Multi-Coupon Stacking State
+  const [couponCode, setCouponCode] = useState('');
+  const [couponStatus, setCouponStatus] = useState('');
+  const [appliedCoupons, setAppliedCoupons] = useState([]);
+
+  // Reset coupons when option choices change
+  useEffect(() => {
+    setAppliedCoupons([]);
+    setCouponStatus('');
+    setCouponCode('');
+  }, [selectedMode, selectedValidity, selectedAttempt]);
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    setCouponStatus('');
+    if (!code) {
+      setCouponStatus('Enter a coupon code.');
+      return;
+    }
+
+    if (appliedCoupons.some(c => c.code === code)) {
+      setCouponStatus('This coupon code is already applied.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, courseId: course?.id || course?._id })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const newCoupon = {
+          code: data.code || code,
+          discountPercent: Number(data.discountPercent || 0),
+          message: data.message || null
+        };
+        setAppliedCoupons(prev => [...prev, newCoupon]);
+        setCouponCode('');
+        setCouponStatus(`✅ Coupon ${code} applied successfully!`);
+        setTimeout(() => setCouponStatus(''), 3000);
+      } else {
+        setCouponStatus(data.error || 'Invalid coupon code.');
+      }
+    } catch (err) {
+      setCouponStatus('Server error while applying coupon.');
+    }
+  };
+
+  const handleRemoveCoupon = (codeToRemove) => {
+    setAppliedCoupons(prev => prev.filter(c => c.code !== codeToRemove));
+    setCouponStatus('');
+  };
+
+  // Stacked discount percent calculation
+  const totalCouponDiscountPercent = Math.min(
+    95,
+    appliedCoupons.reduce((sum, c) => sum + (c.discountPercent || 0), 0)
+  );
+
+  const discountedSellingPrice = totalCouponDiscountPercent > 0
+    ? Math.round(selectedPrice.selling * (1 - totalCouponDiscountPercent / 100))
+    : selectedPrice.selling;
+
   // Handle proceed to payment (opens CheckoutModal)
   const handleProceedToPay = () => {
     if (!isAuthenticated) {
@@ -196,7 +261,7 @@ const CourseFullDetailPage = () => {
 
     if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
       (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
-      alert('Please select mode, validity, and attempt before proceeding.');
+      alert('Please select mode, validity, and batch before proceeding.');
       return;
     }
 
@@ -210,7 +275,11 @@ const CourseFullDetailPage = () => {
         selectedMode,
         selectedAttempt,
         selectedValidity,
-        price: selectedPrice.selling,
+        price: discountedSellingPrice,
+        originalPrice: selectedPrice.selling,
+        couponCode: appliedCoupons.map(c => c.code).join(', ') || undefined,
+        couponDiscount: totalCouponDiscountPercent || undefined,
+        appliedCoupons: appliedCoupons,
         course: course,
         userDetails: {
           fullName: details.fullName,
@@ -604,21 +673,37 @@ const CourseFullDetailPage = () => {
               )}
 
               {/* Pricing breakdown */}
-              <div className="border-t border-gray-200 pt-6 mb-6">
-                <div className="flex flex-wrap items-baseline gap-2 mb-2">
+              <div className="border-t border-gray-200 pt-6 mb-4">
+                <div className="flex flex-wrap items-baseline gap-2 mb-1">
                   {selectedPrice.selling > 0 ? (
                     <>
-                      <span className="text-3xl sm:text-4xl font-extrabold text-teal-600 tracking-tight">
-                        ₹{selectedPrice.selling.toLocaleString()}
-                      </span>
-                      {selectedPrice.cost > selectedPrice.selling && (
+                      {totalCouponDiscountPercent > 0 ? (
                         <>
+                          <span className="text-3xl sm:text-4xl font-extrabold text-teal-600 tracking-tight">
+                            ₹{discountedSellingPrice.toLocaleString()}
+                          </span>
                           <span className="text-base text-gray-400 line-through">
-                            ₹{selectedPrice.cost.toLocaleString()}
+                            ₹{selectedPrice.selling.toLocaleString()}
                           </span>
-                          <span className="bg-[#20b2aa]/10 text-teal-700 text-xs px-2.5 py-0.5 rounded font-bold border border-teal-200">
-                            {discountPercent}% OFF
+                          <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded font-bold border border-green-200">
+                            {totalCouponDiscountPercent}% TOTAL DISCOUNT
                           </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl sm:text-4xl font-extrabold text-teal-600 tracking-tight">
+                            ₹{selectedPrice.selling.toLocaleString()}
+                          </span>
+                          {selectedPrice.cost > selectedPrice.selling && (
+                            <>
+                              <span className="text-base text-gray-400 line-through">
+                                ₹{selectedPrice.cost.toLocaleString()}
+                              </span>
+                              <span className="bg-[#20b2aa]/10 text-teal-700 text-xs px-2.5 py-0.5 rounded font-bold border border-teal-200">
+                                {discountPercent}% OFF
+                              </span>
+                            </>
+                          )}
                         </>
                       )}
                     </>
@@ -629,6 +714,73 @@ const CourseFullDetailPage = () => {
                   )}
                 </div>
                 <p className="text-[10px] text-gray-500 font-medium">Inclusive of all local taxes and GST.</p>
+              </div>
+
+              {/* Multi-Coupon Code Section - under price */}
+              <div className="mb-6 p-4 bg-gray-50/80 rounded-2xl border border-gray-200/60">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><FaTag className="text-teal-600" /> Apply Coupon Code(s)</span>
+                  {appliedCoupons.length > 0 && (
+                    <span className="text-xs text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded border border-green-200">
+                      {totalCouponDiscountPercent}% Off ({appliedCoupons.length} applied)
+                    </span>
+                  )}
+                </label>
+
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Coupon (e.g. RANJAN5)"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
+                    className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm"
+                  >
+                    Apply
+                  </button>
+                </div>
+
+                {couponStatus && (
+                  <p className={`text-xs mb-2 font-medium ${couponStatus.includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
+                    {couponStatus}
+                  </p>
+                )}
+
+                {/* List of Applied Coupons with custom notes */}
+                {appliedCoupons.length > 0 && (
+                  <div className="space-y-2 mt-3 pt-3 border-t border-gray-200/60">
+                    {appliedCoupons.map((c) => (
+                      <div key={c.code} className="bg-green-50/90 border border-green-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-green-500 text-xs shrink-0" />
+                            <span className="text-sm font-extrabold text-green-800">{c.code}</span>
+                            <span className="bg-green-200/80 text-green-900 text-[11px] px-2 py-0.5 rounded font-bold">
+                              {c.discountPercent}% OFF
+                            </span>
+                          </div>
+                          {c.message && (
+                            <p className="text-xs text-teal-800 font-medium mt-1 pl-5">
+                              💬 {c.message}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCoupon(c.code)}
+                          className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors self-end sm:self-center"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Buttons */}
