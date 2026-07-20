@@ -716,25 +716,11 @@ exports.createRazorpayOrder = async (req, res) => {
   try {
     const { userId, amount } = req.body;
 
-    if (!userId || !amount) {
+    if (!amount || Number(amount) <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: userId, amount'
+        message: 'Invalid or missing amount'
       });
-    }
-
-    // Resolve user UUID
-    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    let userQuery = isUserUuid ? 'id' : 'mongo_id';
-    
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq(userQuery, userId)
-      .maybeSingle();
-
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     const { razorpay } = require('../config/razorpay.config');
@@ -785,7 +771,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
       userDetails
     } = req.body;
 
-    if (!userId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !amount) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !amount) {
       return res.status(400).json({
         success: false,
         message: 'Missing required validation fields'
@@ -809,18 +795,26 @@ exports.verifyRazorpayPayment = async (req, res) => {
       });
     }
 
-    // Resolve user UUID
-    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    let userQuery = isUserUuid ? 'id' : 'mongo_id';
-    
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('id, name, email')
-      .eq(userQuery, userId)
-      .maybeSingle();
+    // Resolve user UUID by id, mongo_id, or email
+    let user = null;
+    if (userId) {
+      const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      if (isUserUuid) {
+        const { data } = await supabaseAdmin.from('users').select('id, name, email').eq('id', userId).maybeSingle();
+        user = data;
+      }
+      if (!user) {
+        const { data } = await supabaseAdmin.from('users').select('id, name, email').eq('mongo_id', userId).maybeSingle();
+        user = data;
+      }
+    }
+    if (!user && userDetails?.email) {
+      const { data } = await supabaseAdmin.from('users').select('id, name, email').eq('email', userDetails.email).maybeSingle();
+      user = data;
+    }
 
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User account not found' });
     }
 
     const createdPurchases = [];
