@@ -772,13 +772,63 @@ exports.verifyPurchase = async (req, res) => {
 // @access  Private
 exports.createRazorpayOrder = async (req, res) => {
   try {
-    const { userId, amount } = req.body;
+    const { userId, amount, courseId, cartItems } = req.body;
 
     if (!amount || Number(amount) <= 0) {
       return res.status(400).json({
         success: false,
         message: 'Invalid or missing amount'
       });
+    }
+
+    // Check if user already owns any of the target courses
+    if (userId) {
+      let targetUserId = userId;
+      const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      let userQuery = isUserUuid ? 'id' : 'mongo_id';
+
+      const { data: userObj } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq(userQuery, userId)
+        .maybeSingle();
+
+      if (userObj && userObj.id) {
+        targetUserId = userObj.id;
+      }
+
+      const isCart = Array.isArray(cartItems) && cartItems.length > 0;
+      const coursesToCheck = isCart 
+        ? cartItems.map(i => i.id).filter(Boolean) 
+        : (courseId ? [courseId] : []);
+
+      if (coursesToCheck.length > 0) {
+        const { data: existingActive } = await supabaseAdmin
+          .from('purchases')
+          .select('course_id')
+          .or(`user_id.eq.${targetUserId},user_id.eq.${userId}`)
+          .eq('is_active', true);
+
+        if (existingActive && existingActive.length > 0) {
+          const activeCourseIds = existingActive.map(p => p.course_id);
+          
+          const { data: matchedDbCourses } = await supabaseAdmin
+            .from('courses')
+            .select('id, mongo_id')
+            .or(`id.in.(${coursesToCheck.join(',')}),mongo_id.in.(${coursesToCheck.join(',')})`);
+
+          const targetDbIds = (matchedDbCourses || []).map(c => c.id);
+          const hasAlreadyPurchased = targetDbIds.some(id => activeCourseIds.includes(id));
+
+          if (hasAlreadyPurchased) {
+            return res.status(400).json({
+              success: false,
+              alreadyPurchased: true,
+              message: 'You have already purchased this course! You can access it from your Student Dashboard.'
+            });
+          }
+        }
+      }
     }
 
     const { getRazorpayInstance, getKeyId } = require('../config/razorpay.config');

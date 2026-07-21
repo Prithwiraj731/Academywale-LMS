@@ -32,6 +32,8 @@ const CartPaymentPage = () => {
     address: stateUserDetails.address || null
   });
 
+  const [alreadyPurchased, setAlreadyPurchased] = useState(false);
+
   // Authentication & Cart Empty check
   useEffect(() => {
     if (!isAuthenticated) {
@@ -48,6 +50,36 @@ const CartPaymentPage = () => {
       navigate('/student-dashboard');
     }
   }, [isAuthenticated, cartItems, navigate, paymentSuccess]);
+
+  // Check if course is already purchased by user
+  useEffect(() => {
+    async function checkPurchased() {
+      if (!user) return;
+      try {
+        const uId = user.id || user._id;
+        const res = await fetch(`${API_URL}/api/purchase/user/${uId}`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.purchases)) {
+          const userPurchases = data.purchases;
+          const cartCourseIds = cartItems.map(item => item.id).filter(Boolean);
+          const cartCourseTitles = cartItems.map(item => (item.title || item.subject || '').toLowerCase().trim());
+
+          const isAlreadyEnrolled = userPurchases.some(p => {
+            const pCourseId = p.course_id;
+            const pTitle = (p.course_details?.title || p.course_details?.subject || '').toLowerCase().trim();
+            return cartCourseIds.includes(pCourseId) || (pTitle && cartCourseTitles.includes(pTitle));
+          });
+
+          if (isAlreadyEnrolled) {
+            setAlreadyPurchased(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error checking user purchases:', err);
+      }
+    }
+    checkPurchased();
+  }, [user, cartItems]);
 
   // Sync user details when user state loads or state changes
   useEffect(() => {
@@ -107,6 +139,11 @@ const CartPaymentPage = () => {
 
   const handleInitiatePayment = async (e) => {
     e.preventDefault();
+
+    if (alreadyPurchased) {
+      setError('You have already purchased this course! Check your Student Dashboard.');
+      return;
+    }
     
     setSubmitting(true);
     setError('');
@@ -121,12 +158,16 @@ const CartPaymentPage = () => {
         },
         body: JSON.stringify({
           userId: user?.id || user?._id,
-          amount: payableAmount
+          amount: payableAmount,
+          cartItems: cartItems
         })
       });
 
       const orderData = await orderRes.json();
       if (!orderRes.ok || !orderData.success) {
+        if (orderData.alreadyPurchased) {
+          setAlreadyPurchased(true);
+        }
         throw new Error(orderData.message || 'Failed to create payment order');
       }
 
@@ -322,18 +363,35 @@ const CartPaymentPage = () => {
               )}
             </div>
 
-            <button
-              onClick={handleInitiatePayment}
-              disabled={submitting}
-              className={`w-full font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center text-lg gap-2 ${
-                submitting
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:from-[#17817a] hover:to-[#105c56]'
-              }`}
-            >
-              <FaCreditCard />
-              <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
-            </button>
+            {alreadyPurchased ? (
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 mb-6 text-center shadow-lg">
+                <div className="text-4xl mb-2">🎓</div>
+                <h3 className="text-xl font-bold text-amber-800 mb-2">Already Enrolled in this Course!</h3>
+                <p className="text-sm text-amber-700 mb-4">
+                  You have already purchased this course. You can access all course materials directly from your Student Dashboard.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/student-dashboard')}
+                  className="w-full bg-gradient-to-r from-[#20b2aa] to-[#126862] hover:from-[#17817a] hover:to-[#105c56] text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md text-base"
+                >
+                  Go to Student Dashboard
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleInitiatePayment}
+                disabled={submitting}
+                className={`w-full font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center text-lg gap-2 ${
+                  submitting
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:from-[#17817a] hover:to-[#105c56]'
+                }`}
+              >
+                <FaCreditCard />
+                <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

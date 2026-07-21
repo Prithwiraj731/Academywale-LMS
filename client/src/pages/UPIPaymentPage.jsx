@@ -31,6 +31,8 @@ const UPIPaymentPage = () => {
   const baseAmount = Number(priceFromState || course?.sellingPrice || 0);
   const payableAmount = Math.max(0, Math.round(baseAmount * (1 - appliedDiscount / 100)));
 
+  const [alreadyPurchased, setAlreadyPurchased] = useState(false);
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -55,6 +57,34 @@ const UPIPaymentPage = () => {
       fetchCourse();
     }
   }, [courseId]);
+
+  // Check if student has already purchased this course
+  useEffect(() => {
+    async function checkPurchased() {
+      if (!user) return;
+      try {
+        const uId = user.id || user._id;
+        const res = await fetch(`${API_URL}/api/purchase/user/${uId}`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.purchases)) {
+          const userPurchases = data.purchases;
+          const isEnrolled = userPurchases.some(p => {
+            const pCourseId = p.course_id;
+            const pTitle = (p.course_details?.title || p.course_details?.subject || '').toLowerCase().trim();
+            const targetTitle = (course?.title || course?.subject || '').toLowerCase().trim();
+            return pCourseId === courseId || (targetTitle && pTitle === targetTitle);
+          });
+
+          if (isEnrolled) {
+            setAlreadyPurchased(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error checking user purchases:', err);
+      }
+    }
+    checkPurchased();
+  }, [user, courseId, course]);
 
   // Authentication check
   useEffect(() => {
@@ -116,6 +146,11 @@ const UPIPaymentPage = () => {
   };
 
   const handleInitiatePayment = async () => {
+    if (alreadyPurchased) {
+      setError('You have already purchased this course! Check your Student Dashboard.');
+      return;
+    }
+
     try {
       setSubmitting(true);
       setError('');
@@ -129,12 +164,16 @@ const UPIPaymentPage = () => {
         },
         body: JSON.stringify({
           userId: user?.id || user?._id,
-          amount: payableAmount
+          amount: payableAmount,
+          courseId: courseId
         })
       });
 
       const orderData = await orderRes.json();
       if (!orderRes.ok || !orderData.success) {
+        if (orderData.alreadyPurchased) {
+          setAlreadyPurchased(true);
+        }
         throw new Error(orderData.message || 'Failed to create payment order');
       }
 
@@ -318,15 +357,32 @@ const UPIPaymentPage = () => {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={handleInitiatePayment}
-                disabled={submitting}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-75"
-              >
-                <FaCreditCard />
-                <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
-              </button>
+              {alreadyPurchased ? (
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 mb-6 text-center shadow-lg">
+                  <div className="text-4xl mb-2">🎓</div>
+                  <h3 className="text-xl font-bold text-amber-800 mb-2">Already Enrolled in this Course!</h3>
+                  <p className="text-sm text-amber-700 mb-4">
+                    You have already purchased this course. You can access all course materials directly from your Student Dashboard.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/student-dashboard')}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-extrabold py-3.5 px-6 rounded-xl transition-all shadow-md text-base"
+                  >
+                    Go to Student Dashboard
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleInitiatePayment}
+                  disabled={submitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-75"
+                >
+                  <FaCreditCard />
+                  <span>{submitting ? 'Initiating Checkout...' : `Pay Securely via Razorpay`}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
