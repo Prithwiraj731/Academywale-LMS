@@ -287,16 +287,29 @@ const sendPurchaseInvoiceEmail = async (options) => {
           <!-- Body Content -->
           <div style="padding: 28px 25px;">
             
-            <p style="font-size: 15px; color: #1e293b; margin-top: 0; margin-bottom: 15px;">
+            <p style="font-size: 15px; color: #1e293b; margin-top: 0; margin-bottom: 14px;">
               Dear <strong>${userName}</strong>,
             </p>
-            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 22px;">
-              Thank you for purchasing with <strong>AcademyWale</strong>! Your payment has been successfully confirmed and your course access is now activated on your Student Dashboard.
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+              Thank you for purchasing from <strong>AcademyWale</strong>! 🎉
+            </p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+              Your payment has been successfully confirmed.
+            </p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+              Your course will be dispatched to your registered email address within 24–48 hours. You can access your course details from your Student Dashboard.
+            </p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 22px;">
+              If you have any questions or need assistance, please feel free to contact our support team.
             </p>
 
             <!-- Metadata Box -->
             <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Order ID:</strong></td>
+                  <td style="padding: 4px 0; color: #0d9488; text-align: right; font-weight: 700; font-family: monospace;">${transactionId} (₹${Number(amount).toLocaleString('en-IN')})</td>
+                </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;"><strong>Receipt Date:</strong></td>
                   <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${formattedDate}</td>
@@ -309,10 +322,10 @@ const sendPurchaseInvoiceEmail = async (options) => {
                   <td style="padding: 4px 0; color: #64748b;"><strong>Registered Email:</strong></td>
                   <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userEmail}</td>
                 </tr>
-                ${userDetails.phone ? `
+                ${(userDetails.phone || options.userPhone || options.phone) ? `
                   <tr>
                     <td style="padding: 4px 0; color: #64748b;"><strong>Mobile Number:</strong></td>
-                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userDetails.phone}</td>
+                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userDetails.phone || options.userPhone || options.phone}</td>
                   </tr>
                 ` : ''}
               </table>
@@ -320,7 +333,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
 
             <!-- Items Purchased Table -->
             <h3 style="font-size: 15px; font-weight: 800; color: #0f766e; margin-bottom: 10px; margin-top: 0;">
-              Enrolled Courses & Packages
+              Enrolled Courses
             </h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
               <thead>
@@ -350,16 +363,6 @@ const sendPurchaseInvoiceEmail = async (options) => {
                   </td>
                 </tr>
               </table>
-            </div>
-
-            <!-- Next Steps Callout -->
-            <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 0 10px 10px 0; margin-bottom: 25px;">
-              <h4 style="margin: 0 0 6px 0; color: #1e3a8a; font-size: 14px;">🎓 Accessing Your Course:</h4>
-              <ol style="margin: 0; padding-left: 18px; font-size: 13px; color: #1e40af; line-height: 1.6;">
-                <li>Log in at <a href="https://academywale.com/login" style="color: #2563eb; font-weight: bold;">academywale.com</a></li>
-                <li>Go to your <strong>Student Dashboard</strong> under <strong>My Courses</strong></li>
-                <li>Start streaming lectures & accessing course materials!</li>
-              </ol>
             </div>
 
             <div style="text-align: center; margin-top: 25px;">
