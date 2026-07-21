@@ -4,6 +4,16 @@
  */
 function mapCourseToFrontend(course) {
   if (!course) return course;
+
+  // Extract real paper number from paper_name if available (e.g. "Paper 3: Cost ..." -> "3")
+  let derivedPaperId = course.paper_id;
+  if (course.paper_name) {
+    const match = String(course.paper_name).match(/Paper\s*(\d+)/i);
+    if (match) {
+      derivedPaperId = match[1];
+    }
+  }
+
   return {
     ...course,
     // ID compatibility
@@ -14,9 +24,10 @@ function mapCourseToFrontend(course) {
           ? Number(course.sequence) 
           : (course.displayOrder !== undefined && course.displayOrder !== null ? Number(course.displayOrder) : 9999)),
     // Core fields
-    paperId: course.paper_id,
+    paperId: derivedPaperId || course.paper_id,
     paperName: course.paper_name,
     courseType: course.course_type,
+
     // Faculty
     facultyName: course.faculty_name,
     facultySlug: course.faculty_slug,

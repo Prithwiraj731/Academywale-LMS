@@ -157,8 +157,11 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
             <div>
               <div className="font-bold text-gray-900 leading-tight">{title}</div>
               <div className="text-xs text-gray-500 mt-1">
-                Paper {course.paperId || 'N/A'}{course.paperName ? ` - ${course.paperName}` : ''}
+                {course.paperName 
+                  ? (course.paperName.toLowerCase().startsWith('paper') ? course.paperName : `Paper ${course.paperId || 'N/A'} - ${course.paperName}`)
+                  : `Paper ${course.paperId || 'N/A'}`}
               </div>
+
               <div className="text-xs text-gray-500">
                 Faculty: {course.facultyName || 'N/A'} | Institute: {course.instituteName || 'N/A'}
               </div>

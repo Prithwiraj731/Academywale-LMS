@@ -746,30 +746,31 @@ export default function AdminDashboard() {
       } else if (subcategory === 'Inter') {
         return [
           // INTERMEDIATE GROUP 1
-          { id: 5, name: 'Paper 1: Accounting (Group 1)', group: 'Group 1' },
-          { id: 6, name: 'Paper 2: Corporate and Other Laws (Group 1)', group: 'Group 1' },
-          { id: 7, name: 'Paper 3: Cost and Management Accounting (Group 1)', group: 'Group 1' },
-          { id: 8, name: 'Paper 4: Taxation (Group 1)', group: 'Group 1' },
+          { id: 1, name: 'Paper 1: Accounting (Group 1)', group: 'Group 1' },
+          { id: 2, name: 'Paper 2: Corporate and Other Laws (Group 1)', group: 'Group 1' },
+          { id: 3, name: 'Paper 3: Cost and Management Accounting (Group 1)', group: 'Group 1' },
+          { id: 4, name: 'Paper 4: Taxation (Group 1)', group: 'Group 1' },
           // INTERMEDIATE GROUP 2
-          { id: 9, name: 'Paper 5: Advanced Accounting (Group 2)', group: 'Group 2' },
-          { id: 10, name: 'Paper 6: Auditing and Assurance (Group 2)', group: 'Group 2' },
-          { id: 11, name: 'Paper 7: Enterprise Information Systems & Strategic Management (Group 2)', group: 'Group 2' },
-          { id: 12, name: 'Paper 8: Financial Management & Economics for Finance (Group 2)', group: 'Group 2' }
+          { id: 5, name: 'Paper 5: Advanced Accounting (Group 2)', group: 'Group 2' },
+          { id: 6, name: 'Paper 6: Auditing and Assurance (Group 2)', group: 'Group 2' },
+          { id: 7, name: 'Paper 7: Enterprise Information Systems & Strategic Management (Group 2)', group: 'Group 2' },
+          { id: 8, name: 'Paper 8: Financial Management & Economics for Finance (Group 2)', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
           // FINAL GROUP 3
-          { id: 13, name: 'Paper 1: Financial Reporting (Group 3)', group: 'Group 3' },
-          { id: 14, name: 'Paper 2: Strategic Financial Management (Group 3)', group: 'Group 3' },
-          { id: 15, name: 'Paper 3: Advanced Auditing and Professional Ethics (Group 3)', group: 'Group 3' },
-          { id: 16, name: 'Paper 4: Corporate and Economic Laws (Group 3)', group: 'Group 3' },
+          { id: 1, name: 'Paper 1: Financial Reporting (Group 3)', group: 'Group 3' },
+          { id: 2, name: 'Paper 2: Strategic Financial Management (Group 3)', group: 'Group 3' },
+          { id: 3, name: 'Paper 3: Advanced Auditing and Professional Ethics (Group 3)', group: 'Group 3' },
+          { id: 4, name: 'Paper 4: Corporate and Economic Laws (Group 3)', group: 'Group 3' },
           // FINAL GROUP 4
-          { id: 17, name: 'Paper 5: Strategic Cost Management and Performance Evaluation (Group 4)', group: 'Group 4' },
-          { id: 18, name: 'Paper 6: Elective Paper (Group 4)', group: 'Group 4' },
-          { id: 19, name: 'Paper 7: Direct Tax Laws and International Taxation (Group 4)', group: 'Group 4' },
-          { id: 20, name: 'Paper 8: Indirect Tax Laws (Group 4)', group: 'Group 4' }
+          { id: 5, name: 'Paper 5: Strategic Cost Management and Performance Evaluation (Group 4)', group: 'Group 4' },
+          { id: 6, name: 'Paper 6: Elective Paper (Group 4)', group: 'Group 4' },
+          { id: 7, name: 'Paper 7: Direct Tax Laws and International Taxation (Group 4)', group: 'Group 4' },
+          { id: 8, name: 'Paper 8: Indirect Tax Laws (Group 4)', group: 'Group 4' }
         ];
       }
+
     } else if (category === 'CMA') {
       if (subcategory === 'Foundation') {
         return [
@@ -841,14 +842,21 @@ export default function AdminDashboard() {
         }));
       }
 
-      // Auto-fill paper name when paper ID is selected
+      // Auto-fill paper name and real paper ID when paper is selected
       if (name === 'paperId') {
         const papers = getPapers(courseForm.category, courseForm.subcategory);
-        const selectedPaper = papers.find(p => p.id === parseInt(value));
+        const selectedPaper = papers.find(p => String(p.id) === String(value));
         if (selectedPaper) {
-          setCourseForm(prev => ({ ...prev, paperName: selectedPaper.name }));
+          const match = selectedPaper.name.match(/Paper\s*(\d+)/i);
+          const realPaperId = match ? match[1] : value;
+          setCourseForm(prev => ({ 
+            ...prev, 
+            paperId: realPaperId,
+            paperName: selectedPaper.name 
+          }));
         }
       }
+
     }
   };
 
