@@ -231,9 +231,17 @@ const CMAInterPaperDetailPage = () => {
           return coursePaperId === String(paperId);
         });
 
+        const sortBySequence = (a, b) => {
+          const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.display_order !== undefined && a.display_order !== null ? Number(a.display_order) : 9999);
+          const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.display_order !== undefined && b.display_order !== null ? Number(b.display_order) : 9999);
+          if (orderA !== orderB) return orderA - orderB;
+          return new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0);
+        };
+
         if (foundCourses.length > 0) {
           console.log(`🎉 FINAL RESULT: Setting ${foundCourses.length} courses`);
-          setCourses(foundCourses);
+          setCourses(foundCourses.sort(sortBySequence));
+
           if (!error) {
             setError('');
           }

@@ -487,19 +487,26 @@ export default function AdminDashboard() {
   };
 
   const handleToggleCouponVisibility = async (code, currentVisibility) => {
+    const nextVisibility = !currentVisibility;
+    // Optimistic UI update
+    setCoupons(prev => prev.map(c => c.code === code ? { ...c, isVisible: nextVisibility } : c));
     try {
       const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons/${encodeURIComponent(code)}/visibility`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVisible: !currentVisibility })
+        body: JSON.stringify({ isVisible: nextVisibility })
       });
       if (res.ok) {
-        fetchCoupons();
+        await fetchCoupons();
+      } else {
+        fetchCoupons(); // Revert on failure
       }
     } catch (err) {
       console.error('Error toggling coupon visibility:', err);
+      fetchCoupons(); // Revert on failure
     }
   };
+
 
 
   const requiredFields = [

@@ -272,11 +272,22 @@ export default function AllCoursesPage() {
     return 'OTHER';
   };
 
-  const caInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_INTER');
-  const cmaInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_INTER');
-  const caFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_FINAL');
-  const cmaFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_FINAL');
-  const otherCourses = courses.filter(c => !['CA_INTER', 'CMA_INTER', 'CA_FINAL', 'CMA_FINAL'].includes(getCourseCategoryKey(c)));
+  const sortBySequence = (a, b) => {
+    const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.display_order !== undefined && a.display_order !== null ? Number(a.display_order) : 9999);
+    const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.display_order !== undefined && b.display_order !== null ? Number(b.display_order) : 9999);
+    if (orderA !== orderB) return orderA - orderB;
+    const paperA = Number(a.paperId || a.paper_id || 999);
+    const paperB = Number(b.paperId || b.paper_id || 999);
+    if (paperA !== paperB) return paperA - paperB;
+    return new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0);
+  };
+
+  const caInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_INTER').sort(sortBySequence);
+  const cmaInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_INTER').sort(sortBySequence);
+  const caFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_FINAL').sort(sortBySequence);
+  const cmaFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_FINAL').sort(sortBySequence);
+  const otherCourses = courses.filter(c => !['CA_INTER', 'CMA_INTER', 'CA_FINAL', 'CMA_FINAL'].includes(getCourseCategoryKey(c))).sort(sortBySequence);
+
 
   if (loading) {
     return (
