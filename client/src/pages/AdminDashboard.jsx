@@ -1972,73 +1972,8 @@ export default function AdminDashboard() {
         setInstitutes(hardcodedInstitutes);
       });
 
-    // Fetch database faculties
-    console.log('🔍 Starting to fetch faculties from:', `${API_URL}/api/faculties`);
-
-    // Ensure we have hardcoded faculties ready first
-    const hardcoded = getAllFaculties();
-    console.log('📚 Hardcoded faculties loaded initially:', hardcoded.length);
-
-    // Always set the hardcoded faculties immediately, before API call completes
-    const fallbackFaculties = hardcoded.map(faculty => ({
-      slug: faculty.slug,
-      firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
-      lastName: '',
-      isHardcoded: true,
-      fullName: faculty.name
-    }));
-
-    // Set initial faculties from hardcoded data
-    setAllFaculties(fallbackFaculties);
-
-    fetch(`${API_URL}/api/faculties`)
-      .then(res => {
-        console.log('📡 Faculty API response status:', res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log('📋 Raw faculty API data:', data);
-        const dbFaculties = data.faculties || [];
-        console.log('🎓 Database faculties found:', dbFaculties.length);
-        setFaculties(dbFaculties);
-
-        // Combine hardcoded faculties with database faculties
-        console.log('📚 Hardcoded faculties found:', hardcoded.length);
-
-        const combinedFaculties = [
-          // Add hardcoded faculties first (convert to needed format)
-          ...hardcoded.map(faculty => ({
-            slug: faculty.slug,
-            firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
-            lastName: '',
-            isHardcoded: true,
-            fullName: faculty.name
-          })),
-          // Add database faculties
-          ...dbFaculties.map(faculty => ({
-            ...faculty,
-            isHardcoded: false,
-            fullName: `${faculty.firstName}${faculty.lastName ? ' ' + faculty.lastName : ''}`
-          }))
-        ];
-
-        console.log('🎯 Final combined faculties:', combinedFaculties.length, combinedFaculties);
-        setAllFaculties(combinedFaculties);
-      })
-      .catch(err => {
-        console.error('❌ Error fetching faculties:', err);
-        // Fallback to hardcoded faculties only
-        const hardcoded = getAllFaculties();
-        console.log('🔄 Using hardcoded faculties as fallback:', hardcoded.length);
-        const fallbackFaculties = hardcoded.map(faculty => ({
-          slug: faculty.slug,
-          firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
-          lastName: '',
-          isHardcoded: true,
-          fullName: faculty.name
-        }));
-        setAllFaculties(fallbackFaculties);
-      });
+    // Fetch live merged faculties list
+    fetchLiveFacultiesList();
   }, []);
 
   // Bulk Upload Parsing and Handlers
