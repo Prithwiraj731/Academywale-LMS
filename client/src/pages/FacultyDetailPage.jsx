@@ -39,20 +39,49 @@ export default function FacultyDetailPage() {
   }, [slug]);
 
   useEffect(() => {
-    function loadFacultyInfo() {
+    async function loadFacultyInfo() {
       if (slug) {
-        const faculty = getFacultyBySlug(slug);
-        if (faculty) {
-          const facultyData = {
-            bio: `Expert ${faculty.specialization} faculty with years of professional experience in teaching and industry practice.`,
-            teaches: [faculty.specialization],
-            imageUrl: faculty.image,
-            firstName: faculty.name,
+        let facultyData = null;
+        const hardcoded = getFacultyBySlug(slug);
+
+        try {
+          const res = await fetch(`${API_URL}/api/faculties/${slug}`);
+          if (res.ok) {
+            const apiFac = await res.json();
+            if (apiFac && (apiFac.first_name || apiFac.firstName)) {
+              const fName = apiFac.first_name || apiFac.firstName || '';
+              const lName = apiFac.last_name || apiFac.lastName || '';
+              const fullName = `${fName} ${lName}`.trim();
+              facultyData = {
+                firstName: fullName,
+                lastName: '',
+                bio: apiFac.bio || (hardcoded ? `Expert ${hardcoded.specialization} faculty with years of professional experience in teaching and industry practice.` : 'Expert faculty with extensive teaching experience.'),
+                teaches: Array.isArray(apiFac.teaches) ? apiFac.teaches : (apiFac.teaches ? [apiFac.teaches] : (hardcoded ? [hardcoded.specialization] : [])),
+                imageUrl: apiFac.image_url || apiFac.imageUrl || hardcoded?.image || '',
+                image: apiFac.image_url || apiFac.imageUrl || hardcoded?.image || '',
+                slug: apiFac.slug || slug,
+                public_id: apiFac.public_id || hardcoded?.public_id
+              };
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching faculty info from API:', err);
+        }
+
+        if (!facultyData && hardcoded) {
+          facultyData = {
+            bio: `Expert ${hardcoded.specialization} faculty with years of professional experience in teaching and industry practice.`,
+            teaches: [hardcoded.specialization],
+            imageUrl: hardcoded.image,
+            firstName: hardcoded.name,
             lastName: '',
-            slug: faculty.slug,
-            image: faculty.image,
-            public_id: faculty.public_id
+            slug: hardcoded.slug,
+            image: hardcoded.image,
+            public_id: hardcoded.public_id
           };
+        }
+
+        if (facultyData) {
           setFacultyInfo(facultyData);
         } else {
           setFacultyInfo({ bio: '', teaches: [], imageUrl: '', firstName: slug.replace(/-/g, ' ').toUpperCase(), lastName: '', slug });
@@ -60,16 +89,6 @@ export default function FacultyDetailPage() {
       }
     }
     loadFacultyInfo();
-
-    const handleFacultyUpdate = (event) => {
-      const faculty = getFacultyBySlug(slug);
-      if (faculty && event.detail?.facultySlug === slug) {
-        loadFacultyInfo();
-      }
-    };
-
-    window.addEventListener('facultyUpdated', handleFacultyUpdate);
-    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
   }, [slug]);
 
   const displayFacultyName = (facultyInfo.firstName ? facultyInfo.firstName : '') + (facultyInfo.lastName ? ' ' + facultyInfo.lastName : '');

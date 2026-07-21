@@ -37,21 +37,25 @@ export default function Navbar() {
         const apiFaculties = data.faculties || [];
         if (apiFaculties.length > 0) {
           const hardcoded = getAllFaculties();
-          const combined = [...hardcoded];
+          const mergedMap = new Map();
+
+          hardcoded.forEach(h => mergedMap.set(h.slug, { ...h }));
+
           apiFaculties.forEach(apiFac => {
-            const apiSlug = apiFac.slug || `${apiFac.firstName}-${apiFac.lastName}`.toLowerCase().replace(/\s+/g, '-');
-            const exists = hardcoded.some(h => h.slug === apiSlug);
-            if (!exists) {
-              combined.push({
-                id: apiFac.id || apiFac._id,
-                name: `${apiFac.firstName} ${apiFac.lastName || ''}`.trim(),
-                slug: apiSlug,
-                image: apiFac.imageUrl || apiFac.image,
-                specialization: apiFac.teaches?.[0] || 'Faculty'
-              });
-            }
+            const apiSlug = apiFac.slug || `${apiFac.firstName || apiFac.first_name}-${apiFac.lastName || apiFac.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const existing = mergedMap.get(apiSlug) || {};
+            const fullName = `${apiFac.first_name || apiFac.firstName || ''} ${apiFac.last_name || apiFac.lastName || ''}`.trim();
+            
+            mergedMap.set(apiSlug, {
+              id: apiFac.id || apiFac._id || existing.id,
+              name: fullName || existing.name,
+              slug: apiSlug,
+              image: apiFac.image_url || apiFac.imageUrl || apiFac.image || existing.image,
+              specialization: (Array.isArray(apiFac.teaches) ? apiFac.teaches[0] : apiFac.teaches) || apiFac.specialization || existing.specialization
+            });
           });
-          setFaculties(combined);
+
+          setFaculties(Array.from(mergedMap.values()));
         }
       })
       .catch(err => console.error('Error loading API faculties in header:', err));

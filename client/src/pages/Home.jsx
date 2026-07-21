@@ -21,7 +21,8 @@ import sjcCert from '../assets/sjcCert.jpg';
 import caLogo from '../assets/CA_LOGO.jpeg';
 import cmaLogo from '../assets/CMA_LOGO.png';
 
-// import banner3 from '../assets/banner3.png';
+// import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
+import { API_URL } from '../api';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -29,19 +30,44 @@ export default function Home() {
 
   // Load faculties on component mount
   useEffect(() => {
-    const baseFaculties = getHomepageFaculties();
-    setTopFaculties(baseFaculties);
-  }, []);
+    async function loadHomepageFaculties() {
+      try {
+        const baseFaculties = getHomepageFaculties();
+        const res = await fetch(`${API_URL}/api/faculties`);
+        const data = await res.json();
+        
+        if (res.ok && Array.isArray(data.faculties) && data.faculties.length > 0) {
+          const dbFaculties = data.faculties;
+          const mergedMap = new Map();
+          
+          baseFaculties.forEach(f => {
+            mergedMap.set(f.slug, { ...f });
+          });
 
-  // Listen for faculty updates
-  useEffect(() => {
-    const handleFacultyUpdate = () => {
-      const baseFaculties = getHomepageFaculties();
-      setTopFaculties(baseFaculties);
-    };
+          dbFaculties.forEach(f => {
+            const slug = f.slug || `${f.first_name}-${f.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const existing = mergedMap.get(slug) || {};
+            const fullName = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim();
+            
+            mergedMap.set(slug, {
+              id: f.id || f._id || existing.id,
+              name: fullName || existing.name,
+              slug: slug,
+              image: f.image_url || f.imageUrl || existing.image,
+              specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || f.specialization || existing.specialization,
+              bio: f.bio || existing.bio
+            });
+          });
 
-    window.addEventListener('facultyUpdated', handleFacultyUpdate);
-    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
+          setTopFaculties(Array.from(mergedMap.values()).slice(0, 8));
+        } else {
+          setTopFaculties(baseFaculties);
+        }
+      } catch (err) {
+        setTopFaculties(getHomepageFaculties());
+      }
+    }
+    loadHomepageFaculties();
   }, []);
 
   return (

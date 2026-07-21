@@ -1,28 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Particles from '../components/common/Particles';
-
 import { PinContainer } from '../components/ui/3d-pin';
 import { getAllFaculties } from '../data/hardcodedFaculties';
+import { API_URL } from '../api';
 
 export default function FacultiesPage() {
   const [faculties, setFaculties] = useState([]);
 
-  // Load faculties on component mount
-  useEffect(() => {
-    const baseFaculties = getAllFaculties();
-    setFaculties(baseFaculties);
-  }, []);
-
-  // Listen for faculty updates
-  useEffect(() => {
-    const handleFacultyUpdate = () => {
+  const loadAllFaculties = async () => {
+    try {
       const baseFaculties = getAllFaculties();
-      setFaculties(baseFaculties);
-    };
+      const res = await fetch(`${API_URL}/api/faculties`);
+      const data = await res.json();
+      
+      if (res.ok && Array.isArray(data.faculties) && data.faculties.length > 0) {
+        const dbFaculties = data.faculties;
+        const mergedMap = new Map();
+        
+        baseFaculties.forEach(f => {
+          mergedMap.set(f.slug, { ...f });
+        });
 
-    window.addEventListener('facultyUpdated', handleFacultyUpdate);
-    return () => window.removeEventListener('facultyUpdated', handleFacultyUpdate);
+        dbFaculties.forEach(f => {
+          const slug = f.slug || `${f.first_name}-${f.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const existing = mergedMap.get(slug) || {};
+          const fullName = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim();
+          
+          mergedMap.set(slug, {
+            id: f.id || f._id || existing.id,
+            name: fullName || existing.name,
+            slug: slug,
+            image: f.image_url || f.imageUrl || existing.image,
+            specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || f.specialization || existing.specialization,
+            bio: f.bio || existing.bio
+          });
+        });
+
+        setFaculties(Array.from(mergedMap.values()));
+      } else {
+        setFaculties(baseFaculties);
+      }
+    } catch (err) {
+      setFaculties(getAllFaculties());
+    }
+  };
+
+  useEffect(() => {
+    loadAllFaculties();
   }, []);
 
   return (

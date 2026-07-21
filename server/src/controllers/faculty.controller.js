@@ -200,11 +200,14 @@ exports.getFacultyBySlug = async (req, res) => {
 };
 
 // @desc    Update a faculty
-// @route   PUT /api/admin/faculties/:slug
+// @route   PUT /api/admin/faculty/:slug
 // @access  Private/Admin
 exports.updateFaculty = async (req, res) => {
   try {
-    const { firstName, lastName, bio, teaches } = req.body;
+    const firstName = req.body.firstName || req.body.first_name;
+    const lastName = req.body.lastName !== undefined ? req.body.lastName : req.body.last_name;
+    const bio = req.body.bio;
+    let teaches = req.body.teaches || req.body['teaches[]'];
     const { slug } = req.params;
 
     // Find current faculty to preserve image if not uploaded
@@ -220,23 +223,21 @@ exports.updateFaculty = async (req, res) => {
     }
 
     const updateData = {
-      first_name: firstName || currentFaculty.first_name,
+      first_name: firstName !== undefined ? firstName : currentFaculty.first_name,
       last_name: lastName !== undefined ? lastName : currentFaculty.last_name,
       bio: bio !== undefined ? bio : currentFaculty.bio,
       updated_at: new Date()
     };
 
     if (teaches) {
-      try {
-        updateData.teaches = JSON.parse(teaches);
-      } catch (e) {
-        if (typeof teaches === 'string') {
-          updateData.teaches = teaches.split(',').map(t => t.trim());
-        } else if (Array.isArray(teaches)) {
-          updateData.teaches = teaches;
-        } else {
-          updateData.teaches = [teaches];
+      if (typeof teaches === 'string') {
+        try {
+          updateData.teaches = JSON.parse(teaches);
+        } catch (e) {
+          updateData.teaches = teaches.split(',').map(t => t.trim()).filter(Boolean);
         }
+      } else if (Array.isArray(teaches)) {
+        updateData.teaches = teaches;
       }
     }
 
@@ -272,6 +273,7 @@ exports.updateFaculty = async (req, res) => {
 
     res.status(200).json({ success: true, faculty: responseFaculty });
   } catch (error) {
+    console.error('Update faculty error:', error);
     res.status(500).json({ message: error.message });
   }
 };
