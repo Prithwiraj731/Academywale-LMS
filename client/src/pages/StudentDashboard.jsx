@@ -223,7 +223,7 @@ export default function StudentDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {purchases.map((purchase) => {
                   const courseDetails = purchase.courseDetails || purchase.course_details || {};
-                  const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
+                  const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails.poster || courseDetails);
                   
                   return (
                     <div 
@@ -516,7 +516,7 @@ export default function StudentDashboard() {
               {/* Order Details Body */}
               {(() => {
                 const courseDetails = selectedOrderDetail.courseDetails || selectedOrderDetail.course_details || {};
-                const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
+                const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails.poster || courseDetails);
                 return (
                   <div className="space-y-5">
                     {/* Order Details Card */}

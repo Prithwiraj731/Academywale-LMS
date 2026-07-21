@@ -65,7 +65,7 @@ export const getCourseImageUrl = (course) => {
     ? course 
     : (course.posterUrl || course.poster_url || course.poster || course.image || course.banner || '');
 
-  if (!url || typeof url !== 'string') return '/logo.svg';
+  if (!url || typeof url !== 'string' || url.trim() === '') return '/logo.svg';
   const trimmed = url.trim();
 
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
@@ -75,11 +75,15 @@ export const getCourseImageUrl = (course) => {
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
     return `${API_URL}${cleanPath}`;
   }
-  if (trimmed.startsWith('/') || trimmed.startsWith('static/')) {
+  if (trimmed.startsWith('/assets/') || trimmed.startsWith('assets/') || trimmed.startsWith('/static/') || trimmed.startsWith('static/')) {
     return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   }
-  return `${API_URL}/${trimmed}`;
+  if (trimmed.startsWith('/')) {
+    return `${API_URL}${trimmed}`;
+  }
+  return `${API_URL}/uploads/${trimmed}`;
 };
+
 
 
 /**

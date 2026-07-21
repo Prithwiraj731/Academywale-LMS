@@ -174,12 +174,60 @@ exports.getUserPurchases = async (req, res) => {
 
     if (error) throw error;
 
+    // Collect course_ids to look up poster_url from Supabase courses table
+    const courseIds = (purchases || []).map(p => p.course_id).filter(Boolean);
+    let courseMap = {};
+    if (courseIds.length > 0) {
+      const { data: matchedCourses } = await supabaseAdmin
+        .from('courses')
+        .select('id, poster_url, poster_public_id, title, subject, faculty_name')
+        .in('id', courseIds);
+
+      (matchedCourses || []).forEach(c => {
+        courseMap[c.id] = c;
+      });
+    }
+
+    // Also fetch all courses for fallback matching by subject/title
+    const { data: allCourses } = await supabaseAdmin
+      .from('courses')
+      .select('id, poster_url, poster_public_id, title, subject, faculty_name');
+
     const formattedPurchases = (purchases || []).map(p => {
       const fName = p.faculties ? `${p.faculties.first_name} ${p.faculties.last_name || ''}`.trim() : (p.course_details?.facultyName || 'Faculty');
+      const cDetails = p.course_details || {};
+      let matchedCourse = courseMap[p.course_id];
+
+      if (!matchedCourse && allCourses) {
+        matchedCourse = allCourses.find(c => 
+          (c.subject && cDetails.subject && c.subject.toLowerCase() === cDetails.subject.toLowerCase()) ||
+          (c.title && cDetails.title && c.title.toLowerCase() === cDetails.title.toLowerCase())
+        );
+      }
+
+      const posterUrl = cDetails.posterUrl || 
+                        cDetails.poster_url || 
+                        cDetails.poster || 
+                        matchedCourse?.poster_url || 
+                        matchedCourse?.posterUrl || 
+                        matchedCourse?.poster_public_id || 
+                        '';
+
+      const enrichedCourseDetails = {
+        ...cDetails,
+        posterUrl,
+        poster_url: posterUrl,
+        poster: posterUrl,
+        title: cDetails.title || matchedCourse?.title || matchedCourse?.subject || 'Course',
+        subject: cDetails.subject || matchedCourse?.subject || matchedCourse?.title || 'Course',
+        facultyName: fName || matchedCourse?.faculty_name || 'Faculty'
+      };
+
       return {
         id: p.id,
         transactionId: p.transaction_id,
-        courseDetails: p.course_details || {},
+        courseDetails: enrichedCourseDetails,
+        course_details: enrichedCourseDetails,
         purchaseDate: p.purchase_date,
         accessExpiry: p.access_expiry,
         paymentStatus: p.payment_status || 'completed',
