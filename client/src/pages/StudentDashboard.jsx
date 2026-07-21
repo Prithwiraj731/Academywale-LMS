@@ -18,6 +18,7 @@ export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('courses'); // 'courses' or 'cart'
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
 
   const handleCheckoutProceed = (details, address) => {
     setShowCheckoutModal(false);
@@ -181,14 +182,14 @@ export default function StudentDashboard() {
           <div className="space-y-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center">
-                <FaUserGraduate className="mr-3 text-[#20b2aa]" /> My Orders & Enrollments
+                <FaUserGraduate className="mr-3 text-[#20b2aa]" /> My Purchased Courses
               </h2>
             </div>
             
             {loading && (
               <div className="flex flex-col items-center justify-center py-20 bg-neutral-900/50 rounded-3xl border border-neutral-800">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#20b2aa] mb-3"></div>
-                <p className="text-neutral-400 text-sm">Loading order detail records...</p>
+                <p className="text-neutral-400 text-sm">Loading enrolled courses...</p>
               </div>
             )}
 
@@ -210,203 +211,75 @@ export default function StudentDashboard() {
                 </p>
                 <button 
                   onClick={() => navigate('/courses/all')}
-                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
+                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all cursor-pointer"
                 >
                   Explore All Courses
                 </button>
               </div>
             )}
 
-            {!loading && !error && purchases.length > 0 && purchases.map((purchase) => {
-              const courseDetails = purchase.courseDetails || purchase.course_details || {};
-              const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
-              
-              return (
-                <div 
-                  key={purchase.id} 
-                  className="bg-[#141416] border border-neutral-800 text-white rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden transition-all hover:border-neutral-700"
-                >
-                  {/* Top Header: Order Info */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-neutral-800">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                          Order #{purchase.transactionId || String(purchase.id).slice(0, 14)}
-                        </h3>
-                        <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-0.5 rounded-md font-bold">
-                          {purchase.isExpired ? 'Expired' : 'Placed'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-400 mt-1 italic font-mono">
-                        {formatDate(purchase.purchaseDate || purchase.purchase_date)}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => setSelectedInvoice(purchase)}
-                      className="bg-neutral-850 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+            {/* Clean 3-Column Responsive Grid Cards for Purchased Courses */}
+            {!loading && !error && purchases.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {purchases.map((purchase) => {
+                  const courseDetails = purchase.courseDetails || purchase.course_details || {};
+                  const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
+                  
+                  return (
+                    <div 
+                      key={purchase.id} 
+                      className="bg-[#141416] border border-neutral-800 text-white rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between transition-all hover:border-neutral-700 hover:shadow-teal-900/10 transform hover:-translate-y-1"
                     >
-                      <FaFileInvoiceDollar className="text-teal-400 text-sm" />
-                      <span>Invoice</span>
-                    </button>
-                  </div>
-
-                  {/* Order Details Card (Matching Screenshot #1 & #2) */}
-                  <div className="mt-5 bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-xs font-extrabold text-neutral-300 uppercase tracking-wider">Order Details</span>
-                      <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2.5 py-0.5 rounded font-bold">Placed</span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      {/* Course Thumbnail */}
-                      <div className="w-24 sm:w-28 h-24 rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800 shrink-0 flex items-center justify-center">
-                        <img
-                          src={poster}
-                          alt={courseDetails.title || courseDetails.subject}
+                      {/* Card Poster Image with Status Badge */}
+                      <div className="relative bg-neutral-900 h-44 flex items-center justify-center overflow-hidden border-b border-neutral-800">
+                        <img 
+                          src={poster} 
+                          alt={courseDetails.title || courseDetails.subject || 'Course'}
                           className="w-full h-full object-cover"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                         />
-                      </div>
-
-                      <div className="flex-1 space-y-2">
-                        <h4 className="text-base sm:text-lg font-extrabold text-[#38bdf8] leading-snug line-clamp-2">
-                          {courseDetails.title || courseDetails.subject || 'Course Title'}
-                        </h4>
-                        
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold text-neutral-500 line-through">
-                            ₹{Number((purchase.amount || 0) * 1.25).toLocaleString()}
-                          </span>
-                          <span className="text-lg font-black text-white font-mono">
-                            ₹{Number(purchase.amount || 0).toLocaleString()}
-                          </span>
-                          <span className="text-xs font-bold text-neutral-400">x1</span>
-                        </div>
-
-                        {/* Option Badges (Matching Screenshot #1) */}
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {courseDetails.mode && (
-                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
-                              Mode: {courseDetails.mode}
-                            </span>
-                          )}
-                          {courseDetails.validity && (
-                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
-                              Course Validity: {courseDetails.validity}
-                            </span>
-                          )}
-                          {courseDetails.books && (
-                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
-                              Mode of Delivery of Books: {courseDetails.books}
-                            </span>
-                          )}
-                          {courseDetails.attempt && (
-                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
-                              Exam Term: {courseDetails.attempt}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Price Breakdown Footer */}
-                    <div className="mt-4 pt-3 border-t border-neutral-800/80 flex items-center justify-between text-xs text-neutral-400">
-                      <span className="font-semibold text-neutral-400">Price Breakdown</span>
-                      <span className="font-extrabold text-[#38bdf8] text-base font-mono">₹{Number(purchase.amount || 0).toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Enrollments Card (Matching Screenshot #1 & #2) */}
-                  <div className="mt-5 bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
-                    <div className="flex items-center gap-2 mb-3 text-sm font-extrabold text-neutral-200">
-                      <span className="text-lg text-[#20b2aa]">🎓</span> Enrollments (1)
-                    </div>
-
-                    <div className="bg-[#121214] rounded-xl p-4 border border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
-                        <h5 className="font-extrabold text-white text-sm sm:text-base">
-                          {courseDetails.title || courseDetails.subject}
-                        </h5>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
-                            Mode: {courseDetails.mode || 'Online'}
-                          </span>
-                          <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
-                            Course Validity: {courseDetails.validity || '1 Year'}
+                        <div className="absolute top-3 right-3">
+                          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-1 rounded-full font-bold shadow-md">
+                            {purchase.isExpired ? 'Expired' : 'Active'}
                           </span>
                         </div>
                       </div>
 
-                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3.5 py-1 rounded-md font-bold shrink-0">
-                        Active
-                      </span>
+                      {/* Content: Title, Faculty, Price & View Details Button */}
+                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                          <h3 className="text-base sm:text-lg font-extrabold text-white line-clamp-2 leading-snug mb-1">
+                            {courseDetails.title || courseDetails.subject || 'Course Title'}
+                          </h3>
+                          <p className="text-xs text-neutral-400 font-semibold">
+                            Faculty: <span className="text-[#38bdf8] font-bold">{courseDetails.facultyName || 'Expert Faculty'}</span>
+                          </p>
+                        </div>
+
+                        <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
+                          <div>
+                            <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">Price Paid</p>
+                            <p className="text-lg font-black text-white font-mono">
+                              ₹{Number(purchase.amount || 0).toLocaleString()}
+                            </p>
+                          </div>
+
+                          <button
+                            onClick={() => setSelectedOrderDetail(purchase)}
+                            className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>View Details</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Student & Transaction Accordions (Matching Screenshot #2) */}
-                  <div className="mt-5 space-y-3">
-                    {/* Student Details Accordion */}
-                    <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
-                      <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
-                        <div className="flex items-center gap-2">
-                          <span>Student Details</span>
-                        </div>
-                        <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
-                      </summary>
-                      <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2 mt-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{user.name || 'Learner'}</strong>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{user.email}</strong>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{user.phone || '+917557021866'}</strong>
-                        </div>
-                      </div>
-                    </details>
-
-                    {/* Transaction Details Accordion */}
-                    <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
-                      <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
-                        <div className="flex items-center gap-2">
-                          <span>Transaction Details</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">Success</span>
-                          <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
-                        </div>
-                      </summary>
-                      <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2.5 mt-2">
-                        <div className="flex justify-between">
-                          <span className="text-neutral-400">ID:</span>
-                          <span className="font-mono text-white font-bold">{purchase.transactionId || purchase.id}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-400">Payment Gateway:</span>
-                          <span className="text-white font-semibold">paid</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-400">Payment Mode:</span>
-                          <span className="text-white font-semibold">Online / Razorpay</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-400">Payment Status:</span>
-                          <span className="text-emerald-400 font-bold">success</span>
-                        </div>
-                        <div className="flex justify-between pt-2.5 border-t border-neutral-800">
-                          <span className="text-white font-bold text-sm">Total of multiple orders:</span>
-                          <span className="text-[#38bdf8] font-black text-base font-mono">₹{Number(purchase.amount || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         ) : (
+
           /* Cart Tab Content */
           <div className="bg-neutral-900/90 rounded-3xl shadow-2xl p-6 sm:p-8 border border-neutral-800">
             <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-6 flex items-center">
@@ -596,6 +469,210 @@ export default function StudentDashboard() {
             </div>
           </div>
         )}
+
+        {/* View Order & Enrollment Details Modal */}
+        {selectedOrderDetail && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-[#141416] text-white rounded-3xl p-5 sm:p-7 w-full max-w-2xl shadow-2xl relative border border-neutral-800 max-h-[90vh] overflow-y-auto">
+              
+              {/* Top Modal Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-neutral-800 mb-5">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                      Order #{selectedOrderDetail.transactionId || String(selectedOrderDetail.id).slice(0, 14)}
+                    </h3>
+                    <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-0.5 rounded-md font-bold">
+                      {selectedOrderDetail.isExpired ? 'Expired' : 'Placed'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-1 italic font-mono">
+                    {formatDate(selectedOrderDetail.purchaseDate || selectedOrderDetail.purchase_date)}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const inv = selectedOrderDetail;
+                      setSelectedOrderDetail(null);
+                      setSelectedInvoice(inv);
+                    }}
+                    className="bg-neutral-850 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <FaFileInvoiceDollar className="text-teal-400 text-sm" />
+                    <span>Invoice</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedOrderDetail(null)}
+                    className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center font-bold text-sm cursor-pointer"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+
+              {/* Order Details Body */}
+              {(() => {
+                const courseDetails = selectedOrderDetail.courseDetails || selectedOrderDetail.course_details || {};
+                const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
+                return (
+                  <div className="space-y-5">
+                    {/* Order Details Card */}
+                    <div className="bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-xs font-extrabold text-neutral-300 uppercase tracking-wider">Order Details</span>
+                        <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2.5 py-0.5 rounded font-bold">Placed</span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="w-24 sm:w-28 h-24 rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800 shrink-0 flex items-center justify-center">
+                          <img
+                            src={poster}
+                            alt={courseDetails.title || courseDetails.subject}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
+                          />
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <h4 className="text-base sm:text-lg font-extrabold text-[#38bdf8] leading-snug">
+                            {courseDetails.title || courseDetails.subject || 'Course Title'}
+                          </h4>
+                          
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-semibold text-neutral-500 line-through">
+                              ₹{Number((selectedOrderDetail.amount || 0) * 1.25).toLocaleString()}
+                            </span>
+                            <span className="text-lg font-black text-white font-mono">
+                              ₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-bold text-neutral-400">x1</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {courseDetails.mode && (
+                              <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                                Mode: {courseDetails.mode}
+                              </span>
+                            )}
+                            {courseDetails.validity && (
+                              <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                                Course Validity: {courseDetails.validity}
+                              </span>
+                            )}
+                            {courseDetails.books && (
+                              <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                                Mode of Delivery of Books: {courseDetails.books}
+                              </span>
+                            )}
+                            {courseDetails.attempt && (
+                              <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                                Exam Term: {courseDetails.attempt}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-neutral-800/80 flex items-center justify-between text-xs text-neutral-400">
+                        <span className="font-semibold text-neutral-400">Price Breakdown</span>
+                        <span className="font-extrabold text-[#38bdf8] text-base font-mono">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    {/* Enrollments Card */}
+                    <div className="bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
+                      <div className="flex items-center gap-2 mb-3 text-sm font-extrabold text-neutral-200">
+                        <span className="text-lg text-[#20b2aa]">🎓</span> Enrollments (1)
+                      </div>
+
+                      <div className="bg-[#121214] rounded-xl p-4 border border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                          <h5 className="font-extrabold text-white text-sm sm:text-base">
+                            {courseDetails.title || courseDetails.subject}
+                          </h5>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
+                              Mode: {courseDetails.mode || 'Online'}
+                            </span>
+                            <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
+                              Course Validity: {courseDetails.validity || '1 Year'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3.5 py-1 rounded-md font-bold shrink-0">
+                          Active
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Student & Transaction Accordions */}
+                    <div className="space-y-3">
+                      <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
+                        <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
+                          <div className="flex items-center gap-2">
+                            <span>Student Details</span>
+                          </div>
+                          <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
+                        </summary>
+                        <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2 mt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{user.name || 'Learner'}</strong>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{user.email}</strong>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{user.phone || '+917557021866'}</strong>
+                          </div>
+                        </div>
+                      </details>
+
+                      <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
+                        <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
+                          <div className="flex items-center gap-2">
+                            <span>Transaction Details</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">Success</span>
+                            <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
+                          </div>
+                        </summary>
+                        <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2.5 mt-2">
+                          <div className="flex justify-between">
+                            <span className="text-neutral-400">ID:</span>
+                            <span className="font-mono text-white font-bold">{selectedOrderDetail.transactionId || selectedOrderDetail.id}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-neutral-400">Payment Gateway:</span>
+                            <span className="text-white font-semibold">paid</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-neutral-400">Payment Mode:</span>
+                            <span className="text-white font-semibold">Online / Razorpay</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-neutral-400">Payment Status:</span>
+                            <span className="text-emerald-400 font-bold">success</span>
+                          </div>
+                          <div className="flex justify-between pt-2.5 border-t border-neutral-800">
+                            <span className="text-white font-bold text-sm">Total of multiple orders:</span>
+                            <span className="text-[#38bdf8] font-black text-base font-mono">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                );
+              })()}
+
+            </div>
+          </div>
+        )}
+
 
       </div>
       {showCheckoutModal && (
