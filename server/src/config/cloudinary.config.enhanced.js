@@ -6,26 +6,18 @@ console.log('🔥 LOADING ENHANCED CLOUDINARY CONFIG');
 
 // Configuration with error handling
 try {
-  // HARD-CODED CREDENTIALS TO ENSURE IT WORKS
   cloudinary.config({
-    cloud_name: 'drlqhsjgm',
-    api_key: '367882575567196',
-    api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true
   });
 
   console.log('☁️ CLOUDINARY CONFIGURED SUCCESSFULLY:', cloudinary.config().cloud_name);
 } catch (error) {
   console.error('❌ CLOUDINARY CONFIGURATION ERROR:', error);
-  // Fallback to environment variables as a last resort
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'drlqhsjgm',
-    api_key: process.env.CLOUDINARY_API_KEY || '367882575567196',
-    api_secret: process.env.CLOUDINARY_API_SECRET || 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
-    secure: true
-  });
-  console.log('⚠️ USING FALLBACK CLOUDINARY CONFIGURATION');
 }
+
 
 // Faculty storage configuration
 const facultyStorage = new CloudinaryStorage({

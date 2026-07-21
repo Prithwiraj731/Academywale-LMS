@@ -6,15 +6,13 @@ delete process.env.CLOUDINARY_URL;
 
 console.log('🆕 Creating FRESH Cloudinary configuration...');
 
-// Configure Cloudinary with explicit credentials
 cloudinary.config({
-  cloud_name: 'drlqhsjgm',
-  api_key: '367882575567196',
-  api_secret: 'RdSBwyzQRUb5ZD32kbqS3vhxh7I',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 });
 
-console.log('☁️ Cloudinary configured for cloud: drlqhsjgm');
 
 // Create FRESH storage instance
 const freshStorage = new CloudinaryStorage({

@@ -24,7 +24,7 @@ function loadRazorpayScript(src) {
   });
 }
 
-const RAZORPAY_KEY_ID = 'rzp_live_yTZxWd8ztKSYk5';
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || '';
 
 const PaymentPage = () => {
   const { slug, courseIndex } = useParams();

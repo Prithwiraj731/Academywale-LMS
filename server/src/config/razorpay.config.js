@@ -1,17 +1,30 @@
 const Razorpay = require('razorpay');
 require('dotenv').config();
 
-// Live Razorpay credentials
-const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || 'rzp_live_TG5aLJKK3oiyxV').trim().replace(/^['"]|['"]$/g, '');
-const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '6wp93bM8XpozI44f4ra4F0fC').trim().replace(/^['"]|['"]$/g, '');
+const getKeyId = () => (
+  process.env.RAZORPAY_KEY_ID ||
+  process.env.RAZORPAY_API_KEY ||
+  process.env.VITE_RAZORPAY_KEY_ID ||
+  ''
+).trim().replace(/^['"]|['"]$/g, '');
 
-const getKeyId = () => RAZORPAY_KEY_ID;
-const getKeySecret = () => RAZORPAY_KEY_SECRET;
+const getKeySecret = () => (
+  process.env.RAZORPAY_KEY_SECRET ||
+  process.env.RAZORPAY_API_SECRET ||
+  ''
+).trim().replace(/^['"]|['"]$/g, '');
 
 const getRazorpayInstance = () => {
+  const key_id = getKeyId();
+  const key_secret = getKeySecret();
+
+  if (!key_id || !key_secret) {
+    console.warn('⚠️ Razorpay credentials missing in environment variables');
+  }
+
   return new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET
+    key_id,
+    key_secret
   });
 };
 
@@ -20,3 +33,4 @@ module.exports = {
   getKeyId,
   getKeySecret
 };
+
