@@ -321,19 +321,20 @@ const CourseFullDetailPage = () => {
     if (course) fetchVisibleCoupons();
   }, [course?.id, course?._id, courseId]);
 
+  // Coupon Modal State
+  const [showApplyCouponModal, setShowApplyCouponModal] = useState(false);
+  const [couponModalInput, setCouponModalInput] = useState('');
+  const [modalCouponError, setModalCouponError] = useState('');
+
   // Handle Apply Coupon with specific code
   const handleApplyCouponWithCode = async (codeToApply) => {
     const code = String(codeToApply || '').trim().toUpperCase();
-    setCouponStatus('');
+    setModalCouponError('');
     if (!code) {
-      setCouponStatus('Enter a coupon code.');
+      setModalCouponError('Please enter a coupon code.');
       return;
     }
 
-    if (appliedCoupons.some(c => c.code === code)) {
-      setCouponStatus('This coupon code is already applied.');
-      return;
-    }
 
     try {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
@@ -345,27 +346,26 @@ const CourseFullDetailPage = () => {
           userId: user?.id || user?._id,
           userEmail: user?.email
         })
-
       });
       const data = await res.json();
       if (res.ok && data.success) {
         const discountPct = Number(data.discountPercent || 0);
-        const currentSelling = Number(selectedPrice?.selling || 0);
-        const savingsRupees = Math.round(currentSelling * (discountPct / 100));
         const newCoupon = {
           code: data.code || code,
           discountPercent: discountPct,
           message: data.message || null
         };
-        setAppliedCoupons(prev => [...prev, newCoupon]);
-        setCouponCode('');
-        setCouponStatus(`✅ Coupon ${code} applied! Saved ₹${safeFormatPrice(savingsRupees)}!`);
+        setAppliedCoupons([newCoupon]); // Replace applied coupon (no duplicate stacking!)
+        setShowApplyCouponModal(false);
+        setCouponModalInput('');
+        setModalCouponError('');
+        setCouponStatus(`✅ Coupon ${code} applied successfully!`);
         setTimeout(() => setCouponStatus(''), 3000);
       } else {
-        setCouponStatus(data.error || 'Invalid coupon code.');
+        setModalCouponError(data.error || 'The coupon is not applicable for the selected products!');
       }
     } catch (err) {
-      setCouponStatus('Server error while applying coupon.');
+      setModalCouponError('Server error while applying coupon.');
     }
   };
 
@@ -375,6 +375,7 @@ const CourseFullDetailPage = () => {
     setAppliedCoupons(prev => prev.filter(c => c.code !== codeToRemove));
     setCouponStatus('');
   };
+
 
   const baseSellingPrice = Number(selectedPrice?.selling || 0);
   const baseCostPrice = Number(selectedPrice?.cost || 0);
@@ -613,6 +614,13 @@ const CourseFullDetailPage = () => {
 
                 {/* Dynamic Sub-Options Rows (Batch, Exam Term, Mode of Delivery of Books, etc.) */}
                 {selectedMode && getSubOptionLabels().map((label, optIdx) => {
+                  // Hide "Mode of Delivery of Books" if selectedMode is Face to Face / Offline
+                  const isFaceToFaceMode = /face|f2f|offline/i.test(selectedMode || '');
+                  const isDeliveryOption = /delivery|book/i.test(label || '');
+                  if (isFaceToFaceMode && isDeliveryOption) {
+                    return null;
+                  }
+
                   const modeObj = getCurrentModeData();
                   const availableVals = getSubOptionValuesForModeAndSelections(modeObj, optIdx, selectedSubOptions);
                   if (availableVals.length === 0) return null;
@@ -664,104 +672,48 @@ const CourseFullDetailPage = () => {
 
             {/* Coupon Code Section */}
             <div className="pt-2 border-t border-gray-200">
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1.5"><FaTag className="text-teal-600" /> Apply Coupon Code (if any)</span>
-                {totalSavingsInRupees > 0 && (
-                  <span className="text-xs text-green-700 font-extrabold bg-green-100 px-2 py-0.5 rounded border border-green-200">
-                    ₹{safeFormatPrice(totalSavingsInRupees)} OFF APPLIED
-                  </span>
-                )}
-              </label>
-
-              {/* Clickable Visible Available Coupon Badges */}
-              {availableCoupons.length > 0 && (
-                <div className="mb-3 space-y-1.5">
-                  <div className="text-[11px] font-extrabold text-teal-800 uppercase tracking-wider">Available Coupons:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {availableCoupons.map((coupon) => {
-                      const isAlreadyApplied = appliedCoupons.some(c => c.code === coupon.code);
-                      const discountAmount = Math.round(baseSellingPrice * ((coupon.discountPercent || 0) / 100));
-                      return (
-                        <button
-                          key={coupon.code}
-                          type="button"
-                          disabled={isAlreadyApplied}
-                          onClick={() => {
-                            setCouponCode(coupon.code);
-                            handleApplyCouponWithCode(coupon.code);
-                          }}
-                          className={`text-xs px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-all shadow-xs ${
-                            isAlreadyApplied
-                              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                              : 'bg-teal-50 hover:bg-teal-100 text-teal-800 border-teal-300 hover:border-teal-400 cursor-pointer'
-                          }`}
-                        >
-                          <span>Apply <strong className="font-mono text-teal-900">{coupon.code}</strong> to get {discountAmount > 0 ? `₹${safeFormatPrice(discountAmount)} Off` : `${coupon.discountPercent}% Off`}</span>
-                        </button>
-                      );
-                    })}
+              {appliedCoupons.length === 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowApplyCouponModal(true);
+                    setModalCouponError('');
+                    setCouponModalInput('');
+                  }}
+                  className="flex items-center gap-2 text-[#20b2aa] hover:text-[#18918a] font-bold text-sm hover:underline cursor-pointer transition-all py-1.5"
+                >
+                  <FaTag className="text-base" />
+                  <span>Apply Coupon Code (if any)</span>
+                </button>
+              ) : (
+                <div className="bg-teal-50/80 border border-teal-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-bold text-teal-700">Coupon Applied:</span>
+                    <span className="font-mono font-extrabold text-teal-950 text-sm bg-white px-2.5 py-0.5 rounded border border-teal-200 shadow-2xs">
+                      {appliedCoupons[0].code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCoupon(appliedCoupons[0].code)}
+                      className="w-5 h-5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs font-bold transition-colors"
+                      title="Remove coupon"
+                    >
+                      ✕
+                    </button>
                   </div>
+                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                    {appliedCoupons[0].discountPercent}% OFF
+                  </span>
                 </div>
               )}
 
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="Enter Coupon Code (e.g. ACAD5)"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] bg-white font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={handleApplyCoupon}
-                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-bold text-sm px-5 py-2 rounded-lg transition-all shadow-xs"
-                >
-                  Apply
-                </button>
-              </div>
-
               {couponStatus && (
-                <p className={`text-xs mb-2 font-bold ${couponStatus.includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
+                <p className={`text-xs mt-1 font-bold ${couponStatus.includes('✅') ? 'text-green-600' : 'text-red-500'}`}>
                   {couponStatus}
                 </p>
               )}
-
-              {/* Applied Coupons List with Rupee Savings */}
-              {appliedCoupons.length > 0 && (
-                <div className="space-y-2 mt-2 pt-2 border-t border-gray-150">
-                  {appliedCoupons.map((c) => {
-                    const couponSavings = Math.round(baseSellingPrice * ((c.discountPercent || 0) / 100));
-                    return (
-                      <div key={c.code} className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <FaCheckCircle className="text-green-500 text-xs shrink-0" />
-                            <span className="text-sm font-extrabold text-green-800 font-mono">{c.code}</span>
-                            <span className="bg-green-200 text-green-900 text-xs px-2.5 py-0.5 rounded font-extrabold">
-                              ₹{safeFormatPrice(couponSavings)} OFF
-                            </span>
-                          </div>
-                          {c.message && (
-                            <p className="text-xs text-teal-800 font-medium mt-1 pl-5">
-                              💬 {c.message}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCoupon(c.code)}
-                          className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
+
 
             {/* Price Display */}
             <div className="pt-2 border-t border-gray-200">
@@ -1017,6 +969,118 @@ const CourseFullDetailPage = () => {
             selectedAttempt
           }}
         />
+      )}
+
+      {/* Apply Coupon Modal */}
+      {showApplyCouponModal && (
+
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-150">
+              <div className="flex items-center gap-2">
+                <FaTag className="text-[#20b2aa] text-lg" />
+                <h3 className="text-xl font-bold text-gray-900">Apply Coupon</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowApplyCouponModal(false);
+                  setModalCouponError('');
+                  setCouponModalInput('');
+                }}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Error Alert (Matching Screenshot #5) */}
+            {modalCouponError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs font-semibold shadow-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">⚠️</span>
+                  <span>{modalCouponError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setModalCouponError('')}
+                  className="text-red-400 hover:text-red-700 font-bold shrink-0 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Input Row (Matching Screenshot #3) */}
+            <div className="flex gap-2 mb-6">
+              <input
+                type="text"
+                placeholder="Enter Coupon Code"
+                value={couponModalInput}
+                onChange={(e) => {
+                  setCouponModalInput(e.target.value);
+                  setModalCouponError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleApplyCouponWithCode(couponModalInput);
+                  }
+                }}
+                className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] font-mono font-bold uppercase ${
+                  modalCouponError ? 'border-red-400 bg-red-50/30' : 'border-gray-300 bg-white'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => handleApplyCouponWithCode(couponModalInput)}
+                className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                Apply
+              </button>
+            </div>
+
+            {/* Available Coupon Codes List (Matching Screenshot #3) */}
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-3">
+                Available Coupon Codes
+              </h4>
+
+              {availableCoupons.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No available coupon codes at this time.</p>
+              ) : (
+                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  {availableCoupons.map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => {
+                        setCouponModalInput(c.code);
+                        setModalCouponError('');
+                      }}
+                      className="w-full text-left bg-gradient-to-r from-teal-50/50 via-emerald-50/30 to-white hover:from-teal-100/60 hover:to-teal-50/60 border border-teal-200 hover:border-[#20b2aa] rounded-2xl p-3.5 flex items-center justify-between transition-all group shadow-xs cursor-pointer"
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-mono font-extrabold text-teal-950 text-base group-hover:text-teal-700 transition-colors">
+                          {c.code}
+                        </span>
+                        {c.message ? (
+                          <span className="text-xs text-teal-800 font-semibold">{c.message}</span>
+                        ) : (
+                          <span className="text-xs text-gray-500 font-medium">{c.discountPercent}% OFF</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-bold text-[#20b2aa] group-hover:underline">
+                        Select
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

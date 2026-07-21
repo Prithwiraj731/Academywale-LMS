@@ -338,12 +338,62 @@ export default function AdminDashboard() {
   const [facultyQueried, setFacultyQueried] = useState('');
 
   // Coupon management state
-  // Coupon management state
-  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseId: '', message: '', isVisible: true });
+  const [couponForm, setCouponForm] = useState({ code: '', discountPercent: '', courseIds: [], message: '', isVisible: true, isGlobal: true });
   const [coupons, setCoupons] = useState([]);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
+
+  const toggleCourseInCouponForm = (courseId) => {
+    setCouponForm(f => {
+      const current = f.courseIds || [];
+      const updated = current.includes(courseId)
+        ? current.filter(id => id !== courseId)
+        : [...current, courseId];
+      return { ...f, courseIds: updated, isGlobal: updated.length === 0 };
+    });
+  };
+
+  const handleCouponChange = e => {
+    const { name, value, type, checked } = e.target;
+    setCouponForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleAddCoupon = async e => {
+    e.preventDefault();
+    setCouponError('');
+    setCouponSuccess('');
+    if (!couponForm.code.trim() || !couponForm.discountPercent) {
+      setCouponError('Enter code and discount percent');
+      return;
+    }
+    try {
+      const payloadCourseIds = couponForm.isGlobal ? null : (couponForm.courseIds.length > 0 ? couponForm.courseIds : null);
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponForm.code.trim().toUpperCase(),
+          discountPercent: Number.parseFloat(couponForm.discountPercent),
+          courseIds: payloadCourseIds,
+          message: couponForm.message.trim() || undefined,
+          isVisible: couponForm.isVisible
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCouponSuccess('Coupon added!');
+        setCouponForm({ code: '', discountPercent: '', courseIds: [], message: '', isVisible: true, isGlobal: true });
+        fetchCoupons();
+        setTimeout(() => setCouponSuccess(''), 2000);
+      } else {
+        setCouponError(data.message || data.error || 'Failed to add coupon');
+      }
+    } catch (err) {
+      setCouponError(err.message || 'Server error');
+    }
+  };
+
 
   // Add Institute State
   const [instituteAdd, setInstituteAdd] = useState({ name: '', image: null, imagePreview: null });
@@ -426,44 +476,7 @@ export default function AdminDashboard() {
   };
 
 
-  const handleCouponChange = e => {
-    const { name, value, type, checked } = e.target;
-    setCouponForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
-  };
 
-  const handleAddCoupon = async e => {
-    e.preventDefault();
-    setCouponError('');
-    setCouponSuccess('');
-    if (!couponForm.code.trim() || !couponForm.discountPercent) {
-      setCouponError('Enter code and discount percent');
-      return;
-    }
-    try {
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: couponForm.code.trim().toUpperCase(),
-          discountPercent: Number.parseFloat(couponForm.discountPercent),
-          courseId: couponForm.courseId || undefined,
-          message: couponForm.message.trim() || undefined,
-          isVisible: couponForm.isVisible
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setCouponSuccess('Coupon added!');
-        setCouponForm({ code: '', discountPercent: '', courseId: '', message: '', isVisible: true });
-        fetchCoupons();
-        setTimeout(() => setCouponSuccess(''), 2000);
-      } else {
-        setCouponError(data.message || data.error || 'Failed to add coupon');
-      }
-    } catch (err) {
-      setCouponError(err.message || 'Server error');
-    }
-  };
 
   const handleDeleteCoupon = async code => {
     if (!window.confirm('Delete this coupon?')) return;
@@ -746,30 +759,28 @@ export default function AdminDashboard() {
       } else if (subcategory === 'Inter') {
         return [
           // INTERMEDIATE GROUP 1
-          { id: 1, name: 'Paper 1: Accounting (Group 1)', group: 'Group 1' },
-          { id: 2, name: 'Paper 2: Corporate and Other Laws (Group 1)', group: 'Group 1' },
-          { id: 3, name: 'Paper 3: Cost and Management Accounting (Group 1)', group: 'Group 1' },
-          { id: 4, name: 'Paper 4: Taxation (Group 1)', group: 'Group 1' },
+          { id: 5, name: 'Paper 5: Advanced Accounting (Group 1)', group: 'Group 1' },
+          { id: 6, name: 'Paper 6: Corporate and Other Laws (Group 1)', group: 'Group 1' },
+          { id: 7, name: 'Paper 7: Taxation (Group 1)', group: 'Group 1' },
           // INTERMEDIATE GROUP 2
-          { id: 5, name: 'Paper 5: Advanced Accounting (Group 2)', group: 'Group 2' },
-          { id: 6, name: 'Paper 6: Auditing and Assurance (Group 2)', group: 'Group 2' },
-          { id: 7, name: 'Paper 7: Enterprise Information Systems & Strategic Management (Group 2)', group: 'Group 2' },
-          { id: 8, name: 'Paper 8: Financial Management & Economics for Finance (Group 2)', group: 'Group 2' }
+          { id: 8, name: 'Paper 8: Cost and Management Accounting (Group 2)', group: 'Group 2' },
+          { id: 9, name: 'Paper 9: Auditing and ethics (Group 2)', group: 'Group 2' },
+          { id: 10, name: 'Paper 10: Financial Management and Strategic Management (Group 2)', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
-          // FINAL GROUP 3
-          { id: 1, name: 'Paper 1: Financial Reporting (Group 3)', group: 'Group 3' },
-          { id: 2, name: 'Paper 2: Strategic Financial Management (Group 3)', group: 'Group 3' },
-          { id: 3, name: 'Paper 3: Advanced Auditing and Professional Ethics (Group 3)', group: 'Group 3' },
-          { id: 4, name: 'Paper 4: Corporate and Economic Laws (Group 3)', group: 'Group 3' },
-          // FINAL GROUP 4
-          { id: 5, name: 'Paper 5: Strategic Cost Management and Performance Evaluation (Group 4)', group: 'Group 4' },
-          { id: 6, name: 'Paper 6: Elective Paper (Group 4)', group: 'Group 4' },
-          { id: 7, name: 'Paper 7: Direct Tax Laws and International Taxation (Group 4)', group: 'Group 4' },
-          { id: 8, name: 'Paper 8: Indirect Tax Laws (Group 4)', group: 'Group 4' }
+          // FINAL GROUP 1
+          { id: 11, name: 'Paper 11: Financial Reporting (Group 1)', group: 'Group 1' },
+          { id: 12, name: 'Paper 12: Advanced Financial Management (Group 1)', group: 'Group 1' },
+          { id: 13, name: 'Paper 13: Advanced Auditing and Professional Ethics (Group 1)', group: 'Group 1' },
+          { id: 14, name: 'Paper 14: Direct Tax Laws and International Taxation (Group 1)', group: 'Group 1' },
+          // FINAL GROUP 2
+          { id: 15, name: 'Paper 15: Indirect Tax Laws (Group 2)', group: 'Group 2' },
+          { id: 16, name: 'Paper 16: Corporate and Economic Laws (Group 2)', group: 'Group 2' },
+          { id: 17, name: 'Paper 17: Strategic Cost and Performance Management (Group 2)', group: 'Group 2' }
         ];
       }
+
 
     } else if (category === 'CMA') {
       if (subcategory === 'Foundation') {
@@ -3238,7 +3249,7 @@ export default function AdminDashboard() {
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
         <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Coupon Codes</h2>
         <form onSubmit={handleAddCoupon} className="flex flex-col gap-4 mb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input 
               name="code" 
               value={couponForm.code} 
@@ -3259,20 +3270,42 @@ export default function AdminDashboard() {
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
               required 
             />
-            <select
-              name="courseId"
-              value={couponForm.courseId}
-              onChange={handleCouponChange}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
-            >
-              <option value="">All Courses (Global)</option>
-              {availableCourses.map((c) => (
-                <option key={c.id || c._id} value={c.id || c._id}>
-                  {c.title || c.subject} ({c.category || 'Course'})
-                </option>
-              ))}
-            </select>
           </div>
+
+          <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-bold text-gray-700">Course Scope (Apply to All Courses or Multiple Courses):</label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-teal-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={couponForm.isGlobal}
+                  onChange={(e) => setCouponForm(f => ({ ...f, isGlobal: e.target.checked, courseIds: e.target.checked ? [] : f.courseIds }))}
+                  className="w-4 h-4 text-teal-600 rounded"
+                />
+                <span>🌐 All Courses (Global Coupon)</span>
+              </label>
+            </div>
+            {!couponForm.isGlobal && (
+              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2 bg-white space-y-1 mt-1">
+                {availableCourses.map((c) => {
+                  const cId = c.id || c._id;
+                  const isChecked = (couponForm.courseIds || []).includes(cId);
+                  return (
+                    <label key={cId} className="flex items-center gap-2 text-xs text-gray-800 hover:bg-gray-50 p-1 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleCourseInCouponForm(cId)}
+                        className="w-3.5 h-3.5 text-green-600 rounded border-gray-300"
+                      />
+                      <span className="font-medium">{c.title || c.subject} ({c.category || 'Course'})</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <div>
             <input 
               name="message" 
@@ -3282,6 +3315,7 @@ export default function AdminDashboard() {
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white" 
             />
           </div>
+
           <div className="flex items-center justify-between pt-1">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
               <input
@@ -3326,8 +3360,11 @@ export default function AdminDashboard() {
 
                     </div>
                     <span className="text-xs text-gray-500 mt-0.5">
-                      {linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses'}
+                      {c.courseIds && c.courseIds.length > 0 
+                        ? `🎯 Scope: ${c.courseIds.length} Specific Course(s)` 
+                        : (linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses')}
                     </span>
+
                     {c.message && (
                       <span className="text-xs text-teal-700 font-semibold mt-0.5">💬 {c.message}</span>
                     )}

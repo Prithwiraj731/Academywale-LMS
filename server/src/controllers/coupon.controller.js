@@ -10,7 +10,7 @@ const {
 // Admin: Create a new coupon
 exports.createCoupon = async (req, res) => {
   try {
-    const { code, discountPercent, courseId, message, isVisible } = req.body;
+    const { code, discountPercent, courseId, courseIds, message, isVisible } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
     const parsedDiscount = Number.parseFloat(discountPercent);
     const customMessage = String(message || '').trim();
@@ -24,10 +24,19 @@ exports.createCoupon = async (req, res) => {
       return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
     }
 
+    // Normalize courseIds array
+    let targetCourseIds = null;
+    if (Array.isArray(courseIds) && courseIds.length > 0) {
+      targetCourseIds = courseIds.map(id => String(id).trim()).filter(Boolean);
+    } else if (Array.isArray(courseId) && courseId.length > 0) {
+      targetCourseIds = courseId.map(id => String(id).trim()).filter(Boolean);
+    } else if (courseId && typeof courseId === 'string' && courseId.trim() !== '') {
+      targetCourseIds = [courseId.trim()];
+    }
+
     // Prepare integer discount for PostgreSQL INTEGER column in Supabase
     const intDiscount = Math.round(parsedDiscount);
 
-    // Guaranteed clean DB payload matching standard Supabase schema
     const insertPayload = {
       code: normalizedCode,
       discount_percent: intDiscount,
@@ -46,10 +55,11 @@ exports.createCoupon = async (req, res) => {
       return res.status(400).json({ error: dbError.message || 'Database failed to save coupon.' });
     }
 
-    // 2. Save full metadata (exact decimal percentage e.g. 60.77, courseId restriction, custom message, visibility flag)
+    // 2. Save full metadata (exact decimal percentage e.g. 60.77, courseIds restriction, custom message, visibility flag)
     setCouponMetadata(normalizedCode, {
       exactDiscountPercent: parsedDiscount,
-      courseId: courseId || null,
+      courseIds: targetCourseIds,
+      courseId: targetCourseIds ? targetCourseIds[0] : null,
       message: customMessage || null,
       isVisible: visibleFlag
     });
@@ -59,7 +69,8 @@ exports.createCoupon = async (req, res) => {
       _id: couponData?.id,
       code: normalizedCode,
       discountPercent: parsedDiscount,
-      courseId: courseId || null,
+      courseIds: targetCourseIds,
+      courseId: targetCourseIds ? targetCourseIds[0] : null,
       message: customMessage || null,
       isVisible: visibleFlag,
       isActive: true
@@ -88,12 +99,14 @@ exports.getCoupons = async (req, res) => {
         ? Number(meta.exactDiscountPercent)
         : Number(c.discount_percent);
       const isVisible = meta.isVisible !== undefined ? Boolean(meta.isVisible) : true;
+      const courseIds = meta.courseIds || (meta.courseId ? [meta.courseId] : null);
 
       return {
         _id: c.id,
         id: c.id,
         code: c.code,
         discountPercent,
+        courseIds,
         courseId: meta.courseId || c.course_id || null,
         message: meta.message || c.message || c.description || null,
         isVisible,
@@ -171,16 +184,16 @@ exports.validateCoupon = async (req, res) => {
     }
 
     const meta = getCouponMetadata(normalizedCode) || {};
-    const effectiveCourseId = meta.courseId || coupon.course_id || null;
+    const allowedCourseIds = meta.courseIds || (meta.courseId ? [meta.courseId] : (coupon.course_id ? [coupon.course_id] : null));
     const discountPercent = (meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null)
       ? Number(meta.exactDiscountPercent)
       : Number(coupon.discount_percent);
     const message = meta.message || coupon.message || coupon.description || null;
 
-    // Check course-specific restriction if coupon has a course_id set
-    if (effectiveCourseId) {
-      if (!courseId || String(effectiveCourseId).trim() !== String(courseId).trim()) {
-        return res.status(400).json({ error: 'This coupon code is not valid for this course.' });
+    // Check course-specific restriction
+    if (allowedCourseIds && allowedCourseIds.length > 0) {
+      if (!courseId || !allowedCourseIds.some(id => String(id).trim() === String(courseId).trim())) {
+        return res.status(400).json({ error: 'The coupon is not applicable for the selected products!' });
       }
     }
 
@@ -188,7 +201,8 @@ exports.validateCoupon = async (req, res) => {
       success: true, 
       discountPercent,
       code: coupon.code,
-      courseId: effectiveCourseId,
+      courseIds: allowedCourseIds,
+      courseId: allowedCourseIds ? allowedCourseIds[0] : null,
       message
     });
   } catch (err) {
@@ -196,12 +210,9 @@ exports.validateCoupon = async (req, res) => {
   }
 };
 
-
 // Student: Get public visible coupons for course details page
 exports.getPublicVisibleCoupons = async (req, res) => {
   try {
-    const { courseId } = req.query;
-
     const { data: coupons, error } = await supabaseAdmin
       .from('coupons')
       .select('*')
@@ -217,28 +228,25 @@ exports.getPublicVisibleCoupons = async (req, res) => {
           ? Number(meta.exactDiscountPercent)
           : Number(c.discount_percent);
         const isVisible = meta.isVisible !== undefined ? Boolean(meta.isVisible) : true;
-        const targetCourseId = meta.courseId || c.course_id || null;
+        const allowedCourseIds = meta.courseIds || (meta.courseId ? [meta.courseId] : (c.course_id ? [c.course_id] : null));
 
         return {
           code: c.code,
           discountPercent,
-          courseId: targetCourseId,
+          courseIds: allowedCourseIds,
+          courseId: meta.courseId || c.course_id || null,
           message: meta.message || c.message || c.description || null,
           isVisible
         };
       })
-      .filter(c => {
-        if (!c.isVisible) return false;
-        if (!c.courseId) return true; // Global coupon applicable everywhere
-        if (!courseId) return true;
-        return String(c.courseId).trim() === String(courseId).trim();
-      });
+      .filter(c => c.isVisible !== false);
 
     res.json({ success: true, coupons: visibleCoupons });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Admin: Toggle coupon visibility
 exports.toggleCouponVisibility = async (req, res) => {
