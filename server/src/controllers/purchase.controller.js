@@ -986,9 +986,10 @@ exports.verifyRazorpayPayment = async (req, res) => {
     // 1. Send Professional HTML Receipt Email to Student
     try {
       const { sendPurchaseInvoiceEmail } = require('../utils/email.utils');
+      const studentPhone = user?.phone || user?.mobile || userDetails?.phone || '';
       await sendPurchaseInvoiceEmail({
-        userEmail: userDetails?.email || user?.email,
-        userName: userDetails?.name || user?.name || 'Student',
+        userEmail: user?.email || userDetails?.email,
+        userName: user?.name || userDetails?.name || 'Student',
         purchases: createdPurchases,
         transactionId: razorpay_payment_id,
         amount: amount,
@@ -996,11 +997,11 @@ exports.verifyRazorpayPayment = async (req, res) => {
         couponCode: coupon || '',
         discountPercent: couponDiscount,
         userDetails: {
-          phone: userDetails?.phone || '',
+          phone: studentPhone,
           address: userDetails?.address
         }
       });
-      console.log('✅ Student purchase receipt email sent to:', userDetails?.email || user?.email);
+      console.log('✅ Student purchase receipt email sent to:', user?.email || userDetails?.email);
     } catch (studentEmailErr) {
       console.error('Failed to send student receipt email:', studentEmailErr);
     }

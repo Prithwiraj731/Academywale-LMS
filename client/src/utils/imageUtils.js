@@ -61,28 +61,51 @@ export const getFacultyCloudinaryId = (faculty) => {
  */
 export const getCourseImageUrl = (course) => {
   if (!course) return '/logo.svg';
-  const url = typeof course === 'string' 
+
+  const rawUrl = typeof course === 'string' 
     ? course 
     : (course.posterUrl || course.poster_url || course.poster || course.image || course.banner || '');
 
-  if (!url || typeof url !== 'string' || url.trim() === '') return '/logo.svg';
-  const trimmed = url.trim();
+  if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim() !== '') {
+    const trimmed = rawUrl.trim();
 
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
-    return trimmed;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+      const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+      return `${API_URL}${cleanPath}`;
+    }
+    if (trimmed.startsWith('/assets/') || trimmed.startsWith('assets/') || trimmed.startsWith('/static/') || trimmed.startsWith('static/')) {
+      return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    }
+    if (trimmed.startsWith('/')) {
+      return `${API_URL}${trimmed}`;
+    }
+    return `${API_URL}/uploads/${trimmed}`;
   }
-  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
-    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    return `${API_URL}${cleanPath}`;
+
+  // Smart Fallback: Match faculty image from hardcodedFaculties based on facultyName or title/subject
+  if (typeof course === 'object' && course !== null) {
+    const searchStr = `${course.facultyName || ''} ${course.faculty_name || ''} ${course.faculty || ''} ${course.title || ''} ${course.subject || ''}`.toLowerCase();
+    
+    const matchedFac = hardcodedFaculties.find(f => {
+      const fName = (f.name || '').toLowerCase();
+      const fSlug = (f.slug || '').toLowerCase();
+      const nameWithoutPrefix = fName.replace(/^(ca|cma|cs)\s+/i, '').trim();
+      return (fName && searchStr.includes(fName)) ||
+             (fSlug && searchStr.includes(fSlug)) ||
+             (nameWithoutPrefix.length > 3 && searchStr.includes(nameWithoutPrefix));
+    });
+
+    if (matchedFac && matchedFac.image) {
+      return matchedFac.image;
+    }
   }
-  if (trimmed.startsWith('/assets/') || trimmed.startsWith('assets/') || trimmed.startsWith('/static/') || trimmed.startsWith('static/')) {
-    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  }
-  if (trimmed.startsWith('/')) {
-    return `${API_URL}${trimmed}`;
-  }
-  return `${API_URL}/uploads/${trimmed}`;
+
+  return '/logo.svg';
 };
+
 
 
 
