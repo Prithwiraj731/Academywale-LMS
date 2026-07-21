@@ -22,7 +22,11 @@ router.put('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, u
 router.delete('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, courseController.deleteCourse);
 router.post('/api/admin/courses/bulk-upload', requireAdminCookie, courseController.bulkUploadCourses);
 
+router.put('/api/admin/courses/reorder', courseController.reorderCourses);
+router.put('/api/courses/reorder', courseController.reorderCourses);
+
 // Public course routes - Order matters! More specific routes first
+
 router.get('/api/courses/:category/:subcategory/:paperId', courseController.getCoursesByPaper);
 router.get('/api/institutes/:instituteName/courses', courseController.getCoursesByInstitute);
 router.get('/api/courses/:facultySlug', courseController.getCoursesByFaculty);

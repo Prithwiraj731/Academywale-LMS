@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { FaBookOpen, FaShoppingCart, FaUserGraduate, FaTrashAlt, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaBookOpen, FaShoppingCart, FaUserGraduate, FaTrashAlt, FaClock, FaCheckCircle, FaExclamationCircle, FaFileInvoiceDollar, FaTimes } from 'react-icons/fa';
 import { API_URL } from '../api';
 import CheckoutModal from '../components/common/CheckoutModal';
+import { getCourseImageUrl } from '../utils/imageUtils';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ export default function StudentDashboard() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('courses'); // 'courses' or 'cart'
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const handleCheckoutProceed = (details, address) => {
     setShowCheckoutModal(false);
@@ -60,44 +62,11 @@ export default function StudentDashboard() {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
-  };
-
-  const getStatusBadge = (purchase) => {
-    const isExpired = purchase.isExpired;
-    const status = purchase.paymentStatus || purchase.payment_status;
-
-    if (isExpired) {
-      return (
-        <span className="bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-          Expired
-        </span>
-      );
-    }
-    
-    if (status === 'completed') {
-      return (
-        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-          Active
-        </span>
-      );
-    }
-
-    if (status === 'pending_verification' || status === 'pending') {
-      return (
-        <span className="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse">
-          Pending Verification
-        </span>
-      );
-    }
-
-    return (
-      <span className="bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-        {status}
-      </span>
-    );
   };
 
   useEffect(() => {
@@ -115,26 +84,25 @@ export default function StudentDashboard() {
   const pendingCount = purchases.filter(p => p.paymentStatus === 'pending_verification' || p.paymentStatus === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f7f4] via-purple-50 to-yellow-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-neutral-950 text-white py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
         
         {/* Welcome Glassmorphic Header */}
-        <div className="relative overflow-hidden bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/40 p-6 sm:p-8 mb-8 transition-all hover:shadow-2xl">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-28 h-28 bg-[#20b2aa]/10 rounded-full blur-xl"></div>
-          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-purple-500/10 rounded-full blur-xl"></div>
+        <div className="relative overflow-hidden bg-neutral-900/90 backdrop-blur-md rounded-3xl shadow-2xl border border-neutral-800 p-6 sm:p-8 mb-8">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-36 h-36 bg-[#20b2aa]/10 rounded-full blur-2xl pointer-events-none"></div>
           
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#20b2aa] to-[#126862] flex items-center justify-center shadow-lg transform rotate-3">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#20b2aa] to-[#126862] flex items-center justify-center shadow-lg transform rotate-2">
                 <span className="text-3xl font-extrabold text-white uppercase select-none">
                   {user.name ? user.name[0] : 'U'}
                 </span>
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800">
-                  Welcome back, <span className="text-[#126862]">{user.name || 'Learner'}</span>!
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  Welcome back, <span className="text-[#20b2aa]">{user.name || 'Learner'}</span>!
                 </h1>
-                <p className="text-gray-600 text-sm sm:text-base mt-1 font-medium">
+                <p className="text-neutral-400 text-sm sm:text-base mt-1 font-medium">
                   {user.email} | Student Panel
                 </p>
               </div>
@@ -145,18 +113,18 @@ export default function StudentDashboard() {
                 onClick={() => setActiveTab('courses')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
                   activeTab === 'courses' 
-                    ? 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:shadow-lg' 
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                    ? 'bg-[#20b2aa] text-white hover:bg-[#1a9690]' 
+                    : 'bg-neutral-850 text-neutral-300 border border-neutral-750 hover:bg-neutral-800'
                 }`}
               >
-                My Courses ({purchases.length})
+                My Enrollments ({purchases.length})
               </button>
               <button 
                 onClick={() => setActiveTab('cart')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md flex items-center ${
                   activeTab === 'cart' 
-                    ? 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:shadow-lg' 
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                    ? 'bg-[#20b2aa] text-white hover:bg-[#1a9690]' 
+                    : 'bg-neutral-850 text-neutral-300 border border-neutral-750 hover:bg-neutral-800'
                 }`}
               >
                 <FaShoppingCart className="mr-2" /> Cart ({cartCount})
@@ -167,187 +135,296 @@ export default function StudentDashboard() {
 
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-5 border border-teal-50 flex items-center space-x-4">
-            <div className="p-3 bg-teal-50 rounded-lg text-[#20b2aa]">
+          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
+            <div className="p-3 bg-[#20b2aa]/10 rounded-xl text-[#20b2aa]">
               <FaBookOpen className="text-xl" />
             </div>
             <div>
-              <p className="text-gray-500 text-xs sm:text-sm font-medium uppercase tracking-wider">Purchased</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-800">{purchases.length}</p>
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Purchased</p>
+              <p className="text-xl sm:text-2xl font-black text-white">{purchases.length}</p>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-md p-5 border border-emerald-50 flex items-center space-x-4">
-            <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600">
+          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
+            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
               <FaCheckCircle className="text-xl" />
             </div>
             <div>
-              <p className="text-gray-500 text-xs sm:text-sm font-medium uppercase tracking-wider">Active</p>
-              <p className="text-lg sm:text-2xl font-bold text-emerald-600">{activeCount}</p>
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Active</p>
+              <p className="text-xl sm:text-2xl font-black text-emerald-400">{activeCount}</p>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-md p-5 border border-amber-50 flex items-center space-x-4">
-            <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
+          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
+            <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400">
               <FaClock className="text-xl animate-pulse" />
             </div>
             <div>
-              <p className="text-gray-500 text-xs sm:text-sm font-medium uppercase tracking-wider">Pending</p>
-              <p className="text-lg sm:text-2xl font-bold text-amber-600">{pendingCount}</p>
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Pending</p>
+              <p className="text-xl sm:text-2xl font-black text-amber-400">{pendingCount}</p>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-md p-5 border border-purple-50 flex items-center space-x-4 cursor-pointer hover:border-purple-200 transition-colors" onClick={() => setActiveTab('cart')}>
-            <div className="p-3 bg-purple-50 rounded-lg text-purple-600">
+          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4 cursor-pointer hover:border-teal-500/40 transition-colors" onClick={() => setActiveTab('cart')}>
+            <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400">
               <FaShoppingCart className="text-xl" />
             </div>
             <div>
-              <p className="text-gray-500 text-xs sm:text-sm font-medium uppercase tracking-wider">In Cart</p>
-              <p className="text-lg sm:text-2xl font-bold text-purple-600">{cartCount}</p>
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">In Cart</p>
+              <p className="text-xl sm:text-2xl font-black text-purple-400">{cartCount}</p>
             </div>
           </div>
         </div>
 
         {/* Tab Content Panels */}
         {activeTab === 'courses' ? (
-          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-teal-50">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 mb-6 flex items-center">
-              <FaUserGraduate className="mr-3 text-[#20b2aa]" /> My Enrolled Courses
-            </h2>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center">
+                <FaUserGraduate className="mr-3 text-[#20b2aa]" /> My Orders & Enrollments
+              </h2>
+            </div>
             
             {loading && (
-              <div className="flex flex-col items-center justify-center py-16">
+              <div className="flex flex-col items-center justify-center py-20 bg-neutral-900/50 rounded-3xl border border-neutral-800">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#20b2aa] mb-3"></div>
-                <p className="text-gray-500 text-sm">Loading purchased courses...</p>
+                <p className="text-neutral-400 text-sm">Loading order detail records...</p>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-center py-8 px-4 rounded-xl border border-red-200">
-                <FaExclamationCircle className="mx-auto text-3xl mb-2 text-red-500" />
+              <div className="bg-red-950/40 text-red-400 text-center py-8 px-4 rounded-2xl border border-red-800">
+                <FaExclamationCircle className="mx-auto text-3xl mb-2 text-red-400" />
                 <p className="font-semibold">{error}</p>
               </div>
             )}
 
             {!loading && !error && purchases.length === 0 && (
-              <div className="text-center py-16">
-                <div className="w-20 h-20 mx-auto mb-4 bg-teal-50 rounded-full flex items-center justify-center text-[#20b2aa]">
+              <div className="text-center py-20 bg-neutral-900/50 rounded-3xl border border-neutral-800">
+                <div className="w-20 h-20 mx-auto mb-4 bg-teal-500/10 rounded-full flex items-center justify-center text-[#20b2aa]">
                   <FaBookOpen className="text-3xl" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-700 mb-1">No courses purchased yet</h3>
-                <p className="text-gray-500 text-sm sm:text-base max-w-md mx-auto mb-6">
-                  Ready to start learning? Explore our comprehensive courses from leading CA & CMA faculty.
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1">No enrolled courses yet</h3>
+                <p className="text-neutral-400 text-sm sm:text-base max-w-md mx-auto mb-6">
+                  Explore our comprehensive courses from leading CA & CMA faculty.
                 </p>
                 <button 
                   onClick={() => navigate('/courses/all')}
-                  className="bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white px-6 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
+                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
                 >
                   Explore All Courses
                 </button>
               </div>
             )}
 
-            {!loading && !error && purchases.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {purchases.map((purchase) => {
-                  const courseDetails = purchase.courseDetails || purchase.course_details || {};
-                  const isPending = purchase.paymentStatus === 'pending_verification' || purchase.paymentStatus === 'pending';
-                  
-                  return (
-                    <div 
-                      key={purchase.id} 
-                      className="bg-white rounded-2xl shadow-md border border-gray-150 overflow-hidden flex flex-col justify-between hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
-                    >
-                      {/* Card Poster Image */}
-                      <div className="relative bg-teal-900/5 h-40 flex items-center justify-center overflow-hidden">
-                        {courseDetails.posterUrl ? (
-                          <img 
-                            src={`${API_URL}${courseDetails.posterUrl}`} 
-                            alt={courseDetails.subject || 'Course'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center text-teal-800">
-                            <FaBookOpen className="text-4xl opacity-40 mb-2" />
-                            <span className="text-xs uppercase font-extrabold tracking-wider opacity-60">AcademyWale</span>
-                          </div>
-                        )}
-                        <div className="absolute top-3 right-3">
-                          {getStatusBadge(purchase)}
-                        </div>
+            {!loading && !error && purchases.length > 0 && purchases.map((purchase) => {
+              const courseDetails = purchase.courseDetails || purchase.course_details || {};
+              const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails);
+              
+              return (
+                <div 
+                  key={purchase.id} 
+                  className="bg-[#141416] border border-neutral-800 text-white rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden transition-all hover:border-neutral-700"
+                >
+                  {/* Top Header: Order Info */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-neutral-800">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                          Order #{purchase.transactionId || String(purchase.id).slice(0, 14)}
+                        </h3>
+                        <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-0.5 rounded-md font-bold">
+                          {purchase.isExpired ? 'Expired' : 'Placed'}
+                        </span>
                       </div>
-                      
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-extrabold text-gray-800 line-clamp-2 leading-snug mb-1">
-                            {courseDetails.title || courseDetails.subject || 'Course Detail'}
-                          </h3>
-                          <p className="text-sm font-semibold text-teal-700 mb-3">
-                            Faculty: {courseDetails.facultyName || 'Expert Faculty'}
-                          </p>
-                          
-                          <div className="space-y-1.5 bg-gray-50 rounded-xl p-3 text-xs mb-4">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Mode:</span>
-                              <span className="font-bold text-gray-700">{courseDetails.mode || 'Online'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Validity:</span>
-                              <span className="font-bold text-gray-700">{courseDetails.validity || '1 Year'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Price Paid:</span>
-                              <span className="font-bold text-gray-800">₹{Number(purchase.amount || 0).toLocaleString()}</span>
-                            </div>
-                          </div>
+                      <p className="text-xs text-neutral-400 mt-1 italic font-mono">
+                        {formatDate(purchase.purchaseDate || purchase.purchase_date)}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedInvoice(purchase)}
+                      className="bg-neutral-850 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+                    >
+                      <FaFileInvoiceDollar className="text-teal-400 text-sm" />
+                      <span>Invoice</span>
+                    </button>
+                  </div>
+
+                  {/* Order Details Card (Matching Screenshot #1 & #2) */}
+                  <div className="mt-5 bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="text-xs font-extrabold text-neutral-300 uppercase tracking-wider">Order Details</span>
+                      <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2.5 py-0.5 rounded font-bold">Placed</span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      {/* Course Thumbnail */}
+                      <div className="w-24 sm:w-28 h-24 rounded-xl overflow-hidden bg-neutral-950 border border-neutral-800 shrink-0 flex items-center justify-center">
+                        <img
+                          src={poster}
+                          alt={courseDetails.title || courseDetails.subject}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
+                        />
+                      </div>
+
+                      <div className="flex-1 space-y-2">
+                        <h4 className="text-base sm:text-lg font-extrabold text-[#38bdf8] leading-snug line-clamp-2">
+                          {courseDetails.title || courseDetails.subject || 'Course Title'}
+                        </h4>
+                        
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold text-neutral-500 line-through">
+                            ₹{Number((purchase.amount || 0) * 1.25).toLocaleString()}
+                          </span>
+                          <span className="text-lg font-black text-white font-mono">
+                            ₹{Number(purchase.amount || 0).toLocaleString()}
+                          </span>
+                          <span className="text-xs font-bold text-neutral-400">x1</span>
                         </div>
 
-                        <div className="border-t border-gray-100 pt-4 mt-auto">
-                          <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-                            <span>Purchased:</span>
-                            <span className="font-medium text-gray-700">{formatDate(purchase.purchaseDate || purchase.purchase_date)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-500 mb-4">
-                            <span>Expiry Date:</span>
-                            <span className="font-medium text-gray-700">{formatDate(purchase.accessExpiry || purchase.access_expiry)}</span>
-                          </div>
-                          
-                          {isPending ? (
-                            <div className="bg-amber-50 text-amber-800 text-center py-2.5 rounded-xl text-xs font-bold border border-amber-100">
-                              Awaiting Verification
-                            </div>
-                          ) : (
-                            <button className="w-full bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white py-2.5 rounded-xl text-sm font-bold hover:shadow-md transition-all">
-                              Start Learning
-                            </button>
+                        {/* Option Badges (Matching Screenshot #1) */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {courseDetails.mode && (
+                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                              Mode: {courseDetails.mode}
+                            </span>
+                          )}
+                          {courseDetails.validity && (
+                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                              Course Validity: {courseDetails.validity}
+                            </span>
+                          )}
+                          {courseDetails.books && (
+                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                              Mode of Delivery of Books: {courseDetails.books}
+                            </span>
+                          )}
+                          {courseDetails.attempt && (
+                            <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[11px] px-3 py-1 rounded-lg font-medium">
+                              Exam Term: {courseDetails.attempt}
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+
+                    {/* Price Breakdown Footer */}
+                    <div className="mt-4 pt-3 border-t border-neutral-800/80 flex items-center justify-between text-xs text-neutral-400">
+                      <span className="font-semibold text-neutral-400">Price Breakdown</span>
+                      <span className="font-extrabold text-[#38bdf8] text-base font-mono">₹{Number(purchase.amount || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Enrollments Card (Matching Screenshot #1 & #2) */}
+                  <div className="mt-5 bg-[#1a1a1e] rounded-2xl p-4 sm:p-5 border border-neutral-800/80">
+                    <div className="flex items-center gap-2 mb-3 text-sm font-extrabold text-neutral-200">
+                      <span className="text-lg text-[#20b2aa]">🎓</span> Enrollments (1)
+                    </div>
+
+                    <div className="bg-[#121214] rounded-xl p-4 border border-neutral-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <h5 className="font-extrabold text-white text-sm sm:text-base">
+                          {courseDetails.title || courseDetails.subject}
+                        </h5>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
+                            Mode: {courseDetails.mode || 'Online'}
+                          </span>
+                          <span className="bg-neutral-900 text-neutral-300 text-[10px] px-2.5 py-0.5 rounded font-medium border border-neutral-800">
+                            Course Validity: {courseDetails.validity || '1 Year'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3.5 py-1 rounded-md font-bold shrink-0">
+                        Active
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Student & Transaction Accordions (Matching Screenshot #2) */}
+                  <div className="mt-5 space-y-3">
+                    {/* Student Details Accordion */}
+                    <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
+                      <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
+                        <div className="flex items-center gap-2">
+                          <span>Student Details</span>
+                        </div>
+                        <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
+                      </summary>
+                      <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{user.name || 'Learner'}</strong>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{user.email}</strong>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{user.phone || '+917557021866'}</strong>
+                        </div>
+                      </div>
+                    </details>
+
+                    {/* Transaction Details Accordion */}
+                    <details className="group bg-[#1a1a1e] rounded-2xl border border-neutral-800/80 overflow-hidden" open>
+                      <summary className="p-4 flex items-center justify-between cursor-pointer text-sm font-extrabold text-white select-none">
+                        <div className="flex items-center gap-2">
+                          <span>Transaction Details</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">Success</span>
+                          <span className="transition-transform group-open:rotate-180 text-neutral-400 text-xs">▼</span>
+                        </div>
+                      </summary>
+                      <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2.5 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-neutral-400">ID:</span>
+                          <span className="font-mono text-white font-bold">{purchase.transactionId || purchase.id}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-400">Payment Gateway:</span>
+                          <span className="text-white font-semibold">paid</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-400">Payment Mode:</span>
+                          <span className="text-white font-semibold">Online / Razorpay</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-400">Payment Status:</span>
+                          <span className="text-emerald-400 font-bold">success</span>
+                        </div>
+                        <div className="flex justify-between pt-2.5 border-t border-neutral-800">
+                          <span className="text-white font-bold text-sm">Total of multiple orders:</span>
+                          <span className="text-[#38bdf8] font-black text-base font-mono">₹{Number(purchase.amount || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           /* Cart Tab Content */
-          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-teal-50">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 mb-6 flex items-center">
+          <div className="bg-neutral-900/90 rounded-3xl shadow-2xl p-6 sm:p-8 border border-neutral-800">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-6 flex items-center">
               <FaShoppingCart className="mr-3 text-[#20b2aa]" /> My Shopping Cart
             </h2>
 
             {cartItems.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-20 h-20 mx-auto mb-4 bg-purple-50 rounded-full flex items-center justify-center text-purple-500">
+              <div className="text-center py-20 bg-neutral-950/40 rounded-2xl border border-neutral-850">
+                <div className="w-20 h-20 mx-auto mb-4 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-400">
                   <FaShoppingCart className="text-3xl" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-700 mb-1">Your cart is empty</h3>
-                <p className="text-gray-500 text-sm sm:text-base max-w-md mx-auto mb-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1">Your cart is empty</h3>
+                <p className="text-neutral-400 text-sm sm:text-base max-w-md mx-auto mb-6">
                   Add courses from CA/CMA detail pages to purchase them collectively here.
                 </p>
                 <button 
                   onClick={() => navigate('/courses/all')}
-                  className="bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white px-6 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
+                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
                 >
                   Browse Courses
                 </button>
@@ -357,84 +434,84 @@ export default function StudentDashboard() {
                 
                 {/* Cart Items List */}
                 <div className="lg:col-span-2 space-y-4">
-                  {cartItems.map((item) => (
-                    <div 
-                      key={item.uniqueId} 
-                      className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex flex-col sm:flex-row items-center gap-4 hover:border-teal-200 transition-colors"
-                    >
-                      <div className="w-full sm:w-24 h-16 bg-[#20b2aa]/5 rounded-lg flex items-center justify-center flex-shrink-0">
-                        {item.posterUrl ? (
+                  {cartItems.map((item) => {
+                    const poster = getCourseImageUrl(item.posterUrl || item.poster_url || item);
+                    return (
+                      <div 
+                        key={item.uniqueId} 
+                        className="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 shadow-md flex flex-col sm:flex-row items-center gap-4 hover:border-teal-500/40 transition-colors"
+                      >
+                        <div className="w-full sm:w-28 h-20 bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-neutral-800">
                           <img 
-                            src={`${API_URL}${item.posterUrl}`} 
+                            src={poster} 
                             alt={item.title} 
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                           />
-                        ) : (
-                          <FaBookOpen className="text-teal-800 opacity-30 text-2xl" />
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 text-center sm:text-left">
-                        <h4 className="font-bold text-gray-800 leading-snug line-clamp-1">{item.title}</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">Faculty: {item.facultyName}</p>
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                          <span className="bg-teal-50 text-[#126862] text-[10px] px-2 py-0.5 rounded font-extrabold uppercase">
-                            Mode: {item.mode || 'Online'}
-                          </span>
-                          <span className="bg-purple-50 text-purple-700 text-[10px] px-2 py-0.5 rounded font-extrabold uppercase">
-                            Exam Term: {item.attempt || 'Dec 2026'}
-                          </span>
-                          {item.validity && (
-                            <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-0.5 rounded font-extrabold uppercase">
-                              Validity: {item.validity}
+                        </div>
+                        
+                        <div className="flex-1 text-center sm:text-left">
+                          <h4 className="font-extrabold text-white text-base leading-snug line-clamp-1">{item.title}</h4>
+                          <p className="text-xs text-neutral-400 mt-0.5 font-semibold">Faculty: {item.facultyName}</p>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
+                            <span className="bg-neutral-900 border border-neutral-800 text-[#20b2aa] text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">
+                              Mode: {item.mode || 'Online'}
                             </span>
-                          )}
+                            <span className="bg-neutral-900 border border-neutral-800 text-purple-400 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">
+                              Exam Term: {item.attempt || 'Dec 2026'}
+                            </span>
+                            {item.validity && (
+                              <span className="bg-neutral-900 border border-neutral-800 text-indigo-400 text-[10px] px-2.5 py-0.5 rounded font-bold uppercase">
+                                Validity: {item.validity}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-neutral-850 pt-3 sm:pt-0">
+                          <span className="font-black text-white text-xl font-mono">
+                            ₹{Number(item.price || 0).toLocaleString()}
+                          </span>
+                          
+                          <button
+                            onClick={() => removeFromCart(item.uniqueId)}
+                            className="p-2.5 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-xl transition-colors cursor-pointer"
+                            title="Remove item"
+                          >
+                            <FaTrashAlt />
+                          </button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
-                        <span className="font-extrabold text-gray-900 text-lg">
-                          ₹{Number(item.price || 0).toLocaleString()}
-                        </span>
-                        
-                        <button
-                          onClick={() => removeFromCart(item.uniqueId)}
-                          className="p-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Remove item"
-                        >
-                          <FaTrashAlt />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Checkout Summary Box */}
-                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 h-fit">
-                  <h3 className="font-bold text-gray-800 text-lg mb-4">Order Summary</h3>
-                  <div className="space-y-3 mb-6 border-b border-gray-200 pb-4">
-                    <div className="flex justify-between text-sm text-gray-600">
+                <div className="bg-neutral-950 rounded-3xl p-6 border border-neutral-800 h-fit">
+                  <h3 className="font-extrabold text-white text-lg mb-4">Order Summary</h3>
+                  <div className="space-y-3 mb-6 border-b border-neutral-800 pb-4 text-xs">
+                    <div className="flex justify-between text-neutral-400">
                       <span>Subtotal ({cartItems.length} items)</span>
-                      <span className="font-semibold text-gray-800">₹{cartTotal.toLocaleString()}</span>
+                      <span className="font-bold text-white font-mono">₹{cartTotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-neutral-400">
                       <span>Discount</span>
-                      <span className="font-semibold text-green-600">₹0</span>
+                      <span className="font-bold text-emerald-400 font-mono">₹0</span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-neutral-400">
                       <span>Payment Method</span>
-                      <span className="font-semibold text-gray-800">UPI Scan</span>
+                      <span className="font-bold text-white">Razorpay / Online</span>
                     </div>
                   </div>
                   
                   <div className="flex justify-between items-baseline mb-6">
-                    <span className="text-gray-800 font-bold text-base">Total Price</span>
-                    <span className="text-2xl font-extrabold text-[#126862]">₹{cartTotal.toLocaleString()}</span>
+                    <span className="text-neutral-300 font-bold text-sm">Total Price</span>
+                    <span className="text-2xl font-black text-[#38bdf8] font-mono">₹{cartTotal.toLocaleString()}</span>
                   </div>
 
                   <button
                     onClick={() => setShowCheckoutModal(true)}
-                    className="w-full bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white py-3.5 rounded-xl font-bold hover:shadow-lg shadow-md transition-all text-center block"
+                    className="w-full bg-[#20b2aa] hover:bg-[#1a9690] text-white py-3.5 rounded-xl font-bold shadow-lg transition-all text-center block cursor-pointer"
                   >
                     Proceed to Payment
                   </button>
@@ -444,6 +521,82 @@ export default function StudentDashboard() {
             )}
           </div>
         )}
+
+        {/* Invoice Printable Modal */}
+        {selectedInvoice && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-white text-gray-900 rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-gray-200 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-6">
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">Tax Invoice</h3>
+                  <p className="text-xs text-gray-500">AcademyWale LMS Official Receipt</p>
+                </div>
+                <button
+                  onClick={() => setSelectedInvoice(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs text-gray-700">
+                <div className="flex justify-between border-b pb-3">
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">Billed To:</p>
+                    <p>{user.name}</p>
+                    <p>{user.email}</p>
+                    <p>{user.phone || '+91 7557021866'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-gray-900">Invoice No:</p>
+                    <p className="font-mono text-teal-700">{selectedInvoice.transactionId || selectedInvoice.id}</p>
+                    <p className="mt-1 font-bold text-gray-900">Date:</p>
+                    <p>{formatDate(selectedInvoice.purchaseDate || selectedInvoice.purchase_date)}</p>
+                  </div>
+                </div>
+
+                <table className="w-full text-left border-collapse my-4">
+                  <thead>
+                    <tr className="border-b border-gray-300 text-gray-500 uppercase text-[10px]">
+                      <th className="py-2">Item</th>
+                      <th className="py-2 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3">
+                        <strong className="text-gray-900 text-sm block">
+                          {selectedInvoice.courseDetails?.title || selectedInvoice.courseDetails?.subject || 'Course Access'}
+                        </strong>
+                        <span className="text-gray-500 text-[11px]">
+                          Mode: {selectedInvoice.courseDetails?.mode || 'Online'} | Validity: {selectedInvoice.courseDetails?.validity || '1 Year'}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-mono font-bold text-gray-900">
+                        ₹{Number(selectedInvoice.amount || 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div className="flex justify-between items-center pt-2 font-bold text-sm border-t border-gray-300 text-gray-900">
+                  <span>Total Paid:</span>
+                  <span className="text-teal-700 text-lg font-mono">₹{Number(selectedInvoice.amount || 0).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
+                <button
+                  onClick={() => window.print()}
+                  className="bg-[#20b2aa] text-white px-5 py-2 rounded-xl text-xs font-bold shadow hover:bg-[#1a9690]"
+                >
+                  Print / Save PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
       {showCheckoutModal && (
         <CheckoutModal
@@ -457,3 +610,4 @@ export default function StudentDashboard() {
     </div>
   );
 }
+

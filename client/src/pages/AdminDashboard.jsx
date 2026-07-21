@@ -759,28 +759,27 @@ export default function AdminDashboard() {
       } else if (subcategory === 'Inter') {
         return [
           // INTERMEDIATE GROUP 1
-          { id: 5, name: 'Paper 5: Advanced Accounting (Group 1)', group: 'Group 1' },
-          { id: 6, name: 'Paper 6: Corporate and Other Laws (Group 1)', group: 'Group 1' },
-          { id: 7, name: 'Paper 7: Taxation (Group 1)', group: 'Group 1' },
+          { id: 5, name: 'Paper 5: Advanced Accounting', group: 'Group 1' },
+          { id: 6, name: 'Paper 6: Corporate and Other Laws', group: 'Group 1' },
+          { id: 7, name: 'Paper 7: Taxation', group: 'Group 1' },
           // INTERMEDIATE GROUP 2
-          { id: 8, name: 'Paper 8: Cost and Management Accounting (Group 2)', group: 'Group 2' },
-          { id: 9, name: 'Paper 9: Auditing and ethics (Group 2)', group: 'Group 2' },
-          { id: 10, name: 'Paper 10: Financial Management and Strategic Management (Group 2)', group: 'Group 2' }
+          { id: 8, name: 'Paper 8: Cost and Management Accounting', group: 'Group 2' },
+          { id: 9, name: 'Paper 9: Auditing and ethics', group: 'Group 2' },
+          { id: 10, name: 'Paper 10: Financial Management and Strategic Management', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
           // FINAL GROUP 1
-          { id: 11, name: 'Paper 11: Financial Reporting (Group 1)', group: 'Group 1' },
-          { id: 12, name: 'Paper 12: Advanced Financial Management (Group 1)', group: 'Group 1' },
-          { id: 13, name: 'Paper 13: Advanced Auditing and Professional Ethics (Group 1)', group: 'Group 1' },
-          { id: 14, name: 'Paper 14: Direct Tax Laws and International Taxation (Group 1)', group: 'Group 1' },
+          { id: 11, name: 'Paper 11: Financial Reporting', group: 'Group 1' },
+          { id: 12, name: 'Paper 12: Advanced Financial Management', group: 'Group 1' },
+          { id: 13, name: 'Paper 13: Advanced Auditing and Professional Ethics', group: 'Group 1' },
+          { id: 14, name: 'Paper 14: Direct Tax Laws and International Taxation', group: 'Group 1' },
           // FINAL GROUP 2
-          { id: 15, name: 'Paper 15: Indirect Tax Laws (Group 2)', group: 'Group 2' },
-          { id: 16, name: 'Paper 16: Corporate and Economic Laws (Group 2)', group: 'Group 2' },
-          { id: 17, name: 'Paper 17: Strategic Cost and Performance Management (Group 2)', group: 'Group 2' }
+          { id: 15, name: 'Paper 15: Indirect Tax Laws', group: 'Group 2' },
+          { id: 16, name: 'Paper 16: Corporate and Economic Laws', group: 'Group 2' },
+          { id: 17, name: 'Paper 17: Strategic Cost and Performance Management', group: 'Group 2' }
         ];
       }
-
 
     } else if (category === 'CMA') {
       if (subcategory === 'Foundation') {
@@ -793,31 +792,32 @@ export default function AdminDashboard() {
       } else if (subcategory === 'Inter') {
         return [
           // INTERMEDIATE GROUP 1
-          { id: 5, name: 'Paper 5: Business Laws and Ethics (Group 1)', group: 'Group 1' },
-          { id: 6, name: 'Paper 6: Financial Accounting (Group 1)', group: 'Group 1' },
-          { id: 7, name: 'Paper 7: Direct and Indirect Taxation (Group 1)', group: 'Group 1' },
-          { id: 8, name: 'Paper 8: Cost Accounting (Group 1)', group: 'Group 1' },
+          { id: 5, name: 'Paper 5: Business Laws and Ethics', group: 'Group 1' },
+          { id: 6, name: 'Paper 6: Financial Accounting', group: 'Group 1' },
+          { id: 7, name: 'Paper 7: Direct and Indirect Taxation', group: 'Group 1' },
+          { id: 8, name: 'Paper 8: Cost Accounting', group: 'Group 1' },
           // INTERMEDIATE GROUP 2
-          { id: 9, name: 'Paper 9: Operations Management and Strategic Management (Group 2)', group: 'Group 2' },
-          { id: 10, name: 'Paper 10: Corporate Accounting and Auditing (Group 2)', group: 'Group 2' },
-          { id: 11, name: 'Paper 11: Financial Management and Business Data Analytics (Group 2)', group: 'Group 2' },
-          { id: 12, name: 'Paper 12: Management Accounting (Group 2)', group: 'Group 2' }
+          { id: 9, name: 'Paper 9: Operations Management and Strategic Management', group: 'Group 2' },
+          { id: 10, name: 'Paper 10: Corporate Accounting and Auditing', group: 'Group 2' },
+          { id: 11, name: 'Paper 11: Financial Management and Business Data Analytics', group: 'Group 2' },
+          { id: 12, name: 'Paper 12: Management Accounting', group: 'Group 2' }
         ];
       } else if (subcategory === 'Final') {
         return [
           // FINAL GROUP 3
-          { id: 13, name: 'Paper 13: Corporate and Economic Laws (Group 3)', group: 'Group 3' },
-          { id: 14, name: 'Paper 14: Strategic Financial Management (Group 3)', group: 'Group 3' },
-          { id: 15, name: 'Paper 15: Direct Tax Laws and International Taxation (Group 3)', group: 'Group 3' },
-          { id: 16, name: 'Paper 16: Strategic Cost Management (Group 3)', group: 'Group 3' },
+          { id: 13, name: 'Paper 13: Corporate and Economic Laws', group: 'Group 3' },
+          { id: 14, name: 'Paper 14: Strategic Financial Management', group: 'Group 3' },
+          { id: 15, name: 'Paper 15: Direct Tax Laws and International Taxation', group: 'Group 3' },
+          { id: 16, name: 'Paper 16: Strategic Cost Management', group: 'Group 3' },
           // FINAL GROUP 4
-          { id: 17, name: 'Paper 17: Cost and Management Audit (Group 4)', group: 'Group 4' },
-          { id: 18, name: 'Paper 18: Corporate Financial Reporting (Group 4)', group: 'Group 4' },
-          { id: 19, name: 'Paper 19: Indirect Tax Laws and Practice (Group 4)', group: 'Group 4' },
-          { id: 20, name: 'Paper 20: Strategic Performance Management and Business Valuation (Group 4)', group: 'Group 4' }
+          { id: 17, name: 'Paper 17: Cost and Management Audit', group: 'Group 4' },
+          { id: 18, name: 'Paper 18: Corporate Financial Reporting', group: 'Group 4' },
+          { id: 19, name: 'Paper 19: Indirect Tax Laws and Practice', group: 'Group 4' },
+          { id: 20, name: 'Paper 20: Strategic Performance Management and Business Valuation', group: 'Group 4' }
         ];
       }
     }
+
 
     const result = [];
     console.log('📋 Returning papers:', result);
@@ -2895,9 +2895,11 @@ export default function AdminDashboard() {
           <Modal
             isOpen={editFacultyModalOpen}
             onRequestClose={() => setEditFacultyModalOpen(false)}
+            shouldCloseOnOverlayClick={false}
             style={modalStyles}
             ariaHideApp={false}
           >
+
             <h2 className="text-xl font-bold mb-4">Edit Faculty</h2>
             <form onSubmit={handleEditFacultySubmit} className="flex flex-col gap-3">
               <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="First Name" className="rounded border px-3 py-2" required />
@@ -3390,6 +3392,7 @@ export default function AdminDashboard() {
       <Modal
         isOpen={editModalOpen}
         onRequestClose={() => setEditModalOpen(false)}
+        shouldCloseOnOverlayClick={false}
         style={{
           content: {
             ...modalStyles.content,
@@ -3401,6 +3404,7 @@ export default function AdminDashboard() {
         }}
         ariaHideApp={false}
       >
+
         <h2 className="text-2xl font-bold mb-4 text-blue-700">Edit Course</h2>
         <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
           

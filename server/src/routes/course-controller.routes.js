@@ -52,8 +52,7 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
 });
 
 // Reorder courses sequence endpoint
-
-router.put('/api/courses/reorder', async (req, res) => {
+const handleCourseReorder = async (req, res) => {
   try {
     const { items } = req.body;
     if (!Array.isArray(items)) {
@@ -82,7 +81,11 @@ router.put('/api/courses/reorder', async (req, res) => {
     console.error('Error reordering courses:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
+
+router.put('/api/courses/reorder', handleCourseReorder);
+router.put('/api/admin/courses/reorder', handleCourseReorder);
+
 
 module.exports = router;
 

@@ -98,23 +98,36 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     newList[currentIndex] = newList[targetIndex];
     newList[targetIndex] = temp;
 
+    // Optimistically update UI
+    setFilteredCourses(newList);
+
     const reorderPayload = newList.map((course, idx) => ({
       id: getCourseId(course),
       displayOrder: idx + 1
     }));
 
     try {
-      const res = await fetch(`${API_URL}/api/courses/reorder`, {
+      let res = await fetch(`${API_URL}/api/courses/reorder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ items: reorderPayload })
       });
+      if (!res.ok) {
+        res = await fetch(`${API_URL}/api/admin/courses/reorder`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ items: reorderPayload })
+        });
+      }
       if (res.ok) {
         await loadCourses();
       }
     } catch (err) {
       console.error('Failed to save reordered courses:', err);
     }
+
   };
 
   const handleEdit = (course) => {

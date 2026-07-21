@@ -364,7 +364,7 @@ exports.getCoursesByPaper = async (req, res) => {
       subquery = 'Foundation';
     }
 
-    // Direct database query with filters - no full-collection scans needed!
+    // Direct database query with filters - sorted by display_order ascending
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
@@ -372,7 +372,8 @@ exports.getCoursesByPaper = async (req, res) => {
       .ilike('subcategory', `%${subquery}%`)
       .eq('paper_id', requestedPaperId)
       .eq('is_active', true)
-      .order('created_at', { ascending: true });
+      .order('display_order', { ascending: true, nullsFirst: false });
+
 
     if (error) throw error;
 
@@ -1129,6 +1130,38 @@ exports.bulkUploadCourses = async (req, res) => {
   }
 };
 
+exports.reorderCourses = async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ success: false, error: 'Items array is required' });
+    }
+
+    for (const item of items) {
+      if (!item.id) continue;
+      const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
+
+      const { error } = await supabaseAdmin
+        .from('courses')
+        .update({ 
+          display_order: order,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', item.id);
+
+      if (error) {
+        console.warn(`Reorder update notice for course ${item.id}:`, error.message);
+      }
+    }
+
+    res.json({ success: true, message: 'Courses sequence updated successfully' });
+  } catch (err) {
+    console.error('Error reordering courses:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 exports.addNewCourseToFaculty = exports.addCourseToFaculty;
 
 module.exports = exports;
+

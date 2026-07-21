@@ -60,22 +60,27 @@ export const getFacultyCloudinaryId = (faculty) => {
  * Get the full image URL for course posters
  */
 export const getCourseImageUrl = (course) => {
-  if (!course || !course.posterUrl) return '/logo.svg';
+  if (!course) return '/logo.svg';
+  const url = typeof course === 'string' 
+    ? course 
+    : (course.posterUrl || course.poster_url || course.poster || course.image || course.banner || '');
 
-  if (course.posterUrl.startsWith('http')) {
-    return course.posterUrl;
+  if (!url || typeof url !== 'string') return '/logo.svg';
+  const trimmed = url.trim();
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+    return trimmed;
   }
-
-  if (course.posterUrl.startsWith('/uploads')) {
-    return `${API_URL}${course.posterUrl}`;
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return `${API_URL}${cleanPath}`;
   }
-
-  if (course.posterUrl.startsWith('/static')) {
-    return course.posterUrl;
+  if (trimmed.startsWith('/') || trimmed.startsWith('static/')) {
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   }
-
-  return '/logo.svg';
+  return `${API_URL}/${trimmed}`;
 };
+
 
 /**
  * Get the full image URL for testimonial images
