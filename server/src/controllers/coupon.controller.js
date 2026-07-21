@@ -2,7 +2,9 @@ const { supabaseAdmin } = require('../config/supabase.config');
 const {
   setCouponMetadata,
   getCouponMetadata,
-  deleteCouponMetadata
+  deleteCouponMetadata,
+  hasUsedCoupon,
+  recordCouponUsage
 } = require('../utils/couponMetadata');
 
 // Admin: Create a new coupon
@@ -130,7 +132,7 @@ exports.deleteCoupon = async (req, res) => {
 // Student: Validate a coupon code
 exports.validateCoupon = async (req, res) => {
   try {
-    const { code, courseId } = req.body;
+    const { code, courseId, userId, userEmail } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
     if (!normalizedCode) return res.status(400).json({ error: 'Coupon code required.' });
     
@@ -143,6 +145,30 @@ exports.validateCoupon = async (req, res) => {
 
     if (error) throw error;
     if (!coupon) return res.status(404).json({ error: 'Invalid or expired coupon code.' });
+
+    // Check if user has already used this coupon code
+    if (userId || userEmail) {
+      if (hasUsedCoupon(normalizedCode, userId, userEmail)) {
+        return res.status(400).json({ error: 'You have already used this coupon code.' });
+      }
+
+      if (userId) {
+        const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+        let resolvedUserId = userId;
+        if (!isUserUuid) {
+          const { data: u } = await supabaseAdmin.from('users').select('id').eq('mongo_id', userId).maybeSingle();
+          if (u) resolvedUserId = u.id;
+        }
+        const { data: userPurchases } = await supabaseAdmin
+          .from('purchases')
+          .select('course_details')
+          .eq('user_id', resolvedUserId);
+
+        if (userPurchases && userPurchases.some(p => p.course_details?.coupon?.toUpperCase() === normalizedCode)) {
+          return res.status(400).json({ error: 'You have already used this coupon code.' });
+        }
+      }
+    }
 
     const meta = getCouponMetadata(normalizedCode) || {};
     const effectiveCourseId = meta.courseId || coupon.course_id || null;
@@ -169,6 +195,7 @@ exports.validateCoupon = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Student: Get public visible coupons for course details page
 exports.getPublicVisibleCoupons = async (req, res) => {

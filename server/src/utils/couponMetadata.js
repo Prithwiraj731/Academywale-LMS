@@ -59,9 +59,50 @@ function deleteCouponMetadata(code) {
   }
 }
 
+function hasUsedCoupon(code, userId, userEmail) {
+  const meta = getCouponMetadata(code);
+  if (!meta || !Array.isArray(meta.usedBy)) return false;
+  const targetId = userId ? String(userId).trim().toLowerCase() : null;
+  const targetEmail = userEmail ? String(userEmail).trim().toLowerCase() : null;
+  return meta.usedBy.some(entry => {
+    const sEntry = String(entry).trim().toLowerCase();
+    return (targetId && sEntry === targetId) || (targetEmail && sEntry === targetEmail);
+  });
+}
+
+function recordCouponUsage(code, userId, userEmail) {
+  if (!code) return;
+  const store = getMetadataStore();
+  const normalized = String(code || '').trim().toUpperCase();
+  if (!normalized) return;
+  
+  if (!store[normalized]) {
+    store[normalized] = {
+      exactDiscountPercent: null,
+      courseId: null,
+      message: null,
+      isVisible: true
+    };
+  }
+
+  const usedBy = Array.isArray(store[normalized].usedBy) ? store[normalized].usedBy : [];
+  if (userId && !usedBy.includes(String(userId).trim())) {
+    usedBy.push(String(userId).trim());
+  }
+  if (userEmail && !usedBy.includes(String(userEmail).trim().toLowerCase())) {
+    usedBy.push(String(userEmail).trim().toLowerCase());
+  }
+  store[normalized].usedBy = usedBy;
+  store[normalized].updatedAt = new Date().toISOString();
+  saveMetadataStore(store);
+}
+
 module.exports = {
   getMetadataStore,
   setCouponMetadata,
   getCouponMetadata,
-  deleteCouponMetadata
+  deleteCouponMetadata,
+  hasUsedCoupon,
+  recordCouponUsage
 };
+

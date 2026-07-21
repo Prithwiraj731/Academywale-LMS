@@ -401,10 +401,21 @@ export default function AdminDashboard() {
     }
   };
 
-  // Fetch coupons on mount
+  // Fetch coupons & available courses on mount
   useEffect(() => {
     fetchCoupons();
+    fetchAvailableCourses();
   }, []);
+
+  const fetchAvailableCourses = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/courses/all`);
+      const data = await res.json();
+      if (res.ok && data.courses) setAvailableCourses(data.courses);
+    } catch (err) {
+      console.error('Failed to fetch available courses:', err);
+    }
+  };
 
   const fetchCoupons = async () => {
     try {
@@ -413,6 +424,7 @@ export default function AdminDashboard() {
       if (res.ok && data.success) setCoupons(data.coupons);
     } catch { }
   };
+
 
   const handleCouponChange = e => {
     const { name, value, type, checked } = e.target;

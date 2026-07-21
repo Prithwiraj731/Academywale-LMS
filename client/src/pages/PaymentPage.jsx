@@ -82,7 +82,13 @@ const PaymentPage = () => {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: coupon.trim().toUpperCase(), courseId: courseId || course?.id || course?._id })
+        body: JSON.stringify({ 
+          code: coupon.trim().toUpperCase(), 
+          courseId: courseId || course?.id || course?._id,
+          userId: user?.id || user?._id,
+          userEmail: user?.email
+        })
+
       });
       const data = await res.json();
       if (res.ok && data.success) {

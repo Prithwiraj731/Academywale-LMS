@@ -101,7 +101,108 @@ const CourseFullDetailPage = () => {
   const [appliedCoupons, setAppliedCoupons] = useState([]);
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
-  // Helper functions for Mode / Validity / Attempt options selection
+  const [selectedSubOptions, setSelectedSubOptions] = useState([]);
+
+  // Dynamic Multi-Option Helper Functions
+  const getCurrentModeData = (targetCourse = course, modeName = selectedMode) => {
+    if (!targetCourse || !targetCourse.modeAttemptPricing || !modeName) return null;
+    return targetCourse.modeAttemptPricing.find(m => m.mode === modeName) || null;
+  };
+
+  const getSubOptionLabels = (targetCourse = course, modeName = selectedMode) => {
+    const modeData = getCurrentModeData(targetCourse, modeName);
+    if (!modeData || !modeData.attempts || modeData.attempts.length === 0) return [];
+    const firstAttempt = modeData.attempts[0];
+    const labelStr = firstAttempt.attemptLabel || firstAttempt.validityLabel || 'Option';
+    return labelStr.split(' / ').map(s => s.trim());
+  };
+
+  const getSubOptionValuesForModeAndSelections = (modeObj, index, currentSelections) => {
+    if (!modeObj || !modeObj.attempts) return [];
+    const matchingAttempts = modeObj.attempts.filter(a => {
+      const parts = (a.attempt || '').split(' / ').map(s => s.trim());
+      for (let k = 0; k < index; k++) {
+        if (currentSelections[k] && parts[k] !== currentSelections[k]) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const valuesAtIndex = matchingAttempts
+      .map(a => {
+        const parts = (a.attempt || '').split(' / ').map(s => s.trim());
+        return parts[index] || '';
+      })
+      .filter(Boolean);
+
+    return Array.from(new Set(valuesAtIndex));
+  };
+
+  const updatePriceAndAttemptFromSubOptions = (modeObj, subOpts) => {
+    if (!modeObj || !modeObj.attempts) return;
+    const matching = modeObj.attempts.find(a => {
+      const parts = (a.attempt || '').split(' / ').map(s => s.trim());
+      return subOpts.every((val, idx) => !val || parts[idx] === val);
+    }) || modeObj.attempts[0];
+
+    if (matching) {
+      setSelectedAttempt(matching.attempt || '');
+      setSelectedValidity(matching.validity || subOpts[0] || '');
+      setSelectedPrice({
+        selling: Number(matching.sellingPrice || 0),
+        cost: Number(matching.costPrice || 0)
+      });
+    }
+  };
+
+  const initializeSubOptionsForMode = (targetCourse, modeName) => {
+    if (!targetCourse || !targetCourse.modeAttemptPricing) return;
+    const modeObj = targetCourse.modeAttemptPricing.find(m => m.mode === modeName);
+    if (!modeObj || !modeObj.attempts || modeObj.attempts.length === 0) {
+      setSelectedSubOptions([]);
+      setSelectedValidity('');
+      setSelectedAttempt('');
+      setSelectedPrice({ selling: 0, cost: 0 });
+      return;
+    }
+
+    const labels = (modeObj.attempts[0].attemptLabel || modeObj.attempts[0].validityLabel || 'Option')
+      .split(' / ').map(s => s.trim());
+
+    const newSubOptions = [];
+    for (let i = 0; i < labels.length; i++) {
+      const availableVals = getSubOptionValuesForModeAndSelections(modeObj, i, newSubOptions);
+      newSubOptions.push(availableVals.length > 0 ? availableVals[0] : '');
+    }
+
+    setSelectedSubOptions(newSubOptions);
+    updatePriceAndAttemptFromSubOptions(modeObj, newSubOptions);
+  };
+
+  const handleModeChange = (newMode) => {
+    setSelectedMode(newMode);
+    initializeSubOptionsForMode(course, newMode);
+  };
+
+  const handleSubOptionChange = (index, value) => {
+    const modeObj = getCurrentModeData();
+    if (!modeObj) return;
+
+    const labels = getSubOptionLabels();
+    const updatedSubOpts = [...selectedSubOptions];
+    updatedSubOpts[index] = value;
+
+    for (let j = index + 1; j < labels.length; j++) {
+      const avail = getSubOptionValuesForModeAndSelections(modeObj, j, updatedSubOpts);
+      updatedSubOpts[j] = avail.length > 0 ? avail[0] : '';
+    }
+
+    setSelectedSubOptions(updatedSubOpts);
+    updatePriceAndAttemptFromSubOptions(modeObj, updatedSubOpts);
+  };
+
+  // Legacy fallback helpers
   const getUniqueValiditiesForMode = (mode) => {
     if (!course || !course.modeAttemptPricing) return [];
     const modeObj = course.modeAttemptPricing.find(m => m.mode === mode);
@@ -116,78 +217,7 @@ const CourseFullDetailPage = () => {
     if (!course || !course.modeAttemptPricing || !selectedMode) return [];
     const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
     if (!modeObj || !modeObj.attempts) return [];
-    const validities = getUniqueValiditiesForMode(selectedMode);
-    if (validities.length > 0 && selectedValidity) {
-      return modeObj.attempts.filter(a => a.validity === selectedValidity);
-    }
     return modeObj.attempts;
-  };
-
-  const handleModeChange = (newMode) => {
-    setSelectedMode(newMode);
-    if (!course || !course.modeAttemptPricing) return;
-    const modeObj = course.modeAttemptPricing.find(m => m.mode === newMode);
-    if (!modeObj || !modeObj.attempts || modeObj.attempts.length === 0) {
-      setSelectedValidity('');
-      setSelectedAttempt('');
-      setSelectedPrice({ selling: 0, cost: 0 });
-      return;
-    }
-    const validities = modeObj.attempts
-      .map(a => a.validity)
-      .filter(v => v !== undefined && v !== null && v !== '');
-    const uniqueValidities = Array.from(new Set(validities));
-    const defaultValidity = uniqueValidities.length > 0 ? uniqueValidities[0] : '';
-    setSelectedValidity(defaultValidity);
-
-    const matchingAttempts = defaultValidity
-      ? modeObj.attempts.filter(a => a.validity === defaultValidity)
-      : modeObj.attempts;
-
-    if (matchingAttempts.length > 0) {
-      const firstAttempt = matchingAttempts[0];
-      setSelectedAttempt(firstAttempt.attempt || '');
-      setSelectedPrice({
-        selling: Number(firstAttempt.sellingPrice || 0),
-        cost: Number(firstAttempt.costPrice || 0)
-      });
-    } else {
-      setSelectedAttempt('');
-      setSelectedPrice({ selling: 0, cost: 0 });
-    }
-  };
-
-  const handleValidityChange = (newValidity) => {
-    setSelectedValidity(newValidity);
-    if (!course || !course.modeAttemptPricing || !selectedMode) return;
-    const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-    if (!modeObj || !modeObj.attempts) return;
-    const matchingAttempts = modeObj.attempts.filter(a => a.validity === newValidity);
-    if (matchingAttempts.length > 0) {
-      const firstAttempt = matchingAttempts[0];
-      setSelectedAttempt(firstAttempt.attempt || '');
-      setSelectedPrice({
-        selling: Number(firstAttempt.sellingPrice || 0),
-        cost: Number(firstAttempt.costPrice || 0)
-      });
-    }
-  };
-
-  const handleAttemptChange = (newAttempt) => {
-    setSelectedAttempt(newAttempt);
-    if (!course || !course.modeAttemptPricing || !selectedMode) return;
-    const modeObj = course.modeAttemptPricing.find(m => m.mode === selectedMode);
-    if (!modeObj || !modeObj.attempts) return;
-    const matchingAttempt = modeObj.attempts.find(a =>
-      a.attempt === newAttempt &&
-      (!selectedValidity || a.validity === selectedValidity)
-    );
-    if (matchingAttempt) {
-      setSelectedPrice({
-        selling: Number(matchingAttempt.sellingPrice || 0),
-        cost: Number(matchingAttempt.costPrice || 0)
-      });
-    }
   };
 
   // Fetch course details
@@ -217,30 +247,11 @@ const CourseFullDetailPage = () => {
         const normalizedCourse = normalizeCoursePricing(data.course);
         setCourse(normalizedCourse);
 
-        // Initialize mode, validity, and attempt selection
+        // Initialize mode, validity, attempt and sub-options selection
         if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
           const firstMode = normalizedCourse.modeAttemptPricing[0];
           setSelectedMode(firstMode.mode);
-
-          const validities = (firstMode.attempts || [])
-            .map(a => a.validity)
-            .filter(v => v !== undefined && v !== null && v !== '');
-          const uniqueValidities = Array.from(new Set(validities));
-          const defaultValidity = uniqueValidities.length > 0 ? uniqueValidities[0] : '';
-          setSelectedValidity(defaultValidity);
-
-          const matchingAttempts = defaultValidity
-            ? (firstMode.attempts || []).filter(a => a.validity === defaultValidity)
-            : (firstMode.attempts || []);
-
-          if (matchingAttempts.length > 0) {
-            const firstAttempt = matchingAttempts[0];
-            setSelectedAttempt(firstAttempt.attempt || '');
-            setSelectedPrice({
-              selling: Number(firstAttempt.sellingPrice || 0),
-              cost: Number(firstAttempt.costPrice || 0)
-            });
-          }
+          initializeSubOptionsForMode(normalizedCourse, firstMode.mode);
         } else {
           setSelectedPrice({
             selling: Number(data.course.sellingPrice || data.course.selling_price || 0),
@@ -255,6 +266,7 @@ const CourseFullDetailPage = () => {
         setLoading(false);
       }
     }
+
 
     if (courseId) {
       fetchCourseDetails();
@@ -327,7 +339,13 @@ const CourseFullDetailPage = () => {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, courseId: course?.id || course?._id || courseId })
+        body: JSON.stringify({ 
+          code, 
+          courseId: course?.id || course?._id || courseId,
+          userId: user?.id || user?._id,
+          userEmail: user?.email
+        })
+
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -386,8 +404,8 @@ const CourseFullDetailPage = () => {
     }
 
     if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
-      (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
-      alert('Please select mode, validity, and batch before proceeding.');
+      (!selectedMode || !selectedAttempt || selectedSubOptions.some(s => !s))) {
+      alert('Please select all course options before proceeding.');
       return;
     }
 
@@ -420,10 +438,11 @@ const CourseFullDetailPage = () => {
   // Handle Add to Cart
   const handleAddToCart = () => {
     if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
-      (!selectedMode || !selectedAttempt || (getUniqueValiditiesForMode(selectedMode).length > 0 && !selectedValidity))) {
-      alert('Please select mode, validity, and batch before adding to cart.');
+      (!selectedMode || !selectedAttempt || selectedSubOptions.some(s => !s))) {
+      alert('Please select all course options before adding to cart.');
       return;
     }
+
 
     const added = addToCart(course, selectedMode, selectedAttempt, discountedSellingPrice, selectedValidity);
     if (added) {
@@ -592,51 +611,35 @@ const CourseFullDetailPage = () => {
                   </div>
                 </div>
 
-                {/* 2. Views & Validity Row */}
-                {selectedMode && getUniqueValiditiesForMode(selectedMode).length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-12 items-center gap-2 sm:gap-4">
-                    <label className="sm:col-span-4 font-bold text-gray-700 text-sm sm:text-base">
-                      {course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.validityLabel || 'Views & Validity'}:
-                    </label>
-                    <div className="sm:col-span-8">
-                      <select
-                        value={selectedValidity}
-                        onChange={(e) => handleValidityChange(e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] font-medium text-gray-900 shadow-xs"
-                      >
-                        <option value="" disabled>Select Option</option>
-                        {getUniqueValiditiesForMode(selectedMode).map((val, idx) => (
-                          <option key={idx} value={val}>
-                            {val}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
+                {/* Dynamic Sub-Options Rows (Batch, Exam Term, Mode of Delivery of Books, etc.) */}
+                {selectedMode && getSubOptionLabels().map((label, optIdx) => {
+                  const modeObj = getCurrentModeData();
+                  const availableVals = getSubOptionValuesForModeAndSelections(modeObj, optIdx, selectedSubOptions);
+                  if (availableVals.length === 0) return null;
 
-                {/* 3. Batch Row */}
-                {selectedMode && (
-                  <div className="grid grid-cols-1 sm:grid-cols-12 items-center gap-2 sm:gap-4">
-                    <label className="sm:col-span-4 font-bold text-gray-700 text-sm sm:text-base">
-                      {formatBatchLabelText(course.modeAttemptPricing?.find(m => m.mode === selectedMode)?.attempts?.[0]?.attemptLabel)} :
-                    </label>
-                    <div className="sm:col-span-8">
-                      <select
-                        value={selectedAttempt}
-                        onChange={(e) => handleAttemptChange(e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] font-medium text-gray-900 shadow-xs"
-                      >
-                        <option value="" disabled>Select Option</option>
-                        {getAttemptsForSelectedModeAndValidity().map((attempt, idx) => (
-                          <option key={idx} value={attempt.attempt}>
-                            {formatBatchOptionText(attempt.attempt)}
-                          </option>
-                        ))}
-                      </select>
+                  return (
+                    <div key={optIdx} className="grid grid-cols-1 sm:grid-cols-12 items-center gap-2 sm:gap-4">
+                      <label className="sm:col-span-4 font-bold text-gray-700 text-sm sm:text-base">
+                        {label}:
+                      </label>
+                      <div className="sm:col-span-8">
+                        <select
+                          value={selectedSubOptions[optIdx] || ''}
+                          onChange={(e) => handleSubOptionChange(optIdx, e.target.value)}
+                          className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#20b2aa] font-medium text-gray-900 shadow-xs"
+                        >
+                          <option value="" disabled>Select Option</option>
+                          {availableVals.map((val, vIdx) => (
+                            <option key={vIdx} value={val}>
+                              {val}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })}
+
 
                 {/* Description Text Box */}
                 {(() => {

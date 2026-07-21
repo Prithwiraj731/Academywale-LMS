@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../config/supabase.config');
 const { sendPurchaseInvoiceEmail, sendAdminNotificationEmail } = require('../utils/email.utils');
+const { recordCouponUsage } = require('../utils/couponMetadata');
 
 // Generate unique transaction ID
 const generateTransactionId = () => {
@@ -381,6 +382,10 @@ exports.upiPurchase = async (req, res) => {
 
     if (insertError) throw insertError;
 
+    if (coupon || courseDetails?.coupon) {
+      recordCouponUsage(coupon || courseDetails?.coupon, user.id, user.email);
+    }
+
     // Send notification email to admin
     try {
       await sendAdminNotificationEmail({
@@ -527,6 +532,11 @@ exports.cartPurchase = async (req, res) => {
         skippedPurchases.push({ title: course.subject, reason: insertError?.message || 'Failed to save' });
       }
     }
+
+    if (createdPurchases.length > 0 && coupon) {
+      recordCouponUsage(coupon, user.id, user.email);
+    }
+
 
     if (createdPurchases.length === 0) {
       return res.status(400).json({
@@ -911,6 +921,10 @@ exports.verifyRazorpayPayment = async (req, res) => {
         console.error('Error inserting payment record:', insertError);
         skippedPurchases.push({ title: course.subject, reason: insertError?.message || 'Failed to insert' });
       }
+    }
+
+    if (createdPurchases.length > 0 && coupon) {
+      recordCouponUsage(coupon, user?.id, userDetails?.email || user?.email);
     }
 
     if (createdPurchases.length === 0) {
