@@ -3,7 +3,7 @@ import { API_URL } from '../api';
 export const loadRazorpayCheckout = (options) => {
   return new Promise((resolve, reject) => {
     const rzpOptions = {
-      key: options.key || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TFRCtEZm0mJt7l',
+      key: options.key || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_TG5aLJKK3oiyxV',
       amount: options.amount,
       currency: options.currency || 'INR',
       name: 'AcademyWale',
