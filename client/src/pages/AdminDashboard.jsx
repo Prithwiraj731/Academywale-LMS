@@ -1697,20 +1697,76 @@ export default function AdminDashboard() {
   const [editInstituteError, setEditInstituteError] = useState('');
 
   // Open faculty edit modal
+  const fetchLiveFacultiesList = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/faculties`);
+      const data = await res.json();
+      const dbFaculties = data.faculties || [];
+      const hardcoded = getAllFaculties();
+      const mergedMap = new Map();
+
+      hardcoded.forEach(h => {
+        mergedMap.set(h.slug, {
+          id: h.id,
+          slug: h.slug,
+          firstName: h.name,
+          lastName: '',
+          bio: h.bio || '',
+          teaches: h.specialization ? [h.specialization] : [],
+          imageUrl: h.image,
+          image: h.image
+        });
+      });
+
+      dbFaculties.forEach(db => {
+        const slug = db.slug || `${db.first_name || db.firstName}-${db.last_name || db.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const existing = mergedMap.get(slug) || {};
+        
+        mergedMap.set(slug, {
+          ...existing,
+          ...db,
+          id: db.id || db._id || existing.id,
+          slug,
+          firstName: db.first_name || db.firstName || existing.firstName || '',
+          lastName: db.last_name !== undefined ? db.last_name : (db.lastName || existing.lastName || ''),
+          bio: db.bio !== undefined ? db.bio : (existing.bio || ''),
+          teaches: Array.isArray(db.teaches) ? db.teaches : (db.teaches ? [db.teaches] : (existing.teaches || [])),
+          imageUrl: db.image_url || db.imageUrl || existing.imageUrl || existing.image,
+          image: db.image_url || db.imageUrl || existing.image
+        });
+      });
+
+      setFaculties(Array.from(mergedMap.values()));
+    } catch (err) {
+      console.error('Error refreshing faculties list:', err);
+    }
+  };
+
   const openEditFacultyModal = (fac) => {
-    setEditFacultyData({ ...fac });
-    setEditFacultySlug(fac.slug);
+    const rawFirstName = fac.firstName || fac.first_name || fac.name || '';
+    const cleanFirstName = rawFirstName.replace(/^(CA|CMA|CS)\s+/i, '').trim();
+
+    setEditFacultyData({
+      firstName: cleanFirstName || rawFirstName,
+      lastName: fac.lastName !== undefined ? fac.lastName : (fac.last_name || ''),
+      bio: fac.bio || '',
+      teaches: Array.isArray(fac.teaches) ? fac.teaches : (typeof fac.teaches === 'string' ? [fac.teaches] : (fac.specialization ? [fac.specialization] : [])),
+    });
+    setEditFacultySlug(fac.slug || (fac.name ? fac.name.toLowerCase().replace(/\s+/g, '-') : ''));
     setEditFacultyImage(null);
-    setEditFacultyImagePreview(null);
+    setEditFacultyImagePreview(fac.imageUrl || fac.image_url || fac.image || null);
     setEditFacultyError('');
     setEditFacultyModalOpen(true);
   };
+
   // Handle faculty edit change
   const handleEditFacultyChange = e => {
     const { name, value, files, type, checked } = e.target;
     if (name === 'image') {
-      setEditFacultyImage(files[0]);
-      setEditFacultyImagePreview(URL.createObjectURL(files[0]));
+      if (files && files[0]) {
+        setEditFacultyImage(files[0]);
+        setEditFacultyImagePreview(URL.createObjectURL(files[0]));
+      }
     } else if (name === 'teaches') {
       setEditFacultyData(f => {
         let teaches = f.teaches || [];
@@ -1725,6 +1781,7 @@ export default function AdminDashboard() {
       setEditFacultyData(f => ({ ...f, [name]: value }));
     }
   };
+
   // Submit faculty edit
   const handleEditFacultySubmit = async e => {
     e.preventDefault();
@@ -1732,47 +1789,52 @@ export default function AdminDashboard() {
     setEditFacultyError('');
     try {
       const formData = new FormData();
-      Object.entries(editFacultyData).forEach(([k, v]) => {
-        if (k === 'teaches') {
-          v.forEach(teach => {
-            formData.append('teaches[]', teach);
-          });
-        } else if (k !== 'image' && k !== 'slug') {
-          formData.append(k, v);
-        }
-      });
-      if (editFacultyImage) formData.append('image', editFacultyImage);
+      formData.append('firstName', editFacultyData.firstName || '');
+      formData.append('lastName', editFacultyData.lastName || '');
+      formData.append('bio', editFacultyData.bio || '');
+
+      if (Array.isArray(editFacultyData.teaches)) {
+        editFacultyData.teaches.forEach(teach => {
+          formData.append('teaches[]', teach);
+        });
+      }
+
+      if (editFacultyImage) {
+        formData.append('image', editFacultyImage);
+      }
+
       const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty/${editFacultySlug}`, {
         method: 'PUT',
         body: formData
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        // Refresh faculties list after edit
-        fetch(`${API_URL}/api/faculties`).then(res => res.json()).then(data => setFaculties(data.faculties || []));
+      if (res.ok && (data.success || res.status === 200)) {
+        await fetchLiveFacultiesList();
         setEditFacultyModalOpen(false);
       } else {
-        setEditFacultyError(data.error || 'Failed to update faculty');
+        setEditFacultyError(data.message || data.error || 'Failed to update faculty');
       }
-    } catch {
+    } catch (err) {
+      console.error('Error updating faculty:', err);
       setEditFacultyError('Server error');
     }
     setEditFacultyLoading(false);
   };
+
   // Delete faculty
   const handleDeleteFaculty = async (slug) => {
-    if (!window.confirm('Delete this faculty?')) return;
+    if (!window.confirm('Are you sure you want to delete this faculty member?')) return;
     setLoading(true);
     try {
       const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty/${slug}`, { method: 'DELETE' });
       const data = await res.json();
-      if (res.ok && data.success) {
-        // Refresh faculties list after delete
-        fetch(`${API_URL}/api/faculties`).then(res => res.json()).then(data => setFaculties(data.faculties || []));
+      if (res.ok && (data.success || res.status === 200)) {
+        await fetchLiveFacultiesList();
       } else {
-        alert(data.error || 'Failed to delete faculty');
+        alert(data.message || data.error || 'Failed to delete faculty');
       }
-    } catch {
+    } catch (err) {
+      console.error('Error deleting faculty:', err);
       alert('Server error');
     }
     setLoading(false);
@@ -2935,127 +2997,6 @@ export default function AdminDashboard() {
               </div>
             </form>
           </Modal>
-
-          {/* Hardcoded Faculty Management Section */}
-          <div className="w-full max-w-5xl bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl shadow-2xl p-8 border border-purple-300 mt-8">
-            <h2 className="text-2xl font-bold text-purple-700 mb-6">📚 Manage Faculty Details</h2>
-            <p className="text-gray-600 mb-6">Update bio and teaching areas for faculty members. These details will be displayed on faculty profile pages.</p>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Faculty Selection */}
-              <div>
-                <h3 className="text-lg font-bold text-purple-600 mb-4">Select Faculty Member</h3>
-                <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2">
-                  {hardcodedFaculties.map(faculty => (
-                    <div
-                      key={faculty.id}
-                      onClick={() => handleSelectFaculty(faculty)}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex items-center gap-4 ${selectedFaculty?.id === faculty.id
-                        ? 'border-purple-500 bg-purple-100 shadow-lg'
-                        : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
-                        }`}
-                    >
-                      <img
-                        src={faculty.image}
-                        alt={faculty.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
-                      />
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-800">{faculty.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {faculty.bio ? '✅ Bio Added' : '⚠️ No Bio'} •
-                          {faculty.teaches && faculty.teaches.length > 0 ? ` Teaches: ${faculty.teaches.join(', ')}` : ' No Teaching Areas'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Faculty Update Form */}
-              <div>
-                <h3 className="text-lg font-bold text-purple-600 mb-4">
-                  {selectedFaculty ? `Update ${selectedFaculty.name}` : 'Select a Faculty Member'}
-                </h3>
-
-                {selectedFaculty ? (
-                  <form onSubmit={handleFacultyUpdateSubmit} className="space-y-4">
-                    {/* Selected Faculty Display */}
-                    <div className="p-4 bg-white rounded-xl border border-purple-200 flex items-center gap-4">
-                      <img
-                        src={selectedFaculty.image}
-                        alt={selectedFaculty.name}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-purple-300"
-                      />
-                      <div>
-                        <div className="font-bold text-purple-700">{selectedFaculty.name}</div>
-                        <div className="text-sm text-gray-500">Faculty Profile</div>
-                      </div>
-                    </div>
-
-                    {/* Bio Field */}
-                    <div>
-                      <label className="block font-semibold text-gray-700 mb-2">Faculty Bio</label>
-                      <textarea
-                        name="bio"
-                        value={facultyUpdateData.bio}
-                        onChange={handleFacultyUpdateChange}
-                        placeholder="Enter detailed bio about the faculty member's experience, qualifications, and expertise..."
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
-                        rows={5}
-                        required
-                      />
-                    </div>
-
-                    {/* Teaching Areas */}
-                    <div>
-                      <label className="block font-semibold text-gray-700 mb-3">Teaching Areas</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {TEACHES_OPTIONS.map(option => (
-                          <label key={option} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="teaches"
-                              value={option}
-                              checked={facultyUpdateData.teaches.includes(option)}
-                              onChange={handleFacultyUpdateChange}
-                              className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                            />
-                            <span className="font-medium">{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all text-lg"
-                    >
-                      💾 Update Faculty Details
-                    </button>
-
-                    {/* Status Messages */}
-                    {facultyUpdateStatus && (
-                      <div className="text-green-600 text-center font-semibold bg-green-50 p-3 rounded-lg border border-green-200">
-                        ✅ {facultyUpdateStatus}
-                      </div>
-                    )}
-                    {facultyUpdateError && (
-                      <div className="text-red-600 text-center font-semibold bg-red-50 p-3 rounded-lg border border-red-200">
-                        ❌ {facultyUpdateError}
-                      </div>
-                    )}
-                  </form>
-                ) : (
-                  <div className="text-center text-gray-500 py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                    <div className="text-4xl mb-4">👆</div>
-                    <p className="font-medium">Click on a faculty member from the left to start editing their details</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       )}
       {activePanel === 'institute' && (
