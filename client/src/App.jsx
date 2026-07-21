@@ -8,11 +8,13 @@ import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 // Import Layout
 import Layout from './components/layout/Layout';
 
-// Import your pages
+// Import Pages
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import CoursesPage from './pages/CoursesPage';
+import AllCoursesPage from './pages/AllCoursesPage';
+import TestSeriesPage from './pages/TestSeriesPage';
 import FacultiesPage from './pages/FacultiesPage';
 import FacultyDetailPage from './pages/FacultyDetailPage';
 import InstitutesPage from './pages/InstitutesPage';
@@ -26,7 +28,6 @@ import Admin from './pages/Admin';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentPage from './pages/PaymentPage';
 import UPIPaymentPage from './pages/UPIPaymentPage';
-import CourseDetailPage from './pages/CourseDetailPage';
 import CourseFullDetailPage from './pages/CourseFullDetailPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CAFoundationPapers from './pages/CAFoundationPapers';
@@ -36,20 +37,18 @@ import CMAFoundationPapers from './pages/CMAFoundationPapers';
 import CMAInterPapers from './pages/CMAInterPapers';
 import CMAFinalPapers from './pages/CMAFinalPapers';
 
-// Import new paper detail pages
+// Import Specific Paper Detail Pages
 import CAFoundationPaperDetailPage from './pages/CAFoundationPaperDetailPage';
 import CAInterPaperDetailPage from './pages/CAInterPaperDetailPage';
 import CAFinalPaperDetailPage from './pages/CAFinalPaperDetailPage';
 import CMAFoundationPaperDetailPage from './pages/CMAFoundationPaperDetailPage';
 import CMAInterPaperDetailPage from './pages/CMAInterPaperDetailPage';
 import CMAFinalPaperDetailPage from './pages/CMAFinalPaperDetailPage';
-import AllCoursesPage from './pages/AllCoursesPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const App = () => {
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
 
-  // This is the sample image from the Cloudinary example
   const img = cld
     .image('cld-sample-5')
     .format('auto')
@@ -65,6 +64,7 @@ const App = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/all" element={<AllCoursesPage />} />
+        <Route path="/test-series" element={<TestSeriesPage />} />
         <Route path="/faculties" element={<FacultiesPage />} />
         <Route path="/faculties/:slug" element={<FacultyDetailPage />} />
         <Route path="/institutes" element={<InstitutesPage />} />
@@ -93,7 +93,7 @@ const App = () => {
         <Route path="/courses/cma/inter/:paperSlug" element={<CMAInterPaperDetailPage />} />
         <Route path="/courses/cma/final/:paperSlug" element={<CMAFinalPaperDetailPage />} />
 
-        {/* This is the route for the Cloudinary example you provided */}
+        {/* Cloudinary Example */}
         <Route path="/cloudinary-example" element={<AdvancedImage cldImg={img} />} />
 
         {/* Catch-all Route for 404 Not Found */}

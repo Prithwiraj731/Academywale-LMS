@@ -145,7 +145,8 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
-              <a href="#" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Test Series</a>
+              <Link to="/test-series" className="text-gray-800 hover:text-primary transition font-bold text-sm xl:text-base">Test Series</Link>
+
               <div className="relative group">
                 <button className="text-gray-800 hover:text-primary transition flex items-center font-bold text-sm xl:text-base">
                   Faculties
@@ -339,9 +340,14 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-                <a href="#" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
+                <Link 
+                  to="/test-series" 
+                  className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Test Series
-                </a>
+                </Link>
+
                 <Link to="/faculties" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   All Faculties
                 </Link>
