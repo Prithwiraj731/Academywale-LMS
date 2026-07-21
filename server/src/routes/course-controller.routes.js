@@ -44,8 +44,6 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
 
     if (error) throw error;
 
-    const mapped = mapCoursesToFrontend(courses);
-
     res.json({ success: true, courses: mapped });
   } catch (error) {
     console.error('Error in direct CA Foundation Paper 1 endpoint:', error);
@@ -53,4 +51,38 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
   }
 });
 
+// Reorder courses sequence endpoint
+
+router.put('/api/courses/reorder', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ success: false, error: 'Items array is required' });
+    }
+
+    for (const item of items) {
+      if (!item.id) continue;
+      const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
+
+      const { error } = await supabaseAdmin
+        .from('courses')
+        .update({ 
+          display_order: order,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', item.id);
+
+      if (error) {
+        console.warn(`Reorder update notice for course ${item.id}:`, error.message);
+      }
+    }
+
+    res.json({ success: true, message: 'Courses sequence updated successfully' });
+  } catch (err) {
+    console.error('Error reordering courses:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
+

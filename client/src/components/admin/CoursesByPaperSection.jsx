@@ -75,6 +75,9 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     Object.values(grouped).forEach(levels => {
       Object.values(levels).forEach(list => {
         list.sort((a, b) => {
+          const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.sequence !== undefined ? Number(a.sequence) : 9999);
+          const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.sequence !== undefined ? Number(b.sequence) : 9999);
+          if (orderA !== orderB) return orderA - orderB;
           const paperA = Number(a.paperId || a.paper_id || 999);
           const paperB = Number(b.paperId || b.paper_id || 999);
           if (paperA !== paperB) return paperA - paperB;
@@ -85,6 +88,34 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
 
     return grouped;
   }, [filteredCourses]);
+
+  const handleMoveCourse = async (list, currentIndex, direction) => {
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    const newList = [...list];
+    const temp = newList[currentIndex];
+    newList[currentIndex] = newList[targetIndex];
+    newList[targetIndex] = temp;
+
+    const reorderPayload = newList.map((course, idx) => ({
+      id: getCourseId(course),
+      displayOrder: idx + 1
+    }));
+
+    try {
+      const res = await fetch(`${API_URL}/api/courses/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: reorderPayload })
+      });
+      if (res.ok) {
+        await loadCourses();
+      }
+    } catch (err) {
+      console.error('Failed to save reordered courses:', err);
+    }
+  };
 
   const handleEdit = (course) => {
     const courseId = getCourseId(course);
@@ -101,7 +132,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     }
   };
 
-  const renderCourseRow = (course) => {
+  const renderCourseRow = (course, index, list) => {
     const courseId = getCourseId(course);
     const title = course.title || course.subject || 'Untitled Course';
     const price = Number(course.sellingPrice || 0);
@@ -109,6 +140,9 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
 
     return (
       <tr key={courseId || `${title}-${course.paperId}`} className="border-b border-gray-100 last:border-b-0 hover:bg-purple-50/40">
+        <td className="p-3 text-center align-middle font-bold text-xs text-purple-700">
+          #{index + 1}
+        </td>
         <td className="p-3 align-top">
           <div className="flex items-start gap-3">
             {course.posterUrl ? (
@@ -140,7 +174,27 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
           {cost > price && <div className="text-xs text-gray-400 line-through">Rs. {cost.toLocaleString('en-IN')}</div>}
         </td>
         <td className="p-3 align-top">
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap gap-1.5 justify-end items-center">
+            <div className="flex border rounded border-gray-300 overflow-hidden mr-1">
+              <button
+                type="button"
+                disabled={index === 0}
+                onClick={() => handleMoveCourse(list, index, 'up')}
+                className="px-2 py-1 text-xs font-bold bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed border-r border-gray-300"
+                title="Move Up in Sequence"
+              >
+                ⬆️
+              </button>
+              <button
+                type="button"
+                disabled={index === list.length - 1}
+                onClick={() => handleMoveCourse(list, index, 'down')}
+                className="px-2 py-1 text-xs font-bold bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Move Down in Sequence"
+              >
+                ⬇️
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => handleEdit(course)}
@@ -179,19 +233,21 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
             <table className="w-full min-w-[720px] text-left">
               <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                 <tr>
+                  <th className="p-3 text-center">Seq</th>
                   <th className="p-3">Course</th>
                   <th className="p-3">Type</th>
                   <th className="p-3">Price</th>
-                  <th className="p-3 text-right">Actions</th>
+                  <th className="p-3 text-right">Actions / Sequence</th>
                 </tr>
               </thead>
-              <tbody>{list.map(renderCourseRow)}</tbody>
+              <tbody>{list.map((c, i) => renderCourseRow(c, i, list))}</tbody>
             </table>
           </div>
         )}
       </section>
     );
   };
+
 
   return (
     <div className="w-full space-y-5">

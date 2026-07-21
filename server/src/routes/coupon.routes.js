@@ -6,7 +6,9 @@ const { requireAdminCookie } = require('../middlewares/auth.middleware');
 // Admin endpoints
 router.post('/api/admin/coupons', requireAdminCookie, couponController.createCoupon);
 router.get('/api/admin/coupons', requireAdminCookie, couponController.getCoupons);
+router.put('/api/admin/coupons/:code/visibility', requireAdminCookie, couponController.toggleCouponVisibility);
 router.delete('/api/admin/coupons/:code', requireAdminCookie, couponController.deleteCoupon);
+
 
 // Student endpoints
 router.post('/api/coupons/validate', couponController.validateCoupon);

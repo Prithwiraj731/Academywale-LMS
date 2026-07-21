@@ -473,6 +473,22 @@ export default function AdminDashboard() {
     } catch { }
   };
 
+  const handleToggleCouponVisibility = async (code, currentVisibility) => {
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons/${encodeURIComponent(code)}/visibility`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isVisible: !currentVisibility })
+      });
+      if (res.ok) {
+        fetchCoupons();
+      }
+    } catch (err) {
+      console.error('Error toggling coupon visibility:', err);
+    }
+  };
+
+
   const requiredFields = [
     { name: 'subject', label: 'Subject' },
     { name: 'noOfLecture', label: 'No Of Lecture' },
@@ -3266,9 +3282,19 @@ export default function AdminDashboard() {
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-base text-gray-850">{c.code}</span>
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${c.isVisible !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {c.isVisible !== false ? '👁️ Visible on Course Page' : '🙈 Hidden'}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCouponVisibility(c.code, c.isVisible !== false)}
+                        className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer ${
+                          c.isVisible !== false 
+                            ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' 
+                            : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                        }`}
+                        title="Click to toggle visibility on course detail page"
+                      >
+                        {c.isVisible !== false ? '👁️ Visible on Course Page (Click to Hide)' : '🙈 Hidden (Click to Show)'}
+                      </button>
+
                     </div>
                     <span className="text-xs text-gray-500 mt-0.5">
                       {linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses'}

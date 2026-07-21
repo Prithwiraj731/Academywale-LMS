@@ -8,6 +8,11 @@ function mapCourseToFrontend(course) {
     ...course,
     // ID compatibility
     _id: course.id,
+    displayOrder: course.display_order !== undefined && course.display_order !== null 
+      ? Number(course.display_order) 
+      : (course.sequence !== undefined && course.sequence !== null 
+          ? Number(course.sequence) 
+          : (course.displayOrder !== undefined && course.displayOrder !== null ? Number(course.displayOrder) : 9999)),
     // Core fields
     paperId: course.paper_id,
     paperName: course.paper_name,
@@ -44,11 +49,18 @@ function mapCourseToFrontend(course) {
 }
 
 /**
- * Maps an array of Supabase courses to frontend format.
+ * Maps an array of Supabase courses to frontend format and sorts by displayOrder.
  */
 function mapCoursesToFrontend(courses) {
   if (!Array.isArray(courses)) return [];
-  return courses.map(mapCourseToFrontend);
+  const mapped = courses.map(mapCourseToFrontend);
+  return mapped.sort((a, b) => {
+    const orderA = Number(a.displayOrder ?? 9999);
+    const orderB = Number(b.displayOrder ?? 9999);
+    if (orderA !== orderB) return orderA - orderB;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
 }
 
 module.exports = { mapCourseToFrontend, mapCoursesToFrontend };
+

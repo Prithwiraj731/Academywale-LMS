@@ -239,3 +239,25 @@ exports.getPublicVisibleCoupons = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Admin: Toggle coupon visibility
+exports.toggleCouponVisibility = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { isVisible } = req.body;
+    const normalizedCode = String(code || '').trim().toUpperCase();
+
+    const meta = getCouponMetadata(normalizedCode) || {};
+    const newVisible = isVisible !== undefined ? Boolean(isVisible) : !meta.isVisible;
+
+    setCouponMetadata(normalizedCode, {
+      ...meta,
+      isVisible: newVisible
+    });
+
+    res.json({ success: true, isVisible: newVisible });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
