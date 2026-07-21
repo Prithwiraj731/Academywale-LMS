@@ -1461,8 +1461,29 @@ export default function AdminDashboard() {
       setEditPosterPreview(URL.createObjectURL(files[0]));
     } else {
       setEditCourseData(f => ({ ...f, [name]: value }));
+
+      if (name === 'category') {
+        setEditCourseData(prev => ({ ...prev, subcategory: '', paperId: '', paperName: '' }));
+      }
+      if (name === 'subcategory') {
+        setEditCourseData(prev => ({ ...prev, paperId: '', paperName: '' }));
+      }
+      if (name === 'paperId') {
+        const papers = getPapers(editCourseData.category || f.category, editCourseData.subcategory || f.subcategory);
+        const selectedPaper = papers.find(p => String(p.id) === String(value));
+        if (selectedPaper) {
+          const match = selectedPaper.name.match(/Paper\s*(\d+)/i);
+          const realPaperId = match ? match[1] : value;
+          setEditCourseData(prev => ({ 
+            ...prev, 
+            paperId: realPaperId,
+            paperName: selectedPaper.name 
+          }));
+        }
+      }
     }
   };
+
 
   // Submit edit
   const handleEditSubmit = async e => {
