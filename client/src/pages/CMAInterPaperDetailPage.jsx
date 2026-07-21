@@ -153,8 +153,10 @@ const CMAInterPaperDetailPage = () => {
                     course.paperId == paperId ||
                     course.paperId == parseInt(paperId) ||
                     String(course.paperId) === paperId ||
-                    String(course.paperId) === String(paperId)
+                    String(course.paperId) === String(paperId) ||
+                    (course.paperName && course.paperName.toLowerCase().includes(`paper ${paperId}`))
                   );
+
                   
                   const matches = isCMA && isInter && paperMatches;
                   
