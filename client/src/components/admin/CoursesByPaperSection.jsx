@@ -98,8 +98,29 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     newList[currentIndex] = newList[targetIndex];
     newList[targetIndex] = temp;
 
-    // Optimistically update UI
-    setFilteredCourses(newList);
+    // Create a map of updated display order for each course in the list
+    const updatedOrders = {};
+    newList.forEach((course, idx) => {
+      const id = getCourseId(course);
+      if (id) {
+        updatedOrders[id] = idx + 1;
+      }
+    });
+
+    // Optimistically update local courses state
+    setCourses(prevCourses => {
+      return prevCourses.map(c => {
+        const id = getCourseId(c);
+        if (updatedOrders[id] !== undefined) {
+          return {
+            ...c,
+            displayOrder: updatedOrders[id],
+            display_order: updatedOrders[id]
+          };
+        }
+        return c;
+      });
+    });
 
     const reorderPayload = newList.map((course, idx) => ({
       id: getCourseId(course),
@@ -127,6 +148,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     } catch (err) {
       console.error('Failed to save reordered courses:', err);
     }
+
 
   };
 
