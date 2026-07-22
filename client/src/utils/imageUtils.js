@@ -64,7 +64,7 @@ export const getCourseImageUrl = (course) => {
 
   const rawUrl = typeof course === 'string' 
     ? course 
-    : (course.posterUrl || course.poster_url || course.poster || course.image || course.banner || '');
+    : (course.posterUrl || course.poster_url || course.poster || course.banner || course.bannerUrl || course.banner_url || '');
 
   if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim() !== '') {
     const trimmed = rawUrl.trim();
@@ -83,24 +83,6 @@ export const getCourseImageUrl = (course) => {
       return `${API_URL}${trimmed}`;
     }
     return `${API_URL}/uploads/${trimmed}`;
-  }
-
-  // Smart Fallback: Match faculty image from hardcodedFaculties based on facultyName or title/subject
-  if (typeof course === 'object' && course !== null) {
-    const searchStr = `${course.facultyName || ''} ${course.faculty_name || ''} ${course.faculty || ''} ${course.title || ''} ${course.subject || ''}`.toLowerCase();
-    
-    const matchedFac = hardcodedFaculties.find(f => {
-      const fName = (f.name || '').toLowerCase();
-      const fSlug = (f.slug || '').toLowerCase();
-      const nameWithoutPrefix = fName.replace(/^(ca|cma|cs)\s+/i, '').trim();
-      return (fName && searchStr.includes(fName)) ||
-             (fSlug && searchStr.includes(fSlug)) ||
-             (nameWithoutPrefix.length > 3 && searchStr.includes(nameWithoutPrefix));
-    });
-
-    if (matchedFac && matchedFac.image) {
-      return matchedFac.image;
-    }
   }
 
   return '/logo.svg';

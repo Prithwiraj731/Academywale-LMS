@@ -416,6 +416,8 @@ exports.upiPurchase = async (req, res) => {
         course_details: {
           title: course.title || course.subject,
           subject: course.subject,
+          poster_url: course.poster_url || course.posterUrl || courseDetails?.posterUrl || '',
+          posterUrl: course.poster_url || course.posterUrl || courseDetails?.posterUrl || '',
           mode: courseDetails?.mode || '',
           validity: courseDetails?.validity || '',
           attempt: courseDetails?.attempt || '',
@@ -562,6 +564,8 @@ exports.cartPurchase = async (req, res) => {
           course_details: {
             title: course.title || course.subject,
             subject: course.subject,
+            poster_url: course.poster_url || course.posterUrl || item.posterUrl || '',
+            posterUrl: course.poster_url || course.posterUrl || item.posterUrl || '',
             mode: item.mode || '',
             validity: item.attempt || item.validity || '',
             facultyName: course.faculty_name,
@@ -991,6 +995,8 @@ exports.verifyRazorpayPayment = async (req, res) => {
           course_details: {
             title: course.title || course.subject,
             subject: course.subject,
+            poster_url: course.poster_url || course.posterUrl || item.posterUrl || '',
+            posterUrl: course.poster_url || course.posterUrl || item.posterUrl || '',
             mode: item.mode || req.body.courseDetails?.mode || '',
             validity: item.attempt || item.validity || req.body.courseDetails?.validity || '',
             facultyName: course.faculty_name,
