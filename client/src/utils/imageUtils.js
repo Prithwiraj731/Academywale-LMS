@@ -56,6 +56,15 @@ export const getFacultyCloudinaryId = (faculty) => {
   return faculty.image || faculty.public_id || null;
 };
 
+// Dynamically import all real course posters from assets/allFaculty
+const coursePostersGlob = import.meta.glob('../assets/allFaculty/*.*', { eager: true, import: 'default' });
+
+// Create array of poster assets with upper-cased filenames for smart matching
+const coursePostersList = Object.entries(coursePostersGlob).map(([filePath, url]) => {
+  const filename = filePath.split('/').pop().toUpperCase();
+  return { filename, url };
+});
+
 /**
  * Get the full image URL for course posters
  */
@@ -85,7 +94,47 @@ export const getCourseImageUrl = (course) => {
     return `${API_URL}/uploads/${trimmed}`;
   }
 
-  return '/logo.svg';
+  // Fallback: Resolve real course poster from assets/allFaculty if rawUrl is empty
+  if (typeof course === 'object' && course !== null) {
+    const title = (course.title || '').toUpperCase();
+    const subject = (course.subject || '').toUpperCase();
+    const faculty = (course.facultyName || course.faculty_name || course.faculty || '').toUpperCase();
+    const paperId = String(course.paperId || course.paper_id || '');
+
+    // 1. Try match by faculty keyword AND paper number or subject keyword
+    const matchedByFacultyAndPaper = coursePostersList.find(p => {
+      const fn = p.filename;
+      const words = faculty.split(/\s+/).filter(w => w.length > 3 && !['CA', 'CMA', 'CS'].includes(w));
+      const hasFacultyMatch = words.some(w => fn.includes(w));
+      
+      const hasPaperMatch = (paperId && (fn.includes(`PAPER-${paperId}`) || fn.includes(`PAPER ${paperId}`))) ||
+                            (title && fn.split(' ').some(part => part.length > 3 && title.includes(part))) ||
+                            (subject && fn.split(' ').some(part => part.length > 3 && subject.includes(part)));
+
+      return hasFacultyMatch && hasPaperMatch;
+    });
+
+    if (matchedByFacultyAndPaper) return matchedByFacultyAndPaper.url;
+
+    // 2. Try match by faculty name alone
+    const matchedByFaculty = coursePostersList.find(p => {
+      const words = faculty.split(/\s+/).filter(w => w.length > 3 && !['CA', 'CMA', 'CS'].includes(w));
+      return words.some(w => p.filename.includes(w));
+    });
+
+    if (matchedByFaculty) return matchedByFaculty.url;
+
+    // 3. Try match by title/subject keyword
+    const matchedByTitle = coursePostersList.find(p => {
+      const titleWords = `${title} ${subject}`.split(/\s+/).filter(w => w.length > 4);
+      return titleWords.some(w => p.filename.includes(w));
+    });
+
+    if (matchedByTitle) return matchedByTitle.url;
+  }
+
+  // Default fallback poster from real posters collection
+  return coursePostersList[0]?.url || '/logo.svg';
 };
 
 
