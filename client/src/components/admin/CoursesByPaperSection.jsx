@@ -17,7 +17,7 @@ const normalizeLevel = (value = '') => {
 
 const getCourseId = (course) => course?.id || course?._id || course?.mongo_id || '';
 
-const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 }) => {
+const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, refreshKey = 0 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [courses, setCourses] = useState([]);
