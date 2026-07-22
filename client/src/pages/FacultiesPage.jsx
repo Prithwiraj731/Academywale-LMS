@@ -97,7 +97,7 @@ export default function FacultiesPage() {
           </h1>
 
           <p className="text-gray-400 text-xs sm:text-base max-w-2xl mx-auto leading-relaxed mb-8">
-            Learn from India's most trusted CA, CMA & CS faculty members with proven track records of rank holders and top exam results.
+            Learn from India's most trusted CA & CMA faculty members with proven track records of rank holders and top exam results.
           </p>
 
           {/* Search & Category Filter Control Bar */}
@@ -125,7 +125,7 @@ export default function FacultiesPage() {
 
               {/* Category Filter Pills */}
               <div className="flex gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none justify-center">
-                {['All', 'CA', 'CMA', 'CS'].map(cat => (
+                {['All', 'CA', 'CMA'].map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
@@ -161,18 +161,18 @@ export default function FacultiesPage() {
           <div className="max-w-7xl mx-auto">
             {filteredFaculties.length > 0 ? (
               /* 2 Columns on Mobile (grid-cols-2), 3 on SM, 4 on MD, 5 on LG */
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-7">
                 {filteredFaculties.map(faculty => (
                   <PinContainer
                     key={faculty.id || faculty.slug}
                     title={faculty.name}
                     href={`/faculties/${faculty.slug}`}
-                    containerClassName="w-full h-full min-w-[135px] xs:min-w-[155px] sm:min-w-[200px] max-w-[220px] min-h-[200px] sm:min-h-[280px] mx-auto flex items-center justify-center"
+                    containerClassName="w-full h-full min-w-[150px] xs:min-w-[170px] sm:min-w-[210px] md:min-w-[230px] max-w-[250px] min-h-[230px] sm:min-h-[300px] mx-auto flex items-center justify-center"
                   >
                     <div
-                      className="group bg-white/95 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-3 sm:p-5 cursor-pointer hover:scale-[1.03] w-full h-full border border-teal-100/50"
+                      className="group bg-white/95 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 sm:p-6 cursor-pointer hover:scale-[1.03] w-full h-full border border-teal-100/50"
                     >
-                      <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 mb-2 sm:mb-3 rounded-full overflow-hidden border-3 sm:border-4 border-[#20b2aa] bg-gradient-to-br from-[#e0f7f4] to-[#b3e5e0] flex items-center justify-center group-hover:border-[#17817a] transition-colors duration-300 shadow-md">
+                      <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 mb-3 sm:mb-4 rounded-full overflow-hidden border-4 sm:border-4 border-[#20b2aa] bg-gradient-to-br from-[#e0f7f4] to-[#b3e5e0] flex items-center justify-center group-hover:border-[#17817a] transition-colors duration-300 shadow-md">
                         <img
                           src={faculty.image}
                           alt={faculty.name}
@@ -182,15 +182,15 @@ export default function FacultiesPage() {
                             if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
                           }}
                         />
-                        <div className="w-full h-full bg-gradient-to-br from-[#e0f7f4] to-[#b3e5e0] flex items-center justify-center text-xl sm:text-2xl font-bold text-teal-800" style={{ display: 'none' }}>
+                        <div className="w-full h-full bg-gradient-to-br from-[#e0f7f4] to-[#b3e5e0] flex items-center justify-center text-2xl sm:text-3xl font-bold text-teal-800" style={{ display: 'none' }}>
                           {faculty.name.charAt(0)}
                         </div>
                       </div>
-                      <div className="text-xs sm:text-base font-bold text-gray-900 text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-2">
+                      <div className="text-sm sm:text-lg font-bold text-gray-900 text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-2">
                         {faculty.name}
                       </div>
                       {faculty.specialization && (
-                        <span className="mt-1.5 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-teal-700 bg-teal-50 rounded-full border border-teal-100/80 text-center line-clamp-1 max-w-full">
+                        <span className="mt-2 px-2.5 py-0.5 text-xs sm:text-sm font-medium text-teal-700 bg-teal-50 rounded-full border border-teal-100/80 text-center line-clamp-1 max-w-full">
                           {faculty.specialization}
                         </span>
                       )}
