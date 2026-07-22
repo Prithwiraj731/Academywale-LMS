@@ -159,6 +159,12 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
     }
   };
 
+  const handleClone = (course) => {
+    if (typeof onCloneCourse === 'function') {
+      onCloneCourse(course);
+    }
+  };
+
   const handleDelete = async (course) => {
     const courseId = getCourseId(course);
     if (typeof onDeleteCourse === 'function') {
@@ -236,14 +242,22 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, refreshKey = 0 })
             <button
               type="button"
               onClick={() => handleEdit(course)}
-              className="rounded-md bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-200"
+              className="rounded-md bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-200 cursor-pointer"
             >
               Edit
             </button>
             <button
               type="button"
+              onClick={() => handleClone(course)}
+              className="rounded-md bg-blue-100 px-3 py-1.5 text-xs font-bold text-blue-800 hover:bg-blue-200 cursor-pointer"
+              title="Clone this course into Add Course form"
+            >
+              📋 Clone
+            </button>
+            <button
+              type="button"
               onClick={() => handleDelete(course)}
-              className="rounded-md bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-200"
+              className="rounded-md bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-200 cursor-pointer"
             >
               Delete
             </button>

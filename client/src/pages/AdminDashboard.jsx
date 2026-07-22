@@ -1371,6 +1371,97 @@ export default function AdminDashboard() {
   const [editError, setEditError] = useState('');
   const [courseListRefreshKey, setCourseListRefreshKey] = useState(0);
 
+  // Handle course cloning into Add Course form
+  const handleCloneCourse = (course) => {
+    if (!course) return;
+
+    const clonedTitle = `${course.title || course.subject || 'Course'} (Copy)`;
+    
+    // Parse custom details or construct defaults if missing
+    let details = course.customDetails || course.custom_details || [];
+    if (!Array.isArray(details) || details.length === 0) {
+      details = [
+        { label: 'Subject', value: course.subject || '', fieldType: 'text', displayOrder: 1, visible: true },
+        { label: 'Lectures', value: course.noOfLecture || '', fieldType: 'text', displayOrder: 2, visible: true },
+        { label: 'Duration', value: course.timing || '', fieldType: 'text', displayOrder: 3, visible: true },
+        { label: 'Study Materials', value: course.books || '', fieldType: 'text', displayOrder: 4, visible: true },
+        { label: 'Language', value: course.videoLanguage || 'Hindi', fieldType: 'text', displayOrder: 5, visible: true },
+        { label: 'Video Run On', value: course.videoRunOn || '', fieldType: 'text', displayOrder: 6, visible: true },
+        { label: 'Doubt Solving', value: course.doubtSolving || '', fieldType: 'text', displayOrder: 7, visible: true },
+        { label: 'Support Mail', value: course.supportMail || '', fieldType: 'text', displayOrder: 8, visible: true },
+        { label: 'Support Call', value: course.supportCall || '', fieldType: 'text', displayOrder: 9, visible: true },
+        { label: 'Validity', value: course.validityStartFrom || '', fieldType: 'text', displayOrder: 10, visible: true },
+        { label: 'Faculty', value: course.facultySlug || '', fieldType: 'faculty', displayOrder: 11, visible: true },
+        { label: 'Institute', value: course.instituteName || course.institute || '', fieldType: 'institute', displayOrder: 12, visible: true }
+      ];
+    }
+
+    let pricing = course.modeAttemptPricing || [];
+    if (!Array.isArray(pricing) || pricing.length === 0) {
+      pricing = [
+        {
+          mode: course.mode || 'Recorded Video',
+          modeLabel: 'Mode',
+          attempts: [
+            {
+              attempt: course.attempt || 'Dec 2026',
+              attemptLabel: 'Exam Term / Attempt',
+              validity: course.validityStartFrom || '12 Months',
+              validityLabel: 'Validity',
+              costPrice: course.costPrice || 0,
+              sellingPrice: course.sellingPrice || 0,
+              description: ''
+            }
+          ]
+        }
+      ];
+    }
+
+    const reconstructedOptions = reconstructOptionsFromPricing(pricing);
+
+    setCourseForm({
+      category: course.category || '',
+      subcategory: course.subcategory || '',
+      paperId: course.paperId || '',
+      paperName: course.paperName || '',
+      courseType: course.courseType || '',
+      title: clonedTitle,
+      subject: course.subject || '',
+      facultySlug: course.facultySlug || '',
+      facultyName: course.facultyName || '',
+      instituteName: course.instituteName || '',
+      description: course.description || '',
+      posterUrl: course.posterUrl || '',
+      posterPublicId: course.posterPublicId || '',
+      displayOrder: course.displayOrder || 999,
+      costPrice: course.costPrice || 0,
+      sellingPrice: course.sellingPrice || 0,
+      mode: course.mode || 'Recorded Video',
+      attempt: course.attempt || '',
+      validityStartFrom: course.validityStartFrom || '',
+      noOfLecture: course.noOfLecture || '',
+      timing: course.timing || '',
+      videoLanguage: course.videoLanguage || 'Hindi',
+      books: course.books || '',
+      videoRunOn: course.videoRunOn || '',
+      doubtSolving: course.doubtSolving || '',
+      supportMail: course.supportMail || '',
+      supportCall: course.supportCall || '',
+      customDetails: details,
+      modeAttemptPricing: pricing
+    });
+
+    setFormOptions(reconstructedOptions);
+
+    if (course.posterUrl) {
+      setPosterPreview(course.posterUrl);
+    }
+
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+
+    setCourseSuccess(`Cloned "${course.title || course.subject}" into the Add Course form! Tweak any details and click "Add Course" to save.`);
+  };
+
   // Open edit modal
   const openEditModal = (facultySlug, idx, courseOverride = null) => {
     const course = courseOverride || courses[idx];
@@ -3267,6 +3358,7 @@ export default function AdminDashboard() {
       <div className="w-full max-w-3xl">
         <CoursesByPaperSection
           onEditCourse={openEditModal}
+          onCloneCourse={handleCloneCourse}
           onDeleteCourse={handleDeleteCourse}
           refreshKey={courseListRefreshKey}
         />

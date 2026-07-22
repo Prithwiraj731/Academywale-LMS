@@ -99,24 +99,57 @@ export const getCourseImageUrl = (course) => {
     const title = (course.title || '').toUpperCase();
     const subject = (course.subject || '').toUpperCase();
     const faculty = (course.facultyName || course.faculty_name || course.faculty || '').toUpperCase();
-    const paperId = String(course.paperId || course.paper_id || '');
+    let paperId = String(course.paperId || course.paper_id || '');
 
-    // 1. Try match by faculty keyword AND paper number or subject keyword
+    // If paperId is missing, infer paperId from title/subject keywords
+    if (!paperId || paperId === 'undefined' || paperId === 'null') {
+      const fullText = `${title} ${subject}`;
+      if (fullText.includes('FINANCIAL ACCOUNTING')) paperId = '6';
+      else if (fullText.includes('DIRECT TAX') || fullText.includes('INDIRECT TAX') || fullText.includes('TAXATION')) paperId = '7';
+      else if (fullText.includes('COST ACCOUNTING') || fullText.includes('COSTING')) paperId = '8';
+      else if (fullText.includes('OPERATIONS MANAGEMENT') || fullText.includes('OM ') || fullText.includes('SM ')) paperId = '9';
+      else if (fullText.includes('CORPORATE ACCOUNTING') || fullText.includes('AUDITING')) paperId = '10';
+      else if (fullText.includes('FINANCIAL MANAGEMENT') || fullText.includes('FM ')) paperId = '11';
+      else if (fullText.includes('MANAGEMENT ACCOUNTING')) paperId = '12';
+      else if (fullText.includes('CORPORATE LAWS') || fullText.includes('ECONOMIC LAWS')) paperId = '13';
+      else if (fullText.includes('STRATEGIC FINANCIAL') || fullText.includes('SFM')) paperId = '14';
+      else if (fullText.includes('STRATEGIC COST')) paperId = '16';
+      else if (fullText.includes('CORPORATE FINANCIAL REPORTING') || fullText.includes('CFR')) paperId = '18';
+      else if (fullText.includes('STRATEGIC PERFORMANCE') || fullText.includes('SPM')) paperId = '20';
+    }
+
+    // 1. Try match by faculty keyword AND paper number
     const matchedByFacultyAndPaper = coursePostersList.find(p => {
       const fn = p.filename;
       const words = faculty.split(/\s+/).filter(w => w.length > 3 && !['CA', 'CMA', 'CS'].includes(w));
       const hasFacultyMatch = words.some(w => fn.includes(w));
       
-      const hasPaperMatch = (paperId && (fn.includes(`PAPER-${paperId}`) || fn.includes(`PAPER ${paperId}`))) ||
-                            (title && fn.split(' ').some(part => part.length > 3 && title.includes(part))) ||
-                            (subject && fn.split(' ').some(part => part.length > 3 && subject.includes(part)));
+      const hasPaperMatch = paperId && (
+        fn.includes(`PAPER-${paperId}.`) || 
+        fn.includes(`PAPER-${paperId} `) || 
+        fn.includes(`PAPER ${paperId}`)
+      );
 
       return hasFacultyMatch && hasPaperMatch;
     });
 
     if (matchedByFacultyAndPaper) return matchedByFacultyAndPaper.url;
 
-    // 2. Try match by faculty name alone
+    // 2. Try match by faculty keyword AND title/subject text part
+    const matchedByFacultyAndSubject = coursePostersList.find(p => {
+      const fn = p.filename;
+      const words = faculty.split(/\s+/).filter(w => w.length > 3 && !['CA', 'CMA', 'CS'].includes(w));
+      const hasFacultyMatch = words.some(w => fn.includes(w));
+      
+      const subjectMatch = (title && fn.split(' ').some(part => part.length > 4 && title.includes(part))) ||
+                           (subject && fn.split(' ').some(part => part.length > 4 && subject.includes(part)));
+
+      return hasFacultyMatch && subjectMatch;
+    });
+
+    if (matchedByFacultyAndSubject) return matchedByFacultyAndSubject.url;
+
+    // 3. Try match by faculty name alone
     const matchedByFaculty = coursePostersList.find(p => {
       const words = faculty.split(/\s+/).filter(w => w.length > 3 && !['CA', 'CMA', 'CS'].includes(w));
       return words.some(w => p.filename.includes(w));
@@ -124,7 +157,7 @@ export const getCourseImageUrl = (course) => {
 
     if (matchedByFaculty) return matchedByFaculty.url;
 
-    // 3. Try match by title/subject keyword
+    // 4. Try match by title/subject keyword
     const matchedByTitle = coursePostersList.find(p => {
       const titleWords = `${title} ${subject}`.split(/\s+/).filter(w => w.length > 4);
       return titleWords.some(w => p.filename.includes(w));

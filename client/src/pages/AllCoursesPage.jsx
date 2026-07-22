@@ -218,33 +218,32 @@ const CourseSlider = ({ courses, title }) => {
 };
 
 export default function AllCoursesPage() {
-  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/api/courses/all`);
+        const data = await res.json();
+        
+        if (data.success) {
+          setCourses(data.courses || []);
+        } else {
+          setError(data.message || 'Failed to fetch courses');
+        }
+      } catch (err) {
+        console.error('Error fetching all courses:', err);
+        setError('Failed to connect to server');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCourses();
   }, []);
-
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_URL}/api/courses/all`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        setCourses(data.courses || []);
-      } else {
-        setError('Failed to fetch courses');
-      }
-    } catch (err) {
-      setError('Server error occurred');
-      console.error('Error fetching courses:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Helper to accurately classify courses into strict sequence categories
   const getCourseCategoryKey = (course) => {
@@ -311,7 +310,6 @@ export default function AllCoursesPage() {
   const cmaFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_FINAL').sort(sortBySequence);
   const otherCourses = courses.filter(c => !['CA_INTER', 'CMA_INTER', 'CA_FINAL', 'CMA_FINAL'].includes(getCourseCategoryKey(c))).sort(sortBySequence);
 
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
@@ -358,10 +356,20 @@ export default function AllCoursesPage() {
         {/* 1. CA Inter Section */}
         {!error && caInterCourses.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-teal-500/30 flex items-center gap-2">
-              <span className="bg-teal-600 w-3 h-6 rounded-full"></span>
-              CA Inter Classes
-            </h2>
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-teal-500/30">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                <span className="bg-teal-600 w-3 h-6 rounded-full"></span>
+                CA Inter Classes
+              </h2>
+              <Link 
+                to="/ca/inter-papers"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                title="View all CA Inter papers and courses"
+              >
+                <span>View All</span>
+                <FaArrowRight className="text-xs" />
+              </Link>
+            </div>
             <CourseSlider courses={caInterCourses} title="CA Inter" />
           </div>
         )}
@@ -369,10 +377,20 @@ export default function AllCoursesPage() {
         {/* 2. CMA Inter Section */}
         {!error && cmaInterCourses.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-purple-500/30 flex items-center gap-2">
-              <span className="bg-purple-600 w-3 h-6 rounded-full"></span>
-              CMA Inter Classes
-            </h2>
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-purple-500/30">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                <span className="bg-purple-600 w-3 h-6 rounded-full"></span>
+                CMA Inter Classes
+              </h2>
+              <Link 
+                to="/cma/inter-papers"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                title="View all CMA Inter papers and courses"
+              >
+                <span>View All</span>
+                <FaArrowRight className="text-xs" />
+              </Link>
+            </div>
             <CourseSlider courses={cmaInterCourses} title="CMA Inter" />
           </div>
         )}
@@ -380,10 +398,20 @@ export default function AllCoursesPage() {
         {/* 3. CA Final Section */}
         {!error && caFinalCourses.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-[#20b2aa]/30 flex items-center gap-2">
-              <span className="bg-[#20b2aa] w-3 h-6 rounded-full"></span>
-              CA Final Classes
-            </h2>
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#20b2aa]/30">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                <span className="bg-[#20b2aa] w-3 h-6 rounded-full"></span>
+                CA Final Classes
+              </h2>
+              <Link 
+                to="/ca/final-papers"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#147b74] bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                title="View all CA Final papers and courses"
+              >
+                <span>View All</span>
+                <FaArrowRight className="text-xs" />
+              </Link>
+            </div>
             <CourseSlider courses={caFinalCourses} title="CA Final" />
           </div>
         )}
@@ -391,10 +419,20 @@ export default function AllCoursesPage() {
         {/* 4. CMA Final Section */}
         {!error && cmaFinalCourses.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-indigo-500/30 flex items-center gap-2">
-              <span className="bg-indigo-600 w-3 h-6 rounded-full"></span>
-              CMA Final Classes
-            </h2>
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-indigo-500/30">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                <span className="bg-indigo-600 w-3 h-6 rounded-full"></span>
+                CMA Final Classes
+              </h2>
+              <Link 
+                to="/cma/final-papers"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                title="View all CMA Final papers and courses"
+              >
+                <span>View All</span>
+                <FaArrowRight className="text-xs" />
+              </Link>
+            </div>
             <CourseSlider courses={cmaFinalCourses} title="CMA Final" />
           </div>
         )}
