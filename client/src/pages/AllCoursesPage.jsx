@@ -248,25 +248,48 @@ export default function AllCoursesPage() {
 
   // Helper to accurately classify courses into strict sequence categories
   const getCourseCategoryKey = (course) => {
-    const type = (course.courseType || course.course_type || course.title || course.subject || '').toUpperCase();
-    const cat = (course.category || '').toUpperCase();
+    const title = (course.title || '').toUpperCase();
+    const subject = (course.subject || '').toUpperCase();
+    const courseType = (course.courseType || course.course_type || '').toUpperCase();
+    const category = (course.category || '').toUpperCase();
+    const subcategory = (course.subcategory || '').toUpperCase();
 
-    const isCA = cat === 'CA' || type.includes('CA ') || type.startsWith('CA-') || type.startsWith('CA ');
-    const isCMA = cat === 'CMA' || type.includes('CMA ') || type.startsWith('CMA-') || type.startsWith('CMA ');
-    const isFinal = type.includes('FINAL');
-    const isInter = type.includes('INTER') || type.includes('INTERMEDIATE');
+    const fullText = `${category} ${subcategory} ${courseType} ${title} ${subject}`.toUpperCase();
 
-    if (isCA && isInter) return 'CA_INTER';
-    if (isCMA && isInter) return 'CMA_INTER';
-    if (isCA && isFinal) return 'CA_FINAL';
-    if (isCMA && isFinal) return 'CMA_FINAL';
+    // Priority 1: Check explicit FINAL vs INTER in title or subject
+    const isExplicitFinal = title.includes('FINAL') || subject.includes('FINAL');
+    const isExplicitInter = !isExplicitFinal && (title.includes('INTER') || subject.includes('INTER') || subject.includes('INTERMEDIATE'));
 
-    // Fallbacks based on category if courseType string isn't detailed
-    if (cat === 'CA') {
-      return isFinal ? 'CA_FINAL' : 'CA_INTER';
+    const isCMA = fullText.includes('CMA') || category === 'CMA';
+    const isCA = (fullText.includes('CA ') || fullText.includes('CA-') || category === 'CA') && !isCMA;
+
+    if (isExplicitFinal) {
+      if (isCMA) return 'CMA_FINAL';
+      if (isCA) return 'CA_FINAL';
+      return 'CMA_FINAL';
     }
-    if (cat === 'CMA') {
+
+    if (isExplicitInter) {
+      if (isCMA) return 'CMA_INTER';
+      if (isCA) return 'CA_INTER';
+      return 'CMA_INTER';
+    }
+
+    // Priority 2: Secondary keyword check
+    const isFinal = fullText.includes('FINAL');
+    const isInter = fullText.includes('INTER') || fullText.includes('INTERMEDIATE');
+
+    if (isCMA && isFinal) return 'CMA_FINAL';
+    if (isCA && isFinal) return 'CA_FINAL';
+    if (isCMA && isInter) return 'CMA_INTER';
+    if (isCA && isInter) return 'CA_INTER';
+
+    // Priority 3: Category fallbacks
+    if (category === 'CMA' || fullText.includes('CMA')) {
       return isFinal ? 'CMA_FINAL' : 'CMA_INTER';
+    }
+    if (category === 'CA' || fullText.includes('CA')) {
+      return isFinal ? 'CA_FINAL' : 'CA_INTER';
     }
 
     return 'OTHER';
