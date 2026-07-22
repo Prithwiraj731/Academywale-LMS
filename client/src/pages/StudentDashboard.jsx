@@ -85,111 +85,151 @@ export default function StudentDashboard() {
   const pendingCount = purchases.filter(p => p.paymentStatus === 'pending_verification' || p.paymentStatus === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-white py-8 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Welcome Glassmorphic Header */}
-        <div className="relative overflow-hidden bg-neutral-900/90 backdrop-blur-md rounded-3xl shadow-2xl border border-neutral-800 p-6 sm:p-8 mb-8">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-36 h-36 bg-[#20b2aa]/10 rounded-full blur-2xl pointer-events-none"></div>
-          
+        {/* Top Student Header Card */}
+        <div className="relative overflow-hidden bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-800/80 p-6 sm:p-8">
+          {/* Ambient Glow Accents */}
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            {/* Student Avatar & Basic Info */}
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#20b2aa] to-[#126862] flex items-center justify-center shadow-lg transform rotate-2">
-                <span className="text-3xl font-extrabold text-white uppercase select-none">
-                  {user.name ? user.name[0] : 'U'}
+              {/* Glowing Gradient Avatar Border */}
+              <div className="relative group">
+                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#20b2aa] via-teal-400 to-amber-300 p-[2.5px] shadow-lg shadow-teal-500/20 transition-transform duration-300 group-hover:scale-105">
+                  <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+                    <span className="text-2xl sm:text-3xl font-black text-teal-300 uppercase select-none">
+                      {user.name ? user.name[0] : 'U'}
+                    </span>
+                  </div>
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-slate-950 rounded-full flex items-center justify-center shadow-md">
+                  <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
                 </span>
               </div>
+
               <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-[11px] font-bold mb-1.5 uppercase tracking-wider">
+                  <FaUserGraduate className="text-teal-400 text-xs" />
+                  <span>Student Panel</span>
+                </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Welcome back, <span className="text-[#20b2aa]">{user.name || 'Learner'}</span>!
+                  Welcome back, <span className="bg-gradient-to-r from-teal-300 via-[#20b2aa] to-amber-300 bg-clip-text text-transparent">{user.name || 'Learner'}</span>!
                 </h1>
-                <p className="text-neutral-400 text-sm sm:text-base mt-1 font-medium">
-                  {user.email} | Student Panel
+                <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5">
+                  {user.email}
                 </p>
               </div>
             </div>
             
-            <div className="flex gap-4">
+            {/* Header Action Navigation Pills */}
+            <div className="flex gap-3 w-full sm:w-auto justify-center">
               <button 
                 onClick={() => setActiveTab('courses')}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md ${
+                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
                   activeTab === 'courses' 
-                    ? 'bg-[#20b2aa] text-white hover:bg-[#1a9690]' 
-                    : 'bg-neutral-850 text-neutral-300 border border-neutral-750 hover:bg-neutral-800'
+                    ? 'bg-gradient-to-r from-[#20b2aa] to-teal-600 text-white shadow-lg shadow-teal-500/25 border border-teal-400/30' 
+                    : 'bg-slate-950/80 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                My Enrollments ({purchases.length})
+                <FaBookOpen className={activeTab === 'courses' ? 'text-white' : 'text-teal-400'} />
+                <span>My Enrollments ({purchases.length})</span>
               </button>
               <button 
                 onClick={() => setActiveTab('cart')}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md flex items-center ${
+                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
                   activeTab === 'cart' 
-                    ? 'bg-[#20b2aa] text-white hover:bg-[#1a9690]' 
-                    : 'bg-neutral-850 text-neutral-300 border border-neutral-750 hover:bg-neutral-800'
+                    ? 'bg-gradient-to-r from-[#20b2aa] to-teal-600 text-white shadow-lg shadow-teal-500/25 border border-teal-400/30' 
+                    : 'bg-slate-950/80 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <FaShoppingCart className="mr-2" /> Cart ({cartCount})
+                <FaShoppingCart className={activeTab === 'cart' ? 'text-white' : 'text-purple-400'} />
+                <span>Cart ({cartCount})</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
-            <div className="p-3 bg-[#20b2aa]/10 rounded-xl text-[#20b2aa]">
-              <FaBookOpen className="text-xl" />
-            </div>
-            <div>
-              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Purchased</p>
-              <p className="text-xl sm:text-2xl font-black text-white">{purchases.length}</p>
-            </div>
-          </div>
-          
-          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
-              <FaCheckCircle className="text-xl" />
-            </div>
-            <div>
-              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Active</p>
-              <p className="text-xl sm:text-2xl font-black text-emerald-400">{activeCount}</p>
+        {/* Custom Glassmorphism Metrics Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          {/* Purchased Metric */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/40 rounded-2xl p-5 border border-teal-500/20 hover:border-teal-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <div className="flex items-center space-x-4">
+              <div className="p-3.5 bg-teal-500/10 border border-teal-500/20 rounded-xl text-teal-400 group-hover:scale-110 transition-transform">
+                <FaBookOpen className="text-xl" />
+              </div>
+              <div>
+                <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Purchased</p>
+                <p className="text-2xl sm:text-3xl font-black text-white">{purchases.length}</p>
+              </div>
             </div>
           </div>
           
-          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4">
-            <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400">
-              <FaClock className="text-xl animate-pulse" />
-            </div>
-            <div>
-              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">Pending</p>
-              <p className="text-xl sm:text-2xl font-black text-amber-400">{pendingCount}</p>
+          {/* Active Metric */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 rounded-2xl p-5 border border-emerald-500/20 hover:border-emerald-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <div className="flex items-center space-x-4">
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
+                <FaCheckCircle className="text-xl" />
+              </div>
+              <div>
+                <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Active</p>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-400">{activeCount}</p>
+              </div>
             </div>
           </div>
           
-          <div className="bg-neutral-900/90 rounded-2xl shadow-xl p-5 border border-neutral-800 flex items-center space-x-4 cursor-pointer hover:border-teal-500/40 transition-colors" onClick={() => setActiveTab('cart')}>
-            <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400">
-              <FaShoppingCart className="text-xl" />
+          {/* Pending Metric */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 rounded-2xl p-5 border border-amber-500/20 hover:border-amber-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <div className="flex items-center space-x-4">
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 group-hover:scale-110 transition-transform">
+                <FaClock className="text-xl animate-pulse" />
+              </div>
+              <div>
+                <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Pending</p>
+                <p className="text-2xl sm:text-3xl font-black text-amber-400">{pendingCount}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">In Cart</p>
-              <p className="text-xl sm:text-2xl font-black text-purple-400">{cartCount}</p>
+          </div>
+          
+          {/* In Cart Metric */}
+          <div 
+            onClick={() => setActiveTab('cart')}
+            className="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/40 rounded-2xl p-5 border border-purple-500/20 hover:border-purple-500/50 shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="p-3.5 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 group-hover:scale-110 transition-transform">
+                <FaShoppingCart className="text-xl" />
+              </div>
+              <div>
+                <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">In Cart</p>
+                <p className="text-2xl sm:text-3xl font-black text-purple-400">{cartCount}</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Tab Content Panels */}
         {activeTab === 'courses' ? (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center">
-                <FaUserGraduate className="mr-3 text-[#20b2aa]" /> My Purchased Courses
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                <FaUserGraduate className="text-[#20b2aa]" />
+                <span>My Purchased Courses</span>
               </h2>
+              {purchases.length > 0 && (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-900 text-teal-300 border border-slate-800">
+                  {purchases.length} Enrolled
+                </span>
+              )}
             </div>
             
             {loading && (
-              <div className="flex flex-col items-center justify-center py-20 bg-neutral-900/50 rounded-3xl border border-neutral-800">
+              <div className="flex flex-col items-center justify-center py-20 bg-slate-900/60 rounded-3xl border border-slate-800">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#20b2aa] mb-3"></div>
-                <p className="text-neutral-400 text-sm">Loading enrolled courses...</p>
+                <p className="text-slate-400 text-sm">Loading enrolled courses...</p>
               </div>
             )}
 
@@ -201,24 +241,24 @@ export default function StudentDashboard() {
             )}
 
             {!loading && !error && purchases.length === 0 && (
-              <div className="text-center py-20 bg-neutral-900/50 rounded-3xl border border-neutral-800">
+              <div className="text-center py-20 bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800">
                 <div className="w-20 h-20 mx-auto mb-4 bg-teal-500/10 rounded-full flex items-center justify-center text-[#20b2aa]">
                   <FaBookOpen className="text-3xl" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-1">No enrolled courses yet</h3>
-                <p className="text-neutral-400 text-sm sm:text-base max-w-md mx-auto mb-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1">No Enrolled Courses Yet</h3>
+                <p className="text-slate-400 text-sm sm:text-base max-w-md mx-auto mb-6">
                   Explore our comprehensive courses from leading CA & CMA faculty.
                 </p>
                 <button 
                   onClick={() => navigate('/courses/all')}
-                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all cursor-pointer"
+                  className="bg-gradient-to-r from-[#20b2aa] to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all cursor-pointer text-sm"
                 >
                   Explore All Courses
                 </button>
               </div>
             )}
 
-            {/* Clean 3-Column Responsive Grid Cards for Purchased Courses */}
+            {/* Clean 3-Column Grid Cards for Enrolled Courses */}
             {!loading && !error && purchases.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {purchases.map((purchase) => {
@@ -228,18 +268,18 @@ export default function StudentDashboard() {
                   return (
                     <div 
                       key={purchase.id} 
-                      className="bg-[#141416] border border-neutral-800 text-white rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between transition-all hover:border-neutral-700 hover:shadow-teal-900/10 transform hover:-translate-y-1"
+                      className="bg-slate-900/90 border border-slate-800 text-white rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between transition-all duration-300 hover:border-teal-500/40 hover:shadow-teal-500/10 transform hover:-translate-y-1 group"
                     >
                       {/* Card Poster Image with Status Badge */}
-                      <div className="relative bg-neutral-900 h-44 flex items-center justify-center overflow-hidden border-b border-neutral-800">
+                      <div className="relative bg-slate-950 h-48 sm:h-52 flex items-center justify-center overflow-hidden border-b border-slate-800">
                         <img 
                           src={poster} 
                           alt={courseDetails.title || courseDetails.subject || 'Course'}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                         />
                         <div className="absolute top-3 right-3">
-                          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-1 rounded-full font-bold shadow-md">
+                          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md">
                             {purchase.isExpired ? 'Expired' : 'Active'}
                           </span>
                         </div>
@@ -248,17 +288,17 @@ export default function StudentDashboard() {
                       {/* Content: Title, Faculty, Price & View Details Button */}
                       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                         <div>
-                          <h3 className="text-base sm:text-lg font-extrabold text-white line-clamp-2 leading-snug mb-1">
+                          <h3 className="text-base sm:text-lg font-extrabold text-white line-clamp-2 leading-snug mb-1.5 group-hover:text-teal-300 transition-colors">
                             {courseDetails.title || courseDetails.subject || 'Course Title'}
                           </h3>
-                          <p className="text-xs text-neutral-400 font-semibold">
-                            Faculty: <span className="text-[#38bdf8] font-bold">{courseDetails.facultyName || 'Expert Faculty'}</span>
+                          <p className="text-xs text-slate-400 font-semibold">
+                            Faculty: <span className="text-[#20b2aa] font-bold">{courseDetails.facultyName || 'Expert Faculty'}</span>
                           </p>
                         </div>
 
-                        <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
+                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
                           <div>
-                            <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">Price Paid</p>
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Price Paid</p>
                             <p className="text-lg font-black text-white font-mono">
                               ₹{Number(purchase.amount || 0).toLocaleString()}
                             </p>
@@ -266,7 +306,7 @@ export default function StudentDashboard() {
 
                           <button
                             onClick={() => setSelectedOrderDetail(purchase)}
-                            className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                            className="bg-gradient-to-r from-[#20b2aa] to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>View Details</span>
                           </button>
