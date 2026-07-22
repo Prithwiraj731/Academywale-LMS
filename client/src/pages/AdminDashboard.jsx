@@ -1113,9 +1113,9 @@ export default function AdminDashboard() {
     setSuccess('');
     setError('');
 
-    // Unified validation - category, subcategory, paperId, title, and poster are required
+    // Unified validation - category, subcategory, paperId, title, and poster/posterUrl are required
     if (!courseForm.category || !courseForm.subcategory || !courseForm.paperId ||
-      !courseForm.title || !courseForm.poster) {
+      !courseForm.title || (!courseForm.poster && !courseForm.posterUrl)) {
       setError('Please fill all required fields: Category, Subcategory, Paper, Title, and Poster are required');
       return;
     }
@@ -1182,9 +1182,12 @@ export default function AdminDashboard() {
       formData.append('timing', getDetailVal('duration'));
       formData.append('validityStartFrom', getDetailVal('validity'));
 
-      // Poster upload
+      // Poster upload or existing poster URL (for cloned courses)
       if (courseForm.poster) {
         formData.append('poster', courseForm.poster);
+      }
+      if (courseForm.posterUrl) {
+        formData.append('posterUrl', courseForm.posterUrl);
       }
 
       formData.append('courseType', `${courseForm.category} ${courseForm.subcategory}`);
@@ -1453,13 +1456,20 @@ export default function AdminDashboard() {
 
     setFormOptions(reconstructedOptions);
 
-    if (course.posterUrl) {
-      setPosterPreview(course.posterUrl);
+    const pUrl = course.posterUrl || course.poster_url || course.poster || '';
+    setCourseForm(prev => ({
+      ...prev,
+      posterUrl: pUrl,
+      posterPublicId: course.posterPublicId || course.poster_public_id || ''
+    }));
+
+    if (pUrl) {
+      setPosterPreviewNew(pUrl);
     }
 
     window.scrollTo({ top: 400, behavior: 'smooth' });
 
-    setCourseSuccess(`Cloned "${course.title || course.subject}" into the Add Course form! Tweak any details and click "Add Course" to save.`);
+    setSuccess(`Cloned "${course.title || course.subject}" into the Add Course form! Modify any details and click "Add Course" to save.`);
   };
 
   // Open edit modal

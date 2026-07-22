@@ -121,13 +121,13 @@ app.options('/api/purchase/razorpay-verify', cors());
 app.post('/api/purchase/razorpay-verify', purchaseController.verifyRazorpayPayment);
 
 app.use('/api/auth', authRoutes);
+app.use('/', couponRoutes);
 app.use('/', courseDetailRoutes);
 app.use('/', courseSearchRoutes);
 app.use('/', courseControllerRoutes);
 app.use('/', courseRoutes);
 app.use('/', facultyRoutes);
 app.use('/', instituteRoutes);
-app.use('/', couponRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/purchase', purchaseRoutes);
 app.use('/api/notify', notifyRoutes);

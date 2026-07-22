@@ -215,9 +215,9 @@ exports.addCourseToFaculty = async (req, res) => {
       });
     }
 
-    // Upload poster image if present
-    let posterUrl = '';
-    let posterPath = '';
+    // Upload poster image if present, or use posterUrl from body (for cloned courses)
+    let posterUrl = req.body.posterUrl || req.body.poster_url || req.body.poster || '';
+    let posterPath = req.body.posterPublicId || req.body.poster_public_id || '';
     if (req.file) {
       const uploadResult = await uploadToSupabaseStorage(req.file, 'courses');
       posterUrl = uploadResult.url;

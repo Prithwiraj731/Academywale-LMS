@@ -263,9 +263,16 @@ exports.toggleCouponVisibility = async (req, res) => {
       isVisible: newVisible
     });
 
-    res.json({ success: true, isVisible: newVisible });
+    // Also update Database row so state is persistent across restarts
+    await supabaseAdmin
+      .from('coupons')
+      .update({ is_active: newVisible })
+      .eq('code', normalizedCode);
+
+    res.json({ success: true, isVisible: newVisible, code: normalizedCode });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error toggling coupon visibility:', err);
+    res.status(500).json({ error: err.message || 'Failed to toggle visibility' });
   }
 };
 
