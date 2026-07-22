@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaChevronLeft, FaChevronRight, FaArrowRight } from 'react-icons/fa';
 
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
