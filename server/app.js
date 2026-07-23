@@ -119,6 +119,9 @@ app.options('/api/purchase/razorpay-order', cors());
 app.post('/api/purchase/razorpay-order', purchaseController.createRazorpayOrder);
 app.options('/api/purchase/razorpay-verify', cors());
 app.post('/api/purchase/razorpay-verify', purchaseController.verifyRazorpayPayment);
+app.options('/api/purchase/razorpay-webhook', cors());
+app.post('/api/purchase/razorpay-webhook', purchaseController.handleRazorpayWebhook);
+app.all('/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 
 app.use('/api/auth', authRoutes);
 app.use('/', couponRoutes);

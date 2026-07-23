@@ -18,7 +18,8 @@ router.get('/api/courses/all', async (req, res) => {
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .order('display_order', { ascending: true, nullsFirst: false });
 
     if (error) throw error;
 
@@ -44,6 +45,7 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
 
     if (error) throw error;
 
+    const mapped = mapCoursesToFrontend(courses);
     res.json({ success: true, courses: mapped });
   } catch (error) {
     console.error('Error in direct CA Foundation Paper 1 endpoint:', error);
@@ -59,20 +61,39 @@ const handleCourseReorder = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Items array is required' });
     }
 
+    const isUuid = (val) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val));
+
     for (const item of items) {
       if (!item.id) continue;
       const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
 
-      const { error } = await supabaseAdmin
-        .from('courses')
-        .update({ 
-          display_order: order,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', item.id);
+      const targetId = String(item.id);
+      let query = supabaseAdmin.from('courses').update({
+        display_order: order,
+        sequence: order,
+        updated_at: new Date().toISOString()
+      });
+
+      if (isUuid(targetId)) {
+        query = query.eq('id', targetId);
+      } else {
+        query = query.eq('mongo_id', targetId);
+      }
+
+      const { error } = await query;
 
       if (error) {
-        console.warn(`Reorder update notice for course ${item.id}:`, error.message);
+        // Fallback: try update display_order without sequence if sequence column does not exist
+        let fallbackQuery = supabaseAdmin.from('courses').update({
+          display_order: order,
+          updated_at: new Date().toISOString()
+        });
+        if (isUuid(targetId)) {
+          fallbackQuery = fallbackQuery.eq('id', targetId);
+        } else {
+          fallbackQuery = fallbackQuery.eq('mongo_id', targetId);
+        }
+        await fallbackQuery;
       }
     }
 

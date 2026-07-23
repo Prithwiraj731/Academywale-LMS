@@ -2780,7 +2780,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
 
-                {createOptions.length < 4 && (
+                {createOptions.length < 20 && (
                   <button
                     type="button"
                     onClick={() => {
@@ -3755,7 +3755,7 @@ export default function AdminDashboard() {
                 </div>
               ))}
 
-              {(editOptions || []).length < 4 && (
+              {(editOptions || []).length < 20 && (
                 <button
                   type="button"
                   onClick={() => {

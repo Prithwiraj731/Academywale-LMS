@@ -26,4 +26,7 @@ router.post('/razorpay-order', purchaseController.createRazorpayOrder);
 // Verify Razorpay Payment Signature
 router.post('/razorpay-verify', purchaseController.verifyRazorpayPayment);
 
+// Razorpay Webhook Callback
+router.post('/razorpay-webhook', purchaseController.handleRazorpayWebhook);
+
 module.exports = router; 

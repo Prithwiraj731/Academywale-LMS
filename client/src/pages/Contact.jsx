@@ -131,7 +131,6 @@ export default function Contact() {
                         name="name"
                         value={form.name}
                         onChange={handleChange}
-                        placeholder="e.g. Rahul Sharma"
                         required
                         disabled={loading}
                         className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
@@ -149,7 +148,6 @@ export default function Contact() {
                         name="email"
                         value={form.email}
                         onChange={handleChange}
-                        placeholder="name@example.com"
                         required
                         disabled={loading}
                         className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
@@ -169,7 +167,6 @@ export default function Contact() {
                         name="phone"
                         value={form.phone}
                         onChange={handleChange}
-                        placeholder="+91 9876543210"
                         disabled={loading}
                         className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
@@ -186,8 +183,6 @@ export default function Contact() {
                         name="subject"
                         value={form.subject}
                         onChange={handleChange}
-                        placeholder="e.g. CA Inter Course Inquiry"
-                        required
                         disabled={loading}
                         className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
@@ -203,8 +198,6 @@ export default function Contact() {
                     value={form.message}
                     onChange={handleChange}
                     rows={4}
-                    placeholder="Write your message or inquiry details here..."
-                    required
                     disabled={loading}
                     className="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                   />
@@ -258,9 +251,7 @@ export default function Contact() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-bold hover:bg-emerald-500/30 border border-emerald-500/40 transition-colors"
-                    >
-                      <span>+91 6203132544</span>
-                    </a>
+                    ></a>
                   </div>
                 </div>
               </div>

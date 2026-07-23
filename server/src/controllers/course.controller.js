@@ -1137,20 +1137,37 @@ exports.reorderCourses = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Items array is required' });
     }
 
+    const isUuid = (val) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val));
+
     for (const item of items) {
       if (!item.id) continue;
       const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
+      const targetId = String(item.id);
 
-      const { error } = await supabaseAdmin
-        .from('courses')
-        .update({ 
+      let query = supabaseAdmin.from('courses').update({ 
+        display_order: order,
+        sequence: order,
+        updated_at: new Date().toISOString()
+      });
+
+      if (isUuid(targetId)) {
+        query = query.eq('id', targetId);
+      } else {
+        query = query.eq('mongo_id', targetId);
+      }
+
+      const { error } = await query;
+      if (error) {
+        let fallbackQuery = supabaseAdmin.from('courses').update({ 
           display_order: order,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', item.id);
-
-      if (error) {
-        console.warn(`Reorder update notice for course ${item.id}:`, error.message);
+        });
+        if (isUuid(targetId)) {
+          fallbackQuery = fallbackQuery.eq('id', targetId);
+        } else {
+          fallbackQuery = fallbackQuery.eq('mongo_id', targetId);
+        }
+        await fallbackQuery;
       }
     }
 

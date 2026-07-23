@@ -192,8 +192,27 @@ exports.validateCoupon = async (req, res) => {
 
     // Check course-specific restriction
     if (allowedCourseIds && allowedCourseIds.length > 0) {
-      if (!courseId || !allowedCourseIds.some(id => String(id).trim() === String(courseId).trim())) {
-        return res.status(400).json({ error: 'The coupon is not applicable for the selected products!' });
+      let isMatch = false;
+      if (courseId) {
+        const normCourseId = String(courseId).trim();
+        if (allowedCourseIds.some(id => String(id).trim() === normCourseId)) {
+          isMatch = true;
+        } else {
+          // Resolve course from DB to check if mongo_id or id matches allowedCourseIds
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normCourseId);
+          const field = isUuid ? 'id' : 'mongo_id';
+          const { data: dbCourse } = await supabaseAdmin.from('courses').select('id, mongo_id').eq(field, normCourseId).maybeSingle();
+          if (dbCourse) {
+            const dbIds = [String(dbCourse.id), String(dbCourse.mongo_id)].filter(Boolean);
+            if (allowedCourseIds.some(id => dbIds.includes(String(id).trim()))) {
+              isMatch = true;
+            }
+          }
+        }
+      }
+
+      if (!isMatch) {
+        return res.status(400).json({ error: 'This coupon is valid only for specific course(s) and cannot be applied to this course.' });
       }
     }
 
@@ -213,6 +232,8 @@ exports.validateCoupon = async (req, res) => {
 // Student: Get public visible coupons for course details page
 exports.getPublicVisibleCoupons = async (req, res) => {
   try {
+    const { courseId } = req.query;
+
     const { data: coupons, error } = await supabaseAdmin
       .from('coupons')
       .select('*')
@@ -239,7 +260,15 @@ exports.getPublicVisibleCoupons = async (req, res) => {
           isVisible
         };
       })
-      .filter(c => c.isVisible !== false);
+      .filter(c => {
+        if (c.isVisible === false) return false;
+        // If courseId query param is provided, filter out coupons restricted to other courses
+        if (courseId && Array.isArray(c.courseIds) && c.courseIds.length > 0) {
+          const normId = String(courseId).trim();
+          return c.courseIds.some(id => String(id).trim() === normId);
+        }
+        return true;
+      });
 
     res.json({ success: true, coupons: visibleCoupons });
   } catch (err) {
