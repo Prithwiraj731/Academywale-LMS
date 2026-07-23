@@ -246,12 +246,6 @@ export default function Contact() {
                     >
                       <span>+91 9693320108</span>
                     </a>
-                    <a
-                      href="https://wa.me/916203132544"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-bold hover:bg-emerald-500/30 border border-emerald-500/40 transition-colors"
-                    ></a>
                   </div>
                 </div>
               </div>
