@@ -95,7 +95,7 @@ const CourseCard = ({
       <div className="p-3 sm:p-4 flex flex-col flex-grow">
         {/* Course Title */}
         <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem]">
-          {course.subject || course.title}
+          {course.title || course.subject}
         </h3>
 
         {/* Spacer to push pricing and button to bottom */}
