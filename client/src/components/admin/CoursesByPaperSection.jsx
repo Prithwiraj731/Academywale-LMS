@@ -22,10 +22,15 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
   const [error, setError] = useState('');
   const [courses, setCourses] = useState([]);
   const [query, setQuery] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
 
   const loadCourses = async () => {
     setLoading(true);
     setError('');
+    setHasUnsavedChanges(false);
+    setSaveStatus('');
     try {
       const res = await fetch(`${API_URL}/api/courses/all`);
       const data = await res.json();
@@ -89,7 +94,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
     return grouped;
   }, [filteredCourses]);
 
-  const handleMoveCourse = async (list, currentIndex, direction) => {
+  const handleMoveCourse = (list, currentIndex, direction) => {
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     if (targetIndex < 0 || targetIndex >= list.length) return;
 
@@ -107,7 +112,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
       }
     });
 
-    // Optimistically update local courses state
+    // Update local courses state
     setCourses(prevCourses => {
       return prevCourses.map(c => {
         const id = getCourseId(c);
@@ -122,10 +127,28 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
       });
     });
 
-    const reorderPayload = newList.map((course, idx) => ({
-      id: getCourseId(course),
-      displayOrder: idx + 1
-    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSaveSequence = async () => {
+    setIsSaving(true);
+    setSaveStatus('');
+
+    const reorderPayload = [];
+    Object.keys(groupedCourses).forEach(category => {
+      Object.keys(groupedCourses[category]).forEach(level => {
+        const list = groupedCourses[category][level];
+        list.forEach((course, idx) => {
+          const id = getCourseId(course);
+          if (id) {
+            reorderPayload.push({
+              id,
+              displayOrder: idx + 1
+            });
+          }
+        });
+      });
+    });
 
     try {
       let res = await fetch(`${API_URL}/api/admin/courses/reorder`, {
@@ -142,8 +165,19 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
           body: JSON.stringify({ items: reorderPayload })
         });
       }
+
+      if (res.ok) {
+        setSaveStatus('✅ Course sequence updated successfully!');
+        setHasUnsavedChanges(false);
+        setTimeout(() => setSaveStatus(''), 4000);
+      } else {
+        throw new Error('Failed to save sequence');
+      }
     } catch (err) {
-      console.error('Failed to save reordered courses:', err);
+      console.error('Failed to save sequence:', err);
+      setSaveStatus('❌ Failed to save course sequence.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -312,6 +346,16 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
               placeholder="Search courses..."
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
             />
+            {hasUnsavedChanges && (
+              <button
+                type="button"
+                onClick={handleSaveSequence}
+                disabled={isSaving}
+                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 transition-all duration-300 cursor-pointer flex items-center justify-center gap-1 min-w-[130px] border border-green-500 shadow-md font-mono"
+              >
+                {isSaving ? 'Saving...' : '💾 Save Sequence'}
+              </button>
+            )}
             <button
               type="button"
               onClick={loadCourses}
@@ -322,6 +366,14 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
           </div>
         </div>
       </div>
+
+      {saveStatus && (
+        <div className={`p-4 rounded-lg text-sm font-bold text-center border ${
+          saveStatus.startsWith('❌') ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'
+        }`}>
+          {saveStatus}
+        </div>
+      )}
 
       <DeleteAllCoursesButton onDeleteSuccess={loadCourses} />
 

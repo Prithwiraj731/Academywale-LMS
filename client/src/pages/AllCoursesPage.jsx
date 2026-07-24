@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { FaChevronLeft, FaChevronRight, FaArrowRight } from 'react-icons/fa';
 
 import BackButton from '../components/common/BackButton';
@@ -221,6 +221,42 @@ export default function AllCoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchVal = searchParams.get('search') || '';
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    if (val) {
+      setSearchParams({ search: val });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchParams({});
+  };
+
+  const searchedCourses = useMemo(() => {
+    const term = searchVal.trim().toLowerCase();
+    if (!term) return [];
+    return courses.filter(course => {
+      return [
+        course.title,
+        course.subject,
+        course.facultyName,
+        course.faculty_name,
+        course.instituteName,
+        course.institute_name,
+        course.category,
+        course.subcategory,
+        course.paperName,
+        course.paper_name,
+        course.paperId,
+        course.paper_id
+      ].some(value => String(value || '').toLowerCase().includes(term));
+    });
+  }, [courses, searchVal]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -329,13 +365,37 @@ export default function AllCoursesPage() {
         <BackButton />
         
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-10">
+        <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Available Courses</h1>
           <p className="text-sm sm:text-lg text-gray-600 mt-1 sm:mt-2 font-medium">Browse through our CA & CMA course catalog</p>
           <div className="mt-2">
             <span className="inline-block bg-teal-50 border border-teal-200 text-teal-800 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold shadow-sm">
               {courses.length} Courses Available
             </span>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="max-w-md mx-auto mb-10 relative z-20">
+          <div className="flex items-center bg-white rounded-2xl border border-gray-300 p-1 px-3 shadow-md focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-200 transition-all hover:border-gray-400">
+            <input
+              type="text"
+              placeholder="Search courses, papers, subjects, faculties..."
+              value={searchVal}
+              onChange={handleSearchChange}
+              className="w-full bg-transparent text-gray-800 px-2 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
+            />
+            {searchVal && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="text-gray-400 hover:text-gray-600 text-sm px-2 shrink-0 cursor-pointer font-bold"
+                title="Clear Search"
+              >
+                ✕
+              </button>
+            )}
+            <span className="text-gray-400 text-sm px-2 select-none">🔍</span>
           </div>
         </div>
 
@@ -353,99 +413,145 @@ export default function AllCoursesPage() {
           </div>
         )}
 
-        {/* 1. CA Inter Section */}
-        {!error && caInterCourses.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-teal-500/30">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-                <span className="bg-teal-600 w-3 h-6 rounded-full"></span>
-                CA Inter Classes
-              </h2>
-              <Link 
-                to="/ca/inter-papers"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
-                title="View all CA Inter papers and courses"
-              >
-                <span>View All</span>
-                <FaArrowRight className="text-xs" />
-              </Link>
+        {/* Search Results rendering or normal Category Sections */}
+        {!error && courses.length > 0 && (
+          searchVal.trim() ? (
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-6 pb-2 border-b border-teal-500/30">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                  <span className="bg-teal-600 w-3 h-6 rounded-full animate-pulse"></span>
+                  Search Results ({searchedCourses.length})
+                </h2>
+                {searchedCourses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="text-xs sm:text-sm font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full px-3 py-1.5 transition-all cursor-pointer shadow-sm hover:shadow"
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
+              {searchedCourses.length === 0 ? (
+                <div className="text-center py-16 bg-white/75 backdrop-blur border border-gray-200 rounded-3xl p-8 shadow-sm">
+                  <p className="text-gray-500 text-base font-medium">No courses found matching "{searchVal}".</p>
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs px-6 py-2.5 rounded-full transition-all shadow-md cursor-pointer"
+                  >
+                    Show All Courses
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
+                  {searchedCourses.map((course, idx) => (
+                    <CourseCard
+                      key={course._id || course.id || idx}
+                      course={course}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-            <CourseSlider courses={caInterCourses} title="CA Inter" />
-          </div>
-        )}
+          ) : (
+            <>
+              {/* 1. CA Inter Section */}
+              {caInterCourses.length > 0 && (
+                <div className="mb-12">
+                  <div className="flex items-center justify-between mb-6 pb-2 border-b border-teal-500/30">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                      <span className="bg-teal-600 w-3 h-6 rounded-full"></span>
+                      CA Inter Classes
+                    </h2>
+                    <Link 
+                      to="/ca/inter-papers"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                      title="View all CA Inter papers and courses"
+                    >
+                      <span>View All</span>
+                      <FaArrowRight className="text-xs" />
+                    </Link>
+                  </div>
+                  <CourseSlider courses={caInterCourses} title="CA Inter" />
+                </div>
+              )}
 
-        {/* 2. CMA Inter Section */}
-        {!error && cmaInterCourses.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-purple-500/30">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-                <span className="bg-purple-600 w-3 h-6 rounded-full"></span>
-                CMA Inter Classes
-              </h2>
-              <Link 
-                to="/cma/inter-papers"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
-                title="View all CMA Inter papers and courses"
-              >
-                <span>View All</span>
-                <FaArrowRight className="text-xs" />
-              </Link>
-            </div>
-            <CourseSlider courses={cmaInterCourses} title="CMA Inter" />
-          </div>
-        )}
+              {/* 2. CMA Inter Section */}
+              {cmaInterCourses.length > 0 && (
+                <div className="mb-12">
+                  <div className="flex items-center justify-between mb-6 pb-2 border-b border-purple-500/30">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                      <span className="bg-purple-600 w-3 h-6 rounded-full"></span>
+                      CMA Inter Classes
+                    </h2>
+                    <Link 
+                      to="/cma/inter-papers"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                      title="View all CMA Inter papers and courses"
+                    >
+                      <span>View All</span>
+                      <FaArrowRight className="text-xs" />
+                    </Link>
+                  </div>
+                  <CourseSlider courses={cmaInterCourses} title="CMA Inter" />
+                </div>
+              )}
 
-        {/* 3. CA Final Section */}
-        {!error && caFinalCourses.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#20b2aa]/30">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-                <span className="bg-[#20b2aa] w-3 h-6 rounded-full"></span>
-                CA Final Classes
-              </h2>
-              <Link 
-                to="/ca/final-papers"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#147b74] bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
-                title="View all CA Final papers and courses"
-              >
-                <span>View All</span>
-                <FaArrowRight className="text-xs" />
-              </Link>
-            </div>
-            <CourseSlider courses={caFinalCourses} title="CA Final" />
-          </div>
-        )}
+              {/* 3. CA Final Section */}
+              {caFinalCourses.length > 0 && (
+                <div className="mb-12">
+                  <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#20b2aa]/30">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                      <span className="bg-[#20b2aa] w-3 h-6 rounded-full"></span>
+                      CA Final Classes
+                    </h2>
+                    <Link 
+                      to="/ca/final-papers"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-[#147b74] bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                      title="View all CA Final papers and courses"
+                    >
+                      <span>View All</span>
+                      <FaArrowRight className="text-xs" />
+                    </Link>
+                  </div>
+                  <CourseSlider courses={caFinalCourses} title="CA Final" />
+                </div>
+              )}
 
-        {/* 4. CMA Final Section */}
-        {!error && cmaFinalCourses.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-indigo-500/30">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-                <span className="bg-indigo-600 w-3 h-6 rounded-full"></span>
-                CMA Final Classes
-              </h2>
-              <Link 
-                to="/cma/final-papers"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
-                title="View all CMA Final papers and courses"
-              >
-                <span>View All</span>
-                <FaArrowRight className="text-xs" />
-              </Link>
-            </div>
-            <CourseSlider courses={cmaFinalCourses} title="CMA Final" />
-          </div>
-        )}
+              {/* 4. CMA Final Section */}
+              {cmaFinalCourses.length > 0 && (
+                <div className="mb-12">
+                  <div className="flex items-center justify-between mb-6 pb-2 border-b border-indigo-500/30">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                      <span className="bg-indigo-600 w-3 h-6 rounded-full"></span>
+                      CMA Final Classes
+                    </h2>
+                    <Link 
+                      to="/cma/final-papers"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-bold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full transition-all cursor-pointer shadow-sm hover:shadow"
+                      title="View all CMA Final papers and courses"
+                    >
+                      <span>View All</span>
+                      <FaArrowRight className="text-xs" />
+                    </Link>
+                  </div>
+                  <CourseSlider courses={cmaFinalCourses} title="CMA Final" />
+                </div>
+              )}
 
-        {/* 5. Other Classes Section */}
-        {!error && otherCourses.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-blue-500/30 flex items-center gap-2">
-              <span className="bg-blue-600 w-3 h-6 rounded-full"></span>
-              Other Classes
-            </h2>
-            <CourseSlider courses={otherCourses} title="Other Classes" />
-          </div>
+              {/* 5. Other Classes Section */}
+              {otherCourses.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-6 pb-2 border-b border-blue-500/30 flex items-center gap-2">
+                    <span className="bg-blue-600 w-3 h-6 rounded-full"></span>
+                    Other Classes
+                  </h2>
+                  <CourseSlider courses={otherCourses} title="Other Classes" />
+                </div>
+              )}
+            </>
+          )
         )}
       </main>
     </div>

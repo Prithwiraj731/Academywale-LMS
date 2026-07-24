@@ -26,7 +26,15 @@ import { API_URL } from '../api';
 
 export default function Home() {
   const navigate = useNavigate();
+  const [searchVal, setSearchVal] = useState('');
   const [topFaculties, setTopFaculties] = useState([]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchVal.trim()) {
+      navigate(`/courses/all?search=${encodeURIComponent(searchVal.trim())}`);
+    }
+  };
 
   // Load faculties on component mount
   useEffect(() => {
@@ -94,6 +102,23 @@ export default function Home() {
 
         <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 flex flex-col items-center">
+            <form onSubmit={handleSearchSubmit} className="w-full max-w-lg mb-8 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
+              <input
+                type="text"
+                placeholder="Search for courses, subjects, papers, or faculties..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
+              />
+              <button
+                type="submit"
+                className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🔍</span>
+                <span>Search</span>
+              </button>
+            </form>
+
             <div className="mb-6">
               <MorphyButton
                 onClick={() => navigate('/courses/all')}

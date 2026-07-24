@@ -73,7 +73,7 @@ app.use('/api/*', (req, res, next) => {
 });
 
 // --- Base Status Route ---
-app.get('/', (req, res) => {
+app.get('/api/status', (req, res) => {
   res.json({
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',

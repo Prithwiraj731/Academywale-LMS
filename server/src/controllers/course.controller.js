@@ -523,10 +523,15 @@ exports.updateCourse = async (req, res) => {
     const normalizedSubcategory = rawSubcategory
       ? rawSubcategory.charAt(0).toUpperCase() + rawSubcategory.slice(1).toLowerCase()
       : '';
-    const resolvedCourseType = normalizeString(updateData.courseType, targetCourse.course_type)
-      || `${normalizedCategory || ''} ${normalizedSubcategory || ''}`.trim()
-      || targetCourse.course_type
-      || 'Course';
+    let resolvedCourseType = targetCourse.course_type;
+    if (updateData.courseType) {
+      resolvedCourseType = normalizeString(updateData.courseType);
+    } else if (updateData.category || updateData.subcategory) {
+      resolvedCourseType = `${normalizedCategory || ''} ${normalizedSubcategory || ''}`.trim();
+    }
+    if (!resolvedCourseType) {
+      resolvedCourseType = `${normalizedCategory || ''} ${normalizedSubcategory || ''}`.trim() || 'Course';
+    }
 
     // Map properties from body
     const sqlData = {
