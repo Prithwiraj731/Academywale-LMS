@@ -167,17 +167,26 @@ const CourseFullDetailPage = () => {
       return;
     }
 
-    const labels = (modeObj.attempts[0].attemptLabel || modeObj.attempts[0].validityLabel || 'Option')
-      .split(' / ').map(s => s.trim());
+    // Find the attempt with the minimum selling price in this mode
+    let minAttempt = modeObj.attempts[0];
+    modeObj.attempts.forEach(att => {
+      const p = Number(att.sellingPrice || att.selling_price || 0);
+      const minP = Number(minAttempt.sellingPrice || minAttempt.selling_price || 0);
+      if (p < minP) {
+        minAttempt = att;
+      }
+    });
 
-    const newSubOptions = [];
-    for (let i = 0; i < labels.length; i++) {
-      const availableVals = getSubOptionValuesForModeAndSelections(modeObj, i, newSubOptions);
-      newSubOptions.push(availableVals.length > 0 ? availableVals[0] : '');
-    }
+    // Extract the sub-options corresponding to this minimum priced attempt
+    const newSubOptions = (minAttempt.attempt || '').split(' / ').map(s => s.trim());
 
     setSelectedSubOptions(newSubOptions);
-    updatePriceAndAttemptFromSubOptions(modeObj, newSubOptions);
+    setSelectedAttempt(minAttempt.attempt || '');
+    setSelectedValidity(minAttempt.validity || newSubOptions[0] || '');
+    setSelectedPrice({
+      selling: Number(minAttempt.sellingPrice || 0),
+      cost: Number(minAttempt.costPrice || 0)
+    });
   };
 
   const handleModeChange = (newMode) => {
@@ -249,9 +258,22 @@ const CourseFullDetailPage = () => {
 
         // Initialize mode, validity, attempt and sub-options selection
         if (normalizedCourse.modeAttemptPricing && normalizedCourse.modeAttemptPricing.length > 0) {
-          const firstMode = normalizedCourse.modeAttemptPricing[0];
-          setSelectedMode(firstMode.mode);
-          initializeSubOptionsForMode(normalizedCourse, firstMode.mode);
+          // Find the mode that contains the lowest selling price
+          let bestMode = normalizedCourse.modeAttemptPricing[0];
+          let lowestPrice = Infinity;
+          
+          normalizedCourse.modeAttemptPricing.forEach(modeObj => {
+            (modeObj.attempts || []).forEach(att => {
+              const p = Number(att.sellingPrice || 0);
+              if (p < lowestPrice) {
+                lowestPrice = p;
+                bestMode = modeObj;
+              }
+            });
+          });
+
+          setSelectedMode(bestMode.mode);
+          initializeSubOptionsForMode(normalizedCourse, bestMode.mode);
         } else {
           setSelectedPrice({
             selling: Number(data.course.sellingPrice || data.course.selling_price || 0),
