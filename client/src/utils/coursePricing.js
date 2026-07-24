@@ -25,14 +25,17 @@ export function normalizeModeAttemptPricing(modeAttemptPricing) {
     }
 
     attempts.forEach((attempt) => {
-      grouped.get(mode).attempts.push({
-        ...attempt,
-        attemptLabel: attempt.attemptLabel || 'Exam Term / Attempt',
-        validityLabel: attempt.validityLabel || 'Validity',
-        description: attempt.description || '',
-        costPrice: Number(attempt.costPrice) || 0,
-        sellingPrice: Number(attempt.sellingPrice) || 0,
-      });
+      const sellingPrice = Number(attempt.sellingPrice) || 0;
+      if (sellingPrice > 0) {
+        grouped.get(mode).attempts.push({
+          ...attempt,
+          attemptLabel: attempt.attemptLabel || 'Exam Term / Attempt',
+          validityLabel: attempt.validityLabel || 'Validity',
+          description: attempt.description || '',
+          costPrice: Number(attempt.costPrice) || 0,
+          sellingPrice: sellingPrice,
+        });
+      }
     });
   });
 

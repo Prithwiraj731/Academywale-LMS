@@ -56,6 +56,10 @@ const CourseCard = ({
 
   const { sellingPrice, costPrice } = getMinimumPrice();
 
+  if (sellingPrice <= 0) {
+    return null;
+  }
+
   // Handle course click - either navigate or show modal
   const handleCourseClick = () => {
     // Check if course has proper ID
