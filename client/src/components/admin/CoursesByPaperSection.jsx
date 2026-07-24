@@ -98,7 +98,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
     newList[currentIndex] = newList[targetIndex];
     newList[targetIndex] = temp;
 
-    // Create a map of updated display order for each course in the list
+    // Assign explicit sequential order 1..N to all items in this section list
     const updatedOrders = {};
     newList.forEach((course, idx) => {
       const id = getCourseId(course);
@@ -128,28 +128,23 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
     }));
 
     try {
-      let res = await fetch(`${API_URL}/api/courses/reorder`, {
+      let res = await fetch(`${API_URL}/api/admin/courses/reorder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ items: reorderPayload })
       });
       if (!res.ok) {
-        res = await fetch(`${API_URL}/api/admin/courses/reorder`, {
+        res = await fetch(`${API_URL}/api/courses/reorder`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ items: reorderPayload })
         });
       }
-      if (res.ok) {
-        await loadCourses();
-      }
     } catch (err) {
       console.error('Failed to save reordered courses:', err);
     }
-
-
   };
 
   const handleEdit = (course) => {

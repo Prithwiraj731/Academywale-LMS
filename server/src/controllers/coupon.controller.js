@@ -193,19 +193,24 @@ exports.validateCoupon = async (req, res) => {
     // Check course-specific restriction
     if (allowedCourseIds && allowedCourseIds.length > 0) {
       let isMatch = false;
-      if (courseId) {
-        const normCourseId = String(courseId).trim();
-        if (allowedCourseIds.some(id => String(id).trim() === normCourseId)) {
-          isMatch = true;
-        } else {
-          // Resolve course from DB to check if mongo_id or id matches allowedCourseIds
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normCourseId);
-          const field = isUuid ? 'id' : 'mongo_id';
-          const { data: dbCourse } = await supabaseAdmin.from('courses').select('id, mongo_id').eq(field, normCourseId).maybeSingle();
-          if (dbCourse) {
-            const dbIds = [String(dbCourse.id), String(dbCourse.mongo_id)].filter(Boolean);
-            if (allowedCourseIds.some(id => dbIds.includes(String(id).trim()))) {
-              isMatch = true;
+      const targetCourseIds = Array.isArray(courseIds) ? courseIds : (courseId ? [courseId] : []);
+      if (targetCourseIds.length > 0) {
+        for (const cid of targetCourseIds) {
+          const normCourseId = String(cid).trim();
+          if (allowedCourseIds.some(id => String(id).trim() === normCourseId)) {
+            isMatch = true;
+            break;
+          } else {
+            // Resolve course from DB to check if mongo_id or id matches allowedCourseIds
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normCourseId);
+            const field = isUuid ? 'id' : 'mongo_id';
+            const { data: dbCourse } = await supabaseAdmin.from('courses').select('id, mongo_id').eq(field, normCourseId).maybeSingle();
+            if (dbCourse) {
+              const dbIds = [String(dbCourse.id), String(dbCourse.mongo_id)].filter(Boolean);
+              if (allowedCourseIds.some(id => dbIds.includes(String(id).trim()))) {
+                isMatch = true;
+                break;
+              }
             }
           }
         }
@@ -242,6 +247,24 @@ exports.getPublicVisibleCoupons = async (req, res) => {
 
     if (error) throw error;
 
+    let targetCourseDbIds = [];
+    if (courseId) {
+      const normCourseId = String(courseId).trim();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normCourseId);
+      const field = isUuid ? 'id' : 'mongo_id';
+      const { data: dbCourse } = await supabaseAdmin
+        .from('courses')
+        .select('id, mongo_id')
+        .eq(field, normCourseId)
+        .maybeSingle();
+
+      if (dbCourse) {
+        targetCourseDbIds = [String(dbCourse.id), String(dbCourse.mongo_id)].filter(Boolean);
+      } else {
+        targetCourseDbIds = [normCourseId];
+      }
+    }
+
     const visibleCoupons = (coupons || [])
       .map(c => {
         const meta = getCouponMetadata(c.code) || {};
@@ -262,11 +285,19 @@ exports.getPublicVisibleCoupons = async (req, res) => {
       })
       .filter(c => {
         if (c.isVisible === false) return false;
-        // If courseId query param is provided, filter out coupons restricted to other courses
-        if (courseId && Array.isArray(c.courseIds) && c.courseIds.length > 0) {
-          const normId = String(courseId).trim();
-          return c.courseIds.some(id => String(id).trim() === normId);
+        // Check if coupon is restricted to specific courses
+        if (Array.isArray(c.courseIds) && c.courseIds.length > 0) {
+          // If restricted to specific courses, and no courseId query parameter is provided -> do NOT show
+          if (!courseId) return false;
+          // Check if any allowed courseId matches requested courseId or resolved DB IDs
+          const normQueryId = String(courseId).trim();
+          const isMatch = c.courseIds.some(id => {
+            const sId = String(id).trim();
+            return sId === normQueryId || targetCourseDbIds.includes(sId);
+          });
+          return isMatch;
         }
+        // Global coupon (no course restriction) -> show on all courses
         return true;
       });
 

@@ -1143,31 +1143,18 @@ exports.reorderCourses = async (req, res) => {
       if (!item.id) continue;
       const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
       const targetId = String(item.id);
+      const field = isUuid(targetId) ? 'id' : 'mongo_id';
 
-      let query = supabaseAdmin.from('courses').update({ 
-        display_order: order,
-        sequence: order,
-        updated_at: new Date().toISOString()
-      });
-
-      if (isUuid(targetId)) {
-        query = query.eq('id', targetId);
-      } else {
-        query = query.eq('mongo_id', targetId);
-      }
-
-      const { error } = await query;
-      if (error) {
-        let fallbackQuery = supabaseAdmin.from('courses').update({ 
+      const { error } = await supabaseAdmin
+        .from('courses')
+        .update({ 
           display_order: order,
           updated_at: new Date().toISOString()
-        });
-        if (isUuid(targetId)) {
-          fallbackQuery = fallbackQuery.eq('id', targetId);
-        } else {
-          fallbackQuery = fallbackQuery.eq('mongo_id', targetId);
-        }
-        await fallbackQuery;
+        })
+        .eq(field, targetId);
+
+      if (error) {
+        console.warn(`Failed to update display_order for course ${targetId}:`, error.message);
       }
     }
 

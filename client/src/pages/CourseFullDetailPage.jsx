@@ -610,17 +610,8 @@ const CourseFullDetailPage = () => {
                       ))}
                     </select>
                   </div>
-                </div>
-
-                {/* Dynamic Sub-Options Rows (Batch, Exam Term, Mode of Delivery of Books, etc.) */}
+                </div>                {/* Dynamic Sub-Options Rows (Batch, Exam Term, Mode of Books, etc.) */}
                 {selectedMode && getSubOptionLabels().map((label, optIdx) => {
-                  // Hide "Mode of Delivery of Books" if selectedMode is Face to Face / Offline
-                  const isFaceToFaceMode = /face|f2f|offline/i.test(selectedMode || '');
-                  const isDeliveryOption = /delivery|book/i.test(label || '');
-                  if (isFaceToFaceMode && isDeliveryOption) {
-                    return null;
-                  }
-
                   const modeObj = getCurrentModeData();
                   const availableVals = getSubOptionValuesForModeAndSelections(modeObj, optIdx, selectedSubOptions);
                   if (availableVals.length === 0) return null;
@@ -678,32 +669,29 @@ const CourseFullDetailPage = () => {
                   onClick={() => {
                     setShowApplyCouponModal(true);
                     setModalCouponError('');
-                    setCouponModalInput('');
                   }}
-                  className="flex items-center gap-2 text-[#20b2aa] hover:text-[#18918a] font-bold text-sm hover:underline cursor-pointer transition-all py-1.5"
+                  className="text-teal-700 hover:text-teal-800 text-sm font-extrabold flex items-center gap-2 transition-colors duration-200 py-1"
                 >
-                  <FaTag className="text-base" />
-                  <span>Apply Coupon Code (if any)</span>
+                  <FaTag className="text-teal-600" /> Apply Coupon Code (if any)
                 </button>
               ) : (
-                <div className="bg-teal-50/80 border border-teal-200 rounded-xl p-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold text-teal-700">Coupon Applied:</span>
-                    <span className="font-mono font-extrabold text-teal-950 text-sm bg-white px-2.5 py-0.5 rounded border border-teal-200 shadow-2xs">
-                      {appliedCoupons[0].code}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCoupon(appliedCoupons[0].code)}
-                      className="w-5 h-5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center text-xs font-bold transition-colors"
-                      title="Remove coupon"
-                    >
-                      ✕
-                    </button>
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-xs text-gray-500 font-semibold">Applied Coupon:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {appliedCoupons.map((c, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-xs font-bold shadow-xs">
+                        🏷️ {c.code} ({c.discountPercent}% OFF)
+                        <button
+                          type="button"
+                          onClick={() => setAppliedCoupons(prev => prev.filter((_, idx) => idx !== i))}
+                          className="text-green-800 hover:text-red-600 ml-1 font-bold"
+                          title="Remove coupon"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
-                    {appliedCoupons[0].discountPercent}% OFF
-                  </span>
                 </div>
               )}
 
@@ -714,39 +702,23 @@ const CourseFullDetailPage = () => {
               )}
             </div>
 
-
-            {/* Price Display */}
-            <div className="pt-2 border-t border-gray-200">
+            {/* Final Price Block */}
+            <div className="pt-2">
               <div className="flex items-baseline gap-3">
-                {baseSellingPrice > 0 ? (
+                {selectedPrice.selling > 0 ? (
                   <>
-                    {totalCouponDiscountPercent > 0 ? (
+                    <span className="text-3xl sm:text-4xl font-black text-teal-800 tracking-tight">
+                      ₹{safeFormatPrice(discountedSellingPrice)}
+                    </span>
+
+                    {selectedPrice.cost > selectedPrice.selling && (
                       <>
-                        <span className="text-base text-gray-400 line-through font-semibold">
-                          ₹{safeFormatPrice(baseSellingPrice)}
+                        <span className="text-base sm:text-lg font-bold text-gray-400 line-through">
+                          ₹{safeFormatPrice(selectedPrice.cost)}
                         </span>
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
-                          ₹{safeFormatPrice(discountedSellingPrice)}
+                        <span className="bg-red-50 text-red-600 border border-red-200 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                          {discountPercent}% OFF
                         </span>
-                        <span className="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded font-extrabold border border-green-200">
-                          ₹{safeFormatPrice(totalSavingsInRupees)} OFF APPLIED
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        {baseCostPrice > baseSellingPrice && (
-                          <span className="text-lg text-gray-400 line-through font-semibold">
-                            ₹{safeFormatPrice(baseCostPrice)}
-                          </span>
-                        )}
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#20b2aa] tracking-tight">
-                          ₹{safeFormatPrice(baseSellingPrice)}
-                        </span>
-                        {baseCostPrice > baseSellingPrice && (
-                          <span className="bg-teal-50 text-teal-700 text-xs px-2.5 py-0.5 rounded font-bold border border-teal-200">
-                            {discountPercent}% OFF
-                          </span>
-                        )}
                       </>
                     )}
                   </>
@@ -944,7 +916,25 @@ const CourseFullDetailPage = () => {
             <h3 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-8">
               Similar Related Courses
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 w-full">
+
+            {/* Mobile 2-Card Horizontal Sliding Carousel */}
+            <div className="sm:hidden relative">
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 px-1 -mx-1 scroll-smooth">
+                {relatedCourses.map((rCourse) => (
+                  <div key={rCourse.id || rCourse._id} className="w-[calc(50%-6px)] shrink-0 snap-start transition-all duration-300">
+                    <CourseCard course={rCourse} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-center items-center gap-1 mt-1">
+                <span className="text-[11px] text-teal-700 font-semibold flex items-center gap-1">
+                  👈 Swipe horizontally for more courses 👉
+                </span>
+              </div>
+            </div>
+
+            {/* Desktop Grid */}
+            <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 w-full">
               {relatedCourses.map((rCourse) => (
                 <CourseCard key={rCourse.id || rCourse._id} course={rCourse} />
               ))}
