@@ -638,6 +638,15 @@ const CourseFullDetailPage = () => {
                   const availableVals = getSubOptionValuesForModeAndSelections(modeObj, optIdx, selectedSubOptions);
                   if (availableVals.length === 0) return null;
 
+                  const isPlaceholder = (val) => {
+                    const v = String(val || '').trim().toLowerCase();
+                    return v === 'n/a' || v === 'none' || v === 'not applicable' || v === '-' || v === 'no' || v === 'not available' || v === '';
+                  };
+
+                  if (availableVals.length === 1 && isPlaceholder(availableVals[0])) {
+                    return null;
+                  }
+
                   return (
                     <div key={optIdx} className="grid grid-cols-1 sm:grid-cols-12 items-center gap-2 sm:gap-4">
                       <label className="sm:col-span-4 font-bold text-gray-700 text-sm sm:text-base">
