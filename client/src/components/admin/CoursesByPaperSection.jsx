@@ -134,10 +134,27 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
     setIsSaving(true);
     setSaveStatus('');
 
+    const fullGrouped = emptyGroups();
+    courses.forEach(course => {
+      const category = String(course.category || '').toUpperCase() === 'CMA' ? 'CMA' : 'CA';
+      const level = normalizeLevel(course.subcategory || course.courseType);
+      fullGrouped[category][level].push(course);
+    });
+
     const reorderPayload = [];
-    Object.keys(groupedCourses).forEach(category => {
-      Object.keys(groupedCourses[category]).forEach(level => {
-        const list = groupedCourses[category][level];
+    Object.keys(fullGrouped).forEach(category => {
+      Object.keys(fullGrouped[category]).forEach(level => {
+        const list = fullGrouped[category][level];
+        list.sort((a, b) => {
+          const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.sequence !== undefined ? Number(a.sequence) : 9999);
+          const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.sequence !== undefined ? Number(b.sequence) : 9999);
+          if (orderA !== orderB) return orderA - orderB;
+          const paperA = Number(a.paperId || a.paper_id || 999);
+          const paperB = Number(b.paperId || b.paper_id || 999);
+          if (paperA !== paperB) return paperA - paperB;
+          return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
+        });
+
         list.forEach((course, idx) => {
           const id = getCourseId(course);
           if (id) {

@@ -283,17 +283,28 @@ export default function AllCoursesPage() {
 
   // Helper to accurately classify courses into strict sequence categories
   const getCourseCategoryKey = (course) => {
+    const category = String(course.category || '').trim().toUpperCase();
+    const subcategory = String(course.subcategory || '').trim().toUpperCase();
+
+    if (category === 'CA') {
+      if (subcategory.includes('FINAL')) return 'CA_FINAL';
+      if (subcategory.includes('INTER') || subcategory.includes('IPCC')) return 'CA_INTER';
+      if (subcategory.includes('FOUNDATION')) return 'CA_FOUNDATION';
+    }
+    if (category === 'CMA') {
+      if (subcategory.includes('FINAL')) return 'CMA_FINAL';
+      if (subcategory.includes('INTER') || subcategory.includes('IPCC')) return 'CMA_INTER';
+      if (subcategory.includes('FOUNDATION')) return 'CMA_FOUNDATION';
+    }
+
+    // Fallback to title/subject keyword parsing if category columns are not set
     const title = (course.title || '').toUpperCase();
     const subject = (course.subject || '').toUpperCase();
     const courseType = (course.courseType || course.course_type || '').toUpperCase();
-    const category = (course.category || '').toUpperCase();
-    const subcategory = (course.subcategory || '').toUpperCase();
-
     const fullText = `${category} ${subcategory} ${courseType} ${title} ${subject}`.toUpperCase();
 
-    // Priority 1: Check explicit FINAL vs INTER in title or subject
-    const isExplicitFinal = title.includes('FINAL') || subject.includes('FINAL');
-    const isExplicitInter = !isExplicitFinal && (title.includes('INTER') || subject.includes('INTER') || subject.includes('INTERMEDIATE'));
+    const isExplicitFinal = title.includes('FINAL') || subject.includes('FINAL') || courseType.includes('FINAL');
+    const isExplicitInter = !isExplicitFinal && (title.includes('INTER') || subject.includes('INTER') || subject.includes('INTERMEDIATE') || courseType.includes('INTER'));
 
     const isCMA = fullText.includes('CMA') || category === 'CMA';
     const isCA = (fullText.includes('CA ') || fullText.includes('CA-') || category === 'CA') && !isCMA;
@@ -310,23 +321,6 @@ export default function AllCoursesPage() {
       return 'CMA_INTER';
     }
 
-    // Priority 2: Secondary keyword check
-    const isFinal = fullText.includes('FINAL');
-    const isInter = fullText.includes('INTER') || fullText.includes('INTERMEDIATE');
-
-    if (isCMA && isFinal) return 'CMA_FINAL';
-    if (isCA && isFinal) return 'CA_FINAL';
-    if (isCMA && isInter) return 'CMA_INTER';
-    if (isCA && isInter) return 'CA_INTER';
-
-    // Priority 3: Category fallbacks
-    if (category === 'CMA' || fullText.includes('CMA')) {
-      return isFinal ? 'CMA_FINAL' : 'CMA_INTER';
-    }
-    if (category === 'CA' || fullText.includes('CA')) {
-      return isFinal ? 'CA_FINAL' : 'CA_INTER';
-    }
-
     return 'OTHER';
   };
 
@@ -337,7 +331,7 @@ export default function AllCoursesPage() {
     const paperA = Number(a.paperId || a.paper_id || 999);
     const paperB = Number(b.paperId || b.paper_id || 999);
     if (paperA !== paperB) return paperA - paperB;
-    return new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0);
+    return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
   };
 
   const caInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_INTER').sort(sortBySequence);
