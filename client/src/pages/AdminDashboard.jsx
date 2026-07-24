@@ -1019,6 +1019,32 @@ export default function AdminDashboard() {
     }
   };
 
+  const removeAttemptFromMode = (modeIndex, attemptIndex, isEdit = false) => {
+    if (isEdit) {
+      setEditCourseData(prev => {
+        const updated = [...(prev.modeAttemptPricing || [])];
+        if (updated[modeIndex] && updated[modeIndex].attempts) {
+          updated[modeIndex] = {
+            ...updated[modeIndex],
+            attempts: updated[modeIndex].attempts.filter((_, idx) => idx !== attemptIndex)
+          };
+        }
+        return { ...prev, modeAttemptPricing: updated };
+      });
+    } else {
+      setCourseForm(prev => {
+        const updated = [...prev.modeAttemptPricing];
+        if (updated[modeIndex] && updated[modeIndex].attempts) {
+          updated[modeIndex] = {
+            ...updated[modeIndex],
+            attempts: updated[modeIndex].attempts.filter((_, idx) => idx !== attemptIndex)
+          };
+        }
+        return { ...prev, modeAttemptPricing: updated };
+      });
+    }
+  };
+
   const addAttemptToPricing = (modeIndex, isEdit = false) => {
     const newAttempt = { attempt: '', attemptLabel: 'Exam Term / Attempt', validity: '', validityLabel: 'Validity', costPrice: 0, sellingPrice: 0, description: '' };
     if (isEdit) {
@@ -2813,7 +2839,7 @@ export default function AdminDashboard() {
                         <div className="space-y-3">
                           {(modeData.attempts || []).map((attempt, attemptIndex) => (
                             <div key={attemptIndex} className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center bg-gray-50/50 p-2.5 rounded-lg border border-gray-200/60">
-                              <div className="lg:col-span-4">
+                              <div className="lg:col-span-3">
                                 <span className="text-[10px] font-semibold text-gray-400 block mb-0.5">Combination</span>
                                 <span className="text-xs text-gray-700 font-bold">{attempt.attempt}</span>
                               </div>
@@ -2848,6 +2874,16 @@ export default function AdminDashboard() {
                                   placeholder="e.g. Video duration details..."
                                   className="w-full rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
                                 />
+                              </div>
+                              <div className="lg:col-span-1 flex items-center justify-center pt-3">
+                                <button
+                                  type="button"
+                                  onClick={() => removeAttemptFromMode(modeIndex, attemptIndex, false)}
+                                  className="text-red-500 hover:text-red-700 font-semibold p-1 px-2 rounded hover:bg-red-55 text-xs transition-colors border border-red-200"
+                                  title="Delete Variant Row"
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -3788,7 +3824,7 @@ export default function AdminDashboard() {
                       <div className="space-y-2">
                         {(modeData.attempts || []).map((attempt, attemptIndex) => (
                           <div key={attemptIndex} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center bg-gray-50/50 p-2 rounded-lg border border-gray-250/60">
-                            <div className="md:col-span-4">
+                            <div className="md:col-span-3">
                               <span className="text-[9px] font-semibold text-gray-400 block">Combination</span>
                               <span className="text-xs text-gray-700 font-bold">{attempt.attempt}</span>
                             </div>
@@ -3821,6 +3857,16 @@ export default function AdminDashboard() {
                                 placeholder="notes..."
                                 className="w-full rounded border border-gray-300 px-2 py-0.5 text-xs focus:outline-none"
                               />
+                            </div>
+                            <div className="md:col-span-1 flex items-center justify-center pt-2.5">
+                              <button
+                                type="button"
+                                onClick={() => removeAttemptFromMode(modeIndex, attemptIndex, true)}
+                                className="text-red-500 hover:text-red-700 font-semibold p-0.5 px-1.5 rounded hover:bg-red-55 text-[10px] transition-colors border border-red-200"
+                                title="Delete Variant Row"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         ))}
