@@ -846,7 +846,7 @@ const CourseFullDetailPage = () => {
                     <tbody className="divide-y divide-gray-150">
                       {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
                         course.customDetails
-                          .filter(detail => detail.visible !== false && detail.value && detail.fieldType !== 'faculty' && detail.fieldType !== 'institute')
+                          .filter(detail => detail.visible !== false && detail.value && detail.fieldType !== 'faculty' && detail.fieldType !== 'institute' && detail.fieldType !== '__DISPLAY_ORDER__' && detail.label !== '__DISPLAY_ORDER__')
                           .map((detail, index) => {
                             const isAlternateColor = index % 2 === 0;
                             const rowClass = isAlternateColor ? "bg-gray-50/50 hover:bg-gray-50 transition-colors" : "hover:bg-gray-50 transition-colors";

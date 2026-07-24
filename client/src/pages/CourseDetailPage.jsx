@@ -863,7 +863,7 @@ const CourseDetailPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                       {Array.isArray(course.customDetails) && course.customDetails.length > 0 ? (
                         course.customDetails
-                          .filter(detail => detail.visible !== false && detail.value)
+                          .filter(detail => detail.visible !== false && detail.value && detail.fieldType !== '__DISPLAY_ORDER__' && detail.label !== '__DISPLAY_ORDER__')
                           .map((detail, index) => {
                             let displayVal = detail.value;
                             if (detail.fieldType === 'faculty') {
