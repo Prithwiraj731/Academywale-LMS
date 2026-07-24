@@ -1,8 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { supabaseAdmin } = require('../config/supabase.config');
 
 const dataDir = path.join(__dirname, '../data');
 const filePath = path.join(dataDir, 'coupons_metadata.json');
+
+let inMemoryStore = null;
 
 function ensureStore() {
   if (!fs.existsSync(dataDir)) {
@@ -14,24 +17,83 @@ function ensureStore() {
 }
 
 function getMetadataStore() {
+  if (inMemoryStore !== null) {
+    return inMemoryStore;
+  }
   try {
     ensureStore();
     const raw = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(raw || '{}');
+    inMemoryStore = JSON.parse(raw || '{}');
+    return inMemoryStore;
   } catch (err) {
     console.error('Error reading coupon metadata store:', err);
-    return {};
+    inMemoryStore = {};
+    return inMemoryStore;
   }
 }
 
-function saveMetadataStore(store) {
+async function syncFromSupabase() {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('testimonials')
+      .select('message')
+      .eq('name', '__COUPON_METADATA__')
+      .maybeSingle();
+
+    if (!error && data && data.message) {
+      const remoteStore = JSON.parse(data.message || '{}');
+      const localStore = getMetadataStore();
+      const merged = { ...localStore, ...remoteStore };
+      inMemoryStore = merged;
+      saveMetadataStore(merged, false);
+    }
+  } catch (err) {
+    console.error('Failed to sync coupon metadata from Supabase DB:', err.message);
+  }
+}
+
+function saveMetadataStore(store, pushToSupabase = true) {
   try {
     ensureStore();
+    inMemoryStore = store;
     fs.writeFileSync(filePath, JSON.stringify(store, null, 2), 'utf8');
+    if (pushToSupabase) {
+      pushMetadataToSupabase(store);
+    }
   } catch (err) {
     console.error('Error saving coupon metadata store:', err);
   }
 }
+
+async function pushMetadataToSupabase(store) {
+  try {
+    const jsonStr = JSON.stringify(store || {});
+    const { data: existing } = await supabaseAdmin
+      .from('testimonials')
+      .select('id')
+      .eq('name', '__COUPON_METADATA__')
+      .maybeSingle();
+
+    if (existing && existing.id) {
+      await supabaseAdmin
+        .from('testimonials')
+        .update({ message: jsonStr })
+        .eq('id', existing.id);
+    } else {
+      await supabaseAdmin
+        .from('testimonials')
+        .insert({
+          name: '__COUPON_METADATA__',
+          message: jsonStr
+        });
+    }
+  } catch (err) {
+    console.error('Error pushing coupon metadata to Supabase DB:', err.message);
+  }
+}
+
+// Perform initial sync from Supabase DB asynchronously
+syncFromSupabase();
 
 function setCouponMetadata(code, meta) {
   const store = getMetadataStore();
@@ -103,6 +165,7 @@ module.exports = {
   getCouponMetadata,
   deleteCouponMetadata,
   hasUsedCoupon,
-  recordCouponUsage
+  recordCouponUsage,
+  syncFromSupabase
 };
 

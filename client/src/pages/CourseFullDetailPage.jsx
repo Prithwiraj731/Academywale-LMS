@@ -1037,37 +1037,54 @@ const CourseFullDetailPage = () => {
                 Available Coupon Codes
               </h4>
 
-              {availableCoupons.length === 0 ? (
-                <p className="text-xs text-gray-400 italic">No available coupon codes at this time.</p>
-              ) : (
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                  {availableCoupons.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      onClick={() => {
-                        setCouponModalInput(c.code);
-                        setModalCouponError('');
-                      }}
-                      className="w-full text-left bg-gradient-to-r from-teal-50/50 via-emerald-50/30 to-white hover:from-teal-100/60 hover:to-teal-50/60 border border-teal-200 hover:border-[#20b2aa] rounded-2xl p-3.5 flex items-center justify-between transition-all group shadow-xs cursor-pointer"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-mono font-extrabold text-teal-950 text-base group-hover:text-teal-700 transition-colors">
-                          {c.code}
+              {(() => {
+                const currentCourseId = String(course?.id || course?._id || courseId || '').trim();
+                const currentCourseMongoId = String(course?.mongo_id || '').trim();
+                const validCoupons = availableCoupons.filter(c => {
+                  if (c.isVisible === false) return false;
+                  if (Array.isArray(c.courseIds) && c.courseIds.length > 0) {
+                    return c.courseIds.some(id => {
+                      const sId = String(id).trim();
+                      return sId === currentCourseId || (currentCourseMongoId && sId === currentCourseMongoId);
+                    });
+                  }
+                  return true;
+                });
+
+                if (validCoupons.length === 0) {
+                  return <p className="text-xs text-gray-400 italic">No available coupon codes at this time.</p>;
+                }
+
+                return (
+                  <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                    {validCoupons.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          setCouponModalInput(c.code);
+                          setModalCouponError('');
+                        }}
+                        className="w-full text-left bg-gradient-to-r from-teal-50/50 via-emerald-50/30 to-white hover:from-teal-100/60 hover:to-teal-50/60 border border-teal-200 hover:border-[#20b2aa] rounded-2xl p-3.5 flex items-center justify-between transition-all group shadow-xs cursor-pointer"
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-mono font-extrabold text-teal-950 text-base group-hover:text-teal-700 transition-colors">
+                            {c.code}
+                          </span>
+                          {c.message ? (
+                            <span className="text-xs text-teal-800 font-semibold">{c.message}</span>
+                          ) : (
+                            <span className="text-xs text-gray-500 font-medium">{c.discountPercent}% OFF</span>
+                          )}
+                        </div>
+                        <span className="text-xs font-bold text-[#20b2aa] group-hover:underline">
+                          Select
                         </span>
-                        {c.message ? (
-                          <span className="text-xs text-teal-800 font-semibold">{c.message}</span>
-                        ) : (
-                          <span className="text-xs text-gray-500 font-medium">{c.discountPercent}% OFF</span>
-                        )}
-                      </div>
-                      <span className="text-xs font-bold text-[#20b2aa] group-hover:underline">
-                        Select
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

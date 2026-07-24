@@ -18,8 +18,7 @@ router.get('/api/courses/all', async (req, res) => {
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true, nullsFirst: false });
+      .eq('is_active', true);
 
     if (error) throw error;
 
@@ -67,14 +66,29 @@ const handleCourseReorder = async (req, res) => {
       if (!item.id) continue;
       const order = Number(item.displayOrder !== undefined ? item.displayOrder : (item.sequence || 0));
       const targetId = String(item.id);
-
       const field = isUuid(targetId) ? 'id' : 'mongo_id';
 
-      // Primary update on display_order
+      // Fetch existing custom_details
+      const { data: dbCourse } = await supabaseAdmin
+        .from('courses')
+        .select('custom_details')
+        .eq(field, targetId)
+        .maybeSingle();
+
+      let updatedCustom;
+      if (dbCourse && Array.isArray(dbCourse.custom_details)) {
+        updatedCustom = dbCourse.custom_details.filter(i => i && i.fieldType !== '__DISPLAY_ORDER__' && i.label !== '__DISPLAY_ORDER__');
+        updatedCustom.push({ fieldType: '__DISPLAY_ORDER__', label: '__DISPLAY_ORDER__', value: Number(order) });
+      } else if (dbCourse && typeof dbCourse.custom_details === 'object' && dbCourse.custom_details !== null) {
+        updatedCustom = { ...dbCourse.custom_details, display_order: Number(order), displayOrder: Number(order) };
+      } else {
+        updatedCustom = [{ fieldType: '__DISPLAY_ORDER__', label: '__DISPLAY_ORDER__', value: Number(order) }];
+      }
+
       const { error } = await supabaseAdmin
         .from('courses')
         .update({
-          display_order: order,
+          custom_details: updatedCustom,
           updated_at: new Date().toISOString()
         })
         .eq(field, targetId);

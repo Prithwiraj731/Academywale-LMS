@@ -14,15 +14,35 @@ function mapCourseToFrontend(course) {
     }
   }
 
+  let customOrder;
+  if (Array.isArray(course.custom_details)) {
+    const orderObj = course.custom_details.find(i => i && (i.fieldType === '__DISPLAY_ORDER__' || i.label === '__DISPLAY_ORDER__'));
+    if (orderObj && orderObj.value !== undefined && orderObj.value !== null && !isNaN(Number(orderObj.value))) {
+      customOrder = Number(orderObj.value);
+    }
+  } else if (typeof course.custom_details === 'object' && course.custom_details !== null) {
+    if (course.custom_details.display_order !== undefined && !isNaN(Number(course.custom_details.display_order))) {
+      customOrder = Number(course.custom_details.display_order);
+    }
+  }
+
+  const rawOrder = customOrder !== undefined && customOrder !== null
+    ? customOrder
+    : (course.display_order !== undefined && course.display_order !== null
+        ? course.display_order
+        : (course.sequence !== undefined && course.sequence !== null 
+            ? course.sequence 
+            : course.displayOrder));
+
+  const displayOrder = (rawOrder !== undefined && rawOrder !== null && !isNaN(Number(rawOrder)))
+    ? Number(rawOrder)
+    : 9999;
+
   return {
     ...course,
     // ID compatibility
     _id: course.id,
-    displayOrder: course.display_order !== undefined && course.display_order !== null 
-      ? Number(course.display_order) 
-      : (course.sequence !== undefined && course.sequence !== null 
-          ? Number(course.sequence) 
-          : (course.displayOrder !== undefined && course.displayOrder !== null ? Number(course.displayOrder) : 9999)),
+    displayOrder,
     // Core fields
     paperId: derivedPaperId || course.paper_id,
     paperName: course.paper_name,

@@ -4,7 +4,8 @@ const {
   getCouponMetadata,
   deleteCouponMetadata,
   hasUsedCoupon,
-  recordCouponUsage
+  recordCouponUsage,
+  syncFromSupabase
 } = require('../utils/couponMetadata');
 
 // Admin: Create a new coupon
@@ -183,6 +184,7 @@ exports.validateCoupon = async (req, res) => {
       }
     }
 
+    await syncFromSupabase();
     const meta = getCouponMetadata(normalizedCode) || {};
     const allowedCourseIds = meta.courseIds || (meta.courseId ? [meta.courseId] : (coupon.course_id ? [coupon.course_id] : null));
     const discountPercent = (meta.exactDiscountPercent !== undefined && meta.exactDiscountPercent !== null)
@@ -238,6 +240,7 @@ exports.validateCoupon = async (req, res) => {
 exports.getPublicVisibleCoupons = async (req, res) => {
   try {
     const { courseId } = req.query;
+    await syncFromSupabase();
 
     const { data: coupons, error } = await supabaseAdmin
       .from('coupons')

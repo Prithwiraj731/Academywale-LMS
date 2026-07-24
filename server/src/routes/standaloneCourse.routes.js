@@ -57,8 +57,7 @@ router.get('/api/courses/all', async (req, res) => {
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true, nullsFirst: false });
+      .eq('is_active', true);
 
 
     if (error) throw error;
