@@ -43,7 +43,22 @@ async function syncFromSupabase() {
     if (!error && data && data.message) {
       const remoteStore = JSON.parse(data.message || '{}');
       const localStore = getMetadataStore();
-      const merged = { ...localStore, ...remoteStore };
+      
+      // Timestamp-aware merge (Last-Write-Wins)
+      const merged = { ...localStore };
+      Object.entries(remoteStore).forEach(([code, remoteMeta]) => {
+        const localMeta = localStore[code];
+        if (!localMeta) {
+          merged[code] = remoteMeta;
+        } else {
+          const localTime = new Date(localMeta.updatedAt || 0).getTime();
+          const remoteTime = new Date(remoteMeta.updatedAt || 0).getTime();
+          if (remoteTime > localTime) {
+            merged[code] = remoteMeta;
+          }
+        }
+      });
+
       inMemoryStore = merged;
       saveMetadataStore(merged, false);
     }

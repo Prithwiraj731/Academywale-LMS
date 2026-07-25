@@ -177,7 +177,8 @@ exports.validateCoupon = async (req, res) => {
         const { data: userPurchases } = await supabaseAdmin
           .from('purchases')
           .select('course_details')
-          .eq('user_id', resolvedUserId);
+          .eq('user_id', resolvedUserId)
+          .eq('is_active', true);
 
         if (userPurchases && userPurchases.some(p => p.course_details?.coupon?.toUpperCase() === normalizedCode)) {
           return res.status(400).json({ error: 'You have already used this coupon code.' });
@@ -329,12 +330,6 @@ exports.toggleCouponVisibility = async (req, res) => {
       ...meta,
       isVisible: newVisible
     });
-
-    // Also update Database row so state is persistent across restarts
-    await supabaseAdmin
-      .from('coupons')
-      .update({ is_active: newVisible })
-      .eq('code', normalizedCode);
 
     res.json({ success: true, isVisible: newVisible, code: normalizedCode });
   } catch (err) {
