@@ -147,6 +147,7 @@ exports.deleteCoupon = async (req, res) => {
 exports.validateCoupon = async (req, res) => {
   try {
     const { code, courseId, courseIds, userId, userEmail } = req.body;
+    console.log(`🎫 Validating coupon request: code=${code}, courseId=${courseId}, courseIds=${courseIds ? JSON.stringify(courseIds) : 'none'}, userId=${userId}, userEmail=${userEmail}`);
     const normalizedCode = String(code || '').trim().toUpperCase();
     if (!normalizedCode) return res.status(400).json({ error: 'Coupon code required.' });
     
@@ -219,10 +220,12 @@ exports.validateCoupon = async (req, res) => {
       }
 
       if (!isMatch) {
+        console.warn(`❌ Coupon ${normalizedCode} validation failed: Course ID mismatch.`);
         return res.status(400).json({ error: 'This coupon is valid only for specific course(s) and cannot be applied to this course.' });
       }
     }
 
+    console.log(`✅ Coupon ${normalizedCode} validated successfully. Discount: ${discountPercent}%`);
     res.json({ 
       success: true, 
       discountPercent,
@@ -232,6 +235,7 @@ exports.validateCoupon = async (req, res) => {
       message
     });
   } catch (err) {
+    console.error(`🚨 error validating coupon: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 };
