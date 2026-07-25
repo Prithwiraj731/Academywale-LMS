@@ -115,8 +115,12 @@ const CartPaymentPage = () => {
       const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, userId: user?.id || user?._id, userEmail: user?.email })
-
+        body: JSON.stringify({ 
+          code, 
+          userId: user?.id || user?._id, 
+          userEmail: user?.email,
+          courseIds: cartItems.map(item => item.id || item._id).filter(Boolean)
+        })
       });
       const data = await res.json();
 

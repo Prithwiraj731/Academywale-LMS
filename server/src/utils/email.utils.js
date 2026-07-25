@@ -243,18 +243,41 @@ const sendPurchaseInvoiceEmail = async (options) => {
     });
 
     const itemsTableRowsHtml = purchases.map((item, idx) => {
-      const title = item.title || item.subject || item.course_details?.title || item.course_details?.subject || 'Course Package';
-      const mode = item.mode || item.course_details?.mode || 'Standard';
-      const validity = item.validity || item.course_details?.validity || 'Standard';
-      const faculty = item.facultyName || item.course_details?.facultyName || 'AcademyWale Mentor';
+      const details = item.course_details || item;
+      const title = details.title || details.subject || 'Course Package';
+      const mode = details.mode || 'Standard';
+      const validity = details.validity || 'Standard';
+      const faculty = details.facultyName || 'AcademyWale Mentor';
+      const attempt = details.attempt || '';
+      const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
+      const books = details.books || '';
+      const videoLanguage = details.videoLanguage || details.video_language || '';
+      const videoRunOn = details.videoRunOn || details.video_run_on || '';
+      const doubtSolving = details.doubtSolving || details.doubt_solving || '';
+      const supportMail = details.supportMail || details.support_mail || '';
+      const supportCall = details.supportCall || details.support_call || '';
+      const institute = details.institute || details.instituteName || details.institute_name || '';
       const itemPrice = item.amount || item.price || amount;
+
+      let detailString = `Mode: <strong>${mode}</strong> | Validity: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>`;
+      if (attempt) detailString += ` | Attempt/Term: <strong>${attempt}</strong>`;
+      if (institute) detailString += ` | Institute: <strong>${institute}</strong>`;
+      if (noOfLecture) detailString += ` | Lectures: <strong>${noOfLecture}</strong>`;
+      if (books) detailString += ` | Material: <strong>${books}</strong>`;
+      if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
+      if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
+      if (doubtSolving) detailString += ` | doubts: <strong>${doubtSolving}</strong>`;
+      if (supportMail || supportCall) {
+        const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
+        detailString += ` | Support: <strong>${supportInfo}</strong>`;
+      }
 
       return `
         <tr style="border-bottom: 1px solid #e2e8f0;">
           <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
             <strong style="color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</strong><br/>
             <span style="font-size: 12px; color: #64748b; font-weight: 500;">
-              Mode: <strong>${mode}</strong> | Validity: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>
+              ${detailString}
             </span>
           </td>
           <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
@@ -385,7 +408,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
 
     const mailOptions = {
       from: emailConfig.from,
-      to: userEmail,
+      to: [userEmail, emailConfig.to].filter(Boolean),
       subject: `Receipt: Course Purchase Confirmed - AcademyWale (Txn: ${transactionId})`,
       html: htmlContent
     };
@@ -506,27 +529,82 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
     // Format Course Items Summary
     let itemsHtml = '';
     if (cartItems && cartItems.length > 0) {
-      itemsHtml = cartItems.map((item, idx) => `
-        <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-          <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${idx + 1}. ${item.title || item.subject}</h4>
-          <p style="margin: 0; font-size: 12px; color: #64748b;">
-            <strong>Mode:</strong> ${item.mode || 'Standard'} | 
-            <strong>Validity:</strong> ${item.validity || 'Standard'} | 
-            <strong>Faculty:</strong> ${item.facultyName || 'N/A'}
-          </p>
-          <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
-            Price: ₹${item.price}
-          </p>
-        </div>
-      `).join('');
+      itemsHtml = cartItems.map((item, idx) => {
+        const details = item.course_details || item;
+        const title = details.title || details.subject || 'Course Package';
+        const mode = details.mode || 'Standard';
+        const validity = details.validity || 'Standard';
+        const faculty = details.facultyName || 'N/A';
+        const attempt = details.attempt || '';
+        const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
+        const books = details.books || '';
+        const videoLanguage = details.videoLanguage || details.video_language || '';
+        const videoRunOn = details.videoRunOn || details.video_run_on || '';
+        const doubtSolving = details.doubtSolving || details.doubt_solving || '';
+        const supportMail = details.supportMail || details.support_mail || '';
+        const supportCall = details.supportCall || details.support_call || '';
+        const institute = details.institute || details.instituteName || details.institute_name || '';
+
+        let detailsText = `<strong>Mode:</strong> ${mode} | <strong>Validity:</strong> ${validity}`;
+        if (faculty && faculty !== 'N/A') detailsText += ` | <strong>Faculty:</strong> ${faculty}`;
+        if (attempt) detailsText += ` | <strong>Attempt/Term:</strong> ${attempt}`;
+        if (institute) detailsText += ` | <strong>Institute:</strong> ${institute}`;
+        if (noOfLecture) detailsText += ` | <strong>Lectures:</strong> ${noOfLecture}`;
+        if (books) detailsText += ` | <strong>Material:</strong> ${books}`;
+        if (videoLanguage) detailsText += ` | <strong>Language:</strong> ${videoLanguage}`;
+        if (videoRunOn) detailsText += ` | <strong>Run On:</strong> ${videoRunOn}`;
+        if (doubtSolving) detailsText += ` | <strong>Doubt Solving:</strong> ${doubtSolving}`;
+        if (supportMail || supportCall) {
+          const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
+          detailsText += ` | <strong>Support:</strong> ${supportInfo}`;
+        }
+
+        return `
+          <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
+            <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</h4>
+            <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+              ${detailsText}
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
+              Price: ₹${item.price || item.amount || amount}
+            </p>
+          </div>
+        `;
+      }).join('');
     } else {
-      const courseName = courseDetails?.courseName || 'LMS Course';
+      const courseName = courseDetails?.courseName || courseDetails?.title || 'LMS Course';
+      const mode = courseDetails?.mode || 'Standard';
+      const validity = courseDetails?.validity || 'Standard';
+      const faculty = courseDetails?.facultyName || 'N/A';
+      const attempt = courseDetails?.attempt || '';
+      const noOfLecture = courseDetails?.noOfLecture || courseDetails?.no_of_lecture || '';
+      const books = courseDetails?.books || '';
+      const videoLanguage = courseDetails?.videoLanguage || courseDetails?.video_language || '';
+      const videoRunOn = courseDetails?.videoRunOn || courseDetails?.video_run_on || '';
+      const doubtSolving = courseDetails?.doubtSolving || courseDetails?.doubt_solving || '';
+      const supportMail = courseDetails?.supportMail || courseDetails?.support_mail || '';
+      const supportCall = courseDetails?.supportCall || courseDetails?.support_call || '';
+      const institute = courseDetails?.institute || courseDetails?.instituteName || courseDetails?.institute_name || '';
+
+      let detailsText = `<strong>Mode:</strong> ${mode} | <strong>Validity:</strong> ${validity}`;
+      if (faculty && faculty !== 'N/A') detailsText += ` | <strong>Faculty:</strong> ${faculty}`;
+      if (attempt) detailsText += ` | <strong>Attempt/Term:</strong> ${attempt}`;
+      if (institute) detailsText += ` | <strong>Institute:</strong> ${institute}`;
+      if (noOfLecture) detailsText += ` | <strong>Lectures:</strong> ${noOfLecture}`;
+      if (books) detailsText += ` | <strong>Material:</strong> ${books}`;
+      if (videoLanguage) detailsText += ` | <strong>Language:</strong> ${videoLanguage}`;
+      if (videoRunOn) detailsText += ` | <strong>Run On:</strong> ${videoRunOn}`;
+      if (doubtSolving) detailsText += ` | <strong>Doubt Solving:</strong> ${doubtSolving}`;
+      if (supportMail || supportCall) {
+        const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
+        detailsText += ` | <strong>Support:</strong> ${supportInfo}`;
+      }
+
       itemsHtml = `
         <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${courseName}</h4>
-          <p style="margin: 0; font-size: 12px; color: #64748b;">
-            <strong>Mode:</strong> ${courseDetails?.mode || 'Standard'} | 
-            <strong>Validity:</strong> ${courseDetails?.validity || 'Standard'} ${courseDetails?.attempt ? `| <strong>Exam Term:</strong> ${courseDetails.attempt}` : ''}
+          <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+            ${detailsText}
           </p>
           <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
             Price: ₹${amount}

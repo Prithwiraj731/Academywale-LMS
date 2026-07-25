@@ -146,7 +146,7 @@ exports.deleteCoupon = async (req, res) => {
 // Student: Validate a coupon code
 exports.validateCoupon = async (req, res) => {
   try {
-    const { code, courseId, userId, userEmail } = req.body;
+    const { code, courseId, courseIds, userId, userEmail } = req.body;
     const normalizedCode = String(code || '').trim().toUpperCase();
     if (!normalizedCode) return res.status(400).json({ error: 'Coupon code required.' });
     

@@ -93,7 +93,17 @@ exports.purchaseCourse = async (req, res) => {
           subject: targetCourse.subject,
           mode: targetCourse.mode_attempt_pricing?.[0]?.mode || '',
           validity: targetCourse.mode_attempt_pricing?.[0]?.attempt || '',
-          facultyName: targetCourse.faculty_name
+          facultyName: targetCourse.faculty_name,
+          noOfLecture: targetCourse.no_of_lecture || '',
+          books: targetCourse.books || '',
+          videoLanguage: targetCourse.video_language || 'Hindi',
+          videoRunOn: targetCourse.video_run_on || '',
+          timing: targetCourse.timing || '',
+          doubtSolving: targetCourse.doubt_solving || '',
+          supportMail: targetCourse.support_mail || '',
+          supportCall: targetCourse.support_call || '',
+          institute: targetCourse.institute_name || '',
+          attempt: targetCourse.mode_attempt_pricing?.[0]?.attempt || ''
         },
         payment_method: paymentMethod,
         amount: Number(amount),
@@ -109,14 +119,14 @@ exports.purchaseCourse = async (req, res) => {
     // Send invoice email to student
     try {
       if (user && user.email) {
-        await sendPurchaseInvoiceEmail(
-          user.email,
-          user.name,
-          purchase.course_details,
-          purchase.transaction_id,
-          purchase.purchase_date,
-          amount
-        );
+        await sendPurchaseInvoiceEmail({
+          userEmail: user.email,
+          userName: user.name,
+          purchases: [purchase.course_details],
+          transactionId: purchase.transaction_id,
+          amount: amount,
+          paymentMethod: paymentMethod || 'Online Payment'
+        });
       }
     } catch (emailErr) {
       console.error('Failed to send invoice email:', emailErr);
@@ -423,7 +433,16 @@ exports.upiPurchase = async (req, res) => {
           attempt: courseDetails?.attempt || '',
           facultyName: course.faculty_name,
           coupon: coupon || courseDetails?.coupon || '',
-          discountPercent: Number(discountPercent || courseDetails?.discountPercent || 0)
+          discountPercent: Number(discountPercent || courseDetails?.discountPercent || 0),
+          noOfLecture: course.no_of_lecture || '',
+          books: course.books || '',
+          videoLanguage: course.video_language || 'Hindi',
+          videoRunOn: course.video_run_on || '',
+          timing: course.timing || '',
+          doubtSolving: course.doubt_solving || '',
+          supportMail: course.support_mail || '',
+          supportCall: course.support_call || '',
+          institute: course.institute_name || ''
         },
         access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       })
@@ -570,7 +589,17 @@ exports.cartPurchase = async (req, res) => {
             validity: item.attempt || item.validity || '',
             facultyName: course.faculty_name,
             coupon: coupon || '',
-            discountPercent: couponDiscount
+            discountPercent: couponDiscount,
+            noOfLecture: course.no_of_lecture || '',
+            books: course.books || '',
+            videoLanguage: course.video_language || 'Hindi',
+            videoRunOn: course.video_run_on || '',
+            timing: course.timing || '',
+            doubtSolving: course.doubt_solving || '',
+            supportMail: course.support_mail || '',
+            supportCall: course.support_call || '',
+            institute: course.institute_name || '',
+            attempt: item.attempt || ''
           },
           access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         })
@@ -1001,7 +1030,17 @@ exports.verifyRazorpayPayment = async (req, res) => {
             validity: item.attempt || item.validity || req.body.courseDetails?.validity || '',
             facultyName: course.faculty_name,
             coupon: coupon || '',
-            discountPercent: couponDiscount
+            discountPercent: couponDiscount,
+            noOfLecture: course.no_of_lecture || '',
+            books: course.books || '',
+            videoLanguage: course.video_language || 'Hindi',
+            videoRunOn: course.video_run_on || '',
+            timing: course.timing || '',
+            doubtSolving: course.doubt_solving || '',
+            supportMail: course.support_mail || '',
+            supportCall: course.support_call || '',
+            institute: course.institute_name || '',
+            attempt: item.attempt || req.body.courseDetails?.attempt || ''
           },
           access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         })
@@ -1149,9 +1188,9 @@ exports.handleRazorpayWebhook = async (req, res) => {
         });
 
         if (orderId) {
-          query = query.eq('transaction_id', orderId);
+          query = query.or(`transaction_id.eq.${orderId},transaction_id.like.${orderId}_%`);
         } else if (paymentId) {
-          query = query.eq('transaction_id', paymentId);
+          query = query.or(`transaction_id.eq.${paymentId},transaction_id.like.${paymentId}_%`);
         }
 
         const { error } = await query;

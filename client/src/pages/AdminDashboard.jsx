@@ -90,10 +90,7 @@ export default function AdminDashboard() {
   const [facultyAddStatus, setFacultyAddStatus] = useState('');
   const [facultyAddError, setFacultyAddError] = useState('');
 
-  // Delete All Faculty State
-  const [deleteAllStatus, setDeleteAllStatus] = useState('');
-  const [deleteAllError, setDeleteAllError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
 
   // Faculty Bio Panel State (for updating existing faculty)
   const [facultyInfo, setFacultyInfo] = useState({
@@ -175,6 +172,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         setFacultyInfoStatus('Faculty info updated!');
+        await fetchLiveFacultiesList();
         setTimeout(() => setFacultyInfoStatus(''), 2000);
       } else {
         setFacultyInfoError(data.error || 'Failed to update faculty info');
@@ -262,6 +260,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
         setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null });
+        await fetchLiveFacultiesList();
         setTimeout(() => setFacultyAddStatus(''), 2000);
         console.log('✅ Faculty added successfully');
       } else {
@@ -274,40 +273,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Delete All Faculty Handler
-  const handleDeleteAllFaculty = async () => {
-    setDeleteAllStatus('');
-    setDeleteAllError('');
 
-    try {
-      setDeleteAllStatus('Deleting all faculty...');
-      console.log('🗑️ Starting delete all faculty operation');
-
-      const res = await fetchWithCredentials(`${API_URL}/emergency-delete-faculty`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      console.log('📥 Delete all response status:', res.status);
-      const data = await res.json();
-      console.log('📥 Delete all response data:', data);
-
-      if (res.ok) {
-        setDeleteAllStatus(`Successfully deleted ${data.deletedCount} faculty members!`);
-        setShowDeleteConfirm(false);
-        setTimeout(() => setDeleteAllStatus(''), 3000);
-        console.log(`✅ Successfully deleted ${data.deletedCount} faculty members`);
-      } else {
-        setDeleteAllError(data.message || 'Failed to delete faculty');
-        console.log('❌ Delete all failed:', data);
-      }
-    } catch (err) {
-      setDeleteAllError('Server error occurred');
-      console.error('❌ Delete all network/server error:', err);
-    }
-  };
 
   const [form, setForm] = useState({
     facultySlug: '',
@@ -442,6 +408,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         setInstituteAddStatus('Institute added!');
         setInstituteAdd({ name: '', image: null, imagePreview: null });
+        await fetchLiveInstitutesList();
         setTimeout(() => setInstituteAddStatus(''), 2000);
       } else {
         setInstituteAddError(data.error || 'Failed to add institute');
@@ -1849,12 +1816,14 @@ export default function AdminDashboard() {
         mergedMap.set(h.slug, {
           id: h.id,
           slug: h.slug,
-          firstName: h.name,
+          firstName: h.name.replace(/^(CA|CMA|CS)\s+/, ''),
           lastName: '',
           bio: h.bio || '',
           teaches: h.specialization ? [h.specialization] : [],
           imageUrl: h.image,
-          image: h.image
+          image: h.image,
+          isHardcoded: true,
+          fullName: h.name
         });
       });
 
@@ -1872,11 +1841,15 @@ export default function AdminDashboard() {
           bio: db.bio !== undefined ? db.bio : (existing.bio || ''),
           teaches: Array.isArray(db.teaches) ? db.teaches : (db.teaches ? [db.teaches] : (existing.teaches || [])),
           imageUrl: db.image_url || db.imageUrl || existing.imageUrl || existing.image,
-          image: db.image_url || db.imageUrl || existing.image
+          image: db.image_url || db.imageUrl || existing.image,
+          isHardcoded: false,
+          fullName: `${db.first_name || db.firstName || ''} ${db.last_name || db.lastName || ''}`.trim()
         });
       });
 
-      setFaculties(Array.from(mergedMap.values()));
+      const finalFaculties = Array.from(mergedMap.values());
+      setFaculties(finalFaculties);
+      setAllFaculties(finalFaculties);
     } catch (err) {
       console.error('Error refreshing faculties list:', err);
     }
@@ -2070,6 +2043,32 @@ export default function AdminDashboard() {
     { name: "Yashwant Mangal Classes", _id: "hardcoded-18" }
   ];
 
+  const fetchLiveInstitutesList = async () => {
+    try {
+      console.log('🏫 Fetching institutes from:', `${API_URL}/api/institutes`);
+      const res = await fetch(`${API_URL}/api/institutes`);
+      const data = await res.json();
+      const apiInstitutes = data.institutes || [];
+
+      // Merge hardcoded and database institutes so we have a unified live list
+      const mergedMap = new Map();
+      hardcodedInstitutes.forEach(inst => {
+        mergedMap.set(inst.name.toLowerCase().trim(), inst);
+      });
+      apiInstitutes.forEach(inst => {
+        mergedMap.set(inst.name.toLowerCase().trim(), {
+          ...inst,
+          _id: inst.id || inst._id || inst.name
+        });
+      });
+
+      setInstitutes(Array.from(mergedMap.values()));
+    } catch (err) {
+      console.error('❌ Error fetching institutes:', err);
+      setInstitutes(hardcodedInstitutes);
+    }
+  };
+
   // Fetch institutes and faculties on mount
   useEffect(() => {
     // Initialize faculties from hardcoded data first to ensure the dropdown has values
@@ -2087,30 +2086,8 @@ export default function AdminDashboard() {
     // Set initial faculty values immediately
     setAllFaculties(initialFaculties);
 
-    // Fetch institutes
-    console.log('🏫 Fetching institutes from:', `${API_URL}/api/institutes`);
-    fetch(`${API_URL}/api/institutes`)
-      .then(res => {
-        console.log('🏫 Institutes response status:', res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log('🏫 Institutes data received:', data);
-        const apiInstitutes = data.institutes || [];
-
-        // If no institutes from API, use hardcoded ones
-        if (apiInstitutes.length === 0) {
-          console.log('🏫 No institutes from API, using hardcoded institutes');
-          setInstitutes(hardcodedInstitutes);
-        } else {
-          setInstitutes(apiInstitutes);
-        }
-      })
-      .catch(err => {
-        console.error('❌ Error fetching institutes:', err);
-        console.log('🏫 Using hardcoded institutes due to error');
-        setInstitutes(hardcodedInstitutes);
-      });
+    // Fetch live merged institutes list
+    fetchLiveInstitutesList();
 
     // Fetch live merged faculties list
     fetchLiveFacultiesList();
@@ -2986,41 +2963,7 @@ export default function AdminDashboard() {
             {facultyAddError && <div className="text-red-600 text-center font-semibold">{facultyAddError}</div>}
           </form>
 
-          {/* Delete All Faculty Section */}
-          <div className="mt-8 p-6 bg-red-50 rounded-xl border-2 border-red-200">
-            <h3 className="text-lg font-bold text-red-700 mb-3">⚠️ Danger Zone</h3>
-            <p className="text-sm text-red-600 mb-4">This action will permanently delete ALL faculty members from the database. This cannot be undone.</p>
 
-            {!showDeleteConfirm ? (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
-              >
-                🗑️ Delete All Faculty
-              </button>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <p className="text-red-700 font-semibold">Are you absolutely sure? This will delete ALL faculty members!</p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleDeleteAllFaculty}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
-                  >
-                    ✅ Yes, Delete All
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
-                  >
-                    ❌ Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {deleteAllStatus && <div className="text-green-600 font-semibold mt-3">{deleteAllStatus}</div>}
-            {deleteAllError && <div className="text-red-600 font-semibold mt-3">{deleteAllError}</div>}
-          </div>
 
           <h3 className="text-xl font-bold text-purple-700 mt-8 mb-4">All Faculties</h3>
           <div className="grid grid-cols-1 gap-4">
