@@ -66,7 +66,6 @@ exports.getCourseDetails = async (req, res) => {
       let paperQuery = supabaseAdmin
         .from('courses')
         .select('*')
-        .eq('paper_id', paperNumber)
         .eq('is_active', true);
 
       if (courseType) {
@@ -76,7 +75,13 @@ exports.getCourseDetails = async (req, res) => {
         });
       }
 
-      const { data: paperCourses, error: paperErr } = await paperQuery;
+      const { data: allPaperCourses, error: paperErr } = await paperQuery;
+      const paperCourses = (allPaperCourses || []).filter(c => {
+        if (!c.paper_id) return false;
+        const ids = String(c.paper_id).split(',').map(s => s.trim());
+        return ids.includes(String(paperNumber));
+      });
+
       if (!paperErr && paperCourses && paperCourses.length > 0) {
         console.log('✅ Found course directly via optimized paper query:', paperCourses[0].subject);
         return res.status(200).json({ course: mapCourseToFrontend(paperCourses[0]), success: true });
@@ -136,7 +141,7 @@ exports.getCourseDetails = async (req, res) => {
         return true;
       }
 
-      if (paperNumber && course.paper_id && String(course.paper_id) === String(paperNumber)) {
+      if (paperNumber && course.paper_id && String(course.paper_id).split(',').map(s => s.trim()).includes(String(paperNumber))) {
         if (courseType) {
           const typeWords = courseType.replace('/', ' ').toLowerCase().split(' ');
           const typeMatch = course.course_type && typeWords.every(word => course.course_type.toLowerCase().includes(word));

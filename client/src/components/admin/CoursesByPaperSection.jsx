@@ -17,6 +17,12 @@ const normalizeLevel = (value = '') => {
 
 const getCourseId = (course) => course?.id || course?._id || course?.mongo_id || '';
 
+const getFirstPaperNumber = (val) => {
+  if (!val) return 999;
+  const clean = String(val).split(',')[0].trim().replace(/\D/g, '');
+  return clean ? Number(clean) : 999;
+};
+
 const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, refreshKey = 0 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -83,8 +89,8 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
           const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.sequence !== undefined ? Number(a.sequence) : 9999);
           const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.sequence !== undefined ? Number(b.sequence) : 9999);
           if (orderA !== orderB) return orderA - orderB;
-          const paperA = Number(a.paperId || a.paper_id || 999);
-          const paperB = Number(b.paperId || b.paper_id || 999);
+          const paperA = getFirstPaperNumber(a.paperId || a.paper_id);
+          const paperB = getFirstPaperNumber(b.paperId || b.paper_id);
           if (paperA !== paperB) return paperA - paperB;
           return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
         });
@@ -149,8 +155,8 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
           const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.sequence !== undefined ? Number(a.sequence) : 9999);
           const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.sequence !== undefined ? Number(b.sequence) : 9999);
           if (orderA !== orderB) return orderA - orderB;
-          const paperA = Number(a.paperId || a.paper_id || 999);
-          const paperB = Number(b.paperId || b.paper_id || 999);
+          const paperA = getFirstPaperNumber(a.paperId || a.paper_id);
+          const paperB = getFirstPaperNumber(b.paperId || b.paper_id);
           if (paperA !== paperB) return paperA - paperB;
           return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
         });

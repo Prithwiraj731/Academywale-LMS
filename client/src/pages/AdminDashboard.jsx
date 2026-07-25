@@ -827,22 +827,33 @@ export default function AdminDashboard() {
         }));
       }
 
-      // Auto-fill paper name and real paper ID when paper is selected
-      if (name === 'paperId') {
-        const papers = getPapers(courseForm.category, courseForm.subcategory);
-        const selectedPaper = papers.find(p => String(p.id) === String(value));
-        if (selectedPaper) {
-          const match = selectedPaper.name.match(/Paper\s*(\d+)/i);
-          const realPaperId = match ? match[1] : value;
-          setCourseForm(prev => ({ 
-            ...prev, 
-            paperId: realPaperId,
-            paperName: selectedPaper.name 
-          }));
-        }
-      }
-
     }
+  };
+
+  const handlePaperCheckboxChange = (paperId, paperName, isChecked, isEdit = false) => {
+    const targetState = isEdit ? editCourseData : courseForm;
+    const setTargetState = isEdit ? setEditCourseData : setCourseForm;
+
+    let currentIds = targetState.paperId ? String(targetState.paperId).split(',').map(s => s.trim()).filter(Boolean) : [];
+    let currentNames = targetState.paperName ? String(targetState.paperName).split(',').map(s => s.trim()).filter(Boolean) : [];
+
+    const stringId = String(paperId);
+
+    if (isChecked) {
+      if (!currentIds.includes(stringId)) {
+        currentIds.push(stringId);
+        currentNames.push(paperName);
+      }
+    } else {
+      currentIds = currentIds.filter(id => id !== stringId);
+      currentNames = currentNames.filter(name => name !== paperName);
+    }
+
+    setTargetState(prev => ({
+      ...prev,
+      paperId: currentIds.join(','),
+      paperName: currentNames.join(',')
+    }));
   };
 
   const addCustomDetail = (isEdit = false) => {
@@ -1592,19 +1603,6 @@ export default function AdminDashboard() {
       }
       if (name === 'subcategory') {
         setEditCourseData(prev => ({ ...prev, paperId: '', paperName: '' }));
-      }
-      if (name === 'paperId') {
-        const papers = getPapers(editCourseData.category || f.category, editCourseData.subcategory || f.subcategory);
-        const selectedPaper = papers.find(p => String(p.id) === String(value));
-        if (selectedPaper) {
-          const match = selectedPaper.name.match(/Paper\s*(\d+)/i);
-          const realPaperId = match ? match[1] : value;
-          setEditCourseData(prev => ({ 
-            ...prev, 
-            paperId: realPaperId,
-            paperName: selectedPaper.name 
-          }));
-        }
       }
     }
   };
@@ -2463,22 +2461,41 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper *</label>
-                  <select
-                    name="paperId"
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Paper(s) *</label>
+                  {!courseForm.subcategory ? (
+                    <div className="text-sm text-gray-400 border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      Select a subcategory first to load papers.
+                    </div>
+                  ) : (
+                    <div className="border border-gray-300 rounded-lg p-3 sm:p-4 max-h-48 overflow-y-auto bg-white flex flex-col gap-2">
+                      {getPapers(courseForm.category, courseForm.subcategory).map(paper => {
+                        const stringId = String(paper.id);
+                        const isChecked = courseForm.paperId 
+                          ? courseForm.paperId.split(',').map(s => s.trim()).includes(stringId) 
+                          : false;
+                        return (
+                          <label key={paper.id} className="flex items-start gap-2.5 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors text-sm text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => handlePaperCheckboxChange(paper.id, paper.name, e.target.checked, false)}
+                              className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
+                            />
+                            <span>
+                              <strong>Paper {paper.id}:</strong> {paper.name.replace(/^Paper\s*\d+:\s*/i, '')} {paper.group ? `(${paper.group})` : ''}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <input
+                    type="text"
                     value={courseForm.paperId}
-                    onChange={handleCourseFormChange}
-                    className="w-full rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 mobile-touch-target"
                     required
-                    disabled={!courseForm.subcategory}
-                  >
-                    <option value="">Select Paper</option>
-                    {getPapers(courseForm.category, courseForm.subcategory).map(paper => (
-                      <option key={paper.id} value={paper.id}>
-                        {paper.name} {paper.group ? `(${paper.group})` : ''}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={() => {}}
+                    style={{ opacity: 0, height: 0, width: 0, position: 'absolute', pointerEvents: 'none' }}
+                  />
                 </div>
               </div>
 
@@ -3424,22 +3441,41 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Paper *</label>
-                <select
-                  name="paperId"
+                <label className="block text-xs font-medium text-gray-700 mb-1">Paper(s) *</label>
+                {!editCourseData.subcategory ? (
+                  <div className="text-xs text-gray-400 border border-gray-200 rounded p-2 bg-gray-50">
+                    Select a subcategory first to load papers.
+                  </div>
+                ) : (
+                  <div className="border border-gray-300 rounded p-2 max-h-36 overflow-y-auto bg-white flex flex-col gap-1.5">
+                    {getPapers(editCourseData.category, editCourseData.subcategory).map(paper => {
+                      const stringId = String(paper.id);
+                      const isChecked = editCourseData.paperId 
+                        ? editCourseData.paperId.split(',').map(s => s.trim()).includes(stringId) 
+                        : false;
+                      return (
+                        <label key={paper.id} className="flex items-start gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => handlePaperCheckboxChange(paper.id, paper.name, e.target.checked, true)}
+                            className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-3.5 h-3.5"
+                          />
+                          <span>
+                            <strong>Paper {paper.id}:</strong> {paper.name.replace(/^Paper\s*\d+:\s*/i, '')} {paper.group ? `(${paper.group})` : ''}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                <input
+                  type="text"
                   value={editCourseData.paperId || ''}
-                  onChange={handleEditChange}
-                  className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm"
                   required
-                  disabled={!editCourseData.subcategory}
-                >
-                  <option value="">Select Paper</option>
-                  {getPapers(editCourseData.category, editCourseData.subcategory).map(paper => (
-                    <option key={paper.id} value={paper.id}>
-                      {paper.name} {paper.group ? `(${paper.group})` : ''}
-                    </option>
-                  ))}
-                </select>
+                  onChange={() => {}}
+                  style={{ opacity: 0, height: 0, width: 0, position: 'absolute', pointerEvents: 'none' }}
+                />
               </div>
             </div>
 

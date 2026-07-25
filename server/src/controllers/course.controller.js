@@ -370,13 +370,18 @@ exports.getCoursesByPaper = async (req, res) => {
       .select('*')
       .eq('category', requestedCategory)
       .ilike('subcategory', `%${subquery}%`)
-      .eq('paper_id', requestedPaperId)
       .eq('is_active', true);
 
 
     if (error) throw error;
 
-    const mapped = mapCoursesToFrontend(courses);
+    const filteredCourses = (courses || []).filter(course => {
+      if (!course.paper_id) return false;
+      const ids = String(course.paper_id).split(',').map(s => s.trim());
+      return ids.includes(String(requestedPaperId));
+    });
+
+    const mapped = mapCoursesToFrontend(filteredCourses);
 
     console.log(`✅ Supabase query complete: Found ${mapped.length} matching courses`);
     res.status(200).json({ courses: mapped });

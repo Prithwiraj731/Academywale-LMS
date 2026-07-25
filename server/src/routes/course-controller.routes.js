@@ -39,12 +39,17 @@ router.get('/api/courses/CA/foundation/1/direct', async (req, res) => {
       .select('*')
       .eq('category', 'CA')
       .ilike('subcategory', '%foundation%')
-      .eq('paper_id', '1')
       .eq('is_active', true);
 
     if (error) throw error;
 
-    const mapped = mapCoursesToFrontend(courses);
+    const filteredCourses = (courses || []).filter(course => {
+      if (!course.paper_id) return false;
+      const ids = String(course.paper_id).split(',').map(s => s.trim());
+      return ids.includes('1');
+    });
+
+    const mapped = mapCoursesToFrontend(filteredCourses);
     res.json({ success: true, courses: mapped });
   } catch (error) {
     console.error('Error in direct CA Foundation Paper 1 endpoint:', error);

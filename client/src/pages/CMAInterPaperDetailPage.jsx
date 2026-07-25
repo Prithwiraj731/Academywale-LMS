@@ -227,8 +227,8 @@ const CMAInterPaperDetailPage = () => {
         
         // Set final results
         foundCourses = foundCourses.filter(course => {
-          const coursePaperId = String(course.paperId ?? course.paper_id ?? '').replace(/\D/g, '');
-          return coursePaperId === String(paperId);
+          const coursePaperIds = String(course.paperId ?? course.paper_id ?? '').split(',').map(s => s.trim().replace(/\D/g, '')).filter(Boolean);
+          return coursePaperIds.includes(String(paperId));
         });
 
         const sortBySequence = (a, b) => {

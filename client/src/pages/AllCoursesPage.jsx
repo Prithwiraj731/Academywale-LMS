@@ -324,12 +324,18 @@ export default function AllCoursesPage() {
     return 'OTHER';
   };
 
+  const getFirstPaperNumber = (val) => {
+    if (!val) return 999;
+    const clean = String(val).split(',')[0].trim().replace(/\D/g, '');
+    return clean ? Number(clean) : 999;
+  };
+
   const sortBySequence = (a, b) => {
     const orderA = a.displayOrder !== undefined && a.displayOrder !== null ? Number(a.displayOrder) : (a.display_order !== undefined && a.display_order !== null ? Number(a.display_order) : 9999);
     const orderB = b.displayOrder !== undefined && b.displayOrder !== null ? Number(b.displayOrder) : (b.display_order !== undefined && b.display_order !== null ? Number(b.display_order) : 9999);
     if (orderA !== orderB) return orderA - orderB;
-    const paperA = Number(a.paperId || a.paper_id || 999);
-    const paperB = Number(b.paperId || b.paper_id || 999);
+    const paperA = getFirstPaperNumber(a.paperId || a.paper_id);
+    const paperB = getFirstPaperNumber(b.paperId || b.paper_id);
     if (paperA !== paperB) return paperA - paperB;
     return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
   };

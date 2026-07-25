@@ -49,12 +49,12 @@ exports.searchCourses = async (req, res) => {
     const paperNumberRegex = /\bpaper\s+(\d+)\b/i;
     const paperNumberMatch = query.match(paperNumberRegex);
     if (paperNumberMatch) {
-      filterConditions.push(`paper_id.eq.${paperNumberMatch[1]}`);
+      filterConditions.push(`paper_id.ilike.%${paperNumberMatch[1]}%`);
     } else {
       // Check if query is just a number
       const numberOnlyMatch = /^(\d+)$/.exec(query.trim());
       if (numberOnlyMatch) {
-        filterConditions.push(`paper_id.eq.${numberOnlyMatch[1]}`);
+        filterConditions.push(`paper_id.ilike.%${numberOnlyMatch[1]}%`);
       }
     }
     
