@@ -1577,8 +1577,12 @@ export default function AdminDashboard() {
       }
     }
 
+    const exclObj = details.find(d => d && d.label === 'is_exclusive');
+    const isExclusive = exclObj ? (exclObj.value === true || exclObj.value === 'true') : (course.isExclusive || false);
+
     setEditCourseData({ 
       ...course,
+      isExclusive: isExclusive,
       customDetails: details,
       modeAttemptPricing: pricing
     });
