@@ -7,7 +7,7 @@ function mapCourseToFrontend(course) {
 
   // Extract real paper number from paper_name if available (e.g. "Paper 3: Cost ..." -> "3")
   let derivedPaperId = course.paper_id;
-  if (course.paper_name) {
+  if (!derivedPaperId && course.paper_name) {
     const match = String(course.paper_name).match(/Paper\s*(\d+)/i);
     if (match) {
       derivedPaperId = match[1];
@@ -15,10 +15,15 @@ function mapCourseToFrontend(course) {
   }
 
   let customOrder;
+  let isExclusive = false;
   if (Array.isArray(course.custom_details)) {
     const orderObj = course.custom_details.find(i => i && (i.fieldType === '__DISPLAY_ORDER__' || i.label === '__DISPLAY_ORDER__'));
     if (orderObj && orderObj.value !== undefined && orderObj.value !== null && !isNaN(Number(orderObj.value))) {
       customOrder = Number(orderObj.value);
+    }
+    const exclObj = course.custom_details.find(i => i && (i.fieldType === 'boolean' && i.label === 'is_exclusive'));
+    if (exclObj) {
+      isExclusive = exclObj.value === true || exclObj.value === 'true';
     }
   } else if (typeof course.custom_details === 'object' && course.custom_details !== null) {
     if (course.custom_details.display_order !== undefined && !isNaN(Number(course.custom_details.display_order))) {
@@ -43,6 +48,7 @@ function mapCourseToFrontend(course) {
     // ID compatibility
     _id: course.id,
     displayOrder,
+    isExclusive,
     // Core fields
     paperId: derivedPaperId || course.paper_id,
     paperName: course.paper_name,

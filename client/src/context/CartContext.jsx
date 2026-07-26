@@ -26,7 +26,7 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  const addToCart = (course, selectedMode, selectedAttempt, price, selectedValidity = '') => {
+  const addToCart = (course, selectedMode, selectedAttempt, price, selectedValidity = '', selectedOptions = {}) => {
     const courseId = course.id || course._id;
     const uniqueId = `${courseId}-${selectedMode}-${selectedAttempt}-${selectedValidity}`;
 
@@ -41,7 +41,8 @@ export const CartProvider = ({ children }) => {
       attempt: selectedAttempt,
       validity: selectedValidity,
       price: price,
-      courseType: course.courseType || 'general'
+      courseType: course.courseType || 'general',
+      selectedOptions: selectedOptions
     };
 
     let added = false;

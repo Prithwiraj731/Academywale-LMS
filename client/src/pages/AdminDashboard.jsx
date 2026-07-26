@@ -678,6 +678,7 @@ export default function AdminDashboard() {
     paperName: '', // Auto-filled from paperId (required)
     description: '',
     poster: null,
+    isExclusive: false,
     customDetails: defaultCustomDetails,
     modeAttemptPricing: generateVariants(defaultCreateOptions)
   });
@@ -1198,9 +1199,10 @@ export default function AdminDashboard() {
 
       // Build final customDetails including Faculty and Institute for full compatibility
       const finalCustomDetails = [
-        ...(courseForm.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute'),
+        ...(courseForm.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute' && d.label !== 'is_exclusive'),
         { label: 'Faculty', value: resolvedFacultySlug, fieldType: 'faculty', displayOrder: 99, visible: true },
-        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true }
+        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true },
+        { label: 'is_exclusive', value: courseForm.isExclusive || false, fieldType: 'boolean', displayOrder: 101, visible: false }
       ];
 
       // Serialize dynamic custom details and pricing blocks
@@ -1246,6 +1248,7 @@ export default function AdminDashboard() {
           paperName: '',
           description: '',
           poster: null,
+          isExclusive: false,
           facultySlug: '',
           instituteName: '',
           customDetails: [],
@@ -1654,9 +1657,10 @@ export default function AdminDashboard() {
 
       // Build final customDetails including Faculty and Institute for full compatibility
       const finalCustomDetails = [
-        ...(editCourseData.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute'),
+        ...(editCourseData.customDetails || []).filter(d => d.fieldType !== 'faculty' && d.fieldType !== 'institute' && d.label !== 'is_exclusive'),
         { label: 'Faculty', value: resolvedFacultySlug, fieldType: 'faculty', displayOrder: 99, visible: true },
-        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true }
+        { label: 'Institute', value: resolvedInstitute, fieldType: 'institute', displayOrder: 100, visible: true },
+        { label: 'is_exclusive', value: editCourseData.isExclusive || false, fieldType: 'boolean', displayOrder: 101, visible: false }
       ];
 
       formData.append('customDetails', JSON.stringify(finalCustomDetails));
@@ -2581,6 +2585,20 @@ export default function AdminDashboard() {
                   rows={3}
                 />
               </div>
+
+              <div className="flex items-center gap-2 mt-4">
+                <input
+                  type="checkbox"
+                  id="isExclusive"
+                  name="isExclusive"
+                  checked={courseForm.isExclusive || false}
+                  onChange={(e) => setCourseForm(prev => ({ ...prev, isExclusive: e.target.checked }))}
+                  className="w-4 h-4 text-[#20b2aa] border-gray-300 rounded focus:ring-[#20b2aa]"
+                />
+                <label htmlFor="isExclusive" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                  ⭐ Mark as Exclusive Course (Displays in homepage premium slider)
+                </label>
+              </div>
             </div>
 
             {/* Section 2: Custom Course Details (Dynamic specifications) */}
@@ -3356,7 +3374,10 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-xs text-gray-500 mt-0.5">
                       {c.courseIds && c.courseIds.length > 0 
-                        ? `🎯 Scope: ${c.courseIds.length} Specific Course(s)` 
+                        ? `🎯 Courses: ${c.courseIds.map(id => {
+                            const found = availableCourses.find(ac => (ac.id || ac._id) === id);
+                            return found ? (found.title || found.subject) : id;
+                          }).join(', ')}` 
                         : (linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses')}
                     </span>
 
@@ -3561,6 +3582,20 @@ export default function AdminDashboard() {
                 className="w-full rounded border border-gray-300 px-3 py-1 text-sm"
                 rows={2}
               />
+            </div>
+
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="editIsExclusive"
+                name="isExclusive"
+                checked={editCourseData.isExclusive || false}
+                onChange={(e) => setEditCourseData(prev => ({ ...prev, isExclusive: e.target.checked }))}
+                className="w-4 h-4 text-[#20b2aa] border-gray-300 rounded focus:ring-[#20b2aa]"
+              />
+              <label htmlFor="editIsExclusive" className="text-xs font-medium text-gray-700 select-none cursor-pointer">
+                ⭐ Mark as Exclusive Course (Displays in homepage premium slider)
+              </label>
             </div>
           </div>
 

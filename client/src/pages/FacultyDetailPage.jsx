@@ -100,7 +100,7 @@ export default function FacultyDetailPage() {
     } else {
       const filtered = courses.filter(course => {
         if (course.courseType) {
-          return course.courseType.toLowerCase().includes(filter.toLowerCase());
+          return course.courseType.toLowerCase().trim() === filter.toLowerCase().trim();
         }
         return false;
       });
@@ -141,16 +141,8 @@ export default function FacultyDetailPage() {
               }}
             />
           </div>
-          <div className="flex-1 flex flex-col justify-center text-center md:text-left space-y-3">
+          <div className="flex-1 flex flex-col justify-center text-center md:text-left">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{displayFacultyName}</h1>
-            <p className="text-gray-600 text-sm sm:text-base font-medium leading-relaxed">
-              {facultyInfo.bio || 'Expert Faculty at AcademyWale'}
-            </p>
-            {facultyInfo.teaches && facultyInfo.teaches.length > 0 && (
-              <div className="inline-block bg-teal-50 px-4 py-1.5 rounded-xl border border-teal-200 text-teal-800 text-sm font-bold w-fit mx-auto md:mx-0">
-                Specialization: {facultyInfo.teaches.join(', ')}
-              </div>
-            )}
           </div>
         </div>
 

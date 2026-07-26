@@ -18,8 +18,6 @@ import CMAClasses from '../components/home/CMAClasses';
 import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
 import InstitutesPage from './InstitutesPage';
 import sjcCert from '../assets/sjcCert.jpg';
-import caLogo from '../assets/CA_LOGO.jpeg';
-import cmaLogo from '../assets/CMA_LOGO.png';
 
 // import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
 import { API_URL } from '../api';
@@ -28,6 +26,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [searchVal, setSearchVal] = useState('');
   const [topFaculties, setTopFaculties] = useState([]);
+  const [exclusiveCourses, setExclusiveCourses] = useState([]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -36,7 +35,7 @@ export default function Home() {
     }
   };
 
-  // Load faculties on component mount
+  // Load faculties and exclusive courses on component mount
   useEffect(() => {
     async function loadHomepageFaculties() {
       try {
@@ -75,7 +74,31 @@ export default function Home() {
         setTopFaculties(getHomepageFaculties());
       }
     }
+
+    const fetchExclusive = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/courses/exclusive`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.courses && data.courses.length > 0) {
+            const shuffle = (array) => {
+              const arr = [...array];
+              for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+              }
+              return arr;
+            };
+            setExclusiveCourses(shuffle(data.courses));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load exclusive courses:', err);
+      }
+    };
+
     loadHomepageFaculties();
+    fetchExclusive();
   }, []);
 
   return (
@@ -141,8 +164,8 @@ export default function Home() {
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white rounded-full p-2.5 overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
-                    <img src={caLogo} alt="CA Logo" className="object-contain w-full h-full rounded-full" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#20b2aa] to-teal-700 rounded-full flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
+                    <span className="text-white font-extrabold text-2xl tracking-wider">CA</span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-semibold text-white tracking-tight">Chartered Accountant</h3>
@@ -189,8 +212,8 @@ export default function Home() {
             <div className="group bg-neutral-900 border border-neutral-800 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white rounded-full p-2.5 overflow-hidden flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
-                    <img src={cmaLogo} alt="CMA Logo" className="object-contain w-full h-full scale-105" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#20b2aa] to-teal-700 rounded-full flex items-center justify-center shadow-lg border border-[#20b2aa]/30 shrink-0">
+                    <span className="text-white font-extrabold text-xl tracking-wider">CMA</span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-semibold text-white tracking-tight">Cost & Management Accountant</h3>
@@ -238,6 +261,90 @@ export default function Home() {
         </div>
       </div>
       {/* End rearranged section */}
+      {/* Exclusive Courses Carousel Section */}
+      {exclusiveCourses.length > 0 && (
+        <section className="py-12 xs:py-16 sm:py-20 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 text-white relative overflow-hidden">
+          {/* Decorative glows */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#20b2aa]/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto px-4 relative z-10">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
+              <div>
+                <span className="text-xs sm:text-sm font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-950/80 px-3 py-1 rounded-full border border-teal-800/40">
+                  Premium Selection
+                </span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight">
+                  Exclusive <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#20b2aa] to-cyan-300">Courses</span>
+                </h2>
+                <p className="text-gray-400 mt-2 text-sm sm:text-base max-w-xl">
+                  Handpicked premium learning tracks curated by industry-leading mentors for fast-tracked success.
+                </p>
+              </div>
+            </div>
+
+            {/* Carousel track */}
+            <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide scroll-smooth px-1">
+              {exclusiveCourses.map((course) => {
+                const priceObj = course.modeAttemptPricing?.[0] || {};
+                const originalPrice = priceObj.pricing || 0;
+                const sellingPrice = priceObj.sellingPrice || 0;
+                
+                return (
+                  <div 
+                    key={course.id || course._id}
+                    onClick={() => navigate(`/course/${encodeURIComponent(course.courseType || 'general')}/${course.id || course._id}`)}
+                    className="flex-shrink-0 w-72 xs:w-80 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-5 hover:border-[#20b2aa]/40 hover:bg-white/10 transition-all duration-300 hover:-translate-y-2 cursor-pointer shadow-xl flex flex-col justify-between group"
+                  >
+                    <div>
+                      {/* Image container */}
+                      <div className="w-full h-44 rounded-2xl overflow-hidden relative mb-4 bg-slate-800 border border-white/5">
+                        <img 
+                          src={course.posterUrl || '/placeholder.png'} 
+                          alt={course.title || course.subject}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full uppercase shadow-md animate-pulse">
+                          Exclusive
+                        </span>
+                      </div>
+
+                      {/* Details */}
+                      <span className="text-[10px] font-bold text-[#20b2aa] tracking-widest uppercase">
+                        {course.category} {course.subcategory}
+                      </span>
+                      <h3 className="text-lg font-bold text-white mt-1 line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors duration-200">
+                        {course.title || course.subject}
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-1 font-medium">
+                        By {course.facultyName || 'Expert Faculty'}
+                      </p>
+                    </div>
+
+                    <div className="mt-5 border-t border-white/10 pt-4 flex items-center justify-between">
+                      <div>
+                        {originalPrice > sellingPrice && (
+                          <span className="text-xs text-gray-500 line-through mr-1.5">
+                            ₹{Number(originalPrice).toLocaleString('en-IN')}
+                          </span>
+                        )}
+                        <span className="text-lg font-extrabold text-white">
+                          ₹{Number(sellingPrice).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-[#20b2aa] group-hover:underline flex items-center gap-1">
+                        View Details →
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Restore Meet Our Expert Faculties section */}
       <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
         <div className="max-w-7xl mx-auto">

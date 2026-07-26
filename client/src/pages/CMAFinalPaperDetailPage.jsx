@@ -149,11 +149,9 @@ const CMAFinalPaperDetailPage = () => {
                   const isFinal = course.subcategory && course.subcategory.toLowerCase().includes('final');
                   
                   // Try multiple paper ID matches
+                  const coursePaperIds = String(course.paperId ?? course.paper_id ?? '').split(',').map(s => s.trim().replace(/\D/g, '')).filter(Boolean);
                   const paperMatches = (
-                    course.paperId == paperId ||
-                    course.paperId == parseInt(paperId) ||
-                    String(course.paperId) === paperId ||
-                    String(course.paperId) === String(paperId) ||
+                    coursePaperIds.includes(String(paperId)) ||
                     (course.paperName && course.paperName.toLowerCase().includes(`paper ${paperId}`))
                   );
 

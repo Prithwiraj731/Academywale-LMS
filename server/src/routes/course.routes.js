@@ -27,6 +27,7 @@ router.put('/api/courses/reorder', courseController.reorderCourses);
 
 // Public course routes - Order matters! More specific routes first
 
+router.get('/api/courses/exclusive', courseController.getExclusiveCourses);
 router.get('/api/courses/:category/:subcategory/:paperId', courseController.getCoursesByPaper);
 router.get('/api/institutes/:instituteName/courses', courseController.getCoursesByInstitute);
 router.get('/api/courses/:facultySlug', courseController.getCoursesByFaculty);

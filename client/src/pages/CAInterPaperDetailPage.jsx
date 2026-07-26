@@ -149,11 +149,9 @@ const CAInterPaperDetailPage = () => {
                   const isCA = course.category && course.category.toUpperCase().includes('CA');
                   const isInter = course.subcategory && (course.subcategory.toLowerCase().includes('inter') || course.subcategory.toLowerCase().includes('intermediate'));
                   
+                  const coursePaperIds = String(course.paperId ?? course.paper_id ?? '').split(',').map(s => s.trim().replace(/\D/g, '')).filter(Boolean);
                   const paperMatches = (
-                    course.paperId == paperId ||
-                    course.paperId == parseInt(paperId) ||
-                    String(course.paperId) === paperId ||
-                    String(course.paperId) === String(paperId) ||
+                    coursePaperIds.includes(String(paperId)) ||
                     (course.paperName && course.paperName.toLowerCase().includes(`paper ${paperId}`))
                   );
 

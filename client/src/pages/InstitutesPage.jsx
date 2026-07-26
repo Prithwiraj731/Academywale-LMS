@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../api';
+import { getInstituteImageUrl } from '../utils/imageUtils';
 
 export default function InstitutesPage() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function InstitutesPage() {
             >
               <div className="w-40 h-40 rounded-2xl overflow-hidden shadow-lg bg-white flex items-center justify-center mb-4 border-2 border-[#20b2aa]">
                 <img
-                  src={inst.imageUrl}
+                  src={getInstituteImageUrl(inst)}
                   alt={inst.name}
                   className="object-contain w-full h-full hover:scale-110 transition-transform duration-300"
                 />

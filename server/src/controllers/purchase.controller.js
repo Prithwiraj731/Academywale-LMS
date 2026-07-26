@@ -435,14 +435,15 @@ exports.upiPurchase = async (req, res) => {
           coupon: coupon || courseDetails?.coupon || '',
           discountPercent: Number(discountPercent || courseDetails?.discountPercent || 0),
           noOfLecture: course.no_of_lecture || '',
-          books: course.books || '',
+          books: courseDetails?.selectedOptions?.['Books Option'] || courseDetails?.selectedOptions?.['Books'] || courseDetails?.selectedOptions?.['Study Material'] || courseDetails?.books || course.books || '',
           videoLanguage: course.video_language || 'Hindi',
           videoRunOn: course.video_run_on || '',
           timing: course.timing || '',
           doubtSolving: course.doubt_solving || '',
           supportMail: course.support_mail || '',
           supportCall: course.support_call || '',
-          institute: course.institute_name || ''
+          institute: course.institute_name || '',
+          selectedOptions: courseDetails?.selectedOptions || {}
         },
         access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       })
@@ -591,7 +592,7 @@ exports.cartPurchase = async (req, res) => {
             coupon: coupon || '',
             discountPercent: couponDiscount,
             noOfLecture: course.no_of_lecture || '',
-            books: course.books || '',
+            books: item.books || item.selectedOptions?.['Books Option'] || item.selectedOptions?.['Books'] || item.selectedOptions?.['Study Material'] || course.books || '',
             videoLanguage: course.video_language || 'Hindi',
             videoRunOn: course.video_run_on || '',
             timing: course.timing || '',
@@ -599,7 +600,8 @@ exports.cartPurchase = async (req, res) => {
             supportMail: course.support_mail || '',
             supportCall: course.support_call || '',
             institute: course.institute_name || '',
-            attempt: item.attempt || ''
+            attempt: item.attempt || '',
+            selectedOptions: item.selectedOptions || {}
           },
           access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         })
@@ -1021,7 +1023,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
           amount: itemPayableAmount,
           transaction_id: `${razorpay_payment_id}${isCart ? `_${idx + 1}` : ''}`,
           payment_status: 'completed',
-          course_details: {
+           course_details: {
             title: course.title || course.subject,
             subject: course.subject,
             poster_url: course.poster_url || course.posterUrl || item.posterUrl || '',
@@ -1032,7 +1034,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
             coupon: coupon || '',
             discountPercent: couponDiscount,
             noOfLecture: course.no_of_lecture || '',
-            books: course.books || '',
+            books: item.books || item.selectedOptions?.['Books Option'] || item.selectedOptions?.['Books'] || item.selectedOptions?.['Study Material'] || req.body.courseDetails?.selectedOptions?.['Books Option'] || req.body.courseDetails?.selectedOptions?.['Books'] || req.body.courseDetails?.selectedOptions?.['Study Material'] || req.body.courseDetails?.books || course.books || '',
             videoLanguage: course.video_language || 'Hindi',
             videoRunOn: course.video_run_on || '',
             timing: course.timing || '',
@@ -1040,7 +1042,8 @@ exports.verifyRazorpayPayment = async (req, res) => {
             supportMail: course.support_mail || '',
             supportCall: course.support_call || '',
             institute: course.institute_name || '',
-            attempt: item.attempt || req.body.courseDetails?.attempt || ''
+            attempt: item.attempt || req.body.courseDetails?.attempt || '',
+            selectedOptions: item.selectedOptions || req.body.courseDetails?.selectedOptions || {}
           },
           access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         })

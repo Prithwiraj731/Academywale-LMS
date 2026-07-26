@@ -87,6 +87,7 @@ exports.createCoupon = async (req, res) => {
 // Admin: Get all coupons
 exports.getCoupons = async (req, res) => {
   try {
+    await syncFromSupabase();
     const { data: coupons, error } = await supabaseAdmin
       .from('coupons')
       .select('*')
@@ -200,8 +201,8 @@ exports.validateCoupon = async (req, res) => {
       const targetCourseIds = Array.isArray(courseIds) ? courseIds : (courseId ? [courseId] : []);
       if (targetCourseIds.length > 0) {
         for (const cid of targetCourseIds) {
-          const normCourseId = String(cid).trim();
-          if (allowedCourseIds.some(id => String(id).trim() === normCourseId)) {
+          const normCourseId = String(cid).trim().toLowerCase();
+          if (allowedCourseIds.some(id => String(id).trim().toLowerCase() === normCourseId)) {
             isMatch = true;
             break;
           } else {
@@ -210,8 +211,8 @@ exports.validateCoupon = async (req, res) => {
             const field = isUuid ? 'id' : 'mongo_id';
             const { data: dbCourse } = await supabaseAdmin.from('courses').select('id, mongo_id').eq(field, normCourseId).maybeSingle();
             if (dbCourse) {
-              const dbIds = [String(dbCourse.id), String(dbCourse.mongo_id)].filter(Boolean);
-              if (allowedCourseIds.some(id => dbIds.includes(String(id).trim()))) {
+              const dbIds = [String(dbCourse.id).toLowerCase(), String(dbCourse.mongo_id).toLowerCase()].filter(Boolean);
+              if (allowedCourseIds.some(id => dbIds.includes(String(id).trim().toLowerCase()))) {
                 isMatch = true;
                 break;
               }
@@ -298,10 +299,10 @@ exports.getPublicVisibleCoupons = async (req, res) => {
           // If restricted to specific courses, and no courseId query parameter is provided -> do NOT show
           if (!courseId) return false;
           // Check if any allowed courseId matches requested courseId or resolved DB IDs
-          const normQueryId = String(courseId).trim();
+          const normQueryId = String(courseId).trim().toLowerCase();
           const isMatch = c.courseIds.some(id => {
-            const sId = String(id).trim();
-            return sId === normQueryId || targetCourseDbIds.includes(sId);
+            const sId = String(id).trim().toLowerCase();
+            return sId === normQueryId || targetCourseDbIds.map(dbId => String(dbId).toLowerCase()).includes(sId);
           });
           return isMatch;
         }

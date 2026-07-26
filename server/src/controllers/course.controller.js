@@ -392,6 +392,26 @@ exports.getCoursesByPaper = async (req, res) => {
   }
 };
 
+exports.getExclusiveCourses = async (req, res) => {
+  try {
+    const { data: courses, error } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('is_active', true);
+
+    if (error) throw error;
+
+    const { mapCoursesToFrontend } = require('../utils/courseMapper');
+    const mapped = mapCoursesToFrontend(courses || []);
+    const exclusiveCourses = mapped.filter(c => c.isExclusive === true);
+
+    res.status(200).json({ courses: exclusiveCourses });
+  } catch (error) {
+    console.error('❌ Error fetching exclusive courses:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.updateCourse = async (req, res) => {
   try {
     const { facultySlug, courseIndex } = req.params;

@@ -30,6 +30,33 @@ async function uploadToSupabaseStorage(file, folder) {
   return { url: publicUrl, publicId: fileName };
 }
 
+const addPrefixToFacultyName = (name, teaches) => {
+  if (!name) return name;
+  let cleanName = name.trim();
+  
+  let normalizedTeaches = [];
+  if (Array.isArray(teaches)) {
+    normalizedTeaches = teaches.map(t => String(t).toUpperCase().trim());
+  } else if (teaches) {
+    normalizedTeaches = [String(teaches).toUpperCase().trim()];
+  }
+  
+  const hasCA = normalizedTeaches.includes('CA');
+  const hasCMA = normalizedTeaches.includes('CMA');
+  
+  cleanName = cleanName.replace(/^(CA\s*\/\s*CMA|CMA\s*\/\s*CA|CA|CMA)\s+/i, '');
+  
+  if (hasCA && hasCMA) {
+    return `CA / CMA ${cleanName}`;
+  } else if (hasCA) {
+    return `CA ${cleanName}`;
+  } else if (hasCMA) {
+    return `CMA ${cleanName}`;
+  }
+  
+  return cleanName;
+};
+
 // @desc    Create a new faculty
 // @route   POST /api/admin/faculties
 // @access  Private/Admin
@@ -68,12 +95,13 @@ exports.createFaculty = async (req, res) => {
       }
     }
 
-    const slug = generateSlug(firstName, lastName);
+    const formattedFirstName = addPrefixToFacultyName(firstName, parsedTeaches);
+    const slug = generateSlug(formattedFirstName, lastName);
 
     const { data: newFaculty, error } = await supabaseAdmin
       .from('faculties')
       .insert({
-        first_name: firstName,
+        first_name: formattedFirstName,
         last_name: lastName || null,
         bio: bio || '',
         teaches: parsedTeaches,
@@ -223,8 +251,6 @@ exports.updateFaculty = async (req, res) => {
     }
 
     const updateData = {
-      first_name: firstName !== undefined ? firstName : currentFaculty.first_name,
-      last_name: lastName !== undefined ? lastName : currentFaculty.last_name,
       bio: bio !== undefined ? bio : currentFaculty.bio,
       updated_at: new Date()
     };
@@ -241,15 +267,21 @@ exports.updateFaculty = async (req, res) => {
       }
     }
 
+    const activeTeaches = updateData.teaches || currentFaculty.teaches || [];
+    const activeFirstName = firstName !== undefined ? firstName : currentFaculty.first_name;
+    const formattedFirstName = addPrefixToFacultyName(activeFirstName, activeTeaches);
+    updateData.first_name = formattedFirstName;
+    updateData.last_name = lastName !== undefined ? lastName : currentFaculty.last_name;
+
     if (req.file) {
       const uploadResult = await uploadToSupabaseStorage(req.file, 'faculties');
       updateData.image_url = uploadResult.url;
       updateData.public_id = uploadResult.publicId;
     }
 
-    // Generate new slug if name changed
-    if (firstName && firstName !== currentFaculty.first_name) {
-      updateData.slug = generateSlug(firstName, lastName || currentFaculty.last_name);
+    // Always regenerate slug if name changes or teaches changes (which changes prefix/name)
+    if (formattedFirstName !== currentFaculty.first_name || (lastName !== undefined && lastName !== currentFaculty.last_name)) {
+      updateData.slug = generateSlug(formattedFirstName, lastName !== undefined ? lastName : currentFaculty.last_name);
     }
 
     const { data: updatedFaculty, error: updateError } = await supabaseAdmin

@@ -39,7 +39,8 @@ exports.getAllInstitutes = async (req, res) => {
     const mapped = (institutes || []).map(inst => ({
       ...inst,
       _id: inst.id, // compatibility
-      image: inst.public_id
+      image: inst.public_id,
+      imageUrl: inst.image_url
     }));
 
     res.status(200).json({ institutes: mapped });
@@ -56,12 +57,21 @@ exports.getInstituteByName = async (req, res) => {
     const { name } = req.params;
     const cleanName = decodeURIComponent(name).replace(/_/g, ' ').trim();
 
-    // 1. Fetch institute from DB by exact or ilike match
+    // 1. Fetch institute from DB by exact match first, then by ilike match
     let { data: institute } = await supabaseAdmin
       .from('institutes')
       .select('*')
-      .ilike('name', `%${cleanName}%`)
+      .eq('name', cleanName)
       .maybeSingle();
+
+    if (!institute) {
+      const { data: instLike } = await supabaseAdmin
+        .from('institutes')
+        .select('*')
+        .ilike('name', `%${cleanName}%`)
+        .maybeSingle();
+      institute = instLike;
+    }
 
     // Fallback search by first word (e.g. "Aaditya", "SJC", "Avinash")
     if (!institute) {
@@ -159,7 +169,8 @@ exports.createInstitute = async (req, res) => {
     const responseInst = {
       ...newInst,
       _id: newInst.id,
-      image: newInst.public_id
+      image: newInst.public_id,
+      imageUrl: newInst.image_url
     };
 
     res.status(201).json({ success: true, institute: responseInst });
@@ -214,7 +225,8 @@ exports.updateInstitute = async (req, res) => {
     const responseInst = {
       ...updatedInst,
       _id: updatedInst.id,
-      image: updatedInst.public_id
+      image: updatedInst.public_id,
+      imageUrl: updatedInst.image_url
     };
 
     res.status(200).json({ success: true, institute: responseInst });

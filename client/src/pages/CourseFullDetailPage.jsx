@@ -437,11 +437,17 @@ const CourseFullDetailPage = () => {
 
   const handleCheckoutProceed = (details, address) => {
     setShowCheckoutModal(false);
+    const optionsObj = getSubOptionLabels().reduce((acc, label, idx) => {
+      acc[label] = selectedSubOptions[idx];
+      return acc;
+    }, {});
+
     navigate(`/payment/${encodeURIComponent(courseType || 'general')}/${courseId}`, {
       state: {
         selectedMode,
         selectedAttempt,
         selectedValidity,
+        selectedOptions: optionsObj,
         price: discountedSellingPrice,
         originalPrice: selectedPrice.selling,
         couponCode: appliedCoupons.map(c => c.code).join(', ') || undefined,
@@ -460,14 +466,28 @@ const CourseFullDetailPage = () => {
 
   // Handle Add to Cart
   const handleAddToCart = () => {
-    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
-      (!selectedMode || !selectedAttempt || selectedSubOptions.some(s => !s))) {
-      alert('Please select all course options before adding to cart.');
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: `/course/${encodeURIComponent(courseType || 'general')}/${courseId}`,
+          message: 'Please log in to add this course to cart'
+        }
+      });
       return;
     }
 
+    if (course.modeAttemptPricing && course.modeAttemptPricing.length > 0 &&
+      (!selectedMode || !selectedAttempt || selectedSubOptions.some(s => !s))) {
+      alert('Please select all course options before proceeding.');
+      return;
+    }
 
-    const added = addToCart(course, selectedMode, selectedAttempt, discountedSellingPrice, selectedValidity);
+    const optionsObj = getSubOptionLabels().reduce((acc, label, idx) => {
+      acc[label] = selectedSubOptions[idx];
+      return acc;
+    }, {});
+
+    const added = addToCart(course, selectedMode, selectedAttempt, discountedSellingPrice, selectedValidity, optionsObj);
     if (added) {
       setAddedMessage('Added to cart successfully!');
       setTimeout(() => setAddedMessage(''), 3000);

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../../api';
+import { getInstituteImageUrl } from '../../utils/imageUtils';
 
-const institutes = [
+const fallbackInstitutes = [
   { name: 'Avinash Lala Classes', img: '/institutes/avinash_lala_classes.jpg' },
   { name: 'Bishnu Kedia Classes', img: '/institutes/bishnu_kedia_classes.png' },
   { name: 'COC Education', img: '/institutes/coc_education.png' },
@@ -20,7 +22,23 @@ const institutes = [
 export default function SearchBy() {
   const navigate = useNavigate();
   const [isPaused, setIsPaused] = useState(false);
+  const [institutesList, setInstitutesList] = useState(fallbackInstitutes);
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/institutes`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.institutes && data.institutes.length > 0) {
+          const mapped = data.institutes.map(inst => ({
+            name: inst.name,
+            img: getInstituteImageUrl(inst)
+          }));
+          setInstitutesList(mapped);
+        }
+      })
+      .catch(err => console.error('Failed to fetch institutes:', err));
+  }, []);
 
   useEffect(() => {
     if (isPaused) return;
@@ -110,7 +128,7 @@ export default function SearchBy() {
             ref={sliderRef}
             className="flex overflow-x-auto scrollbar-hide py-2 scroll-smooth px-1"
           >
-            {institutes.map((inst, index) => (
+            {institutesList.map((inst, index) => (
               <div
                 key={`${inst.name}-${index}`}
                 onClick={() => navigate(`/institutes/${encodeURIComponent(inst.name.replace(/\s+/g, '_'))}`)}

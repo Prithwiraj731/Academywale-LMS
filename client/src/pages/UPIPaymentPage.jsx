@@ -202,7 +202,8 @@ const UPIPaymentPage = () => {
           validity: selectedValidity,
           attempt: selectedAttempt,
           coupon: appliedCouponCode || '',
-          discountPercent: appliedDiscount || 0
+          discountPercent: appliedDiscount || 0,
+          selectedOptions: location.state?.selectedOptions || {}
         },
         prefillName: userDetails.fullName || user?.name || '',
         prefillEmail: userDetails.email || user?.email || '',
