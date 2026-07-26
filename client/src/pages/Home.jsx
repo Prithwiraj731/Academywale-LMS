@@ -12,6 +12,7 @@ import { MorphyButton } from '../components/ui/morphy-button';
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
 import { useNavigate } from 'react-router-dom';
+import { normalizeCoursesPricing } from '../utils/coursePricing';
 import { FaGraduationCap, FaChevronRight, FaBookReader, FaAward } from 'react-icons/fa';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
@@ -81,6 +82,7 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           if (data.courses && data.courses.length > 0) {
+            const normalized = normalizeCoursesPricing(data.courses);
             const shuffle = (array) => {
               const arr = [...array];
               for (let i = arr.length - 1; i > 0; i--) {
@@ -89,7 +91,7 @@ export default function Home() {
               }
               return arr;
             };
-            setExclusiveCourses(shuffle(data.courses));
+            setExclusiveCourses(shuffle(normalized));
           }
         }
       } catch (err) {
@@ -287,9 +289,10 @@ export default function Home() {
             {/* Carousel track */}
             <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide scroll-smooth px-1">
               {exclusiveCourses.map((course) => {
-                const priceObj = course.modeAttemptPricing?.[0] || {};
-                const originalPrice = priceObj.pricing || 0;
-                const sellingPrice = priceObj.sellingPrice || 0;
+                const firstMode = course.modeAttemptPricing?.[0] || {};
+                const firstAttempt = firstMode.attempts?.[0] || {};
+                const originalPrice = firstAttempt.costPrice || course.costPrice || 0;
+                const sellingPrice = firstAttempt.sellingPrice || course.sellingPrice || 0;
                 
                 return (
                   <div 

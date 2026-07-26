@@ -4,21 +4,17 @@
     "courseIds": null,
     "courseId": null,
     "message": null,
-    "isVisible": true,
-    "updatedAt": "2026-07-25T13:41:08.284Z"
+    "isVisible": false,
+    "updatedAt": "2026-07-25T14:55:17.525Z"
   },
   "MEPL5": {
     "exactDiscountPercent": 5,
     "courseIds": [
-      "01d06eb2-a1f3-498a-93a8-b9a104d676dc",
-      "0b289756-226b-4629-9f57-34a17cf1078d",
-      "f6ac3fbf-da4a-44b2-9f48-f0080626fdd1",
-      "fb018109-f6cb-42e5-bb98-c1320c940e9c",
-      "9f67be07-5dad-4f86-be57-6d2ccd77dcd5"
+      "01d06eb2-a1f3-498a-93a8-b9a104d676dc"
     ],
     "courseId": "01d06eb2-a1f3-498a-93a8-b9a104d676dc",
     "message": "5% Discount on MEPL Classes",
     "isVisible": true,
-    "updatedAt": "2026-07-25T06:34:26.373Z"
+    "updatedAt": "2026-07-25T15:31:29.296Z"
   }
 }
