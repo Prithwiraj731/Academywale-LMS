@@ -29,7 +29,7 @@ export default function Home() {
   const [searchVal, setSearchVal] = useState('');
   const [topFaculties, setTopFaculties] = useState([]);
   const [exclusiveCourses, setExclusiveCourses] = useState([]);
-  const [activePath, setActivePath] = useState('ca');
+  const [activePath, setActivePath] = useState(null);
   const carouselRef = useRef(null);
 
   const scroll = (direction) => {
@@ -217,7 +217,7 @@ export default function Home() {
           <div className="flex justify-center mb-10">
             <div className="inline-flex bg-neutral-900 border border-neutral-800 rounded-2xl p-1.5 shadow-2xl relative">
               <button
-                onClick={() => setActivePath('ca')}
+                onClick={() => setActivePath(activePath === 'ca' ? null : 'ca')}
                 className={`px-10 py-3 rounded-xl text-base font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
                   activePath === 'ca'
                     ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
@@ -227,7 +227,7 @@ export default function Home() {
                 CA
               </button>
               <button
-                onClick={() => setActivePath('cma')}
+                onClick={() => setActivePath(activePath === 'cma' ? null : 'cma')}
                 className={`px-10 py-3 rounded-xl text-base font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
                   activePath === 'cma'
                     ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
