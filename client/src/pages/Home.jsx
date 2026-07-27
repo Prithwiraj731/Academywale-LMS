@@ -217,20 +217,19 @@ export default function Home() {
                   <span>Search</span>
                 </button>
               </form>
-
-              <div className="w-full max-w-md mt-auto">
-                <MorphyButton
+              <div className="w-full max-w-md mt-auto pt-6">
+                <button
                   onClick={() => navigate('/courses/all')}
-                  size="md"
-                  className="w-full shadow-xl hover:shadow-2xl font-extrabold"
+                  className="group/browse relative w-full py-4.5 px-6 rounded-2xl bg-gradient-to-r from-teal-500 to-[#1a9690] text-white text-base font-extrabold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/25 transition-all duration-300 hover:-translate-y-1 cursor-pointer flex items-center justify-center gap-2.5"
                 >
-                  🎓 Browse All Available Courses
-                </MorphyButton>
+                  <span className="text-lg">🎓</span>
+                  <span>Browse All Available Courses</span>
+                </button>
               </div>
             </div>
 
             {/* Right Column: Choose Learning Path */}
-            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[360px]">
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[380px]">
               <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
                 Learning Journeys
               </span>
@@ -272,39 +271,54 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       exit={{ opacity: 0, y: -10, height: 0 }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="overflow-hidden space-y-3 pb-2 w-full"
+                      className="overflow-hidden space-y-3.5 pb-2 w-full"
                     >
                       <button
                         onClick={() => navigate('/ca/foundation-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Foundation</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaBookReader className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CA Foundation</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Start your CA journey here</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
 
                       <button
                         onClick={() => navigate('/ca/inter-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-955 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Intermediate</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaGraduationCap className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CA Intermediate</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Proceed to core level papers</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
 
                       <button
                         onClick={() => navigate('/ca/final-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Final</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaAward className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CA Final</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Master advanced level subjects</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
                     </motion.div>
                   )}
@@ -316,39 +330,54 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       exit={{ opacity: 0, y: -10, height: 0 }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="overflow-hidden space-y-3 pb-2 w-full"
+                      className="overflow-hidden space-y-3.5 pb-2 w-full"
                     >
                       <button
                         onClick={() => navigate('/cma/foundation-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-955 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Foundation</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaBookReader className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CMA Foundation</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Enter management accounting</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
 
                       <button
                         onClick={() => navigate('/cma/inter-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-955 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Intermediate</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaGraduationCap className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CMA Intermediate</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Study costing & direct taxation</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
 
                       <button
                         onClick={() => navigate('/cma/final-papers')}
-                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                        className="group/btn w-full py-4.5 px-6 rounded-2xl bg-neutral-955 hover:bg-[#20b2aa] border border-neutral-850 hover:border-[#20b2aa]/40 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/10 cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
-                          <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
-                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Final</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-white group-hover/btn:text-[#20b2aa] transition-colors shrink-0">
+                            <FaAward className="text-lg" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-neutral-200 group-hover/btn:text-white text-base font-extrabold tracking-tight">CMA Final</span>
+                            <span className="text-neutral-450 group-hover/btn:text-white/85 text-[11px] font-semibold mt-0.5">Polish strategic financial skills</span>
+                          </div>
                         </div>
-                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-sm shrink-0" />
                       </button>
                     </motion.div>
                   )}
@@ -358,7 +387,7 @@ export default function Home() {
                       key="no-path"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-neutral-500 text-xs font-semibold py-4 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20"
+                      className="text-neutral-500 text-xs font-semibold py-8 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20"
                     >
                       💡 Select CA or CMA above to view levels
                     </motion.div>
