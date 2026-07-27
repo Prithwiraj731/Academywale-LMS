@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import { getFacultyImageUrl } from '../utils/imageUtils';
-import { getFacultyBySlug } from '../data/hardcodedFaculties';
 import { API_URL } from '../api';
 import CourseCard from '../components/common/CourseCard/CourseCard';
 
@@ -42,7 +41,6 @@ export default function FacultyDetailPage() {
     async function loadFacultyInfo() {
       if (slug) {
         let facultyData = null;
-        const hardcoded = getFacultyBySlug(slug);
 
         try {
           const res = await fetch(`${API_URL}/api/faculties/${slug}`);
@@ -55,30 +53,17 @@ export default function FacultyDetailPage() {
               facultyData = {
                 firstName: fullName,
                 lastName: '',
-                bio: apiFac.bio || (hardcoded ? `Expert ${hardcoded.specialization} faculty with years of professional experience in teaching and industry practice.` : 'Expert faculty with extensive teaching experience.'),
-                teaches: Array.isArray(apiFac.teaches) ? apiFac.teaches : (apiFac.teaches ? [apiFac.teaches] : (hardcoded ? [hardcoded.specialization] : [])),
-                imageUrl: apiFac.image_url || apiFac.imageUrl || hardcoded?.image || '',
-                image: apiFac.image_url || apiFac.imageUrl || hardcoded?.image || '',
+                bio: apiFac.bio || 'Expert faculty with extensive teaching experience.',
+                teaches: Array.isArray(apiFac.teaches) ? apiFac.teaches : (apiFac.teaches ? [apiFac.teaches] : []),
+                imageUrl: apiFac.image_url || apiFac.imageUrl || '',
+                image: apiFac.image_url || apiFac.imageUrl || '',
                 slug: apiFac.slug || slug,
-                public_id: apiFac.public_id || hardcoded?.public_id
+                public_id: apiFac.public_id
               };
             }
           }
         } catch (err) {
           console.error('Error fetching faculty info from API:', err);
-        }
-
-        if (!facultyData && hardcoded) {
-          facultyData = {
-            bio: `Expert ${hardcoded.specialization} faculty with years of professional experience in teaching and industry practice.`,
-            teaches: [hardcoded.specialization],
-            imageUrl: hardcoded.image,
-            firstName: hardcoded.name,
-            lastName: '',
-            slug: hardcoded.slug,
-            image: hardcoded.image,
-            public_id: hardcoded.public_id
-          };
         }
 
         if (facultyData) {

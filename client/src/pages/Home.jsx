@@ -17,7 +17,6 @@ import { normalizeCoursesPricing } from '../utils/coursePricing';
 import { FaGraduationCap, FaChevronRight, FaBookReader, FaAward } from 'react-icons/fa';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
-import { getHomepageFaculties, getAllFaculties } from '../data/hardcodedFaculties';
 import InstitutesPage from './InstitutesPage';
 import sjcCert from '../assets/sjcCert.jpg';
 
@@ -81,51 +80,36 @@ export default function Home() {
   useEffect(() => {
     async function loadHomepageFaculties() {
       try {
-        const baseFaculties = getHomepageFaculties();
         const res = await fetch(`${API_URL}/api/faculties`);
         const data = await res.json();
         
-        if (res.ok && Array.isArray(data.faculties) && data.faculties.length > 0) {
+        if (res.ok && Array.isArray(data.faculties)) {
           const dbFaculties = data.faculties;
-          const mergedMap = new Map();
-          
-          baseFaculties.forEach(f => {
-            mergedMap.set(f.slug, { ...f });
-          });
-
-          dbFaculties.forEach(f => {
-            const slug = f.slug || `${f.first_name}-${f.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            const existing = mergedMap.get(slug) || {};
+          const mapped = dbFaculties.map(f => {
+            const slug = f.slug || `${f.first_name || f.firstName || ''}-${f.last_name || f.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             const fullName = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim();
-            
             const sequenceVal = f.mongo_id !== undefined && f.mongo_id !== null && String(f.mongo_id).trim() !== ''
               ? Number(f.mongo_id)
-              : existing.sequence || existing.id || 999;
-
-            mergedMap.set(slug, {
-              id: f.id || f._id || existing.id,
-              name: fullName || existing.name,
+              : 999;
+            return {
+              id: f.id || f._id,
+              name: fullName,
               slug: slug,
-              image: f.image_url || f.imageUrl || existing.image,
-              specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || f.specialization || existing.specialization,
-              bio: f.bio || existing.bio,
+              image: f.image_url || f.imageUrl || '',
+              specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || '',
+              bio: f.bio || '',
               sequence: sequenceVal
-            });
+            };
           });
 
-          const finalFaculties = Array.from(mergedMap.values());
-          finalFaculties.sort((a, b) => {
-            const seqA = a.sequence !== undefined ? a.sequence : 999;
-            const seqB = b.sequence !== undefined ? b.sequence : 999;
-            return seqA - seqB;
-          });
-
-          setTopFaculties(finalFaculties.slice(0, 8));
+          mapped.sort((a, b) => (a.sequence - b.sequence));
+          setTopFaculties(mapped.slice(0, 8));
         } else {
-          setTopFaculties(baseFaculties);
+          setTopFaculties([]);
         }
       } catch (err) {
-        setTopFaculties(getHomepageFaculties());
+        console.error(err);
+        setTopFaculties([]);
       }
     }
 
@@ -204,7 +188,7 @@ export default function Home() {
               <form onSubmit={handleSearchSubmit} className="w-full max-w-md mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
                 <input
                   type="text"
-                  placeholder="Search for courses, subjects, papers..."
+                  placeholder="Search courses, subjects or faculty"
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                   className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
@@ -223,7 +207,7 @@ export default function Home() {
                   size="lg"
                   className="shadow-xl hover:shadow-2xl font-extrabold"
                 >
-                  🎓 Browse All Available Courses
+                  🎓 Browse All Courses
                 </MorphyButton>
               </div>
             </div>
@@ -232,10 +216,10 @@ export default function Home() {
             <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[380px]">
               <div className="w-full max-w-md flex flex-col items-center md:items-start">
                 <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
-                  Learning Journeys
+                  EXPLORE COURSES
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-6 text-center md:text-left font-heading">
-                  Select Academic Board
+                  Choose Your Course
                 </h3>
 
                 {/* Tab Selector Buttons */}

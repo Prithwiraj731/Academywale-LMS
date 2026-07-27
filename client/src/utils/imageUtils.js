@@ -1,5 +1,4 @@
 import { API_URL } from '../api';
-import { hardcodedFaculties } from '../data/hardcodedFaculties';
 
 /**
  * Get the full image URL for faculty images
@@ -24,15 +23,6 @@ export const getFacultyImageUrl = (faculty) => {
     }
     if (trimmed.startsWith('/uploads/')) {
       return `${API_URL}${trimmed}`;
-    }
-  }
-
-  // 2. Check hardcodedFaculties by slug or name if available
-  const facultySlug = faculty.slug || (typeof faculty.name === 'string' ? faculty.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '');
-  if (facultySlug) {
-    const matched = hardcodedFaculties.find(f => f.slug === facultySlug || f.name?.toLowerCase() === faculty.name?.toLowerCase());
-    if (matched && matched.image) {
-      return matched.image;
     }
   }
 

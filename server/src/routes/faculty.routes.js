@@ -61,4 +61,6 @@ router.delete('/api/admin/faculty/:slug', requireAdminCookie, facultyController.
 router.get('/api/faculty-info/:firstName', facultyController.getFacultyInfo);
 router.post('/api/admin/faculty-info', requireAdminCookie, facultyController.updateFacultyInfo);
 
+router.put('/api/admin/faculty/reorder', requireAdminCookie, facultyController.reorderFaculties);
+
 module.exports = router;

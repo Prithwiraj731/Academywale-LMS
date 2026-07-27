@@ -30,31 +30,23 @@ async function uploadToSupabaseStorage(file, folder) {
   return { url: publicUrl, publicId: fileName };
 }
 
+const deriveTeachesFromName = (name) => {
+  const fullName = String(name || '').toUpperCase();
+  const teaches = [];
+  if (/\bCA\b/.test(fullName) || /CA\s*\/\s*/.test(fullName) || /CA\s*\+/.test(fullName)) {
+    teaches.push('CA');
+  }
+  if (/\bCMA\b/.test(fullName) || /CMA\s*\/\s*/.test(fullName) || /CMA\s*\+/.test(fullName)) {
+    teaches.push('CMA');
+  }
+  if (teaches.length === 0) {
+    teaches.push('CA'); // Default fallback
+  }
+  return teaches;
+};
+
 const addPrefixToFacultyName = (name, teaches) => {
-  if (!name) return name;
-  let cleanName = name.trim();
-  
-  let normalizedTeaches = [];
-  if (Array.isArray(teaches)) {
-    normalizedTeaches = teaches.map(t => String(t).toUpperCase().trim());
-  } else if (teaches) {
-    normalizedTeaches = [String(teaches).toUpperCase().trim()];
-  }
-  
-  const hasCA = normalizedTeaches.includes('CA');
-  const hasCMA = normalizedTeaches.includes('CMA');
-  
-  cleanName = cleanName.replace(/^(CA\s*\/\s*CMA|CMA\s*\/\s*CA|CA|CMA)\s+/i, '');
-  
-  if (hasCA && hasCMA) {
-    return `CA / CMA ${cleanName}`;
-  } else if (hasCA) {
-    return `CA ${cleanName}`;
-  } else if (hasCMA) {
-    return `CMA ${cleanName}`;
-  }
-  
-  return cleanName;
+  return name ? name.trim() : '';
 };
 
 // @desc    Create a new faculty
@@ -79,22 +71,8 @@ exports.createFaculty = async (req, res) => {
       return res.status(400).json({ message: 'Image is required.' });
     }
 
-    // Handle teaches array
-    let parsedTeaches = [];
-    if (teaches) {
-      try {
-        parsedTeaches = JSON.parse(teaches);
-      } catch (e) {
-        if (typeof teaches === 'string') {
-          parsedTeaches = teaches.split(',').map(t => t.trim());
-        } else if (Array.isArray(teaches)) {
-          parsedTeaches = teaches;
-        } else {
-          parsedTeaches = [teaches];
-        }
-      }
-    }
-
+    // Auto-derive teaches from name since checkboxes are removed
+    const parsedTeaches = deriveTeachesFromName(`${firstName} ${lastName || ''}`);
     const formattedFirstName = addPrefixToFacultyName(firstName, parsedTeaches);
     const slug = generateSlug(formattedFirstName, lastName);
 
@@ -177,6 +155,12 @@ exports.getAllFaculties = async (req, res) => {
       courses: coursesByFaculty[f.id] || []
     }));
 
+    mapped.sort((a, b) => {
+      const seqA = a.mongo_id !== undefined && a.mongo_id !== null && String(a.mongo_id).trim() !== '' ? Number(a.mongo_id) : 999;
+      const seqB = b.mongo_id !== undefined && b.mongo_id !== null && String(b.mongo_id).trim() !== '' ? Number(b.mongo_id) : 999;
+      return seqA - seqB;
+    });
+
     res.status(200).json({ faculties: mapped });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -257,23 +241,14 @@ exports.updateFaculty = async (req, res) => {
       updated_at: new Date()
     };
 
-    if (teaches) {
-      if (typeof teaches === 'string') {
-        try {
-          updateData.teaches = JSON.parse(teaches);
-        } catch (e) {
-          updateData.teaches = teaches.split(',').map(t => t.trim()).filter(Boolean);
-        }
-      } else if (Array.isArray(teaches)) {
-        updateData.teaches = teaches;
-      }
-    }
-
-    const activeTeaches = updateData.teaches || currentFaculty.teaches || [];
     const activeFirstName = firstName !== undefined ? firstName : currentFaculty.first_name;
-    const formattedFirstName = addPrefixToFacultyName(activeFirstName, activeTeaches);
+    const activeLastName = lastName !== undefined ? lastName : currentFaculty.last_name;
+    const parsedTeaches = deriveTeachesFromName(`${activeFirstName} ${activeLastName || ''}`);
+    updateData.teaches = parsedTeaches;
+
+    const formattedFirstName = addPrefixToFacultyName(activeFirstName, parsedTeaches);
     updateData.first_name = formattedFirstName;
-    updateData.last_name = lastName !== undefined ? lastName : currentFaculty.last_name;
+    updateData.last_name = activeLastName;
 
     if (req.file) {
       const uploadResult = await uploadToSupabaseStorage(req.file, 'faculties');
@@ -435,6 +410,38 @@ exports.updateFacultyInfo = async (req, res) => {
     res.json({ success: true, faculty: updatedFaculty });
   } catch (error) {
     console.error('Faculty update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Reorder faculties
+// @route   PUT /api/admin/faculty/reorder
+// @access  Private/Admin
+exports.reorderFaculties = async (req, res) => {
+  try {
+    const { order } = req.body; // array of IDs in order
+    if (!Array.isArray(order)) {
+      return res.status(400).json({ error: 'Invalid order data. Must be an array of IDs.' });
+    }
+
+    console.log('🔄 Reordering faculties with new order:', order);
+
+    for (let i = 0; i < order.length; i++) {
+      const id = order[i];
+      const { error } = await supabaseAdmin
+        .from('faculties')
+        .update({ mongo_id: String(i + 1), updated_at: new Date() })
+        .eq('id', id);
+
+      if (error) {
+        console.error(`❌ Failed to update sequence for faculty ${id}:`, error.message);
+        throw error;
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Faculties reordered successfully' });
+  } catch (error) {
+    console.error('❌ Error reordering faculties:', error);
     res.status(500).json({ error: error.message });
   }
 };

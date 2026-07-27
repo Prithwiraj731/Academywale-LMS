@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../api';
-import { getAllFaculties } from '../../data/hardcodedFaculties';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
 import linkedinLogo from '../../assets/linkedin.png';
@@ -28,35 +27,32 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Live faculty list (combined hardcoded & API faculties)
-  const [faculties, setFaculties] = useState(getAllFaculties());
+  // Live faculty list (API faculties)
+  const [faculties, setFaculties] = useState([]);
   useEffect(() => {
     fetch(`${API_URL}/api/faculties`)
       .then(res => res.json())
       .then(data => {
         const apiFaculties = data.faculties || [];
-        if (apiFaculties.length > 0) {
-          const hardcoded = getAllFaculties();
-          const mergedMap = new Map();
+        const mapped = apiFaculties.map(apiFac => {
+          const apiSlug = apiFac.slug || `${apiFac.firstName || apiFac.first_name}-${apiFac.lastName || apiFac.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const fullName = `${apiFac.first_name || apiFac.firstName || ''} ${apiFac.last_name || apiFac.lastName || ''}`.trim();
+          const sequenceVal = apiFac.mongo_id !== undefined && apiFac.mongo_id !== null && String(apiFac.mongo_id).trim() !== ''
+            ? Number(apiFac.mongo_id)
+            : 999;
+          
+          return {
+            id: apiFac.id || apiFac._id,
+            name: fullName,
+            slug: apiSlug,
+            image: apiFac.image_url || apiFac.imageUrl || apiFac.image || '',
+            specialization: (Array.isArray(apiFac.teaches) ? apiFac.teaches[0] : apiFac.teaches) || '',
+            sequence: sequenceVal
+          };
+        });
 
-          hardcoded.forEach(h => mergedMap.set(h.slug, { ...h }));
-
-          apiFaculties.forEach(apiFac => {
-            const apiSlug = apiFac.slug || `${apiFac.firstName || apiFac.first_name}-${apiFac.lastName || apiFac.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            const existing = mergedMap.get(apiSlug) || {};
-            const fullName = `${apiFac.first_name || apiFac.firstName || ''} ${apiFac.last_name || apiFac.lastName || ''}`.trim();
-            
-            mergedMap.set(apiSlug, {
-              id: apiFac.id || apiFac._id || existing.id,
-              name: fullName || existing.name,
-              slug: apiSlug,
-              image: apiFac.image_url || apiFac.imageUrl || apiFac.image || existing.image,
-              specialization: (Array.isArray(apiFac.teaches) ? apiFac.teaches[0] : apiFac.teaches) || apiFac.specialization || existing.specialization
-            });
-          });
-
-          setFaculties(Array.from(mergedMap.values()));
-        }
+        mapped.sort((a, b) => a.sequence - b.sequence);
+        setFaculties(mapped);
       })
       .catch(err => console.error('Error loading API faculties in header:', err));
   }, []);

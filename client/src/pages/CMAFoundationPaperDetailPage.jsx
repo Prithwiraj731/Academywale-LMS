@@ -247,13 +247,22 @@ const CMAFoundationPaperDetailPage = () => {
         <BackButton />
         
         {currentPaper && (
-          <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-              CMA Foundation Paper {paperId} - {currentPaper.title}
-            </h1>
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <p className="text-gray-700 mb-4">{currentPaper.description}</p>
-            </div>
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-10 shadow-lg max-w-3xl mx-auto">
+            <span className="inline-block text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mb-3">
+              CMA Foundation
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Paper - {paperId}
+            </h2>
+            <div className="h-0.5 w-16 bg-gradient-to-r from-teal-500 to-[#20b2aa] mx-auto my-3 rounded-full" />
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-4">
+              {currentPaper.title}
+            </h3>
+            {currentPaper.description && (
+              <p className="text-sm text-gray-600 leading-relaxed max-w-2xl mx-auto border-t border-gray-150 pt-4 mt-2">
+                {currentPaper.description}
+              </p>
+            )}
           </div>
         )}
         

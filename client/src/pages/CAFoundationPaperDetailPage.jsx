@@ -371,11 +371,15 @@ const CAFoundationPaperDetailPage = () => {
         <BackButton />
         
         {currentPaper ? (
-          <div className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 tracking-tight drop-shadow-lg">
-              CA Foundation Paper - {currentPaper.id}
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-10 shadow-lg max-w-3xl mx-auto">
+            <span className="inline-block text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mb-3">
+              CA Foundation
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Paper - {currentPaper.id}
             </h2>
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 tracking-tight drop-shadow-lg">
+            <div className="h-0.5 w-16 bg-gradient-to-r from-teal-500 to-[#20b2aa] mx-auto my-3 rounded-full" />
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
               {currentPaper.title}
             </h3>
           </div>

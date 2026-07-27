@@ -7,7 +7,6 @@ import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
-import { getAllFaculties } from '../data/hardcodedFaculties';
 import { useAuth } from '../context/AuthContext';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
@@ -83,15 +82,11 @@ export default function AdminDashboard() {
     firstName: '',
     lastName: '',
     bio: '',
-    teaches: [],
     image: null,
     imagePreview: null,
-    sequence: '999',
   });
   const [facultyAddStatus, setFacultyAddStatus] = useState('');
   const [facultyAddError, setFacultyAddError] = useState('');
-
-
 
   // Faculty Bio Panel State (for updating existing faculty)
   const [facultyInfo, setFacultyInfo] = useState({
@@ -103,7 +98,7 @@ export default function AdminDashboard() {
   const [facultyInfoStatus, setFacultyInfoStatus] = useState('');
   const [facultyInfoError, setFacultyInfoError] = useState('');
 
-  // Hardcoded Faculty Management State
+  // Faculty Management State
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [facultyUpdateData, setFacultyUpdateData] = useState({
     bio: '',
@@ -111,14 +106,6 @@ export default function AdminDashboard() {
   });
   const [facultyUpdateStatus, setFacultyUpdateStatus] = useState('');
   const [facultyUpdateError, setFacultyUpdateError] = useState('');
-  const [hardcodedFaculties, setHardcodedFaculties] = useState([]);
-
-  // Load hardcoded faculties on component mount
-  useEffect(() => {
-    const faculties = getAllFaculties();
-    console.log('📚 Loading hardcoded faculties:', faculties);
-    setHardcodedFaculties(faculties);
-  }, []);
 
   // Fetch faculty info when firstName changes (for update panel)
   useEffect(() => {
@@ -185,18 +172,8 @@ export default function AdminDashboard() {
 
   // Faculty Add Handlers
   const handleFacultyAddChange = e => {
-    const { name, value, type, checked, files } = e.target;
-    if (name === 'teaches') {
-      setFacultyAdd(f => {
-        let teaches = f.teaches || [];
-        if (checked) {
-          teaches = [...teaches, value];
-        } else {
-          teaches = teaches.filter(t => t !== value);
-        }
-        return { ...f, teaches };
-      });
-    } else if (name === 'image') {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
       const file = files[0];
       setFacultyAdd(f => ({ ...f, image: file, imagePreview: file ? URL.createObjectURL(file) : null }));
     } else {
@@ -222,11 +199,6 @@ export default function AdminDashboard() {
       console.log('❌ Faculty bio is missing');
       return;
     }
-    if (!facultyAdd.teaches || facultyAdd.teaches.length === 0) {
-      setFacultyAddError('Faculty must teach at least one course.');
-      console.log('❌ Faculty teaches array is empty');
-      return;
-    }
     if (!facultyAdd.image) {
       setFacultyAddError('Faculty image is required.');
       console.log('❌ Faculty image is missing');
@@ -235,14 +207,27 @@ export default function AdminDashboard() {
 
     console.log('✅ All validation passed, creating FormData');
     const formData = new FormData();
-    // Send full name as firstName, leave lastName blank
     formData.append('firstName', facultyAdd.firstName.trim());
-    formData.append('lastName', '');
+    formData.append('lastName', facultyAdd.lastName ? facultyAdd.lastName.trim() : '');
     formData.append('bio', facultyAdd.bio.trim());
 
-    // Send teaches as JSON string to avoid array handling issues
-    formData.append('teaches', JSON.stringify(facultyAdd.teaches));
-    formData.append('sequence', facultyAdd.sequence || '999');
+    // Auto-derive teaches based on the name
+    const deriveTeachesFromName = (name) => {
+      const fullName = String(name || '').toUpperCase();
+      const teaches = [];
+      if (/\bCA\b/.test(fullName) || /CA\s*\/\s*/.test(fullName) || /CA\s*\+/.test(fullName)) {
+        teaches.push('CA');
+      }
+      if (/\bCMA\b/.test(fullName) || /CMA\s*\/\s*/.test(fullName) || /CMA\s*\+/.test(fullName)) {
+        teaches.push('CMA');
+      }
+      if (teaches.length === 0) {
+        teaches.push('CA'); // Default fallback
+      }
+      return teaches;
+    };
+    const derivedTeaches = deriveTeachesFromName(facultyAdd.firstName);
+    formData.append('teaches', JSON.stringify(derivedTeaches));
 
     formData.append('image', facultyAdd.image);
 
@@ -261,7 +246,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
-        setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null, sequence: '999' });
+        setFacultyAdd({ firstName: '', lastName: '', bio: '', image: null, imagePreview: null });
         await fetchLiveFacultiesList();
         setTimeout(() => setFacultyAddStatus(''), 2000);
         console.log('✅ Faculty added successfully');
@@ -1823,64 +1808,46 @@ export default function AdminDashboard() {
       const res = await fetch(`${API_URL}/api/faculties`);
       const data = await res.json();
       const dbFaculties = data.faculties || [];
-      const hardcoded = getAllFaculties();
-      const mergedMap = new Map();
 
-      hardcoded.forEach(h => {
-        mergedMap.set(h.slug, {
-          id: h.id,
-          slug: h.slug,
-          firstName: h.name.replace(/^(CA|CMA|CS)\s+/, ''),
-          lastName: '',
-          bio: h.bio || '',
-          teaches: h.specialization ? [h.specialization] : [],
-          imageUrl: h.image,
-          image: h.image,
-          isHardcoded: true,
-          fullName: h.name
-        });
-      });
-
-      dbFaculties.forEach(db => {
-        const slug = db.slug || `${db.first_name || db.firstName}-${db.last_name || db.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const existing = mergedMap.get(slug) || {};
-        
-        mergedMap.set(slug, {
-          ...existing,
+      const mapped = dbFaculties.map(db => {
+        const slug = db.slug || `${db.first_name || db.firstName || ''}-${db.last_name || db.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const fullName = `${db.first_name || db.firstName || ''} ${db.last_name || db.lastName || ''}`.trim();
+        return {
           ...db,
-          id: db.id || db._id || existing.id,
+          id: db.id || db._id,
           slug,
-          firstName: db.first_name || db.firstName || existing.firstName || '',
-          lastName: db.last_name !== undefined ? db.last_name : (db.lastName || existing.lastName || ''),
-          bio: db.bio !== undefined ? db.bio : (existing.bio || ''),
-          teaches: Array.isArray(db.teaches) ? db.teaches : (db.teaches ? [db.teaches] : (existing.teaches || [])),
-          imageUrl: db.image_url || db.imageUrl || existing.imageUrl || existing.image,
-          image: db.image_url || db.imageUrl || existing.image,
+          firstName: db.first_name || db.firstName || '',
+          lastName: db.last_name !== undefined ? db.last_name : (db.lastName || ''),
+          bio: db.bio !== undefined ? db.bio : '',
+          teaches: Array.isArray(db.teaches) ? db.teaches : (db.teaches ? [db.teaches] : []),
+          imageUrl: db.image_url || db.imageUrl || '',
+          image: db.image_url || db.imageUrl || '',
           isHardcoded: false,
-          fullName: `${db.first_name || db.firstName || ''} ${db.last_name || db.lastName || ''}`.trim()
-        });
+          fullName: fullName
+        };
       });
 
-      const finalFaculties = Array.from(mergedMap.values());
-      setFaculties(finalFaculties);
-      setAllFaculties(finalFaculties);
+      // Sort by sequence (stored in mongo_id)
+      mapped.sort((a, b) => {
+        const seqA = a.mongo_id !== undefined && a.mongo_id !== null && String(a.mongo_id).trim() !== '' ? Number(a.mongo_id) : 999;
+        const seqB = b.mongo_id !== undefined && b.mongo_id !== null && String(b.mongo_id).trim() !== '' ? Number(b.mongo_id) : 999;
+        return seqA - seqB;
+      });
+
+      setFaculties(mapped);
+      setAllFaculties(mapped);
     } catch (err) {
       console.error('Error refreshing faculties list:', err);
     }
   };
 
   const openEditFacultyModal = (fac) => {
-    const rawFirstName = fac.firstName || fac.first_name || fac.name || '';
-    const cleanFirstName = rawFirstName.replace(/^(CA|CMA|CS)\s+/i, '').trim();
-
     setEditFacultyData({
-      firstName: cleanFirstName || rawFirstName,
+      firstName: fac.firstName || fac.first_name || fac.name || '',
       lastName: fac.lastName !== undefined ? fac.lastName : (fac.last_name || ''),
       bio: fac.bio || '',
-      teaches: Array.isArray(fac.teaches) ? fac.teaches : (typeof fac.teaches === 'string' ? [fac.teaches] : (fac.specialization ? [fac.specialization] : [])),
-      sequence: fac.mongo_id || '999',
     });
-    setEditFacultySlug(fac.slug || (fac.name ? fac.name.toLowerCase().replace(/\s+/g, '-') : ''));
+    setEditFacultySlug(fac.slug || '');
     setEditFacultyImage(null);
     setEditFacultyImagePreview(fac.imageUrl || fac.image_url || fac.image || null);
     setEditFacultyError('');
@@ -1889,22 +1856,12 @@ export default function AdminDashboard() {
 
   // Handle faculty edit change
   const handleEditFacultyChange = e => {
-    const { name, value, files, type, checked } = e.target;
+    const { name, value, files } = e.target;
     if (name === 'image') {
       if (files && files[0]) {
         setEditFacultyImage(files[0]);
         setEditFacultyImagePreview(URL.createObjectURL(files[0]));
       }
-    } else if (name === 'teaches') {
-      setEditFacultyData(f => {
-        let teaches = f.teaches || [];
-        if (checked) {
-          teaches = [...teaches, value];
-        } else {
-          teaches = teaches.filter(t => t !== value);
-        }
-        return { ...f, teaches };
-      });
     } else {
       setEditFacultyData(f => ({ ...f, [name]: value }));
     }
@@ -1920,13 +1877,26 @@ export default function AdminDashboard() {
       formData.append('firstName', editFacultyData.firstName || '');
       formData.append('lastName', editFacultyData.lastName || '');
       formData.append('bio', editFacultyData.bio || '');
-      formData.append('sequence', editFacultyData.sequence || '999');
 
-      if (Array.isArray(editFacultyData.teaches)) {
-        editFacultyData.teaches.forEach(teach => {
-          formData.append('teaches[]', teach);
-        });
-      }
+      // Auto-derive teaches based on name
+      const deriveTeachesFromName = (name) => {
+        const fullName = String(name || '').toUpperCase();
+        const teaches = [];
+        if (/\bCA\b/.test(fullName) || /CA\s*\/\s*/.test(fullName) || /CA\s*\+/.test(fullName)) {
+          teaches.push('CA');
+        }
+        if (/\bCMA\b/.test(fullName) || /CMA\s*\/\s*/.test(fullName) || /CMA\s*\+/.test(fullName)) {
+          teaches.push('CMA');
+        }
+        if (teaches.length === 0) {
+          teaches.push('CA'); // Default fallback
+        }
+        return teaches;
+      };
+      const derivedTeaches = deriveTeachesFromName(editFacultyData.firstName);
+      derivedTeaches.forEach(teach => {
+        formData.append('teaches[]', teach);
+      });
 
       if (editFacultyImage) {
         formData.append('image', editFacultyImage);
@@ -2035,29 +2005,7 @@ export default function AdminDashboard() {
   // Add state for institutes and all faculties
   const [institutes, setInstitutes] = useState([]);
   const [faculties, setFaculties] = useState([]);
-  const [allFaculties, setAllFaculties] = useState([]); // Combined hardcoded + database faculties
-
-  // Hardcoded institutes as fallback
-  const hardcodedInstitutes = [
-    { name: "Aaditya Jain Classes", _id: "hardcoded-1" },
-    { name: "Arjun Chhabra Tutorial", _id: "hardcoded-2" },
-    { name: "Avinash Lala Classes", _id: "hardcoded-3" },
-    { name: "BB Virtuals", _id: "hardcoded-4" },
-    { name: "Bishnu Kedia Classes", _id: "hardcoded-5" },
-    { name: "CA Buddy", _id: "hardcoded-6" },
-    { name: "CA Praveen Jindal", _id: "hardcoded-7" },
-    { name: "COC Education", _id: "hardcoded-8" },
-    { name: "Ekatvam", _id: "hardcoded-9" },
-    { name: "Gopal Bhoot Classes", _id: "hardcoded-10" },
-    { name: "Harshad Jaju Classes", _id: "hardcoded-11" },
-    { name: "Navin Classes", _id: "hardcoded-12" },
-    { name: "Nitin Guru Classes", _id: "hardcoded-13" },
-    { name: "Ranjan Periwal Classes", _id: "hardcoded-14" },
-    { name: "Shivangi Agarwal", _id: "hardcoded-15" },
-    { name: "Siddharth Agarrwal Classes", _id: "hardcoded-16" },
-    { name: "SJC Institute", _id: "hardcoded-17" },
-    { name: "Yashwant Mangal Classes", _id: "hardcoded-18" }
-  ];
+  const [allFaculties, setAllFaculties] = useState([]);
 
   const fetchLiveInstitutesList = async () => {
     try {
@@ -2066,42 +2014,68 @@ export default function AdminDashboard() {
       const data = await res.json();
       const apiInstitutes = data.institutes || [];
 
-      // Merge hardcoded and database institutes so we have a unified live list
-      const mergedMap = new Map();
-      hardcodedInstitutes.forEach(inst => {
-        mergedMap.set(inst.name.toLowerCase().trim(), inst);
-      });
-      apiInstitutes.forEach(inst => {
-        mergedMap.set(inst.name.toLowerCase().trim(), {
-          ...inst,
-          _id: inst.id || inst._id || inst.name
-        });
-      });
+      const mapped = apiInstitutes.map(inst => ({
+        ...inst,
+        _id: inst.id || inst._id || inst.name
+      }));
 
-      setInstitutes(Array.from(mergedMap.values()));
+      setInstitutes(mapped);
     } catch (err) {
       console.error('❌ Error fetching institutes:', err);
-      setInstitutes(hardcodedInstitutes);
+    }
+  };
+
+  const [facultyOrderMsg, setFacultyOrderMsg] = useState('');
+  const [facultyOrderErr, setFacultyOrderErr] = useState('');
+
+  const moveFacultyUp = (index) => {
+    if (index === 0) return;
+    setFaculties(prev => {
+      const arr = [...prev];
+      const temp = arr[index];
+      arr[index] = arr[index - 1];
+      arr[index - 1] = temp;
+      return arr;
+    });
+  };
+
+  const moveFacultyDown = (index) => {
+    if (index === faculties.length - 1) return;
+    setFaculties(prev => {
+      const arr = [...prev];
+      const temp = arr[index];
+      arr[index] = arr[index + 1];
+      arr[index + 1] = temp;
+      return arr;
+    });
+  };
+
+  const handleSaveFacultyOrder = async () => {
+    setFacultyOrderMsg('');
+    setFacultyOrderErr('');
+    try {
+      const orderIds = faculties.map(f => f.id || f._id);
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/faculty/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: orderIds })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFacultyOrderMsg('Faculty display order saved successfully!');
+        await fetchLiveFacultiesList();
+        setTimeout(() => setFacultyOrderMsg(''), 2000);
+      } else {
+        setFacultyOrderErr(data.error || 'Failed to save faculty order.');
+      }
+    } catch (err) {
+      console.error(err);
+      setFacultyOrderErr('Server error while saving order.');
     }
   };
 
   // Fetch institutes and faculties on mount
   useEffect(() => {
-    // Initialize faculties from hardcoded data first to ensure the dropdown has values
-    const hardcodedFaculties = getAllFaculties();
-    console.log('🎓 Initializing with hardcoded faculties:', hardcodedFaculties.length);
-
-    const initialFaculties = hardcodedFaculties.map(faculty => ({
-      slug: faculty.slug,
-      firstName: faculty.name.replace(/^(CA|CMA|CS)\s+/, ''), // Remove prefix
-      lastName: '',
-      isHardcoded: true,
-      fullName: faculty.name
-    }));
-
-    // Set initial faculty values immediately
-    setAllFaculties(initialFaculties);
-
     // Fetch live merged institutes list
     fetchLiveInstitutesList();
 
@@ -2959,7 +2933,7 @@ export default function AdminDashboard() {
               name="firstName"
               value={facultyAdd.firstName}
               onChange={handleFacultyAddChange}
-              placeholder="Faculty First Name (e.g. VIJAY)"
+              placeholder="Faculty Name (e.g. CA Ranjan Periwal)"
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
@@ -2970,19 +2944,6 @@ export default function AdminDashboard() {
               placeholder="Faculty Last Name (optional)"
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-600">Sequence / Display Order (Lower values show first on Homepage)</label>
-              <input
-                type="number"
-                name="sequence"
-                value={facultyAdd.sequence || '999'}
-                onChange={handleFacultyAddChange}
-                placeholder="Display Order (e.g. 1)"
-                className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-                min="1"
-                required
-              />
-            </div>
             <textarea
               name="bio"
               value={facultyAdd.bio}
@@ -2991,20 +2952,6 @@ export default function AdminDashboard() {
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-400"
               rows={3}
             />
-            <div className="flex gap-4 items-center">
-              {TEACHES_OPTIONS.map(opt => (
-                <label key={opt} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="teaches"
-                    value={opt}
-                    checked={facultyAdd.teaches.includes(opt)}
-                    onChange={handleFacultyAddChange}
-                  />
-                  {opt}
-                </label>
-              ))}
-            </div>
             <div className="flex flex-col gap-2">
               <label className="font-semibold text-gray-700">Faculty Image</label>
               <input
@@ -3018,20 +2965,51 @@ export default function AdminDashboard() {
                 <img src={facultyAdd.imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-xl border-2 border-blue-200 mt-2" />
               )}
             </div>
-            <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg flex items-center justify-center gap-2">
+            <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg flex items-center justify-center gap-2 cursor-pointer">
               Add Faculty
             </button>
             {facultyAddStatus && <div className="text-green-600 text-center font-semibold">{facultyAddStatus}</div>}
             {facultyAddError && <div className="text-red-600 text-center font-semibold">{facultyAddError}</div>}
           </form>
 
+          <div className="flex items-center justify-between mt-8 mb-4">
+            <h3 className="text-xl font-bold text-purple-700">All Faculties</h3>
+            <button
+              type="button"
+              onClick={handleSaveFacultyOrder}
+              className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1.5 px-4 rounded-xl shadow transition-all cursor-pointer"
+            >
+              💾 Save Faculty Order
+            </button>
+          </div>
+          {facultyOrderMsg && <div className="text-sm text-green-600 font-semibold mb-2">{facultyOrderMsg}</div>}
+          {facultyOrderErr && <div className="text-sm text-red-600 font-semibold mb-2">{facultyOrderErr}</div>}
 
-
-          <h3 className="text-xl font-bold text-purple-700 mt-8 mb-4">All Faculties</h3>
           <div className="grid grid-cols-1 gap-4">
-            {faculties.map(fac => (
-              <div key={fac.slug} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-blue-100">
-                <div className="flex items-center gap-4">
+            {faculties.map((fac, index) => (
+              <div key={fac.slug || index} className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-blue-100">
+                <div className="flex flex-row md:flex-col gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => moveFacultyUp(index)}
+                    disabled={index === 0}
+                    className="p-1 text-xs rounded bg-gray-150 hover:bg-gray-200 text-gray-700 disabled:opacity-30 transition cursor-pointer"
+                    title="Move Up"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveFacultyDown(index)}
+                    disabled={index === faculties.length - 1}
+                    className="p-1 text-xs rounded bg-gray-150 hover:bg-gray-200 text-gray-700 disabled:opacity-30 transition cursor-pointer"
+                    title="Move Down"
+                  >
+                    ▼
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-4 flex-1">
                   <FacultyImage
                     faculty={fac}
                     alt={fac.firstName}
@@ -3039,17 +3017,18 @@ export default function AdminDashboard() {
                   />
                   <div>
                     <div className="font-bold text-blue-700">{fac.firstName} {fac.lastName}</div>
-                    <div className="text-xs text-gray-500">{fac.bio}</div>
+                    <div className="text-xs text-gray-500 line-clamp-2">{fac.bio}</div>
                     <div className="text-xs text-gray-500">Teaches: {fac.teaches && fac.teaches.join(', ')}</div>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-2 md:mt-0 md:ml-auto">
-                  <button onClick={() => openEditFacultyModal(fac)} className="px-3 py-1 rounded bg-yellow-200 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition">✏️ Edit</button>
-                  <button onClick={() => handleDeleteFaculty(fac.slug)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition">🗑️ Delete</button>
+                <div className="flex gap-2 mt-2 md:mt-0 md:ml-auto shrink-0">
+                  <button onClick={() => openEditFacultyModal(fac)} className="px-3 py-1 rounded bg-yellow-250 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition cursor-pointer">✏️ Edit</button>
+                  <button onClick={() => handleDeleteFaculty(fac.slug)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition cursor-pointer">🗑️ Delete</button>
                 </div>
               </div>
             ))}
           </div>
+
           {/* Edit Faculty Modal */}
           <Modal
             isOpen={editFacultyModalOpen}
@@ -3058,90 +3037,131 @@ export default function AdminDashboard() {
             style={modalStyles}
             ariaHideApp={false}
           >
-
-            <h2 className="text-xl font-bold mb-4">Edit Faculty</h2>
+            <h2 className="text-xl font-bold mb-4 text-blue-700">Edit Faculty</h2>
             <form onSubmit={handleEditFacultySubmit} className="flex flex-col gap-3">
-              <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="First Name" className="rounded border px-3 py-2" required />
+              <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="Faculty Name" className="rounded border px-3 py-2" required />
               <input name="lastName" value={editFacultyData.lastName || ''} onChange={handleEditFacultyChange} placeholder="Last Name" className="rounded border px-3 py-2" />
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500">Sequence / Display Order (Lower values show first on Homepage)</label>
-                <input
-                  type="number"
-                  name="sequence"
-                  value={editFacultyData.sequence || '999'}
-                  onChange={handleEditFacultyChange}
-                  placeholder="Display Order"
-                  className="rounded border px-3 py-2"
-                  min="1"
-                  required
-                />
-              </div>
               <textarea name="bio" value={editFacultyData.bio || ''} onChange={handleEditFacultyChange} placeholder="Bio" className="rounded border px-3 py-2" />
-              <div className="flex gap-4 items-center">
-                {TEACHES_OPTIONS.map(opt => (
-                  <label key={opt} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name="teaches"
-                      value={opt}
-                      checked={editFacultyData.teaches && editFacultyData.teaches.includes(opt)}
-                      onChange={handleEditFacultyChange}
-                    />
-                    {opt}
-                  </label>
-                ))}
-              </div>
               <input name="image" type="file" accept="image/*" onChange={handleEditFacultyChange} className="rounded border px-3 py-2" />
               {editFacultyImagePreview && <img src={editFacultyImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />}
               {editFacultyError && <div className="text-red-600 text-center font-semibold">{editFacultyError}</div>}
               <div className="flex gap-2 mt-2">
-                <button type="button" onClick={() => setEditFacultyModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold" disabled={editFacultyLoading}>{editFacultyLoading ? 'Saving...' : 'Save'}</button>
+                <button type="button" onClick={() => setEditFacultyModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold cursor-pointer">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold cursor-pointer" disabled={editFacultyLoading}>{editFacultyLoading ? 'Saving...' : 'Save'}</button>
               </div>
             </form>
           </Modal>
         </div>
       )}
       {activePanel === 'institute' && (
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Add Institute Section */}
-          <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-blue-300 mb-8">
-            <h2 className="text-2xl font-bold text-blue-700 mb-4">Add Institute</h2>
-            <form onSubmit={handleInstituteAddSubmit} className="flex flex-col gap-4" encType="multipart/form-data">
+        <div className="flex flex-col gap-8 w-full max-w-5xl">
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Add Institute Section */}
+            <div className="w-full md:w-1/2 bg-white/90 rounded-2xl shadow-2xl p-8 border border-blue-300">
+              <h2 className="text-2xl font-bold text-blue-700 mb-4">Add Institute</h2>
+              <form onSubmit={handleInstituteAddSubmit} className="flex flex-col gap-4" encType="multipart/form-data">
+                <input
+                  name="name"
+                  value={instituteAdd.name}
+                  onChange={handleInstituteAddChange}
+                  placeholder="Institute Name (e.g. SJC)"
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                />
+                <div className="flex flex-col gap-2">
+                  <label className="font-semibold text-gray-700">Institute Image</label>
+                  <input
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleInstituteAddChange}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-base"
+                    required
+                  />
+                  {instituteAdd.imagePreview && (
+                    <img src={instituteAdd.imagePreview} alt="Preview" className="w-24 h-24 object-contain rounded-xl border-2 border-blue-200 mt-2" />
+                  )}
+                </div>
+                <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg flex items-center justify-center gap-2 cursor-pointer">
+                  Add Institute
+                </button>
+                {instituteAddStatus && <div className="text-green-600 text-center font-semibold">{instituteAddStatus}</div>}
+                {instituteAddError && <div className="text-red-600 text-center font-semibold">{instituteAddError}</div>}
+              </form>
+            </div>
+            
+            {/* Manage Testimonials Section (disabled) */}
+            <div className="w-full md:w-1/2 bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-300">
+              <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Testimonials</h2>
+              <div className="text-gray-700">Testimonials are now hardcoded. Admin editing is disabled.</div>
+            </div>
+          </div>
+
+          {/* All Institutes List */}
+          <div className="bg-white/90 rounded-2xl shadow-2xl p-8 border border-blue-300">
+            <h3 className="text-xl font-bold text-blue-700 mb-6">All Institutes</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {institutes.map(inst => (
+                <div key={inst._id || inst.name} className="bg-white rounded-xl shadow p-4 flex items-center gap-4 border border-blue-100">
+                  <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200">
+                    {inst.image_url || inst.imageUrl ? (
+                      <img src={inst.image_url || inst.imageUrl} alt={inst.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <div className="text-xs text-gray-400 font-bold">No Image</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-800 truncate" title={inst.name}>{inst.name}</div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => openEditInstituteModal(inst)} className="px-2.5 py-1 rounded bg-yellow-250 hover:bg-yellow-350 text-yellow-900 font-bold text-xs transition cursor-pointer">✏️</button>
+                    <button onClick={() => handleDeleteInstitute(inst._id || inst.id)} className="px-2.5 py-1 rounded bg-red-250 hover:bg-red-350 text-red-900 font-bold text-xs transition cursor-pointer">🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Edit Institute Modal */}
+          <Modal
+            isOpen={editInstituteModalOpen}
+            onRequestClose={() => setEditInstituteModalOpen(false)}
+            shouldCloseOnOverlayClick={false}
+            style={modalStyles}
+            ariaHideApp={false}
+          >
+            <h2 className="text-xl font-bold mb-4 text-blue-700">Edit Institute</h2>
+            <form onSubmit={handleEditInstituteSubmit} className="flex flex-col gap-3">
               <input
                 name="name"
-                value={instituteAdd.name}
-                onChange={handleInstituteAddChange}
-                placeholder="Institute Name (e.g. SJC)"
-                className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={editInstituteData.name || ''}
+                onChange={handleEditInstituteChange}
+                placeholder="Institute Name"
+                className="rounded border px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
                 required
               />
               <div className="flex flex-col gap-2">
-                <label className="font-semibold text-gray-700">Institute Image</label>
+                <label className="font-semibold text-gray-700 text-sm">Institute Image</label>
                 <input
                   name="image"
                   type="file"
                   accept="image/*"
-                  onChange={handleInstituteAddChange}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-base"
-                  required
+                  onChange={handleEditInstituteChange}
+                  className="rounded border px-3 py-2 text-sm"
                 />
-                {instituteAdd.imagePreview && (
-                  <img src={instituteAdd.imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-xl border-2 border-blue-200 mt-2" />
+                {editInstituteImagePreview && (
+                  <img src={editInstituteImagePreview} alt="Preview" className="w-20 h-20 object-contain rounded-xl border-2 border-blue-200 mt-2" />
                 )}
               </div>
-              <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 rounded-xl shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg flex items-center justify-center gap-2">
-                Add Institute
-              </button>
-              {instituteAddStatus && <div className="text-green-600 text-center font-semibold">{instituteAddStatus}</div>}
-              {instituteAddError && <div className="text-red-600 text-center font-semibold">{instituteAddError}</div>}
+              {editInstituteError && <div className="text-red-600 text-center font-semibold text-sm">{editInstituteError}</div>}
+              <div className="flex gap-2 mt-2">
+                <button type="button" onClick={() => setEditInstituteModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold cursor-pointer">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold cursor-pointer" disabled={editInstituteLoading}>
+                  {editInstituteLoading ? 'Saving...' : 'Save'}
+                </button>
+              </div>
             </form>
-          </div>
-          {/* Manage Testimonials Section (disabled) */}
-          <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-300 mb-8">
-            <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Testimonials</h2>
-            <div className="text-gray-700">Testimonials are now hardcoded. Admin editing is disabled.</div>
-          </div>
+          </Modal>
         </div>
       )}
       {activePanel === 'bulk' && (

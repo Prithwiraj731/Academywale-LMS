@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Particles from '../components/common/Particles';
 import { PinContainer } from '../components/ui/3d-pin';
-import { getAllFaculties } from '../data/hardcodedFaculties';
 import { API_URL } from '../api';
 import { FaSearch, FaTimes, FaGraduationCap, FaUserTie } from 'react-icons/fa';
 
@@ -12,39 +11,36 @@ export default function FacultiesPage() {
 
   const loadAllFaculties = async () => {
     try {
-      const baseFaculties = getAllFaculties();
       const res = await fetch(`${API_URL}/api/faculties`);
       const data = await res.json();
       
-      if (res.ok && Array.isArray(data.faculties) && data.faculties.length > 0) {
+      if (res.ok && Array.isArray(data.faculties)) {
         const dbFaculties = data.faculties;
-        const mergedMap = new Map();
-        
-        baseFaculties.forEach(f => {
-          mergedMap.set(f.slug, { ...f });
-        });
-
-        dbFaculties.forEach(f => {
-          const slug = f.slug || `${f.first_name}-${f.last_name || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          const existing = mergedMap.get(slug) || {};
+        const mapped = dbFaculties.map(f => {
+          const slug = f.slug || `${f.first_name || f.firstName || ''}-${f.last_name || f.lastName || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
           const fullName = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim();
-          
-          mergedMap.set(slug, {
-            id: f.id || f._id || existing.id,
-            name: fullName || existing.name,
+          const sequenceVal = f.mongo_id !== undefined && f.mongo_id !== null && String(f.mongo_id).trim() !== ''
+            ? Number(f.mongo_id)
+            : 999;
+          return {
+            id: f.id || f._id,
+            name: fullName,
             slug: slug,
-            image: f.image_url || f.imageUrl || existing.image,
-            specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || f.specialization || existing.specialization,
-            bio: f.bio || existing.bio
-          });
+            image: f.image_url || f.imageUrl || '',
+            specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || '',
+            bio: f.bio || '',
+            sequence: sequenceVal
+          };
         });
 
-        setFaculties(Array.from(mergedMap.values()));
+        mapped.sort((a, b) => (a.sequence - b.sequence));
+        setFaculties(mapped);
       } else {
-        setFaculties(baseFaculties);
+        setFaculties([]);
       }
     } catch (err) {
-      setFaculties(getAllFaculties());
+      console.error(err);
+      setFaculties([]);
     }
   };
 
