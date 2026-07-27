@@ -701,6 +701,17 @@ exports.deleteCourse = async (req, res) => {
       return res.status(404).json({ error: 'Course not found' });
     }
 
+    // Nullify course references in purchases to avoid foreign key violations
+    const { error: updatePurchasesErr } = await supabaseAdmin
+      .from('purchases')
+      .update({ course_id: null })
+      .eq('course_id', targetCourse.id);
+
+    if (updatePurchasesErr) {
+      console.error('❌ Error nullifying course references in purchases:', updatePurchasesErr.message);
+      throw updatePurchasesErr;
+    }
+
     const { error: deleteErr } = await supabaseAdmin
       .from('courses')
       .delete()
@@ -720,6 +731,17 @@ exports.deleteCourse = async (req, res) => {
 exports.deleteAllCourses = async (req, res) => {
   try {
     console.log('🧨 DELETING ALL COURSES FROM SUPABASE');
+
+    // Nullify all course references in purchases first
+    const { error: updatePurchasesErr } = await supabaseAdmin
+      .from('purchases')
+      .update({ course_id: null })
+      .neq('course_id', '00000000-0000-0000-0000-000000000000');
+
+    if (updatePurchasesErr) {
+      console.error('❌ Error nullifying all course references in purchases:', updatePurchasesErr.message);
+      throw updatePurchasesErr;
+    }
 
     const { data, error } = await supabaseAdmin
       .from('courses')

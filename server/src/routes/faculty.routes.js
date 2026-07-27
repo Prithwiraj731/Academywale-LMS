@@ -54,13 +54,12 @@ router.post('/api/admin/faculty', requireAdminCookie, upload.single('image'), fa
 // I am assuming your other faculty routes look something like this
 router.get('/api/faculties', facultyController.getAllFaculties);
 router.get('/api/faculties/:slug', facultyController.getFacultyBySlug);
+router.put('/api/admin/faculty/reorder', requireAdminCookie, facultyController.reorderFaculties);
 router.put('/api/admin/faculty/:slug', requireAdminCookie, upload.single('image'), facultyController.updateFaculty);
 router.delete('/api/admin/faculty/:slug', requireAdminCookie, facultyController.deleteFaculty);
 
 // Legacy faculty-info routes
 router.get('/api/faculty-info/:firstName', facultyController.getFacultyInfo);
 router.post('/api/admin/faculty-info', requireAdminCookie, facultyController.updateFacultyInfo);
-
-router.put('/api/admin/faculty/reorder', requireAdminCookie, facultyController.reorderFaculties);
 
 module.exports = router;

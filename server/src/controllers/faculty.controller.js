@@ -288,23 +288,42 @@ exports.updateFaculty = async (req, res) => {
 };
 
 // @desc    Delete a faculty
-// @route   DELETE /api/admin/faculties/:slug
+// @route   DELETE /api/admin/faculty/:slug
 // @access  Private/Admin
 exports.deleteFaculty = async (req, res) => {
   try {
     const { slug } = req.params;
     
-    const { data: deletedFaculty, error } = await supabaseAdmin
+    // 1. Fetch faculty ID
+    const { data: faculty, error: fetchErr } = await supabaseAdmin
       .from('faculties')
-      .delete()
-      .eq('slug', slug)
       .select('id')
+      .eq('slug', slug)
       .maybeSingle();
 
-    if (error) throw error;
-    if (!deletedFaculty) {
+    if (fetchErr) throw fetchErr;
+    if (!faculty) {
       return res.status(404).json({ message: 'Faculty not found' });
     }
+
+    // 2. Nullify faculty references in purchases to avoid foreign key violations
+    const { error: updatePurchasesErr } = await supabaseAdmin
+      .from('purchases')
+      .update({ faculty_id: null })
+      .eq('faculty_id', faculty.id);
+
+    if (updatePurchasesErr) {
+      console.error('❌ Error nullifying faculty references in purchases:', updatePurchasesErr.message);
+      throw updatePurchasesErr;
+    }
+
+    // 3. Delete the faculty
+    const { error: deleteErr } = await supabaseAdmin
+      .from('faculties')
+      .delete()
+      .eq('id', faculty.id);
+
+    if (deleteErr) throw deleteErr;
 
     res.status(200).json({ success: true, message: 'Faculty deleted successfully' });
   } catch (error) {
@@ -318,6 +337,17 @@ exports.deleteFaculty = async (req, res) => {
 exports.deleteAllFaculty = async (req, res) => {
   try {
     console.log('🗑️ Admin requested to delete all faculty');
+
+    // 1. Nullify all faculty references in purchases
+    const { error: updatePurchasesErr } = await supabaseAdmin
+      .from('purchases')
+      .update({ faculty_id: null })
+      .neq('faculty_id', '00000000-0000-0000-0000-000000000000');
+
+    if (updatePurchasesErr) {
+      console.error('❌ Error nullifying all faculty references in purchases:', updatePurchasesErr.message);
+      throw updatePurchasesErr;
+    }
     
     const { data, error } = await supabaseAdmin
       .from('faculties')
