@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import Hero from '../components/home/Hero';
 import Numbers from '../components/home/Numbers';
@@ -28,6 +28,17 @@ export default function Home() {
   const [searchVal, setSearchVal] = useState('');
   const [topFaculties, setTopFaculties] = useState([]);
   const [exclusiveCourses, setExclusiveCourses] = useState([]);
+  const carouselRef = useRef(null);
+
+  const scroll = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = 340; // card width + gap
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -265,29 +276,51 @@ export default function Home() {
       {/* End rearranged section */}
       {/* Exclusive Courses Carousel Section */}
       {exclusiveCourses.length > 0 && (
-        <section className="py-12 xs:py-16 sm:py-20 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 text-white relative overflow-hidden">
-          {/* Decorative glows */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#20b2aa]/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto px-4 relative z-10">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12">
+        <section className="py-12 xs:py-16 sm:py-20 bg-slate-50 text-slate-800 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            {/* Header with Navigation Arrows */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4">
               <div>
-                <span className="text-xs sm:text-sm font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-950/80 px-3 py-1 rounded-full border border-teal-800/40">
+                <span className="inline-block text-xs sm:text-sm font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
                   Premium Selection
                 </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight">
-                  Exclusive <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#20b2aa] to-cyan-300">Courses</span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight text-slate-900">
+                  Exclusive <span className="text-[#20b2aa]">Courses</span>
                 </h2>
-                <p className="text-gray-400 mt-2 text-sm sm:text-base max-w-xl">
+                <p className="text-slate-500 mt-2 text-sm sm:text-base max-w-xl">
                   Handpicked premium learning tracks curated by industry-leading mentors for fast-tracked success.
                 </p>
+              </div>
+
+              {/* Slider Controls */}
+              <div className="flex items-center gap-2 self-start sm:self-end">
+                <button 
+                  onClick={() => scroll('left')}
+                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
+                  aria-label="Previous slide"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => scroll('right')}
+                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
+                  aria-label="Next slide"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </div>
 
             {/* Carousel track */}
-            <div className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide scroll-smooth px-1">
+            <div 
+              ref={carouselRef}
+              className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide scroll-smooth px-1"
+              style={{ scrollSnapType: 'x mandatory' }}
+            >
               {exclusiveCourses.map((course) => {
                 const firstMode = course.modeAttemptPricing?.[0] || {};
                 const firstAttempt = firstMode.attempts?.[0] || {};
@@ -298,45 +331,46 @@ export default function Home() {
                   <div 
                     key={course.id || course._id}
                     onClick={() => navigate(`/course/${encodeURIComponent(course.courseType || 'general')}/${course.id || course._id}`)}
-                    className="flex-shrink-0 w-72 xs:w-80 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 p-5 hover:border-[#20b2aa]/40 hover:bg-white/10 transition-all duration-300 hover:-translate-y-2 cursor-pointer shadow-xl flex flex-col justify-between group"
+                    className="flex-shrink-0 w-[280px] xs:w-[320px] bg-white rounded-2xl border border-slate-200/60 p-4 hover:border-[#20b2aa]/40 hover:shadow-[0_10px_30px_rgba(32,178,170,0.08)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-sm flex flex-col justify-between group"
+                    style={{ scrollSnapAlign: 'start' }}
                   >
                     <div>
                       {/* Image container */}
-                      <div className="w-full h-44 rounded-2xl overflow-hidden relative mb-4 bg-slate-800 border border-white/5">
+                      <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden relative mb-4 bg-slate-50 border border-slate-100">
                         <img 
                           src={course.posterUrl || '/placeholder.png'} 
                           alt={course.title || course.subject}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                         />
-                        <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full uppercase shadow-md animate-pulse">
+                        <span className="absolute top-2.5 right-2.5 bg-rose-500 text-white text-[9px] font-bold tracking-wider px-2 py-0.5 rounded shadow-sm uppercase">
                           Exclusive
                         </span>
                       </div>
 
                       {/* Details */}
-                      <span className="text-[10px] font-bold text-[#20b2aa] tracking-widest uppercase">
+                      <span className="text-[10px] font-extrabold text-[#20b2aa] tracking-widest uppercase">
                         {course.category} {course.subcategory}
                       </span>
-                      <h3 className="text-lg font-bold text-white mt-1 line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors duration-200">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-800 mt-1 line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors duration-200">
                         {course.title || course.subject}
                       </h3>
-                      <p className="text-xs text-gray-400 mt-1 font-medium">
+                      <p className="text-xs text-slate-500 mt-1 font-semibold">
                         By {course.facultyName || 'Expert Faculty'}
                       </p>
                     </div>
 
-                    <div className="mt-5 border-t border-white/10 pt-4 flex items-center justify-between">
+                    <div className="mt-4 border-t border-slate-100 pt-3 flex items-center justify-between">
                       <div>
                         {originalPrice > sellingPrice && (
-                          <span className="text-xs text-gray-500 line-through mr-1.5">
+                          <span className="text-xs text-slate-400 line-through mr-1.5 font-medium">
                             ₹{Number(originalPrice).toLocaleString('en-IN')}
                           </span>
                         )}
-                        <span className="text-lg font-extrabold text-white">
+                        <span className="text-base sm:text-lg font-extrabold text-slate-900">
                           ₹{Number(sellingPrice).toLocaleString('en-IN')}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-[#20b2aa] group-hover:underline flex items-center gap-1">
+                      <span className="text-xs font-bold text-[#20b2aa] group-hover:text-[#1a9690] flex items-center gap-0.5 transition-colors duration-150">
                         View Details →
                       </span>
                     </div>
