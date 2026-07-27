@@ -78,7 +78,7 @@ export default function Home() {
 
     const fetchExclusive = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/courses/exclusive`);
+        const res = await fetch(`${API_URL}/api/courses/exclusive?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           if (data.courses && data.courses.length > 0) {

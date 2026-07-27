@@ -377,7 +377,7 @@ exports.getCoursesByPaper = async (req, res) => {
 
     const filteredCourses = (courses || []).filter(course => {
       if (!course.paper_id) return false;
-      const ids = String(course.paper_id).split(',').map(s => s.trim());
+      const ids = String(course.paper_id).split(',').map(s => s.trim().replace(/\D/g, '')).filter(Boolean);
       return ids.includes(String(requestedPaperId));
     });
 
