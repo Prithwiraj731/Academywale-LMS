@@ -107,7 +107,8 @@ exports.createFaculty = async (req, res) => {
         teaches: parsedTeaches,
         image_url: imageUrl,
         public_id: publicId,
-        slug
+        slug,
+        mongo_id: req.body.sequence ? String(req.body.sequence) : '999'
       })
       .select('*')
       .single();
@@ -252,6 +253,7 @@ exports.updateFaculty = async (req, res) => {
 
     const updateData = {
       bio: bio !== undefined ? bio : currentFaculty.bio,
+      mongo_id: req.body.sequence !== undefined ? String(req.body.sequence) : currentFaculty.mongo_id,
       updated_at: new Date()
     };
 

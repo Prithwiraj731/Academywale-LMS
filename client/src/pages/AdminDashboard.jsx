@@ -86,6 +86,7 @@ export default function AdminDashboard() {
     teaches: [],
     image: null,
     imagePreview: null,
+    sequence: '999',
   });
   const [facultyAddStatus, setFacultyAddStatus] = useState('');
   const [facultyAddError, setFacultyAddError] = useState('');
@@ -241,6 +242,7 @@ export default function AdminDashboard() {
 
     // Send teaches as JSON string to avoid array handling issues
     formData.append('teaches', JSON.stringify(facultyAdd.teaches));
+    formData.append('sequence', facultyAdd.sequence || '999');
 
     formData.append('image', facultyAdd.image);
 
@@ -259,7 +261,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
-        setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null });
+        setFacultyAdd({ firstName: '', lastName: '', bio: '', teaches: [], image: null, imagePreview: null, sequence: '999' });
         await fetchLiveFacultiesList();
         setTimeout(() => setFacultyAddStatus(''), 2000);
         console.log('✅ Faculty added successfully');
@@ -1870,6 +1872,7 @@ export default function AdminDashboard() {
       lastName: fac.lastName !== undefined ? fac.lastName : (fac.last_name || ''),
       bio: fac.bio || '',
       teaches: Array.isArray(fac.teaches) ? fac.teaches : (typeof fac.teaches === 'string' ? [fac.teaches] : (fac.specialization ? [fac.specialization] : [])),
+      sequence: fac.mongo_id || '999',
     });
     setEditFacultySlug(fac.slug || (fac.name ? fac.name.toLowerCase().replace(/\s+/g, '-') : ''));
     setEditFacultyImage(null);
@@ -1911,6 +1914,7 @@ export default function AdminDashboard() {
       formData.append('firstName', editFacultyData.firstName || '');
       formData.append('lastName', editFacultyData.lastName || '');
       formData.append('bio', editFacultyData.bio || '');
+      formData.append('sequence', editFacultyData.sequence || '999');
 
       if (Array.isArray(editFacultyData.teaches)) {
         editFacultyData.teaches.forEach(teach => {
@@ -2960,6 +2964,19 @@ export default function AdminDashboard() {
               placeholder="Faculty Last Name (optional)"
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-600">Sequence / Display Order (Lower values show first on Homepage)</label>
+              <input
+                type="number"
+                name="sequence"
+                value={facultyAdd.sequence || '999'}
+                onChange={handleFacultyAddChange}
+                placeholder="Display Order (e.g. 1)"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+                min="1"
+                required
+              />
+            </div>
             <textarea
               name="bio"
               value={facultyAdd.bio}
@@ -3040,6 +3057,19 @@ export default function AdminDashboard() {
             <form onSubmit={handleEditFacultySubmit} className="flex flex-col gap-3">
               <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="First Name" className="rounded border px-3 py-2" required />
               <input name="lastName" value={editFacultyData.lastName || ''} onChange={handleEditFacultyChange} placeholder="Last Name" className="rounded border px-3 py-2" />
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500">Sequence / Display Order (Lower values show first on Homepage)</label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={editFacultyData.sequence || '999'}
+                  onChange={handleEditFacultyChange}
+                  placeholder="Display Order"
+                  className="rounded border px-3 py-2"
+                  min="1"
+                  required
+                />
+              </div>
               <textarea name="bio" value={editFacultyData.bio || ''} onChange={handleEditFacultyChange} placeholder="Bio" className="rounded border px-3 py-2" />
               <div className="flex gap-4 items-center">
                 {TEACHES_OPTIONS.map(opt => (

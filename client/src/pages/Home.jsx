@@ -40,6 +40,23 @@ export default function Home() {
     }
   };
 
+  // Autoplay auto-sliding/shuffling animation for exclusive courses
+  useEffect(() => {
+    if (exclusiveCourses.length <= 1) return;
+    const interval = setInterval(() => {
+      if (carouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 15;
+        if (isAtEnd) {
+          carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          carouselRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+        }
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [exclusiveCourses]);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchVal.trim()) {
@@ -68,17 +85,29 @@ export default function Home() {
             const existing = mergedMap.get(slug) || {};
             const fullName = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim();
             
+            const sequenceVal = f.mongo_id !== undefined && f.mongo_id !== null && String(f.mongo_id).trim() !== ''
+              ? Number(f.mongo_id)
+              : existing.sequence || existing.id || 999;
+
             mergedMap.set(slug, {
               id: f.id || f._id || existing.id,
               name: fullName || existing.name,
               slug: slug,
               image: f.image_url || f.imageUrl || existing.image,
               specialization: (Array.isArray(f.teaches) ? f.teaches[0] : f.teaches) || f.specialization || existing.specialization,
-              bio: f.bio || existing.bio
+              bio: f.bio || existing.bio,
+              sequence: sequenceVal
             });
           });
 
-          setTopFaculties(Array.from(mergedMap.values()).slice(0, 8));
+          const finalFaculties = Array.from(mergedMap.values());
+          finalFaculties.sort((a, b) => {
+            const seqA = a.sequence !== undefined ? a.sequence : 999;
+            const seqB = b.sequence !== undefined ? b.sequence : 999;
+            return seqA - seqB;
+          });
+
+          setTopFaculties(finalFaculties.slice(0, 8));
         } else {
           setTopFaculties(baseFaculties);
         }
@@ -287,9 +316,6 @@ export default function Home() {
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight text-slate-900">
                   Exclusive <span className="text-[#20b2aa]">Courses</span>
                 </h2>
-                <p className="text-slate-500 mt-2 text-sm sm:text-base max-w-xl">
-                  Handpicked premium learning tracks curated by industry-leading mentors for fast-tracked success.
-                </p>
               </div>
 
               {/* Slider Controls */}
@@ -336,11 +362,11 @@ export default function Home() {
                   >
                     <div>
                       {/* Image container */}
-                      <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden relative mb-4 bg-slate-50 border border-slate-100">
+                      <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden relative mb-4 bg-white border border-slate-100 flex items-center justify-center">
                         <img 
                           src={course.posterUrl || '/placeholder.png'} 
                           alt={course.title || course.subject}
-                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                          className="w-full h-full object-contain group-hover:scale-103 transition-transform duration-500"
                         />
                         <span className="absolute top-2.5 right-2.5 bg-rose-500 text-white text-[9px] font-bold tracking-wider px-2 py-0.5 rounded shadow-sm uppercase">
                           Exclusive
