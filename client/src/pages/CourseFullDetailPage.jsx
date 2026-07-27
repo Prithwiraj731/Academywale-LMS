@@ -611,9 +611,9 @@ const CourseFullDetailPage = () => {
               <span className="bg-teal-50 text-teal-800 px-3 py-1 rounded-md text-xs font-extrabold uppercase border border-teal-200">
                 {course.category} {course.subcategory}
               </span>
-              {course.paper_id && (
+              {course.paperId && (
                 <span className="bg-purple-50 text-purple-800 px-3 py-1 rounded-md text-xs font-bold border border-purple-200">
-                  Paper {course.paper_id}
+                  {String(course.paperId).includes(',') ? 'Papers' : 'Paper'} {String(course.paperId).split(',').join(', ')}
                 </span>
               )}
             </div>

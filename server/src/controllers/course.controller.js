@@ -566,7 +566,7 @@ exports.updateCourse = async (req, res) => {
       category: normalizedCategory,
       subcategory: normalizedSubcategory,
       paper_id: updateData.paperId !== undefined ? String(updateData.paperId) : targetCourse.paper_id,
-      paper_name: updateData.paperName || targetCourse.paper_name,
+      paper_name: updateData.paperName !== undefined ? updateData.paperName : targetCourse.paper_name,
       course_type: resolvedCourseType,
       // Dynamic details
       custom_details: parsedCustomDetails,

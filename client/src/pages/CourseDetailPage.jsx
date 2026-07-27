@@ -666,7 +666,7 @@ const CourseDetailPage = () => {
                   <span className="opacity-80">Category:</span> {course.category || 'N/A'}
                 </div>
                 <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
-                  <span className="opacity-80">Paper:</span> {course.paperName || 'N/A'}
+                  <span className="opacity-80">Paper:</span> {course.paperName ? course.paperName.split('|').join(', ') : 'N/A'}
                 </div>
                 <div className="bg-black bg-opacity-30 px-3 py-1 rounded-full">
                   <span className="opacity-80">Faculty:</span> {course.facultyName || 'N/A'}

@@ -838,24 +838,30 @@ export default function AdminDashboard() {
     const setTargetState = isEdit ? setEditCourseData : setCourseForm;
 
     let currentIds = targetState.paperId ? String(targetState.paperId).split(',').map(s => s.trim()).filter(Boolean) : [];
-    let currentNames = targetState.paperName ? String(targetState.paperName).split(',').map(s => s.trim()).filter(Boolean) : [];
-
     const stringId = String(paperId);
 
     if (isChecked) {
       if (!currentIds.includes(stringId)) {
         currentIds.push(stringId);
-        currentNames.push(paperName);
       }
     } else {
       currentIds = currentIds.filter(id => id !== stringId);
-      currentNames = currentNames.filter(name => name !== paperName);
     }
+
+    // Sort IDs numerically
+    currentIds.sort((a, b) => parseInt(a) - parseInt(b));
+
+    // Look up clean paper names to prevent comma splitting errors
+    const allPapers = getPapers(targetState.category, targetState.subcategory);
+    const paperNames = currentIds.map(id => {
+      const found = allPapers.find(p => String(p.id) === String(id));
+      return found ? found.name : `Paper ${id}`;
+    });
 
     setTargetState(prev => ({
       ...prev,
       paperId: currentIds.join(','),
-      paperName: currentNames.join(',')
+      paperName: paperNames.join('|')
     }));
   };
 

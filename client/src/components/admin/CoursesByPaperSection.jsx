@@ -251,7 +251,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
               <div className="font-bold text-gray-900 leading-tight">{title}</div>
               <div className="text-xs text-gray-500 mt-1">
                 {course.paperName 
-                  ? (course.paperName.toLowerCase().startsWith('paper') ? course.paperName : `Paper ${course.paperId || 'N/A'} - ${course.paperName}`)
+                  ? course.paperName.split('|').join(', ')
                   : `Paper ${course.paperId || 'N/A'}`}
               </div>
 
