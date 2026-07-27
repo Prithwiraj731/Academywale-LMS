@@ -179,33 +179,7 @@ export default function Home() {
         />
 
         <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12 flex flex-col items-center">
-            <form onSubmit={handleSearchSubmit} className="w-full max-w-lg mb-8 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
-              <input
-                type="text"
-                placeholder="Search for courses, subjects, papers, or faculties..."
-                value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
-                className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
-              />
-              <button
-                type="submit"
-                className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
-              >
-                <span>🔍</span>
-                <span>Search</span>
-              </button>
-            </form>
-
-            <div className="mb-6">
-              <MorphyButton
-                onClick={() => navigate('/courses/all')}
-                size="lg"
-                className="shadow-xl hover:shadow-2xl font-extrabold"
-              >
-                🎓 Browse All Available Courses
-              </MorphyButton>
-            </div>
+          <div className="text-center mb-10 flex flex-col items-center">
             <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter text-white whitespace-nowrap">
               Choose Your Learning Path
             </h2>
@@ -213,159 +187,185 @@ export default function Home() {
               Select your course level and access premium video lectures, notes, and preparation resources tailored for CA & CMA excellence.
             </p>
           </div>
-          {/* Redesigned Tab Buttons */}
-          <div className="flex justify-center mb-10">
-            <div className="inline-flex bg-neutral-900 border border-neutral-800 rounded-2xl p-1.5 shadow-2xl relative">
-              <button
-                onClick={() => setActivePath(activePath === 'ca' ? null : 'ca')}
-                className={`px-10 py-3 rounded-xl text-base font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
-                  activePath === 'ca'
-                    ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
-                    : 'text-neutral-400 hover:text-white bg-transparent'
-                }`}
-              >
-                CA
-              </button>
-              <button
-                onClick={() => setActivePath(activePath === 'cma' ? null : 'cma')}
-                className={`px-10 py-3 rounded-xl text-base font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
-                  activePath === 'cma'
-                    ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
-                    : 'text-neutral-400 hover:text-white bg-transparent'
-                }`}
-              >
-                CMA
-              </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full text-left">
+            {/* Left Column: Search & Quick Actions */}
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[360px]">
+              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
+                Quick Search
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2 text-center md:text-left font-heading">
+                Find Your Specific Course
+              </h3>
+              <p className="text-neutral-400 text-sm mb-6 max-w-sm text-center md:text-left">
+                Type subjects, papers, or faculty names to search instantly, or browse our entire catalog of classes.
+              </p>
+              
+              <form onSubmit={handleSearchSubmit} className="w-full max-w-md mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
+                <input
+                  type="text"
+                  placeholder="Search for courses, subjects, papers..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>🔍</span>
+                  <span>Search</span>
+                </button>
+              </form>
+
+              <div className="w-full max-w-md mt-auto">
+                <MorphyButton
+                  onClick={() => navigate('/courses/all')}
+                  size="md"
+                  className="w-full shadow-xl hover:shadow-2xl font-extrabold"
+                >
+                  🎓 Browse All Available Courses
+                </MorphyButton>
+              </div>
             </div>
-          </div>
 
-          {/* Animated Options Container */}
-          <div className="max-w-5xl mx-auto w-full px-4">
-            <AnimatePresence mode="wait">
-              {activePath === 'ca' && (
-                <motion.div
-                  key="ca-options"
-                  initial={{ opacity: 0, y: -15, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -15, height: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="overflow-hidden grid grid-cols-1 md:grid-cols-3 gap-6 pb-4 w-full"
+            {/* Right Column: Choose Learning Path */}
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[360px]">
+              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
+                Learning Journeys
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-6 text-center md:text-left font-heading">
+                Select Academic Board
+              </h3>
+
+              {/* Tab Selector Buttons */}
+              <div className="inline-flex bg-neutral-950 border border-neutral-850 rounded-2xl p-1.5 shadow-xl mb-6">
+                <button
+                  onClick={() => setActivePath(activePath === 'ca' ? null : 'ca')}
+                  className={`px-8 py-2.5 rounded-xl text-sm font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
+                    activePath === 'ca'
+                      ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
+                      : 'text-neutral-400 hover:text-white bg-transparent'
+                  }`}
                 >
-                  <button
-                    onClick={() => navigate('/ca/foundation-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaBookReader className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CA Foundation</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Access papers, mock tests & video lectures for beginners.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => navigate('/ca/inter-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaGraduationCap className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CA Intermediate</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Explore intermediate-level concepts & detailed papers.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => navigate('/ca/final-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaAward className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CA Final</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Advance to master level reporting & audit papers.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
-                </motion.div>
-              )}
-
-              {activePath === 'cma' && (
-                <motion.div
-                  key="cma-options"
-                  initial={{ opacity: 0, y: -15, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -15, height: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="overflow-hidden grid grid-cols-1 md:grid-cols-3 gap-6 pb-4 w-full"
+                  CA
+                </button>
+                <button
+                  onClick={() => setActivePath(activePath === 'cma' ? null : 'cma')}
+                  className={`px-8 py-2.5 rounded-xl text-sm font-extrabold tracking-wider transition-all duration-300 cursor-pointer ${
+                    activePath === 'cma'
+                      ? 'bg-[#20b2aa] text-white shadow-lg shadow-[#20b2aa]/20'
+                      : 'text-neutral-400 hover:text-white bg-transparent'
+                  }`}
                 >
-                  <button
-                    onClick={() => navigate('/cma/foundation-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaBookReader className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CMA Foundation</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Essential costing principles and business mathematics.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
+                  CMA
+                </button>
+              </div>
 
-                  <button
-                    onClick={() => navigate('/cma/inter-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaGraduationCap className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CMA Intermediate</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Comprehensive cost accounting and auditing syllabus.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
+              {/* Animated Options Container */}
+              <div className="w-full">
+                <AnimatePresence mode="wait">
+                  {activePath === 'ca' && (
+                    <motion.div
+                      key="ca-options"
+                      initial={{ opacity: 0, y: -10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -10, height: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden space-y-3 pb-2 w-full"
+                    >
+                      <button
+                        onClick={() => navigate('/ca/foundation-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Foundation</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
 
-                  <button
-                    onClick={() => navigate('/cma/final-papers')}
-                    className="group/btn relative w-full p-6 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-[#20b2aa]/40 text-left flex flex-col justify-between shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[#20b2aa]/5 cursor-pointer min-h-[180px]"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-neutral-950 flex items-center justify-center text-[#20b2aa] group-hover/btn:bg-[#20b2aa] group-hover/btn:text-white transition-all duration-300">
-                      <FaAward className="text-xl" />
-                    </div>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-bold text-white tracking-tight group-hover/btn:text-[#20b2aa] transition-colors">CMA Final</h4>
-                      <p className="text-xs text-neutral-400 mt-1 font-medium leading-relaxed">Strategic planning, cost audits, and direct taxation.</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#20b2aa] mt-4 self-end group-hover/btn:translate-x-1 transition-all">
-                      <span>Explore</span>
-                      <FaChevronRight className="text-[10px]" />
-                    </div>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      <button
+                        onClick={() => navigate('/ca/inter-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Intermediate</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
+
+                      <button
+                        onClick={() => navigate('/ca/final-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CA Final</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {activePath === 'cma' && (
+                    <motion.div
+                      key="cma-options"
+                      initial={{ opacity: 0, y: -10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -10, height: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden space-y-3 pb-2 w-full"
+                    >
+                      <button
+                        onClick={() => navigate('/cma/foundation-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaBookReader className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Foundation</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
+
+                      <button
+                        onClick={() => navigate('/cma/inter-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaGraduationCap className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Intermediate</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
+
+                      <button
+                        onClick={() => navigate('/cma/final-papers')}
+                        className="group/btn w-full py-3.5 px-5 rounded-xl bg-neutral-950 hover:bg-[#20b2aa] border border-neutral-850 text-left font-bold flex items-center justify-between shadow-lg transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FaAward className="text-[#20b2aa] group-hover/btn:text-white transition-colors" />
+                          <span className="text-neutral-200 group-hover/btn:text-white text-sm font-semibold">CMA Final</span>
+                        </div>
+                        <FaChevronRight className="text-neutral-500 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all text-xs" />
+                      </button>
+                    </motion.div>
+                  )}
+                  
+                  {activePath === null && (
+                    <motion.div
+                      key="no-path"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-neutral-500 text-xs font-semibold py-4 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20"
+                    >
+                      💡 Select CA or CMA above to view levels
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
       </div>
