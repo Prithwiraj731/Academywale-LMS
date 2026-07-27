@@ -16,18 +16,27 @@ function mapCourseToFrontend(course) {
 
   let customOrder;
   let isExclusive = false;
-  if (Array.isArray(course.custom_details)) {
-    const orderObj = course.custom_details.find(i => i && (i.fieldType === '__DISPLAY_ORDER__' || i.label === '__DISPLAY_ORDER__'));
+  let details = course.custom_details;
+  if (typeof details === 'string') {
+    try {
+      details = JSON.parse(details);
+    } catch (e) {
+      details = [];
+    }
+  }
+
+  if (Array.isArray(details)) {
+    const orderObj = details.find(i => i && (i.fieldType === '__DISPLAY_ORDER__' || i.label === '__DISPLAY_ORDER__'));
     if (orderObj && orderObj.value !== undefined && orderObj.value !== null && !isNaN(Number(orderObj.value))) {
       customOrder = Number(orderObj.value);
     }
-    const exclObj = course.custom_details.find(i => i && (i.fieldType === 'boolean' && i.label === 'is_exclusive'));
+    const exclObj = details.find(i => i && (i.fieldType === 'boolean' && i.label === 'is_exclusive'));
     if (exclObj) {
       isExclusive = exclObj.value === true || exclObj.value === 'true';
     }
-  } else if (typeof course.custom_details === 'object' && course.custom_details !== null) {
-    if (course.custom_details.display_order !== undefined && !isNaN(Number(course.custom_details.display_order))) {
-      customOrder = Number(course.custom_details.display_order);
+  } else if (typeof details === 'object' && details !== null) {
+    if (details.display_order !== undefined && !isNaN(Number(details.display_order))) {
+      customOrder = Number(details.display_order);
     }
   }
 
