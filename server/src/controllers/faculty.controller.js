@@ -57,7 +57,7 @@ exports.createFaculty = async (req, res) => {
     console.log('📝 Faculty creation request received');
     console.log('📤 Request body:', req.body);
     
-    const { firstName, lastName, bio, teaches } = req.body;
+    const { firstName, lastName, bio } = req.body;
     
     // Upload image to Supabase Storage
     let imageUrl = '';
@@ -76,6 +76,22 @@ exports.createFaculty = async (req, res) => {
     const formattedFirstName = addPrefixToFacultyName(firstName, parsedTeaches);
     const slug = generateSlug(formattedFirstName, lastName);
 
+    // Compute the next sequence number automatically
+    const { data: allFacs, error: listErr } = await supabaseAdmin
+      .from('faculties')
+      .select('mongo_id');
+
+    let maxSeq = 0;
+    if (allFacs && allFacs.length > 0) {
+      allFacs.forEach(f => {
+        const seqVal = Number(f.mongo_id);
+        if (!isNaN(seqVal) && seqVal > maxSeq && seqVal < 999) {
+          maxSeq = seqVal;
+        }
+      });
+    }
+    const nextSeq = maxSeq + 1;
+
     const { data: newFaculty, error } = await supabaseAdmin
       .from('faculties')
       .insert({
@@ -86,7 +102,7 @@ exports.createFaculty = async (req, res) => {
         image_url: imageUrl,
         public_id: publicId,
         slug,
-        mongo_id: req.body.sequence ? String(req.body.sequence) : '999'
+        mongo_id: String(nextSeq)
       })
       .select('*')
       .single();
@@ -156,8 +172,10 @@ exports.getAllFaculties = async (req, res) => {
     }));
 
     mapped.sort((a, b) => {
-      const seqA = a.mongo_id !== undefined && a.mongo_id !== null && String(a.mongo_id).trim() !== '' ? Number(a.mongo_id) : 999;
-      const seqB = b.mongo_id !== undefined && b.mongo_id !== null && String(b.mongo_id).trim() !== '' ? Number(b.mongo_id) : 999;
+      let seqA = a.mongo_id !== undefined && a.mongo_id !== null && String(a.mongo_id).trim() !== '' ? Number(a.mongo_id) : 999;
+      let seqB = b.mongo_id !== undefined && b.mongo_id !== null && String(b.mongo_id).trim() !== '' ? Number(b.mongo_id) : 999;
+      if (isNaN(seqA)) seqA = 999;
+      if (isNaN(seqB)) seqB = 999;
       return seqA - seqB;
     });
 

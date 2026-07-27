@@ -81,7 +81,6 @@ export default function AdminDashboard() {
   const [facultyAdd, setFacultyAdd] = useState({
     firstName: '',
     lastName: '',
-    bio: '',
     image: null,
     imagePreview: null,
   });
@@ -194,11 +193,6 @@ export default function AdminDashboard() {
       console.log('❌ Faculty name is missing');
       return;
     }
-    if (!facultyAdd.bio.trim()) {
-      setFacultyAddError('Faculty bio is required.');
-      console.log('❌ Faculty bio is missing');
-      return;
-    }
     if (!facultyAdd.image) {
       setFacultyAddError('Faculty image is required.');
       console.log('❌ Faculty image is missing');
@@ -209,7 +203,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append('firstName', facultyAdd.firstName.trim());
     formData.append('lastName', facultyAdd.lastName ? facultyAdd.lastName.trim() : '');
-    formData.append('bio', facultyAdd.bio.trim());
+    formData.append('bio', '');
 
     // Auto-derive teaches based on the name
     const deriveTeachesFromName = (name) => {
@@ -246,7 +240,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setFacultyAddStatus('Faculty added!');
-        setFacultyAdd({ firstName: '', lastName: '', bio: '', image: null, imagePreview: null });
+        setFacultyAdd({ firstName: '', lastName: '', image: null, imagePreview: null });
         await fetchLiveFacultiesList();
         setTimeout(() => setFacultyAddStatus(''), 2000);
         console.log('✅ Faculty added successfully');
@@ -1876,7 +1870,7 @@ export default function AdminDashboard() {
       const formData = new FormData();
       formData.append('firstName', editFacultyData.firstName || '');
       formData.append('lastName', editFacultyData.lastName || '');
-      formData.append('bio', editFacultyData.bio || '');
+      formData.append('bio', '');
 
       // Auto-derive teaches based on name
       const deriveTeachesFromName = (name) => {
@@ -2944,14 +2938,6 @@ export default function AdminDashboard() {
               placeholder="Faculty Last Name (optional)"
               className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            <textarea
-              name="bio"
-              value={facultyAdd.bio}
-              onChange={handleFacultyAddChange}
-              placeholder="Faculty Bio"
-              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-400"
-              rows={3}
-            />
             <div className="flex flex-col gap-2">
               <label className="font-semibold text-gray-700">Faculty Image</label>
               <input
@@ -3041,7 +3027,6 @@ export default function AdminDashboard() {
             <form onSubmit={handleEditFacultySubmit} className="flex flex-col gap-3">
               <input name="firstName" value={editFacultyData.firstName || ''} onChange={handleEditFacultyChange} placeholder="Faculty Name" className="rounded border px-3 py-2" required />
               <input name="lastName" value={editFacultyData.lastName || ''} onChange={handleEditFacultyChange} placeholder="Last Name" className="rounded border px-3 py-2" />
-              <textarea name="bio" value={editFacultyData.bio || ''} onChange={handleEditFacultyChange} placeholder="Bio" className="rounded border px-3 py-2" />
               <input name="image" type="file" accept="image/*" onChange={handleEditFacultyChange} className="rounded border px-3 py-2" />
               {editFacultyImagePreview && <img src={editFacultyImagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-blue-200 mt-2" />}
               {editFacultyError && <div className="text-red-600 text-center font-semibold">{editFacultyError}</div>}
