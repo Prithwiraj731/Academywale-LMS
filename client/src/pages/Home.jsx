@@ -188,9 +188,9 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full text-left items-start">
             {/* Left Column: Search & Quick Actions */}
-            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[360px]">
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[360px]">
               <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
                 Quick Search
               </span>
@@ -229,7 +229,7 @@ export default function Home() {
             </div>
 
             {/* Right Column: Choose Learning Path */}
-            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full h-full min-h-[380px]">
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[380px]">
               <div className="w-full max-w-md flex flex-col items-center md:items-start">
                 <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
                   Learning Journeys
