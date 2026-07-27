@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 import Hero from '../components/home/Hero';
 import Numbers from '../components/home/Numbers';
@@ -44,18 +45,29 @@ export default function Home() {
   useEffect(() => {
     if (exclusiveCourses.length <= 1) return;
     const interval = setInterval(() => {
-      if (carouselRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 15;
-        if (isAtEnd) {
-          carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      setExclusiveCourses(prev => {
+        const arr = [...prev];
+        // 75% chance to cyclic-shift (making them slide left continuously)
+        // 25% chance to randomly shuffle (magically swaps their order)
+        if (Math.random() < 0.75) {
+          const first = arr.shift();
+          arr.push(first);
         } else {
-          carouselRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
         }
+        return arr;
+      });
+
+      // Keep scroll position at 0 so all cards remain in the visible viewport
+      if (carouselRef.current) {
+        carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
       }
-    }, 4000);
+    }, 4500);
     return () => clearInterval(interval);
-  }, [exclusiveCourses]);
+  }, [exclusiveCourses.length]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -354,15 +366,22 @@ export default function Home() {
                 const sellingPrice = firstAttempt.sellingPrice || course.sellingPrice || 0;
                 
                 return (
-                  <div 
+                  <motion.div 
+                    layout
+                    transition={{
+                      type: "spring",
+                      stiffness: 150,
+                      damping: 22,
+                      mass: 1.2
+                    }}
                     key={course.id || course._id}
                     onClick={() => navigate(`/course/${encodeURIComponent(course.courseType || 'general')}/${course.id || course._id}`)}
-                    className="flex-shrink-0 w-[280px] xs:w-[320px] bg-white rounded-2xl border border-slate-200/60 p-4 hover:border-[#20b2aa]/40 hover:shadow-[0_10px_30px_rgba(32,178,170,0.08)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-sm flex flex-col justify-between group"
+                    className="flex-shrink-0 w-[260px] xs:w-[300px] bg-white rounded-2xl border border-slate-200/60 p-4 hover:border-[#20b2aa]/40 hover:shadow-[0_10px_30px_rgba(32,178,170,0.08)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-sm flex flex-col justify-between group"
                     style={{ scrollSnapAlign: 'start' }}
                   >
                     <div>
                       {/* Image container */}
-                      <div className="w-full h-40 sm:h-44 rounded-xl overflow-hidden relative mb-4 bg-white border border-slate-100 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-xl overflow-hidden relative mb-4 bg-white border border-slate-100 flex items-center justify-center">
                         <img 
                           src={course.posterUrl || '/placeholder.png'} 
                           alt={course.title || course.subject}
@@ -400,7 +419,7 @@ export default function Home() {
                         View Details →
                       </span>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
