@@ -15,6 +15,27 @@
     "courseId": "01d06eb2-a1f3-498a-93a8-b9a104d676dc",
     "message": "5% Discount on MEPL Classes",
     "isVisible": true,
-    "updatedAt": "2026-07-25T15:31:29.296Z"
+    "updatedAt": "2026-07-27T16:56:17.661Z"
+  },
+  "FINAL10FR": {
+    "exactDiscountPercent": 10,
+    "courseIds": [
+      "ea5d7643-ee5d-4197-9867-3761ad9e8ce1"
+    ],
+    "courseId": "ea5d7643-ee5d-4197-9867-3761ad9e8ce1",
+    "message": null,
+    "isVisible": true,
+    "updatedAt": "2026-07-27T17:05:18.283Z"
+  },
+  "RPC5": {
+    "exactDiscountPercent": 5,
+    "courseIds": [
+      "628cbdf0-560e-4dca-8703-40b8d4304cb3",
+      "2aa6eed9-4635-4124-8a6e-f3b8a3be2e46"
+    ],
+    "courseId": "628cbdf0-560e-4dca-8703-40b8d4304cb3",
+    "message": null,
+    "isVisible": true,
+    "updatedAt": "2026-07-27T17:09:27.589Z"
   }
 }
