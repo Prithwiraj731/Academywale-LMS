@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../api';
-import DeleteAllCoursesButton from './DeleteAllCoursesButton';
 
 const emptyGroups = () => ({
   CA: { Foundation: [], Inter: [], Final: [] },
@@ -397,8 +396,6 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
           {saveStatus}
         </div>
       )}
-
-      <DeleteAllCoursesButton onDeleteSuccess={loadCourses} />
 
       {loading && <div className="rounded-lg bg-blue-50 p-4 text-blue-700">Loading courses...</div>}
       {error && <div className="rounded-lg bg-red-50 p-4 text-red-700">{error}</div>}

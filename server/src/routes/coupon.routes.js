@@ -6,10 +6,12 @@ const { requireAdminCookie } = require('../middlewares/auth.middleware');
 
 // Preflight options handler
 router.options('/api/admin/coupons/:code/visibility', cors());
+router.options('/api/admin/coupons/:code', cors());
 
 // Admin endpoints
 router.post('/api/admin/coupons', requireAdminCookie, couponController.createCoupon);
 router.get('/api/admin/coupons', requireAdminCookie, couponController.getCoupons);
+router.put('/api/admin/coupons/:code', requireAdminCookie, couponController.updateCoupon);
 router.put('/api/admin/coupons/:code/visibility', requireAdminCookie, couponController.toggleCouponVisibility);
 router.post('/api/admin/coupons/:code/visibility', requireAdminCookie, couponController.toggleCouponVisibility);
 router.patch('/api/admin/coupons/:code/visibility', requireAdminCookie, couponController.toggleCouponVisibility);

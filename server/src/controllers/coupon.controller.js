@@ -339,3 +339,107 @@ exports.toggleCouponVisibility = async (req, res) => {
   }
 };
 
+// Admin: Update/Edit an existing coupon
+exports.updateCoupon = async (req, res) => {
+  try {
+    const { code: oldCode } = req.params;
+    const { code, discountPercent, courseIds, message, isVisible } = req.body;
+
+    const oldNormalizedCode = String(oldCode || '').trim().toUpperCase();
+    const normalizedCode = String(code || '').trim().toUpperCase();
+    const parsedDiscount = Number.parseFloat(discountPercent);
+    const customMessage = String(message || '').trim();
+    const visibleFlag = isVisible !== undefined ? Boolean(isVisible) : true;
+
+    if (!normalizedCode || Number.isNaN(parsedDiscount)) {
+      return res.status(400).json({ error: 'Code and valid discountPercent are required.' });
+    }
+
+    if (parsedDiscount <= 0 || parsedDiscount > 100) {
+      return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
+    }
+
+    // 1. Check if coupon exists
+    const { data: existingCoupon, error: findError } = await supabaseAdmin
+      .from('coupons')
+      .select('*')
+      .eq('code', oldNormalizedCode)
+      .maybeSingle();
+
+    if (findError || !existingCoupon) {
+      return res.status(404).json({ error: 'Coupon not found.' });
+    }
+
+    // 2. If code is changing, verify the new code doesn't exist
+    if (normalizedCode !== oldNormalizedCode) {
+      const { data: duplicateCoupon } = await supabaseAdmin
+        .from('coupons')
+        .select('id')
+        .eq('code', normalizedCode)
+        .maybeSingle();
+
+      if (duplicateCoupon) {
+        return res.status(400).json({ error: 'A coupon with the new code already exists.' });
+      }
+    }
+
+    // Normalize courseIds array
+    let targetCourseIds = null;
+    if (Array.isArray(courseIds)) {
+      targetCourseIds = courseIds.map(id => String(id).trim()).filter(Boolean);
+      if (targetCourseIds.length === 0) targetCourseIds = null;
+    }
+
+    // Prepare integer discount for PostgreSQL INTEGER column
+    const intDiscount = Math.round(parsedDiscount);
+
+    // 3. Update Supabase coupons table
+    const { data: updatedCoupon, error: dbError } = await supabaseAdmin
+      .from('coupons')
+      .update({
+        code: normalizedCode,
+        discount_percent: intDiscount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('code', oldNormalizedCode)
+      .select('*')
+      .single();
+
+    if (dbError) {
+      console.error('Supabase coupon update error:', dbError);
+      return res.status(400).json({ error: dbError.message || 'Database failed to update coupon.' });
+    }
+
+    // 4. Update full metadata:
+    // If the code changed, delete the old metadata
+    if (normalizedCode !== oldNormalizedCode) {
+      deleteCouponMetadata(oldNormalizedCode);
+    }
+
+    setCouponMetadata(normalizedCode, {
+      exactDiscountPercent: parsedDiscount,
+      courseIds: targetCourseIds,
+      courseId: targetCourseIds ? targetCourseIds[0] : null,
+      message: customMessage || null,
+      isVisible: visibleFlag
+    });
+
+    const responseCoupon = {
+      ...updatedCoupon,
+      _id: updatedCoupon.id,
+      code: normalizedCode,
+      discountPercent: parsedDiscount,
+      courseIds: targetCourseIds,
+      courseId: targetCourseIds ? targetCourseIds[0] : null,
+      message: customMessage || null,
+      isVisible: visibleFlag,
+      isActive: updatedCoupon.is_active
+    };
+
+    res.json({ success: true, coupon: responseCoupon });
+  } catch (err) {
+    console.error('Error updating coupon:', err);
+    res.status(500).json({ error: err.message || 'Failed to update coupon.' });
+  }
+};
+

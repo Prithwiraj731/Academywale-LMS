@@ -290,6 +290,79 @@ export default function AdminDashboard() {
   const [availableCourses, setAvailableCourses] = useState([]);
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
+  const [editingCouponCode, setEditingCouponCode] = useState(null);
+  const [courseSearchQuery, setCourseSearchQuery] = useState('');
+
+  const filteredCoursesForCoupon = availableCourses.filter(c => {
+    const title = String(c.title || '').toLowerCase();
+    const subject = String(c.subject || '').toLowerCase();
+    const category = String(c.category || '').toLowerCase();
+    const subcategory = String(c.subcategory || '').toLowerCase();
+    const query = courseSearchQuery.toLowerCase();
+    return title.includes(query) || subject.includes(query) || category.includes(query) || subcategory.includes(query);
+  });
+
+  const handleStartEditCoupon = (c) => {
+    setEditingCouponCode(c.code);
+    setCouponForm({
+      code: c.code,
+      discountPercent: c.discountPercent,
+      courseIds: c.courseIds || [],
+      message: c.message || '',
+      isVisible: c.isVisible !== false,
+      isGlobal: !(c.courseIds && c.courseIds.length > 0)
+    });
+    setCourseSearchQuery('');
+    setCouponError('');
+    setCouponSuccess('');
+    // Scroll to the coupon form
+    document.getElementById('coupon-section-title')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleCancelEditCoupon = () => {
+    setEditingCouponCode(null);
+    setCouponForm({ code: '', discountPercent: '', courseIds: [], message: '', isVisible: true, isGlobal: true });
+    setCourseSearchQuery('');
+    setCouponError('');
+    setCouponSuccess('');
+  };
+
+  const handleEditCouponSubmit = async (e) => {
+    e.preventDefault();
+    setCouponError('');
+    setCouponSuccess('');
+    if (!couponForm.code.trim() || !couponForm.discountPercent) {
+      setCouponError('Enter code and discount percent');
+      return;
+    }
+    try {
+      const payloadCourseIds = couponForm.isGlobal ? null : (couponForm.courseIds.length > 0 ? couponForm.courseIds : null);
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/coupons/${encodeURIComponent(editingCouponCode)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponForm.code.trim().toUpperCase(),
+          discountPercent: Number.parseFloat(couponForm.discountPercent),
+          courseIds: payloadCourseIds,
+          message: couponForm.message.trim() || undefined,
+          isVisible: couponForm.isVisible
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCouponSuccess('Coupon updated!');
+        setEditingCouponCode(null);
+        setCouponForm({ code: '', discountPercent: '', courseIds: [], message: '', isVisible: true, isGlobal: true });
+        setCourseSearchQuery('');
+        fetchCoupons();
+        setTimeout(() => setCouponSuccess(''), 2000);
+      } else {
+        setCouponError(data.message || data.error || 'Failed to update coupon');
+      }
+    } catch (err) {
+      setCouponError(err.message || 'Server error');
+    }
+  };
 
   const toggleCourseInCouponForm = (courseId) => {
     setCouponForm(f => {
@@ -3004,7 +3077,6 @@ export default function AdminDashboard() {
                   <div>
                     <div className="font-bold text-blue-700">{fac.firstName} {fac.lastName}</div>
                     <div className="text-xs text-gray-500 line-clamp-2">{fac.bio}</div>
-                    <div className="text-xs text-gray-500">Teaches: {fac.teaches && fac.teaches.join(', ')}</div>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0 md:ml-auto shrink-0">
@@ -3305,8 +3377,10 @@ export default function AdminDashboard() {
         </div>
       )}
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
-        <h2 className="text-2xl font-bold text-green-700 mb-4">Manage Coupon Codes</h2>
-        <form onSubmit={handleAddCoupon} className="flex flex-col gap-4 mb-4">
+        <h2 id="coupon-section-title" className="text-2xl font-bold text-green-700 mb-4">
+          {editingCouponCode ? `Edit Coupon: ${editingCouponCode}` : 'Manage Coupon Codes'}
+        </h2>
+        <form onSubmit={editingCouponCode ? handleEditCouponSubmit : handleAddCoupon} className="flex flex-col gap-4 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input 
               name="code" 
@@ -3344,22 +3418,35 @@ export default function AdminDashboard() {
               </label>
             </div>
             {!couponForm.isGlobal && (
-              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2 bg-white space-y-1 mt-1">
-                {availableCourses.map((c) => {
-                  const cId = c.id || c._id;
-                  const isChecked = (couponForm.courseIds || []).includes(cId);
-                  return (
-                    <label key={cId} className="flex items-center gap-2 text-xs text-gray-800 hover:bg-gray-50 p-1 rounded cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleCourseInCouponForm(cId)}
-                        className="w-3.5 h-3.5 text-green-600 rounded border-gray-300"
-                      />
-                      <span className="font-medium">{c.title || c.subject} ({c.category || 'Course'})</span>
-                    </label>
-                  );
-                })}
+              <div className="mt-1">
+                <input
+                  type="text"
+                  placeholder="🔍 Search courses by title, subject or category..."
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 bg-white mb-2"
+                />
+                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2 bg-white space-y-1">
+                  {filteredCoursesForCoupon.length === 0 ? (
+                    <div className="text-gray-500 text-xs p-1">No courses match search query.</div>
+                  ) : (
+                    filteredCoursesForCoupon.map((c) => {
+                      const cId = c.id || c._id;
+                      const isChecked = (couponForm.courseIds || []).includes(cId);
+                      return (
+                        <label key={cId} className="flex items-center gap-2 text-xs text-gray-800 hover:bg-gray-50 p-1 rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleCourseInCouponForm(cId)}
+                            className="w-3.5 h-3.5 text-green-600 rounded border-gray-300"
+                          />
+                          <span className="font-medium">{c.title || c.subject} ({c.category || 'Course'})</span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -3385,9 +3472,20 @@ export default function AdminDashboard() {
               />
               <span>Show in Course Details Page (Visible to Students)</span>
             </label>
-            <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all">
-              Add Coupon
-            </button>
+            <div className="flex gap-2">
+              {editingCouponCode && (
+                <button 
+                  type="button" 
+                  onClick={handleCancelEditCoupon} 
+                  className="bg-gray-400 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-gray-550 transition-all cursor-pointer text-sm"
+                >
+                  Cancel
+                </button>
+              )}
+              <button type="submit" className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg shadow hover:bg-green-700 transition-all cursor-pointer text-sm">
+                {editingCouponCode ? 'Update Coupon' : 'Add Coupon'}
+              </button>
+            </div>
           </div>
         </form>
         {couponSuccess && <div className="text-green-600 text-center font-semibold mb-2">{couponSuccess}</div>}
@@ -3432,7 +3530,10 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-green-700 font-extrabold">{c.discountPercent}% off</span>
-                    <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline text-sm font-semibold">Delete</button>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleStartEditCoupon(c)} className="text-blue-500 hover:underline text-sm font-semibold cursor-pointer">Edit</button>
+                      <button onClick={() => handleDeleteCoupon(c.code)} className="text-red-500 hover:underline text-sm font-semibold cursor-pointer">Delete</button>
+                    </div>
                   </div>
                 </li>
               );
