@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import CourseCard from '../components/common/CourseCard/CourseCard';
 import CheckoutModal from '../components/common/CheckoutModal';
+import PriceGuaranteeBanner from '../components/common/PriceGuaranteeBanner';
 
 // Helper to split numbered lists (1. ... 2. ...) and multiline strings into clean line-by-line blocks
 const renderFormattedText = (val) => {
@@ -562,8 +563,11 @@ const CourseFullDetailPage = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#20b2aa]/30 py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#20b2aa]/30 pb-8">
+      {/* Best Price Assurance Header Banner */}
+      <PriceGuaranteeBanner />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
         
         {/* Top Back Navigation */}
         <div className="mb-6">

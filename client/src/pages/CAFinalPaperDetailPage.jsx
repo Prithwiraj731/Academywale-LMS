@@ -1,16 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import BackButton from '../components/common/BackButton';
-import CourseCard from '../components/common/CourseCard';
-import papersData from '../data/papersData';
-import { API_URL } from '../api';
+import SubjectFilterSidebar from '../components/common/SubjectFilterSidebar';
+import { useSearchParams } from 'react-router-dom';
 
 const CAFinalPaperDetailPage = () => {
   const { paperSlug } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Subject Filter state
+  const paramSubject = searchParams.get('Subject') || searchParams.get('subject');
+  const [selectedSubjects, setSelectedSubjects] = useState(paramSubject ? [paramSubject] : []);
+
+  const handleSubjectChange = (subs) => {
+    setSelectedSubjects(subs);
+    if (subs.length === 1) {
+      setSearchParams({ Subject: subs[0] });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const filteredCourses = React.useMemo(() => {
+    if (!selectedSubjects || selectedSubjects.length === 0) return courses;
+    return courses.filter(course => {
+      const cSub = String(course.subject || course.title || '').toLowerCase();
+      return selectedSubjects.some(s => cSub.includes(s.toLowerCase()));
+    });
+  }, [courses, selectedSubjects]);
 
   const paperId = paperSlug?.replace('paper-', '');
   const currentPaper = papersData.ca.final.find(p => `paper-${p.id}` === paperSlug);
@@ -253,12 +271,12 @@ const CAFinalPaperDetailPage = () => {
   }, [paperId]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-2 sm:px-4 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8 px-3 sm:px-6 flex flex-col">
       <div className="max-w-7xl w-full mx-auto flex-1">
         <BackButton />
         
         {currentPaper ? (
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-10 shadow-lg max-w-3xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-8 shadow-lg max-w-3xl mx-auto">
             <span className="inline-block text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mb-3">
               CA Final
             </span>
@@ -274,24 +292,38 @@ const CAFinalPaperDetailPage = () => {
           <div className="text-center text-red-600">Paper not found.</div>
         )}
 
-        {loading && <div className="text-[#20b2aa] text-center">Loading courses...</div>}
-        {error && <div className="text-red-600 text-center">{error}</div>}
-        
-        {!loading && !error && courses.length === 0 && (
-          <div className="text-center text-gray-400 py-12">
-            No courses found for this paper.
-          </div>
-        )}
+        {/* Sidebar + Course Cards Layout */}
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <SubjectFilterSidebar
+            categoryTitle="CA Final"
+            selectedSubjects={selectedSubjects}
+            onSubjectChange={handleSubjectChange}
+            availableSubjects={courses.map(c => c.subject || c.title).filter(Boolean)}
+            onClearFilters={() => handleSubjectChange([])}
+          />
 
-        {/* Course List */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5 mb-8">
-          {courses.map((course, idx) => (
-            <CourseCard 
-              key={course._id || idx}
-              course={course}
-              onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id}`)}
-            />
-          ))}
+          <div className="flex-1 w-full">
+            {loading && <div className="text-[#20b2aa] text-center py-10 font-bold">Loading courses...</div>}
+            {error && <div className="text-red-600 text-center py-10 font-bold">{error}</div>}
+            
+            {!loading && !error && filteredCourses.length === 0 && (
+              <div className="text-center text-gray-500 bg-white/70 backdrop-blur-sm p-10 rounded-3xl border border-gray-200 shadow-sm font-semibold">
+                No courses found matching selected filter.
+              </div>
+            )}
+
+            {!loading && filteredCourses.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mb-8">
+                {filteredCourses.map((course, idx) => (
+                  <CourseCard 
+                    key={course._id || course.id || idx}
+                    course={course}
+                    onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id || course.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

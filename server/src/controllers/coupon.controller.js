@@ -343,13 +343,14 @@ exports.toggleCouponVisibility = async (req, res) => {
 exports.updateCoupon = async (req, res) => {
   try {
     const { code: oldCode } = req.params;
-    const { code, discountPercent, courseIds, message, isVisible } = req.body;
+    const { code, discountPercent, courseIds, message, isVisible, isActive, is_active } = req.body;
 
     const oldNormalizedCode = String(oldCode || '').trim().toUpperCase();
     const normalizedCode = String(code || '').trim().toUpperCase();
     const parsedDiscount = Number.parseFloat(discountPercent);
     const customMessage = String(message || '').trim();
     const visibleFlag = isVisible !== undefined ? Boolean(isVisible) : true;
+    const activeFlag = isActive !== undefined ? Boolean(isActive) : (is_active !== undefined ? Boolean(is_active) : true);
 
     if (!normalizedCode || Number.isNaN(parsedDiscount)) {
       return res.status(400).json({ error: 'Code and valid discountPercent are required.' });
@@ -359,19 +360,30 @@ exports.updateCoupon = async (req, res) => {
       return res.status(400).json({ error: 'Discount percent must be between 0.01 and 100.' });
     }
 
-    // 1. Check if coupon exists
-    const { data: existingCoupon, error: findError } = await supabaseAdmin
+    // 1. Check if coupon exists (by code or ilike code)
+    let { data: existingCoupon } = await supabaseAdmin
       .from('coupons')
       .select('*')
       .eq('code', oldNormalizedCode)
       .maybeSingle();
 
-    if (findError || !existingCoupon) {
+    if (!existingCoupon) {
+      const { data: ilikeCoupon } = await supabaseAdmin
+        .from('coupons')
+        .select('*')
+        .ilike('code', oldNormalizedCode)
+        .maybeSingle();
+      existingCoupon = ilikeCoupon;
+    }
+
+    if (!existingCoupon) {
       return res.status(404).json({ error: 'Coupon not found.' });
     }
 
+    const currentCode = existingCoupon.code.toUpperCase();
+
     // 2. If code is changing, verify the new code doesn't exist
-    if (normalizedCode !== oldNormalizedCode) {
+    if (normalizedCode !== currentCode) {
       const { data: duplicateCoupon } = await supabaseAdmin
         .from('coupons')
         .select('id')
@@ -394,14 +406,17 @@ exports.updateCoupon = async (req, res) => {
     const intDiscount = Math.round(parsedDiscount);
 
     // 3. Update Supabase coupons table
+    const updateFields = {
+      code: normalizedCode,
+      discount_percent: intDiscount,
+      is_active: activeFlag,
+      updated_at: new Date().toISOString()
+    };
+
     const { data: updatedCoupon, error: dbError } = await supabaseAdmin
       .from('coupons')
-      .update({
-        code: normalizedCode,
-        discount_percent: intDiscount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('code', oldNormalizedCode)
+      .update(updateFields)
+      .eq('id', existingCoupon.id)
       .select('*')
       .single();
 
@@ -410,10 +425,9 @@ exports.updateCoupon = async (req, res) => {
       return res.status(400).json({ error: dbError.message || 'Database failed to update coupon.' });
     }
 
-    // 4. Update full metadata:
-    // If the code changed, delete the old metadata
-    if (normalizedCode !== oldNormalizedCode) {
-      deleteCouponMetadata(oldNormalizedCode);
+    // 4. Update full metadata
+    if (normalizedCode !== currentCode) {
+      deleteCouponMetadata(currentCode);
     }
 
     setCouponMetadata(normalizedCode, {

@@ -1,6 +1,16 @@
 const nodemailer = require('nodemailer');
 const emailConfig = require('../config/email.config');
 
+const getAdminRecipients = () => {
+  const base = ['support@academywale.com', 'souravkashyap4416@gmail.com'];
+  if (Array.isArray(emailConfig.adminEmails)) {
+    emailConfig.adminEmails.forEach(e => {
+      if (e && !base.includes(e)) base.push(e);
+    });
+  }
+  return base;
+};
+
 // Create transporter for sending emails
 // Uses Resend HTTP API when RESEND_API_KEY is set (required for Render free tier)
 // Falls back to SMTP for local development
@@ -20,7 +30,7 @@ const createTransporter = () => {
           body: JSON.stringify({
             sender: { name: 'AcademyWale', email: emailConfig.user },
             to: Array.isArray(mailOptions.to) 
-              ? mailOptions.to.map(email => ({ email })) 
+              ? mailOptions.to.map(e => typeof e === 'string' ? { email: e } : e) 
               : [{ email: mailOptions.to }],
             subject: mailOptions.subject,
             htmlContent: mailOptions.html || undefined,
@@ -120,7 +130,7 @@ const sendContactEmail = async (contactData) => {
     
     const mailOptions = {
       from: emailConfig.from,
-      to: emailConfig.to,
+      to: getAdminRecipients(),
       subject: `New Contact Form Submission - ${contactData.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -406,9 +416,11 @@ const sendPurchaseInvoiceEmail = async (options) => {
       </div>
     `;
 
+    const recipientList = Array.from(new Set([userEmail, ...getAdminRecipients()])).filter(Boolean);
+
     const mailOptions = {
       from: emailConfig.from,
-      to: [userEmail, emailConfig.to].filter(Boolean),
+      to: recipientList,
       subject: `Receipt: Course Purchase Confirmed - AcademyWale (Txn: ${transactionId})`,
       html: htmlContent
     };
@@ -725,7 +737,7 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
 
     const mailOptions = {
       from: emailConfig.from,
-      to: 'support@academywale.com',
+      to: getAdminRecipients(),
       subject: subject,
       html: htmlContent
     };

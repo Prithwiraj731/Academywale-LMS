@@ -114,7 +114,12 @@ export default function CheckoutModal({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPersonalDetails(prev => ({ ...prev, [name]: value }));
+    if (name === 'phone') {
+      const cleanPhone = value.replace(/\D/g, '').slice(0, 12);
+      setPersonalDetails(prev => ({ ...prev, phone: cleanPhone }));
+    } else {
+      setPersonalDetails(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleUpdateName = async () => {
@@ -133,7 +138,6 @@ export default function CheckoutModal({
       if (response.ok) {
         setInitialName(personalDetails.fullName.trim());
         setNameUpdatedSuccess(true);
-        // Force update of the user name on the window object or auth context if stored globally
         if (user) {
           user.name = personalDetails.fullName.trim();
         }
@@ -152,14 +156,23 @@ export default function CheckoutModal({
 
   const handleAddressFormChange = (e) => {
     const { name, value } = e.target;
-    setAddressForm(prev => ({ ...prev, [name]: value }));
+    if (name === 'pinCode') {
+      const cleanPin = value.replace(/\D/g, '').slice(0, 6);
+      setAddressForm(prev => ({ ...prev, pinCode: cleanPin }));
+    } else {
+      setAddressForm(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Add or Edit Address
   const handleSaveAddress = (e) => {
     e.preventDefault();
-    if (!addressForm.street || !addressForm.city || !addressForm.state || !addressForm.pinCode) {
-      alert('Please fill in all address fields');
+    if (!addressForm.street.trim() || !addressForm.city.trim() || !addressForm.state.trim() || !addressForm.pinCode.trim()) {
+      alert('Please fill in all address fields (Street, City, State, and 6-digit Pincode)');
+      return;
+    }
+    if (addressForm.pinCode.trim().length < 6) {
+      alert('Please enter a valid 6-digit Pincode');
       return;
     }
 
@@ -211,19 +224,33 @@ export default function CheckoutModal({
   };
 
   const handleProceed = async () => {
-    if (!personalDetails.fullName || !personalDetails.email) {
-      setError('Please fill in your name and email.');
+    if (!personalDetails.fullName.trim()) {
+      setError('Full Name is required.');
+      return;
+    }
+    if (!personalDetails.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalDetails.email.trim())) {
+      setError('A valid Email address is required.');
+      return;
+    }
+    const cleanPhone = personalDetails.phone.trim().replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setError('Please enter a valid numeric Phone Number (at least 10 digits).');
       return;
     }
 
     const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-    if (!selectedAddress) {
-      setError('Please add and select a shipping/billing address.');
+    if (!selectedAddress || !selectedAddress.street || !selectedAddress.city || !selectedAddress.state || !selectedAddress.pinCode) {
+      setError('Please add and select a complete delivery address with street, city, state, and pincode.');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
+
+    const formattedPersonalDetails = {
+      ...personalDetails,
+      phone: cleanPhone
+    };
 
     // Pre-payment API notification (asynchronous background call)
     const courseName = courseInfo?.title || courseInfo?.subject || itemsSummary.join(', ') || 'LMS Courses';
@@ -232,9 +259,9 @@ export default function CheckoutModal({
       courseName,
       courseId: courseInfo?.id || 'cart',
       userDetails: {
-        fullName: personalDetails.fullName,
-        email: personalDetails.email,
-        phone: personalDetails.phone,
+        fullName: formattedPersonalDetails.fullName,
+        email: formattedPersonalDetails.email,
+        phone: formattedPersonalDetails.phone,
         address: selectedAddress
       },
       selectedMode: courseInfo?.selectedMode || 'Cart checkout',
@@ -251,7 +278,7 @@ export default function CheckoutModal({
     }).catch(err => console.error('Failed to notify course interest:', err));
 
     // Redirect to payment immediately
-    onProceed(personalDetails, selectedAddress);
+    onProceed(formattedPersonalDetails, selectedAddress);
     setIsSubmitting(false);
   };
 

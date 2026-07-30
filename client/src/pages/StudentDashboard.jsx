@@ -239,56 +239,98 @@ export default function StudentDashboard() {
             )}
 
             {/* Clean 3-Column Grid Cards for Enrolled Courses */}
+            {/* Professional Grid Cards for Enrolled Courses */}
             {!loading && !error && purchases.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {purchases.map((purchase) => {
                   const courseDetails = purchase.courseDetails || purchase.course_details || {};
                   const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails.poster || courseDetails);
+                  const isPending = purchase.paymentStatus === 'pending_verification' || purchase.paymentStatus === 'pending';
                   
                   return (
                     <div 
                       key={purchase.id} 
-                      className="bg-slate-900 border border-slate-800 text-white rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between transition-all hover:border-slate-700"
+                      className="bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-white rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group"
                     >
-                      {/* Card Poster Image with Status Badge */}
-                      <div className="relative bg-slate-950 h-52 sm:h-56 flex items-center justify-center overflow-hidden border-b border-slate-800">
+                      {/* Card Poster Image with Overlay Badges */}
+                      <div className="relative bg-slate-950 aspect-video flex items-center justify-center overflow-hidden border-b border-slate-800">
                         <img 
                           src={poster} 
                           alt={courseDetails.title || courseDetails.subject || 'Course'}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                         />
-                        <div className="absolute top-3 right-3">
-                          <span className="bg-emerald-600/90 text-white text-xs px-3 py-1 rounded-full font-bold shadow-sm">
-                            {purchase.isExpired ? 'Expired' : 'Active'}
-                          </span>
+                        
+                        {/* Status Badge */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                          {isPending ? (
+                            <span className="bg-amber-500/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-amber-400/30 flex items-center gap-1">
+                              <FaClock className="text-xs" /> Verification Pending
+                            </span>
+                          ) : purchase.isExpired ? (
+                            <span className="bg-red-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-red-400/30">
+                              Expired
+                            </span>
+                          ) : (
+                            <span className="bg-emerald-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-emerald-400/30 flex items-center gap-1">
+                              <FaCheckCircle className="text-xs" /> Active Course
+                            </span>
+                          )}
                         </div>
+
+                        {/* Subject Tag Overlay */}
+                        {courseDetails.subject && (
+                          <div className="absolute bottom-3 left-3 bg-slate-900/90 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md backdrop-blur-md">
+                            {courseDetails.subject}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Content: Title, Faculty, Price & View Details Button */}
+                      {/* Card Content Details */}
                       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                         <div>
-                          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug mb-1.5">
-                            {courseDetails.title || courseDetails.subject || 'Course Title'}
+                          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug mb-1.5 group-hover:text-teal-300 transition-colors">
+                            {courseDetails.title || courseDetails.subject || 'Enrolled Course'}
                           </h3>
-                          <p className="text-xs text-slate-400 font-semibold">
-                            Faculty: <span className="text-[#20b2aa] font-bold">{courseDetails.facultyName || 'Expert Faculty'}</span>
+                          
+                          <p className="text-xs text-slate-400 font-semibold mb-3">
+                            Faculty: <span className="text-[#20b2aa] font-bold">{courseDetails.facultyName || 'AcademyWale Faculty'}</span>
+                          </p>
+
+                          {/* Mode & Validity Pills */}
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {courseDetails.mode && (
+                              <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold">
+                                Mode: {courseDetails.mode}
+                              </span>
+                            )}
+                            {(courseDetails.validity || courseDetails.attempt) && (
+                              <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold">
+                                Validity: {courseDetails.validity || courseDetails.attempt}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Purchase Date */}
+                          <p className="text-[11px] text-slate-500 font-medium">
+                            Purchased: {formatDate(purchase.purchaseDate || purchase.created_at)}
                           </p>
                         </div>
 
-                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        {/* Price Paid & Details Action */}
+                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
                           <div>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Price Paid</p>
-                            <p className="text-lg font-bold text-white font-mono">
-                              ₹{Number(purchase.amount || 0).toLocaleString()}
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Amount Paid</p>
+                            <p className="text-lg font-extrabold text-teal-400 font-mono">
+                              ₹{Number(purchase.amount || 0).toLocaleString('en-IN')}
                             </p>
                           </div>
 
                           <button
                             onClick={() => setSelectedOrderDetail(purchase)}
-                            className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                            className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-teal-500/20 cursor-pointer flex items-center gap-1.5"
                           >
-                            View Details
+                            <FaFileInvoiceDollar /> View Invoice
                           </button>
                         </div>
                       </div>

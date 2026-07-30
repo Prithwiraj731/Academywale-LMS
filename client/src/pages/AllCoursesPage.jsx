@@ -217,20 +217,32 @@ const CourseSlider = ({ courses, title }) => {
   );
 };
 
+import SubjectFilterSidebar from '../components/common/SubjectFilterSidebar';
+
 export default function AllCoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchVal = searchParams.get('search') || '';
+  
+  const paramSubject = searchParams.get('Subject') || searchParams.get('subject');
+  const [selectedSubjects, setSelectedSubjects] = useState(paramSubject ? [paramSubject] : []);
+
+  const handleSubjectChange = (subs) => {
+    setSelectedSubjects(subs);
+    const newParams = {};
+    if (searchVal) newParams.search = searchVal;
+    if (subs.length > 0) newParams.Subject = subs[0];
+    setSearchParams(newParams);
+  };
 
   const handleSearchChange = (e) => {
     const val = e.target.value;
-    if (val) {
-      setSearchParams({ search: val });
-    } else {
-      setSearchParams({});
-    }
+    const newParams = {};
+    if (val) newParams.search = val;
+    if (selectedSubjects.length > 0) newParams.Subject = selectedSubjects[0];
+    setSearchParams(newParams);
   };
 
   const handleClearSearch = () => {
@@ -340,11 +352,22 @@ export default function AllCoursesPage() {
     return String(a.title || a.subject || '').localeCompare(String(b.title || b.subject || ''));
   };
 
-  const caInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_INTER').sort(sortBySequence);
-  const cmaInterCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_INTER').sort(sortBySequence);
-  const caFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CA_FINAL').sort(sortBySequence);
-  const cmaFinalCourses = courses.filter(c => getCourseCategoryKey(c) === 'CMA_FINAL').sort(sortBySequence);
-  const otherCourses = courses.filter(c => !['CA_INTER', 'CMA_INTER', 'CA_FINAL', 'CMA_FINAL'].includes(getCourseCategoryKey(c))).sort(sortBySequence);
+  const subjectFilteredCourses = useMemo(() => {
+    if (!selectedSubjects || selectedSubjects.length === 0) return courses;
+    return courses.filter(c => {
+      const cSub = String(c.subject || c.title || '').toLowerCase();
+      return selectedSubjects.some(s => {
+        const target = s.toLowerCase();
+        return cSub.includes(target) || (target.includes('taxation') && cSub.includes('tax'));
+      });
+    });
+  }, [courses, selectedSubjects]);
+
+  const caInterCourses = subjectFilteredCourses.filter(c => getCourseCategoryKey(c) === 'CA_INTER').sort(sortBySequence);
+  const cmaInterCourses = subjectFilteredCourses.filter(c => getCourseCategoryKey(c) === 'CMA_INTER').sort(sortBySequence);
+  const caFinalCourses = subjectFilteredCourses.filter(c => getCourseCategoryKey(c) === 'CA_FINAL').sort(sortBySequence);
+  const cmaFinalCourses = subjectFilteredCourses.filter(c => getCourseCategoryKey(c) === 'CMA_FINAL').sort(sortBySequence);
+  const otherCourses = subjectFilteredCourses.filter(c => !['CA_INTER', 'CMA_INTER', 'CA_FINAL', 'CMA_FINAL'].includes(getCourseCategoryKey(c))).sort(sortBySequence);
 
   if (loading) {
     return (
@@ -413,9 +436,19 @@ export default function AllCoursesPage() {
           </div>
         )}
 
-        {/* Search Results rendering or normal Category Sections */}
+        {/* Filter Sidebar & Main Courses Grid Layout */}
         {!error && courses.length > 0 && (
-          searchVal.trim() ? (
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <SubjectFilterSidebar
+              categoryTitle="All Courses"
+              selectedSubjects={selectedSubjects}
+              onSubjectChange={handleSubjectChange}
+              availableSubjects={courses.map(c => c.subject || c.title).filter(Boolean)}
+              onClearFilters={() => handleSubjectChange([])}
+            />
+
+            <div className="flex-1 w-full min-w-0">
+              {searchVal.trim() ? (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6 pb-2 border-b border-teal-500/30">
                 <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
@@ -551,7 +584,9 @@ export default function AllCoursesPage() {
                 </div>
               )}
             </>
-          )
+          )}
+            </div>
+          </div>
         )}
       </main>
     </div>

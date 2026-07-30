@@ -456,6 +456,27 @@ exports.upiPurchase = async (req, res) => {
       recordCouponUsage(coupon || courseDetails?.coupon, user.id, user.email);
     }
 
+    // Send purchase invoice email to student & admins
+    try {
+      const studentPhone = userDetails?.phone || user?.phone || user?.mobile || '';
+      await sendPurchaseInvoiceEmail({
+        userEmail: userDetails?.email || user?.email,
+        userName: userDetails?.name || user?.name || 'Student',
+        purchases: [purchase],
+        transactionId,
+        amount,
+        paymentMethod: 'UPI',
+        couponCode: coupon || courseDetails?.coupon || '',
+        discountPercent: Number(discountPercent || courseDetails?.discountPercent || 0),
+        userDetails: {
+          phone: studentPhone,
+          address: userDetails?.address
+        }
+      });
+    } catch (invoiceErr) {
+      console.error('Failed to send invoice email in upiPurchase:', invoiceErr);
+    }
+
     // Send notification email to admin
     try {
       await sendAdminNotificationEmail({
@@ -463,7 +484,7 @@ exports.upiPurchase = async (req, res) => {
         userDetails: {
           fullName: userDetails?.name || user?.name || 'Student',
           email: userDetails?.email || user?.email,
-          phone: userDetails?.phone || user?.mobile || '',
+          phone: userDetails?.phone || user?.phone || user?.mobile || '',
           address: userDetails?.address
         },
         courseDetails: {
@@ -629,6 +650,27 @@ exports.cartPurchase = async (req, res) => {
       });
     }
 
+    // Send purchase invoice email to student & admins
+    try {
+      const studentPhone = userDetails?.phone || user?.phone || user?.mobile || '';
+      await sendPurchaseInvoiceEmail({
+        userEmail: userDetails?.email || user?.email,
+        userName: userDetails?.name || user?.name || 'Student',
+        purchases: createdPurchases,
+        transactionId,
+        amount,
+        paymentMethod: 'UPI Cart Payment',
+        couponCode: coupon || '',
+        discountPercent: couponDiscount,
+        userDetails: {
+          phone: studentPhone,
+          address: userDetails?.address
+        }
+      });
+    } catch (invoiceErr) {
+      console.error('Failed to send invoice email in cartPurchase:', invoiceErr);
+    }
+
     // Send consolidated notification email to admin
     try {
       await sendAdminNotificationEmail({
@@ -636,7 +678,7 @@ exports.cartPurchase = async (req, res) => {
         userDetails: {
           fullName: userDetails?.name || user?.name || 'Student',
           email: userDetails?.email || user?.email,
-          phone: userDetails?.phone || user?.mobile || '',
+          phone: userDetails?.phone || user?.phone || user?.mobile || '',
           address: userDetails?.address
         },
         cartItems: createdPurchases.map(p => ({

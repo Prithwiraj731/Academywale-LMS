@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
 import { normalizeCoursePricing } from '../utils/coursePricing';
 import CheckoutModal from '../components/common/CheckoutModal';
+import PriceGuaranteeBanner from '../components/common/PriceGuaranteeBanner';
 
 const renderFormattedText = (val) => {
   if (val === null || val === undefined) return '';
@@ -625,8 +626,11 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-4 md:py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 pb-8">
+      {/* Best Price Assurance Header Banner */}
+      <PriceGuaranteeBanner />
+
+      <div className="container mx-auto px-4 pt-4 md:pt-6">
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
