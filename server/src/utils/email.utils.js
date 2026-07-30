@@ -12,149 +12,164 @@ const getAdminRecipients = () => {
 };
 
 // Create transporter for sending emails
-// Uses Resend HTTP API when RESEND_API_KEY is set (required for Render free tier)
-// Falls back to SMTP for local development
+// Tries Brevo/Resend HTTP APIs and falls back to Hostinger SMTP for reliability
 const createTransporter = () => {
-  // --- Brevo HTTP API (works on all cloud platforms) ---
-  if (emailConfig.brevoApiKey) {
-    console.log('📧 Using Brevo HTTP API for email delivery');
-    return {
-      sendMail: async (mailOptions) => {
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'api-key': emailConfig.brevoApiKey,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            sender: { name: 'AcademyWale', email: emailConfig.user },
-            to: Array.isArray(mailOptions.to) 
-              ? mailOptions.to.map(e => typeof e === 'string' ? { email: e } : e) 
-              : [{ email: mailOptions.to }],
-            subject: mailOptions.subject,
-            htmlContent: mailOptions.html || undefined,
-            textContent: mailOptions.text || undefined
-          })
-        });
+  return {
+    sendMail: async (mailOptions) => {
+      let errors = [];
 
-        const data = await response.json();
+      // 1. Try Brevo HTTP API if configured
+      if (emailConfig.brevoApiKey) {
+        try {
+          console.log('📧 Attempting email delivery via Brevo HTTP API...');
+          const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              'api-key': emailConfig.brevoApiKey,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              sender: { name: 'AcademyWale', email: emailConfig.user },
+              to: Array.isArray(mailOptions.to) 
+                ? mailOptions.to.map(e => typeof e === 'string' ? { email: e } : e) 
+                : [{ email: mailOptions.to }],
+              subject: mailOptions.subject,
+              htmlContent: mailOptions.html || undefined,
+              textContent: mailOptions.text || undefined
+            })
+          });
 
-        if (!response.ok) {
-          console.error('Brevo API error:', data);
-          throw new Error(data.message || `Brevo API error: ${response.status}`);
+          const data = await response.json();
+          if (response.ok) {
+            console.log('✅ Email sent via Brevo:', data.messageId);
+            return { messageId: data.messageId };
+          }
+          console.warn('⚠️ Brevo API warning:', data);
+          errors.push(`Brevo: ${data.message || response.statusText}`);
+        } catch (err) {
+          console.warn('⚠️ Brevo fetch error:', err.message);
+          errors.push(`Brevo: ${err.message}`);
         }
-
-        console.log('✅ Email sent via Brevo:', data.messageId);
-        return { messageId: data.messageId };
       }
-    };
-  }
 
-  // --- Resend HTTP API (works on all cloud platforms) ---
-  if (emailConfig.resendApiKey) {
-    console.log('📧 Using Resend HTTP API for email delivery');
-    return {
-      sendMail: async (mailOptions) => {
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${emailConfig.resendApiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            from: emailConfig.resendFrom,
-            to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
-            subject: mailOptions.subject,
-            html: mailOptions.html || undefined,
-            text: mailOptions.text || undefined
-          })
-        });
+      // 2. Try Resend HTTP API if configured
+      if (emailConfig.resendApiKey) {
+        try {
+          console.log('📧 Attempting email delivery via Resend HTTP API...');
+          const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${emailConfig.resendApiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: emailConfig.resendFrom || `AcademyWale <${emailConfig.user}>`,
+              to: Array.isArray(mailOptions.to) ? mailOptions.to : [mailOptions.to],
+              subject: mailOptions.subject,
+              html: mailOptions.html || undefined,
+              text: mailOptions.text || undefined
+            })
+          });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error('Resend API error:', data);
-          throw new Error(data.message || `Resend API error: ${response.status}`);
+          const data = await response.json();
+          if (response.ok) {
+            console.log('✅ Email sent via Resend:', data.id);
+            return { messageId: data.id };
+          }
+          console.warn('⚠️ Resend API warning:', data);
+          errors.push(`Resend: ${data.message || response.statusText}`);
+        } catch (err) {
+          console.warn('⚠️ Resend fetch error:', err.message);
+          errors.push(`Resend: ${err.message}`);
         }
-
-        console.log('✅ Email sent via Resend:', data.id);
-        return { messageId: data.id };
       }
-    };
-  }
 
-  // --- SMTP fallback (local development) ---
-  console.log('📧 Using SMTP for email delivery:', {
-    host: emailConfig.host,
-    port: emailConfig.port,
-    secure: emailConfig.secure,
-    user: emailConfig.user,
-    passwordSet: !!emailConfig.password
-  });
+      // 3. Fallback to Hostinger SMTP via Nodemailer
+      console.log('📧 Attempting email delivery via Hostinger SMTP...');
+      const smtpTransport = nodemailer.createTransport({
+        host: emailConfig.host,
+        port: emailConfig.port,
+        secure: emailConfig.secure,
+        auth: {
+          user: emailConfig.user,
+          pass: emailConfig.password
+        },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000
+      });
 
-  if (emailConfig.service) {
-    return nodemailer.createTransport({
-      service: emailConfig.service,
-      auth: {
-        user: emailConfig.user,
-        pass: emailConfig.password
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000
-    });
-  }
+      const toAddress = Array.isArray(mailOptions.to) ? mailOptions.to.join(', ') : mailOptions.to;
+      const result = await smtpTransport.sendMail({
+        ...mailOptions,
+        to: toAddress
+      });
 
-  return nodemailer.createTransport({
-    host: emailConfig.host,
-    port: emailConfig.port,
-    secure: emailConfig.secure,
-    auth: {
-      user: emailConfig.user,
-      pass: emailConfig.password
-    },
-    tls: {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-  });
+      console.log('✅ Email sent via Hostinger SMTP:', result.messageId);
+      return result;
+    }
+  };
 };
 
 // Send contact form email
 const sendContactEmail = async (contactData) => {
   try {
     const transporter = createTransporter();
-    
+    const adminRecipients = getAdminRecipients();
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="background: linear-gradient(135deg, #0d9488, #0f766e); padding: 24px 30px; text-align: center; color: #ffffff;">
+          <h2 style="margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px;">📩 New Contact / Call Back Inquiry</h2>
+          <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">AcademyWale LMS Portal</p>
+        </div>
+
+        <div style="padding: 30px 25px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #475569; width: 140px; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">Full Name:</td>
+              <td style="padding: 10px 12px; color: #0f172a; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${contactData.name || 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #475569; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">Email Address:</td>
+              <td style="padding: 10px 12px; color: #0f172a; border-bottom: 1px solid #e2e8f0;"><a href="mailto:${contactData.email}" style="color: #0d9488; font-weight: bold;">${contactData.email || 'Not provided'}</a></td>
+            </tr>
+            ${contactData.phone ? `
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #475569; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">Phone Number:</td>
+              <td style="padding: 10px 12px; color: #0d9488; font-weight: bold; font-size: 15px; border-bottom: 1px solid #e2e8f0;"><a href="tel:${contactData.phone}" style="color: #0d9488;">+91 ${contactData.phone}</a></td>
+            </tr>` : ''}
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #475569; background-color: #f8fafc; border-bottom: 1px solid #e2e8f0;">Subject / Type:</td>
+              <td style="padding: 10px 12px; color: #334155; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${contactData.subject || 'General Inquiry'}</td>
+            </tr>
+          </table>
+
+          <div style="background-color: #f1f5f9; border-left: 4px solid #0d9488; padding: 18px; border-radius: 6px; margin-top: 15px;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #334155; font-size: 13px; uppercase; letter-spacing: 0.5px;">Message / Inquiry Details:</p>
+            <div style="color: #1e293b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${contactData.message ? contactData.message.replace(/\n/g, '<br>') : 'No additional details provided.'}</div>
+          </div>
+        </div>
+
+        <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 25px; text-align: center; font-size: 12px; color: #64748b;">
+          <p style="margin: 0;">This email was automatically dispatched to AcademyWale admins (<strong>support@academywale.com</strong> &amp; <strong>souravkashyap4416@gmail.com</strong>).</p>
+        </div>
+      </div>
+    `;
+
     const mailOptions = {
       from: emailConfig.from,
-      to: getAdminRecipients(),
-      subject: `New Contact Form Submission - ${contactData.name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">New Contact Form Submission</h2>
-          <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
-            <p><strong>Name:</strong> ${contactData.name}</p>
-            <p><strong>Email:</strong> ${contactData.email}</p>
-            <p><strong>Subject:</strong> ${contactData.subject}</p>
-            <p><strong>Message:</strong></p>
-            <div style="background-color: white; padding: 15px; border-radius: 5px; margin-top: 10px;">
-              ${contactData.message.replace(/\n/g, '<br>')}
-            </div>
-          </div>
-          <p style="color: #666; font-size: 12px; margin-top: 20px;">
-            This email was sent from the AcademyWale contact form.
-          </p>
-        </div>
-      `
+      to: adminRecipients,
+      subject: `📩 Contact Form Submission - ${contactData.name} (${contactData.subject || 'Inquiry'})`,
+      html: htmlContent
     };
 
     const result = await transporter.sendMail(mailOptions);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('Email sending error in sendContactEmail:', error);
     return { success: false, error: error.message };
   }
 };

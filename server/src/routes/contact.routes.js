@@ -27,53 +27,57 @@ router.get('/test', async (req, res) => {
 // POST /api/contact - Handle contact form submission
 router.post('/', async (req, res) => {
   try {
-    const { name, email, phone, subject, message } = req.body;
+    const { name, fullName, email, phone, phoneNumber, city, subject, message } = req.body;
 
-    console.log('Contact form submission received:', { name, email, phone, subject, message });
+    const senderName = (name || fullName || 'Website Visitor').trim();
+    const senderEmail = (email || 'support@academywale.com').trim();
+    const senderPhone = (phone || phoneNumber || '').trim();
 
-    // Validate required fields
-    if (!name || !email || !message) {
+    console.log('📬 Contact form submission received:', { senderName, senderEmail, senderPhone, city, subject, message });
+
+    // Validate required name
+    if (!senderName) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email and message are required'
+        message: 'Name is required'
       });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid email address'
-      });
+    let fullMessage = message || '';
+    if (city && !fullMessage.includes(`City:`)) {
+      fullMessage = `City: ${city}\n\n${fullMessage}`;
     }
-
-    const fullMessage = phone ? `Phone: ${phone}\n\n${message}` : message;
+    if (senderPhone && !fullMessage.includes(`Phone:`)) {
+      fullMessage = `Phone: ${senderPhone}\n${fullMessage}`;
+    }
 
     // 1. Try logging contact submission to Supabase database
     try {
       const { supabaseAdmin } = require('../config/supabase.config');
-      const { error: error1 } = await supabaseAdmin
+      await supabaseAdmin
         .from('contact_submissions')
-        .insert([{ name, email, subject: subject || 'General Query', message: fullMessage, created_at: new Date() }]);
-      
-      if (error1) {
-        await supabaseAdmin
-          .from('contacts')
-          .insert([{ name, email, subject: subject || 'General Query', message: fullMessage, created_at: new Date() }]);
-      }
+        .insert([{ 
+          name: senderName, 
+          email: senderEmail, 
+          phone: senderPhone,
+          subject: subject || 'Request a Call Back', 
+          message: fullMessage, 
+          created_at: new Date().toISOString() 
+        }]);
     } catch (dbError) {
-      console.error('Supabase contact log warning:', dbError.message);
+      console.warn('Supabase contact log warning:', dbError.message);
     }
 
-    // 2. Send email via Brevo / Resend / Nodemailer
+    // 2. Send email via transporter (support@academywale.com & souravkashyap4416@gmail.com)
     try {
-      await sendContactEmail({
-        name,
-        email,
-        subject: subject || 'New Contact Form Submission',
+      const mailResult = await sendContactEmail({
+        name: senderName,
+        email: senderEmail,
+        phone: senderPhone,
+        subject: subject || 'Request a Call Back / Contact Inquiry',
         message: fullMessage
       });
+      console.log('📨 sendContactEmail result:', mailResult);
     } catch (mailErr) {
       console.error('Error sending contact email:', mailErr);
     }

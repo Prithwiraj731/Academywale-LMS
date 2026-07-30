@@ -33,9 +33,13 @@ export default function Footer() {
         },
         body: JSON.stringify({
           name: formData.fullName,
-          email: 'support@academywale.com', // Using support email as no email input field
-          subject: 'Request a Call Back',
-          message: `Phone Number: ${formData.phoneNumber}\nCity: ${formData.city}`
+          fullName: formData.fullName,
+          phone: formData.phoneNumber,
+          phoneNumber: formData.phoneNumber,
+          city: formData.city,
+          email: 'support@academywale.com',
+          subject: 'Request a Call Back (Footer Form)',
+          message: `Request a call back submitted from Footer Form.\nPhone: ${formData.phoneNumber}\nCity: ${formData.city}`
         })
       });
 

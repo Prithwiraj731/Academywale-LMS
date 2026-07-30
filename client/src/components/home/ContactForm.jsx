@@ -29,9 +29,13 @@ export default function ContactForm() {
         },
         body: JSON.stringify({
           name: formData.name,
-          email: 'support@academywale.com', // Since original form does not collect email, use support email or adjust accordingly
-          subject: 'Request a Call Back',
-          message: `Phone Number: ${formData.phone}\nCity: ${formData.city}`
+          fullName: formData.name,
+          phone: formData.phone,
+          phoneNumber: formData.phone,
+          city: formData.city,
+          email: 'support@academywale.com',
+          subject: 'Request a Call Back (Homepage Form)',
+          message: `Request a call back submitted from Homepage Form.\nPhone: ${formData.phone}\nCity: ${formData.city}`
         })
       });
 
