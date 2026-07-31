@@ -1,5 +1,10 @@
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import BackButton from '../components/common/BackButton';
+import CourseCard from '../components/common/CourseCard';
 import SubjectFilterSidebar from '../components/common/SubjectFilterSidebar';
-import { useSearchParams } from 'react-router-dom';
+import papersData from '../data/papersData';
+import { API_URL } from '../api';
 
 const CAFinalPaperDetailPage = () => {
   const { paperSlug } = useParams();
