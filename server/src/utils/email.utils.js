@@ -11,6 +11,14 @@ const getAdminRecipients = () => {
   return base;
 };
 
+const getConfiguredProviders = () => {
+  const providers = [];
+  if (emailConfig.brevoApiKey) providers.push('Brevo');
+  if (emailConfig.resendApiKey) providers.push('Resend');
+  if (emailConfig.host && emailConfig.user && emailConfig.password) providers.push('SMTP');
+  return providers;
+};
+
 // Create transporter for sending emails
 // Tries Brevo/Resend HTTP APIs and falls back to Hostinger SMTP for reliability
 const createTransporter = () => {
@@ -86,29 +94,42 @@ const createTransporter = () => {
       }
 
       // 3. Fallback to Hostinger SMTP via Nodemailer
-      console.log('📧 Attempting email delivery via Hostinger SMTP...');
-      const smtpTransport = nodemailer.createTransport({
-        host: emailConfig.host,
-        port: emailConfig.port,
-        secure: emailConfig.secure,
-        auth: {
-          user: emailConfig.user,
-          pass: emailConfig.password
-        },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 15000
-      });
+      if (emailConfig.host && emailConfig.user && emailConfig.password) {
+        try {
+          console.log('Attempting email delivery via Hostinger SMTP...');
+          const smtpTransport = nodemailer.createTransport({
+            host: emailConfig.host,
+            port: emailConfig.port,
+            secure: emailConfig.secure,
+            auth: {
+              user: emailConfig.user,
+              pass: emailConfig.password
+            },
+            tls: { rejectUnauthorized: false },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 15000
+          });
 
-      const toAddress = Array.isArray(mailOptions.to) ? mailOptions.to.join(', ') : mailOptions.to;
-      const result = await smtpTransport.sendMail({
-        ...mailOptions,
-        to: toAddress
-      });
+          const toAddress = Array.isArray(mailOptions.to) ? mailOptions.to.join(', ') : mailOptions.to;
+          const result = await smtpTransport.sendMail({
+            ...mailOptions,
+            to: toAddress
+          });
 
-      console.log('✅ Email sent via Hostinger SMTP:', result.messageId);
-      return result;
+          console.log('Email sent via Hostinger SMTP:', result.messageId);
+          return result;
+        } catch (err) {
+          console.warn('SMTP delivery error:', err.message);
+          errors.push(`SMTP: ${err.message}`);
+        }
+      } else {
+        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
+      }
+
+      const configuredProviders = getConfiguredProviders();
+      const providerLabel = configuredProviders.length ? configuredProviders.join(', ') : 'none';
+      throw new Error(`All email providers failed. Configured providers: ${providerLabel}. ${errors.join(' | ')}`);
     }
   };
 };
@@ -162,6 +183,7 @@ const sendContactEmail = async (contactData) => {
     const mailOptions = {
       from: emailConfig.from,
       to: adminRecipients,
+      replyTo: contactData.email || emailConfig.from,
       subject: `📩 Contact Form Submission - ${contactData.name} (${contactData.subject || 'Inquiry'})`,
       html: htmlContent
     };

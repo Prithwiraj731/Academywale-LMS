@@ -69,19 +69,22 @@ router.post('/', async (req, res) => {
     }
 
     // 2. Send email via transporter (support@academywale.com & souravkashyap4416@gmail.com)
-    try {
-      const mailResult = await sendContactEmail({
-        name: senderName,
-        email: senderEmail,
-        phone: senderPhone,
-        subject: subject || 'Request a Call Back / Contact Inquiry',
-        message: fullMessage
-      });
-      console.log('📨 sendContactEmail result:', mailResult);
-    } catch (mailErr) {
-      console.error('Error sending contact email:', mailErr);
-    }
+    const mailResult = await sendContactEmail({
+      name: senderName,
+      email: senderEmail,
+      phone: senderPhone,
+      subject: subject || 'Request a Call Back / Contact Inquiry',
+      message: fullMessage
+    });
+    console.log('sendContactEmail result:', mailResult);
 
+    if (!mailResult.success) {
+      return res.status(502).json({
+        success: false,
+        message: 'We could not send your message right now. Please try WhatsApp or call support.',
+        error: process.env.NODE_ENV === 'development' ? mailResult.error : undefined
+      });
+    }
     return res.status(200).json({
       success: true,
       message: 'Thank you for your message! Our support team will get back to you shortly.'

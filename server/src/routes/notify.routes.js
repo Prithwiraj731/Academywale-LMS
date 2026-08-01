@@ -19,8 +19,8 @@ router.post('/course-interest', async (req, res) => {
       });
     }
 
-    // Send email notification to support with beautiful draft in the background
-    sendAdminNotificationEmail({
+    // Send email notification to support with beautiful draft
+    const emailResult = await sendAdminNotificationEmail({
       type: 'interest',
       userDetails,
       courseDetails: {
@@ -29,13 +29,19 @@ router.post('/course-interest', async (req, res) => {
         validity: selectedValidity
       },
       amount: price
-    }).catch(error => {
-      console.error('Background course interest email notification failed:', error);
     });
+
+    if (!emailResult.success) {
+      return res.status(502).json({
+        success: false,
+        message: 'Failed to send course interest notification',
+        error: process.env.NODE_ENV === 'development' ? emailResult.error : undefined
+      });
+    }
 
     res.status(200).json({ 
       success: true, 
-      message: 'Notification initiated successfully' 
+      message: 'Notification sent successfully'
     });
     
   } catch (error) {
@@ -65,7 +71,7 @@ router.post('/payment', async (req, res) => {
     }
 
     // Send payment email notification to support with beautiful draft
-    await sendAdminNotificationEmail({
+    const emailResult = await sendAdminNotificationEmail({
       type: 'purchase',
       userDetails,
       courseDetails,
@@ -73,6 +79,14 @@ router.post('/payment', async (req, res) => {
       transactionId,
       amount
     });
+
+    if (!emailResult.success) {
+      return res.status(502).json({
+        success: false,
+        message: 'Failed to send payment notification',
+        error: process.env.NODE_ENV === 'development' ? emailResult.error : undefined
+      });
+    }
 
     res.status(200).json({ 
       success: true, 
