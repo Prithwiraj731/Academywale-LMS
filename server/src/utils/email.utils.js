@@ -45,6 +45,25 @@ const sendViaSmtp = async (mailOptions) => {
   return result;
 };
 
+const sendToRecipientsIndividually = async (transporter, recipients, mailOptions) => {
+  const successful = [];
+  const failed = [];
+
+  for (const recipient of recipients) {
+    try {
+      const result = await transporter.sendMail({
+        ...mailOptions,
+        to: recipient
+      });
+      successful.push({ email: recipient, messageId: result.messageId });
+    } catch (error) {
+      failed.push({ email: recipient, error: error.message });
+    }
+  }
+
+  return { successful, failed };
+};
+
 // Create transporter for sending emails
 // Tries Brevo/Resend HTTP APIs and falls back to Hostinger SMTP for reliability
 const createTransporter = () => {
@@ -187,15 +206,36 @@ const sendContactEmail = async (contactData) => {
 
     const mailOptions = {
       from: emailConfig.from,
-      to: adminRecipients,
       replyTo: contactData.email || emailConfig.from,
-      subject: `📩 Contact Form Submission - ${contactData.name} (${contactData.subject || 'Inquiry'})`,
+      subject: `Contact Form Submission - ${contactData.name} (${contactData.subject || 'Inquiry'})`,
+      text: [
+        'New contact / call back inquiry',
+        `Name: ${contactData.name || 'Not provided'}`,
+        `Email: ${contactData.email || 'Not provided'}`,
+        `Phone: ${contactData.phone || 'Not provided'}`,
+        `Subject: ${contactData.subject || 'General Inquiry'}`,
+        '',
+        contactData.message || 'No additional details provided.'
+      ].join('\n'),
       html: htmlContent
     };
 
-    const result = await transporter.sendMail(mailOptions);
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
+    const result = await sendToRecipientsIndividually(transporter, adminRecipients, mailOptions);
+    console.log('Contact email recipient results:', result);
+
+    if (result.successful.length === 0) {
+      return {
+        success: false,
+        error: result.failed.map(item => `${item.email}: ${item.error}`).join(' | ')
+      };
+    }
+
+    return {
+      success: true,
+      messageId: result.successful.map(item => item.messageId).join(', '),
+      deliveredTo: result.successful.map(item => item.email),
+      failedRecipients: result.failed
+    };  } catch (error) {
     console.error('Email sending error in sendContactEmail:', error);
     return { success: false, error: error.message };
   }

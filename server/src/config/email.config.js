@@ -26,7 +26,10 @@ const service = cleanEnvValue(process.env.EMAIL_SERVICE) || null;
 // Resend "from" address (use verified domain or default Resend sender)
 const resendFrom = cleanEnvValue(process.env.RESEND_FROM) || `AcademyWale <${user}>`;
 
-const ADMIN_EMAILS = ['support@academywale.com', 'souravkashyap4416@gmail.com'];
+const configuredAdminEmails = cleanEnvValue(process.env.ADMIN_EMAILS);
+const ADMIN_EMAILS = configuredAdminEmails
+  ? configuredAdminEmails.split(',').map(email => email.trim()).filter(Boolean)
+  : ['support@academywale.com', 'souravkashyap4416@gmail.com'];
 
 const emailConfig = {
   brevoApiKey,
