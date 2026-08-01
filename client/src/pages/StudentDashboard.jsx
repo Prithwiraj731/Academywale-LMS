@@ -684,13 +684,13 @@ export default function StudentDashboard() {
                         </summary>
                         <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2 mt-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{selectedOrderDetail.user_details?.fullName || selectedOrderDetail.user_details?.name || user.name || 'Learner'}</strong>
+                            <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{selectedOrderDetail.user_details?.fullName || selectedOrderDetail.user_details?.name || selectedOrderDetail.userDetails?.fullName || selectedOrderDetail.userDetails?.name || selectedOrderDetail.fullName || selectedOrderDetail.name || user?.name || 'Learner'}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.email || user.email}</strong>
+                            <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.email || selectedOrderDetail.userDetails?.email || selectedOrderDetail.email || user?.email || 'N/A'}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.phone || selectedOrderDetail.user_details?.phoneNumber || user.phone || user.mobile || ''}</strong>
+                            <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.phone || selectedOrderDetail.user_details?.phoneNumber || selectedOrderDetail.user_details?.phone_number || selectedOrderDetail.userDetails?.phone || selectedOrderDetail.userDetails?.phoneNumber || selectedOrderDetail.phone || selectedOrderDetail.phoneNumber || user?.phone || user?.mobile || user?.phoneNumber || 'N/A'}</strong>
                           </div>
                         </div>
                       </details>

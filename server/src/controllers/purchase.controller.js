@@ -20,101 +20,6 @@ const generateTransactionId = () => {
 // @access  Private
 exports.purchaseCourse = async (req, res) => {
   try {
-    const { userId, facultyName, courseIndex, paymentMethod = 'online', amount } = req.body;
-
-    if (!userId || !facultyName || courseIndex === undefined || !amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: userId, facultyName, courseIndex, amount'
-      });
-    }
-
-    // Resolve user (matches UUID or mongo_id)
-    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    let userQuery = isUserUuid ? 'id' : 'mongo_id';
-    
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq(userQuery, userId)
-      .maybeSingle();
-
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Resolve faculty
-    const { data: faculty, error: facError } = await supabaseAdmin
-      .from('faculties')
-      .select('*')
-      .eq('slug', facultyName)
-      .maybeSingle();
-
-    if (facError || !faculty) {
-      return res.status(404).json({ success: false, message: 'Faculty not found' });
-    }
-
-    // Fetch courses for this faculty to resolve the course index
-    const { data: courses, error: courseFetchError } = await supabaseAdmin
-      .from('courses')
-      .select('*')
-      .eq('faculty_id', faculty.id)
-      .order('created_at', { ascending: true });
-
-    if (courseFetchError) throw courseFetchError;
-
-    const idx = parseInt(courseIndex);
-    if (!courses || idx < 0 || idx >= courses.length) {
-      return res.status(404).json({ success: false, message: 'Course not found' });
-    }
-
-    const targetCourse = courses[idx];
-
-    // Check if user already purchased this course
-    const { data: existingPurchase, error: checkError } = await supabaseAdmin
-      .from('purchases')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', targetCourse.id)
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (checkError) throw checkError;
-    if (existingPurchase) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already purchased this course'
-      });
-    }
-
-    const transactionId = generateTransactionId();
-
-    // Create purchase record
-    const { data: purchase, error: insertError } = await supabaseAdmin
-      .from('purchases')
-      .insert({
-        user_id: user.id,
-        course_id: targetCourse.id,
-        faculty_id: faculty.id,
-        course_details: {
-          title: targetCourse.title,
-          subject: targetCourse.subject,
-          mode: targetCourse.mode_attempt_pricing?.[0]?.mode || '',
-          validity: targetCourse.mode_attempt_pricing?.[0]?.attempt || '',
-          facultyName: targetCourse.faculty_name,
-          noOfLecture: targetCourse.no_of_lecture || '',
-          books: targetCourse.books || '',
-          videoLanguage: targetCourse.video_language || 'Hindi',
-          videoRunOn: targetCourse.video_run_on || '',
-          timing: targetCourse.timing || '',
-  return 'TXN' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
-};
-
-// @desc    Purchase a course
-// @route   POST /api/purchase
-// @access  Private
-exports.purchaseCourse = async (req, res) => {
-  try {
     const { userId, facultyName, courseIndex, paymentMethod = 'online', amount, userDetails } = req.body;
 
     if (!userId || !facultyName || courseIndex === undefined || !amount) {
@@ -242,6 +147,14 @@ exports.purchaseCourse = async (req, res) => {
           }
         });
         logEmailResult('Purchase invoice email', invoiceResult);
+      }
+    } catch (emailErr) {
+      console.error('Failed to send invoice email:', emailErr);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Course purchased successfully!',
       purchase: {
         id: purchase.id,
         transactionId: purchase.transaction_id,
@@ -260,209 +173,6 @@ exports.purchaseCourse = async (req, res) => {
     });
   }
 };
-
-// @desc    Get user's purchased courses
-// @route   GET /api/purchase/user/:userId
-// @access  Private
-exports.getUserPurchases = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    let targetUserId = userId;
-    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    let userQuery = isUserUuid ? 'id' : 'mongo_id';
-    
-    const { data: user } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq(userQuery, userId)
-      .maybeSingle();
-
-    if (user && user.id) {
-      targetUserId = user.id;
-    }
-
-    const { data: purchases, error } = await supabaseAdmin
-      .from('purchases')
-      .select('*, faculties(first_name, last_name)')
-      .or(`user_id.eq.${targetUserId},user_id.eq.${userId}`)
-      .eq('is_active', true)
-      .order('purchase_date', { ascending: false });
-
-    if (error) throw error;
-
-    // Collect course_ids to look up poster_url from Supabase courses table
-    const courseIds = (purchases || []).map(p => p.course_id).filter(Boolean);
-    let courseMap = {};
-    if (courseIds.length > 0) {
-      const { data: matchedCourses } = await supabaseAdmin
-        .from('courses')
-        .select('id, poster_url, poster_public_id, title, subject, faculty_name')
-        .in('id', courseIds);
-
-      (matchedCourses || []).forEach(c => {
-        courseMap[c.id] = c;
-      });
-    }
-
-    // Also fetch all courses for fallback matching by subject/title
-    const { data: allCourses } = await supabaseAdmin
-      .from('courses')
-      .select('id, poster_url, poster_public_id, title, subject, faculty_name');
-
-    const formattedPurchases = (purchases || []).map(p => {
-      const fName = p.faculties ? `${p.faculties.first_name} ${p.faculties.last_name || ''}`.trim() : (p.course_details?.facultyName || 'Faculty');
-      const cDetails = p.course_details || {};
-      let matchedCourse = courseMap[p.course_id];
-
-      if (!matchedCourse && allCourses) {
-        matchedCourse = allCourses.find(c => 
-          (c.subject && cDetails.subject && c.subject.toLowerCase() === cDetails.subject.toLowerCase()) ||
-          (c.title && cDetails.title && c.title.toLowerCase() === cDetails.title.toLowerCase())
-        );
-      }
-
-      const posterUrl = cDetails.posterUrl || 
-                        cDetails.poster_url || 
-                        cDetails.poster || 
-                        matchedCourse?.poster_url || 
-                        matchedCourse?.posterUrl || 
-                        matchedCourse?.poster_public_id || 
-                        '';
-
-      const enrichedCourseDetails = {
-        ...cDetails,
-        posterUrl,
-        poster_url: posterUrl,
-        poster: posterUrl,
-        title: cDetails.title || matchedCourse?.title || matchedCourse?.subject || 'Course',
-        subject: cDetails.subject || matchedCourse?.subject || matchedCourse?.title || 'Course',
-        facultyName: fName || matchedCourse?.faculty_name || 'Faculty'
-      };
-
-      return {
-        id: p.id,
-        transactionId: p.transaction_id,
-        courseDetails: enrichedCourseDetails,
-        course_details: enrichedCourseDetails,
-        purchaseDate: p.purchase_date,
-        accessExpiry: p.access_expiry,
-        paymentStatus: p.payment_status || 'completed',
-        amount: p.amount,
-        facultyName: fName,
-        isExpired: new Date() > new Date(p.access_expiry)
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      purchases: formattedPurchases
-    });
-
-  } catch (error) {
-    console.error('Get purchases error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch purchases',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Check if user has purchased a specific course
-// @route   GET /api/purchase/check/:userId/:facultyName/:courseIndex
-// @access  Private
-exports.checkCoursePurchase = async (req, res) => {
-  try {
-    const { userId, facultyName, courseIndex } = req.params;
-
-    // Resolve user UUID
-    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    let userQuery = isUserUuid ? 'id' : 'mongo_id';
-    
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq(userQuery, userId)
-      .maybeSingle();
-
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Resolve faculty
-    const { data: faculty, error: facError } = await supabaseAdmin
-      .from('faculties')
-      .select('id')
-      .eq('slug', facultyName)
-      .maybeSingle();
-
-    if (facError || !faculty) {
-      return res.status(404).json({ success: false, message: 'Faculty not found' });
-    }
-
-    // Fetch courses for this faculty
-    const { data: courses, error: courseFetchError } = await supabaseAdmin
-      .from('courses')
-      .select('id')
-      .eq('faculty_id', faculty.id)
-      .order('created_at', { ascending: true });
-
-    if (courseFetchError) throw courseFetchError;
-
-    const idx = parseInt(courseIndex);
-    if (!courses || idx < 0 || idx >= courses.length) {
-      return res.status(404).json({ success: false, message: 'Course not found' });
-    }
-
-    const targetCourse = courses[idx];
-
-    // Check purchase record
-    const { data: purchase, error: purchaseError } = await supabaseAdmin
-      .from('purchases')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('course_id', targetCourse.id)
-      .eq('is_active', true)
-      .eq('payment_status', 'completed')
-      .maybeSingle();
-
-    if (purchaseError) throw purchaseError;
-
-    if (!purchase) {
-      return res.status(200).json({
-        success: true,
-        hasPurchased: false
-      });
-    }
-
-    const isExpired = new Date() > new Date(purchase.access_expiry);
-
-    res.status(200).json({
-      success: true,
-      hasPurchased: true,
-      isExpired,
-      purchase: {
-        id: purchase.id,
-        transactionId: purchase.transaction_id,
-        purchaseDate: purchase.purchase_date,
-        accessExpiry: purchase.access_expiry
-      }
-    });
-
-  } catch (error) {
-    console.error('Check purchase error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to check purchase status',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Purchase a course via UPI
-// @route   POST /api/purchase/upi-purchase
-// @access  Private
 exports.upiPurchase = async (req, res) => {
   try {
     const { userId, courseId, transactionId, amount, userDetails, courseDetails, coupon, discountPercent } = req.body;
@@ -782,6 +492,14 @@ exports.upiPurchase = async (req, res) => {
         }
       });
       logEmailResult('UPI invoice email', invoiceResult);
+
+      const adminEmailResult = await sendAdminNotificationEmail({
+        studentName: userDetails?.name || userDetails?.fullName || user?.name || 'Student',
+        studentEmail: userDetails?.email || user?.email,
+        studentPhone: studentPhone,
+        courseTitle: course.title || courseDetails?.title || 'Course',
+        courseDetails: {
+          mode: courseDetails?.mode || '',
           validity: courseDetails?.validity || '',
           attempt: courseDetails?.attempt || ''
         },
@@ -883,7 +601,6 @@ exports.cartPurchase = async (req, res) => {
 
       const itemBaseAmount = Number(item.sellingPrice || item.price || 0);
       const itemPayableAmount = Math.max(0, Math.round(itemBaseAmount * (1 - couponDiscount / 100)));
-
       // Create purchase record
       const { data: purchase, error: insertError } = await supabaseAdmin
         .from('purchases')
@@ -915,18 +632,67 @@ exports.cartPurchase = async (req, res) => {
             supportCall: course.support_call || '',
             institute: course.institute_name || '',
             attempt: item.attempt || '',
+            selectedOptions: item.selectedOptions || {}
+          },
+          user_details: {
+            fullName: userDetails?.fullName || userDetails?.name || user?.name || 'Student',
+            email: userDetails?.email || user?.email,
+            phone: userDetails?.phone || userDetails?.phoneNumber || user?.phone || user?.mobile || '',
+            address: userDetails?.address || {}
+          },
+          access_expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        })
+        .select('*')
+        .single();
+
+      if (insertError) {
+        console.error(`Failed to insert purchase for course ${course.id}:`, insertError);
+        skippedPurchases.push({ title: course.subject, reason: insertError.message });
+        continue;
+      }
+
+      createdPurchases.push(purchase);
+    }
+
+    if (createdPurchases.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No courses were purchased',
+        skippedPurchases
+      });
+    }
+
+    if (coupon) {
+      recordCouponUsage(coupon, user.id, user.email);
+    }
+
+    // Send purchase invoice email to student & admin notifications
+    try {
+      const studentPhone = userDetails?.phone || userDetails?.phoneNumber || user?.phone || user?.mobile || '';
+      const invoiceResult = await sendPurchaseInvoiceEmail({
+        userEmail: userDetails?.email || user?.email,
+        userName: userDetails?.name || userDetails?.fullName || user?.name || 'Student',
+        purchases: createdPurchases,
+        transactionId,
+        amount: totalAmount,
+        paymentMethod: 'UPI',
+        couponCode: coupon || '',
+        discountPercent: couponDiscount,
+        userDetails: {
+          phone: studentPhone,
+          address: userDetails?.address
+        }
+      });
+      logEmailResult('UPI cart invoice email', invoiceResult);
     } catch (emailErr) {
       console.error('Failed to send notification email:', emailErr);
     }
 
     res.status(201).json({
       success: true,
-      message: 'Payment recorded successfully! Your course will be activated after payment verification.',
-      purchase: {
-        id: purchase.id,
-        transactionId,
-        status: 'pending_verification'
-      }
+      message: 'Payment recorded successfully! Your courses will be activated after payment verification.',
+      purchasesCount: createdPurchases.length,
+      skippedPurchases
     });
 
   } catch (error) {
@@ -1099,11 +865,17 @@ exports.cartPurchase = async (req, res) => {
 
     // Send consolidated notification email to admin
     try {
+      const studentPhone = userDetails?.phone || userDetails?.phoneNumber || user?.phone || user?.mobile || '';
       const adminEmailResult = await sendAdminNotificationEmail({
-        type: 'purchase',
-        userDetails: {
-          validity: p.course_details.validity,
-          facultyName: p.course_details.facultyName,
+        studentName: userDetails?.name || userDetails?.fullName || user?.name || 'Student',
+        studentEmail: userDetails?.email || user?.email,
+        studentPhone: studentPhone,
+        courseTitle: createdPurchases.map(p => p.course_details?.title || p.course_details?.subject || 'Course').join(', '),
+        courses: createdPurchases.map(p => ({
+          title: p.course_details?.title || p.course_details?.subject,
+          mode: p.course_details?.mode,
+          validity: p.course_details?.validity,
+          facultyName: p.course_details?.facultyName,
           price: p.amount
         })),
         transactionId,
@@ -1129,10 +901,6 @@ exports.cartPurchase = async (req, res) => {
     });
   }
 };
-
-// @desc    Get purchase statistics for admin
-// @route   GET /api/purchase/stats
-// @access  Private/Admin
 exports.getPurchaseStats = async (req, res) => {
   try {
     // Total purchases count

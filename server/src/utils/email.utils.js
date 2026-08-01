@@ -198,7 +198,8 @@ const sendContactEmail = async (contactData) => {
       messageId: result.successful.map(item => item.messageId).join(', '),
       deliveredTo: result.successful.map(item => item.email),
       failedRecipients: result.failed
-    };  } catch (error) {
+    };
+  } catch (error) {
     console.error('Email sending error in sendContactEmail:', error);
     return { success: false, error: error.message };
   }
@@ -253,7 +254,6 @@ const sendEnrollmentEmail = async (userEmail, userName, courseName) => {
           <h2 style="color: #333;">Enrollment Confirmation</h2>
           <p>Dear ${userName},</p>
           <p>Your enrollment in <strong>${courseName}</strong> has been confirmed!</p>
-          <p>You can now access your course materials and start learning.</p>
           <p>If you have any questions about the course, please contact us at support@academywale.com</p>
           <p>Happy learning!<br>The AcademyWale Team</p>
         </div>
@@ -321,7 +321,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
       if (books) detailString += ` | Material: <strong>${books}</strong>`;
       if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
       if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
-      if (doubtSolving) detailString += ` | doubts: <strong>${doubtSolving}</strong>`;
+      if (doubtSolving) detailString += ` | Doubts: <strong>${doubtSolving}</strong>`;
       if (supportMail || supportCall) {
         const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
         detailString += ` | Support: <strong>${supportInfo}</strong>`;
@@ -364,8 +364,6 @@ const sendPurchaseInvoiceEmail = async (options) => {
 
           <!-- Body Content -->
           <div style="padding: 28px 25px;">
-            
-            <p style="font-size: 15px; color: #1e293b; margin-top: 0; margin-bottom: 14px;">
               Dear <strong>${userName}</strong>,
             </p>
             <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
