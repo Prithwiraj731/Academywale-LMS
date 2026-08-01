@@ -372,9 +372,31 @@ const CAFoundationPaperDetailPage = () => {
         
         {currentPaper ? (
           <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-10 shadow-lg max-w-3xl mx-auto">
-            <span className="inline-block text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mb-3">
-              CA Foundation
-            </span>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+              <span className="inline-block text-xs font-extrabold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-200 shadow-sm">
+                CA Foundation
+              </span>
+
+              {/* Paper Selector Dropdown */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+                <label htmlFor="paper-select-ca-foundation" className="text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                  Switch Paper:
+                </label>
+                <select
+                  id="paper-select-ca-foundation"
+                  value={paperSlug}
+                  onChange={(e) => navigate(`/courses/ca/foundation/${e.target.value}`)}
+                  className="bg-white border-2 border-teal-500 text-teal-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer transition-all max-w-xs"
+                >
+                  {papersData.ca.foundation.map((p) => (
+                    <option key={p.id} value={`paper-${p.id}`}>
+                      Paper {p.id}: {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
               Paper - {currentPaper.id}
             </h2>

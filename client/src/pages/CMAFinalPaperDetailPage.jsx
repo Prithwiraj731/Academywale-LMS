@@ -1,39 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackButton';
 import CourseCard from '../components/common/CourseCard';
-import SubjectFilterSidebar from '../components/common/SubjectFilterSidebar';
 import papersData from '../data/papersData';
 import { API_URL } from '../api';
 
 const CMAFinalPaperDetailPage = () => {
   const { paperSlug } = useParams();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Subject Filter state
-  const paramSubject = searchParams.get('Subject') || searchParams.get('subject');
-  const [selectedSubjects, setSelectedSubjects] = useState(paramSubject ? [paramSubject] : []);
-
-  const handleSubjectChange = (subs) => {
-    setSelectedSubjects(subs);
-    if (subs.length === 1) {
-      setSearchParams({ Subject: subs[0] });
-    } else {
-      setSearchParams({});
-    }
-  };
-
-  const filteredCourses = React.useMemo(() => {
-    if (!selectedSubjects || selectedSubjects.length === 0) return courses;
-    return courses.filter(course => {
-      const cSub = String(course.subject || course.title || '').toLowerCase();
-      return selectedSubjects.some(s => cSub.includes(s.toLowerCase()));
-    });
-  }, [courses, selectedSubjects]);
 
   // Extract paper ID from paperSlug (e.g., "paper-1" -> 1)
   const paperId = paperSlug?.replace('paper-', '');
@@ -303,9 +280,31 @@ const CMAFinalPaperDetailPage = () => {
         <BackButton />
         {currentPaper ? (
           <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-8 shadow-lg max-w-3xl mx-auto">
-            <span className="inline-block text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200 mb-3">
-              CMA Final
-            </span>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+              <span className="inline-block text-xs font-extrabold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-200 shadow-sm">
+                CMA Final
+              </span>
+
+              {/* Paper Selector Dropdown */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+                <label htmlFor="paper-select-cma-final" className="text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                  Switch Paper:
+                </label>
+                <select
+                  id="paper-select-cma-final"
+                  value={paperSlug}
+                  onChange={(e) => navigate(`/courses/cma/final/${e.target.value}`)}
+                  className="bg-white border-2 border-teal-500 text-teal-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer transition-all max-w-xs"
+                >
+                  {papersData.cma.final.map((p) => (
+                    <option key={p.id} value={`paper-${p.id}`}>
+                      Paper {p.id}: {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
               Paper - {currentPaper.id}
             </h2>
@@ -318,38 +317,28 @@ const CMAFinalPaperDetailPage = () => {
           <div className="text-center text-red-600">Paper not found.</div>
         )}
 
-        {/* Sidebar + Course Cards Layout */}
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <SubjectFilterSidebar
-            categoryTitle="CMA Final"
-            selectedSubjects={selectedSubjects}
-            onSubjectChange={handleSubjectChange}
-            availableSubjects={courses.map(c => c.subject || c.title).filter(Boolean)}
-            onClearFilters={() => handleSubjectChange([])}
-          />
+        {/* Course Cards Grid */}
+        <div className="w-full">
+          {loading && <div className="text-[#20b2aa] text-center py-10 font-bold">Loading courses...</div>}
+          {error && <div className="text-red-600 text-center py-10 font-bold">{error}</div>}
+          
+          {!loading && !error && courses.length === 0 && (
+            <div className="text-center text-gray-500 bg-white/70 backdrop-blur-sm p-10 rounded-3xl border border-gray-200 shadow-sm font-semibold max-w-xl mx-auto">
+              No courses available for this paper yet. Check back later.
+            </div>
+          )}
 
-          <div className="flex-1 w-full">
-            {loading && <div className="text-[#20b2aa] text-center py-10 font-bold">Loading courses...</div>}
-            {error && <div className="text-red-600 text-center py-10 font-bold">{error}</div>}
-            
-            {!loading && !error && filteredCourses.length === 0 && (
-              <div className="text-center text-gray-500 bg-white/70 backdrop-blur-sm p-10 rounded-3xl border border-gray-200 shadow-sm font-semibold">
-                No courses found matching selected filter.
-              </div>
-            )}
-
-            {!loading && filteredCourses.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mb-8">
-                {filteredCourses.map((course, idx) => (
-                  <CourseCard 
-                    key={course._id || course.id || idx}
-                    course={course}
-                    onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id || course.id}`)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          {!loading && courses.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 max-w-7xl mx-auto">
+              {courses.map((course, idx) => (
+                <CourseCard 
+                  key={course._id || course.id || idx}
+                  course={course}
+                  onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id || course.id}`)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
