@@ -48,6 +48,8 @@ export default function Home() {
   const [activeCertIndex, setActiveCertIndex] = useState(0);
   const carouselRef = useRef(null);
 
+  const [isPaused, setIsPaused] = useState(false);
+
   // Auto slide certificates
   useEffect(() => {
     const timer = setInterval(() => {
@@ -66,9 +68,9 @@ export default function Home() {
     }
   };
 
-  // Autoplay auto-sliding/shuffling animation for exclusive courses
+  // Autoplay auto-sliding/shuffling animation for exclusive courses (15 sec interval)
   useEffect(() => {
-    if (exclusiveCourses.length <= 1) return;
+    if (exclusiveCourses.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
       setExclusiveCourses(prev => {
         const arr = [...prev];
@@ -90,9 +92,9 @@ export default function Home() {
       if (carouselRef.current) {
         carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
       }
-    }, 4500);
+    }, 15000);
     return () => clearInterval(interval);
-  }, [exclusiveCourses.length]);
+  }, [exclusiveCourses.length, isPaused]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -433,6 +435,12 @@ export default function Home() {
             {/* Carousel track */}
             <div 
               ref={carouselRef}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={() => setIsPaused(true)}
+              onTouchEnd={() => {
+                setTimeout(() => setIsPaused(false), 3000);
+              }}
               className="flex overflow-x-auto gap-6 pb-6 scrollbar-hide scroll-smooth px-1"
               style={{ scrollSnapType: 'x mandatory' }}
             >
