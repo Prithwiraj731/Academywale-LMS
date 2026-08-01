@@ -13,9 +13,8 @@ const getAdminRecipients = () => {
 
 const getConfiguredProviders = () => {
   const providers = [];
-  if (emailConfig.brevoApiKey) providers.push('Brevo');
-  if (emailConfig.host && emailConfig.user && emailConfig.password) providers.push('SMTP');
   if (emailConfig.resendApiKey) providers.push('Resend');
+  if (emailConfig.host && emailConfig.user && emailConfig.password) providers.push('SMTP');
   return providers;
 };
 
@@ -65,60 +64,13 @@ const sendToRecipientsIndividually = async (transporter, recipients, mailOptions
 };
 
 // Create transporter for sending emails
-// Prioritizes Brevo HTTP API (HTTPS port 443 - works on Render/cloud hosting without SMTP port block)
+// Tries Resend HTTP API first (for cloud hosting) and falls back to Hostinger SMTP
 const createTransporter = () => {
   return {
     sendMail: async (mailOptions) => {
       let errors = [];
 
-      // 1. Try Brevo HTTP API first (works reliably on Render/cloud hosting without SMTP port blocks)
-      if (emailConfig.brevoApiKey) {
-        try {
-          console.log('📧 Attempting email delivery via Brevo HTTP API...');
-          const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-            method: 'POST',
-            headers: {
-              'api-key': emailConfig.brevoApiKey,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              sender: { name: 'AcademyWale', email: emailConfig.user || 'support@academywale.com' },
-              to: Array.isArray(mailOptions.to) 
-                ? mailOptions.to.map(e => typeof e === 'string' ? { email: e } : e) 
-                : [{ email: mailOptions.to }],
-              subject: mailOptions.subject,
-              htmlContent: mailOptions.html || undefined,
-              textContent: mailOptions.text || undefined
-            })
-          });
-
-          const data = await response.json();
-          if (response.ok) {
-            console.log('✅ Email sent via Brevo:', data.messageId);
-            return { messageId: data.messageId };
-          }
-          console.warn('⚠️ Brevo API warning:', data);
-          errors.push(`Brevo: ${data.message || response.statusText}`);
-        } catch (err) {
-          console.warn('⚠️ Brevo fetch error:', err.message);
-          errors.push(`Brevo: ${err.message}`);
-        }
-      }
-
-      // 2. Try Hostinger SMTP
-      if (emailConfig.host && emailConfig.user && emailConfig.password) {
-        try {
-          return await sendViaSmtp(mailOptions);
-        } catch (err) {
-          console.warn('SMTP delivery error:', err.message);
-          errors.push(`SMTP: ${err.message}`);
-        }
-      } else {
-        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
-      }
-
-      // 3. Try Resend HTTP API as fallback
+      // 1. Try Resend HTTP API if configured
       if (emailConfig.resendApiKey) {
         try {
           console.log('📧 Attempting email delivery via Resend HTTP API...');
@@ -148,6 +100,18 @@ const createTransporter = () => {
           console.warn('⚠️ Resend fetch error:', err.message);
           errors.push(`Resend: ${err.message}`);
         }
+      }
+
+      // 2. Try Hostinger SMTP
+      if (emailConfig.host && emailConfig.user && emailConfig.password) {
+        try {
+          return await sendViaSmtp(mailOptions);
+        } catch (err) {
+          console.warn('SMTP delivery error:', err.message);
+          errors.push(`SMTP: ${err.message}`);
+        }
+      } else {
+        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
       }
 
       const configuredProviders = getConfiguredProviders();
