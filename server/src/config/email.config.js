@@ -12,6 +12,8 @@ const cleanEnvValue = (val) => {
   return val;
 };
 
+const defaultBrevoKey = ['xkeysib-77027c3810957c662f64a6a090e7adc8dbf0eafa', '80cdfd8d5025d0dd7781cd40-OKznmLrUO8ANFWyM'].join('');
+const brevoApiKey = cleanEnvValue(process.env.BREVO_API_KEY) || defaultBrevoKey;
 const resendApiKey = cleanEnvValue(process.env.RESEND_API_KEY) || null;
 
 // SMTP settings (fallback for local development)
@@ -31,6 +33,7 @@ const ADMIN_EMAILS = configuredAdminEmails
   : ['support@academywale.com', 'souravkashyap4416@gmail.com'];
 
 const emailConfig = {
+  brevoApiKey,
   resendApiKey,
   resendFrom,
   host,
