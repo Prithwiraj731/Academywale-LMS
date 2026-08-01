@@ -1,5 +1,6 @@
 // Load required modules
 const path = require('path');
+const fs = require('fs');
 
 // Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -142,13 +143,17 @@ app.use('/api/migration', imageMigrationRoutes);
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Catch-all handler: send back React's index.html file for any non-API routes
+// Catch-all handler: send back React's index.html file for any non-API routes if present
 app.get('*', (req, res) => {
   // Skip API routes
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ status: 'error', message: 'API route not found' });
   }
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  const distIndexPath = path.join(__dirname, '../client/dist/index.html');
+  if (fs.existsSync(distIndexPath)) {
+    return res.sendFile(distIndexPath);
+  }
+  return res.status(200).send('AcademyWale LMS Backend API Server is running.');
 });
 
 // 404 handler for API routes only
