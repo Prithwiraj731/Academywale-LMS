@@ -247,7 +247,7 @@ const CMAFoundationPaperDetailPage = () => {
         <BackButton />
         
         {currentPaper && (
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-6 sm:p-8 text-center mb-10 shadow-lg max-w-3xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-teal-200/80 p-4 sm:p-8 text-center mb-6 sm:mb-8 shadow-lg max-w-3xl mx-auto">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
               <span className="inline-block text-xs font-extrabold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-200 shadow-sm">
                 CMA Foundation
@@ -255,14 +255,14 @@ const CMAFoundationPaperDetailPage = () => {
 
               {/* Paper Selector Dropdown */}
               <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
-                <label htmlFor="paper-select-cma-foundation" className="text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">
-                  Switch Paper:
-                </label>
+                <span className="text-xs font-extrabold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                  Paper:
+                </span>
                 <select
                   id="paper-select-cma-foundation"
                   value={paperSlug}
                   onChange={(e) => navigate(`/courses/cma/foundation/${e.target.value}`)}
-                  className="bg-white border-2 border-teal-500 text-teal-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer transition-all max-w-xs"
+                  className="bg-white border-2 border-teal-500 text-teal-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-1.5 sm:py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer transition-all max-w-[220px] sm:max-w-xs truncate"
                 >
                   {papersData.cma.foundation.map((p) => (
                     <option key={p.id} value={`paper-${p.id}`}>
@@ -277,7 +277,7 @@ const CMAFoundationPaperDetailPage = () => {
               Paper - {paperId}
             </h2>
             <div className="h-0.5 w-16 bg-gradient-to-r from-teal-500 to-[#20b2aa] mx-auto my-3 rounded-full" />
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-4">
+            <h3 className="text-base sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-4">
               {currentPaper.title}
             </h3>
             {currentPaper.description && (
