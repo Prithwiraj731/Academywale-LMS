@@ -64,13 +64,26 @@ const sendToRecipientsIndividually = async (transporter, recipients, mailOptions
 };
 
 // Create transporter for sending emails
-// Tries Resend HTTP API first (for cloud hosting) and falls back to Hostinger SMTP
+// Primary: Hostinger SMTP (support@academywale.com)
+// Secondary: Resend HTTP API (fallback)
 const createTransporter = () => {
   return {
     sendMail: async (mailOptions) => {
       let errors = [];
 
-      // 1. Try Resend HTTP API if configured
+      // 1. Try Hostinger SMTP first (Official Email Server for support@academywale.com)
+      if (emailConfig.host && emailConfig.user && emailConfig.password) {
+        try {
+          return await sendViaSmtp(mailOptions);
+        } catch (err) {
+          console.warn('SMTP delivery error:', err.message);
+          errors.push(`SMTP: ${err.message}`);
+        }
+      } else {
+        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
+      }
+
+      // 2. Try Resend HTTP API as fallback
       if (emailConfig.resendApiKey) {
         try {
           console.log('📧 Attempting email delivery via Resend HTTP API...');
@@ -100,18 +113,6 @@ const createTransporter = () => {
           console.warn('⚠️ Resend fetch error:', err.message);
           errors.push(`Resend: ${err.message}`);
         }
-      }
-
-      // 2. Try Hostinger SMTP
-      if (emailConfig.host && emailConfig.user && emailConfig.password) {
-        try {
-          return await sendViaSmtp(mailOptions);
-        } catch (err) {
-          console.warn('SMTP delivery error:', err.message);
-          errors.push(`SMTP: ${err.message}`);
-        }
-      } else {
-        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
       }
 
       const configuredProviders = getConfiguredProviders();
