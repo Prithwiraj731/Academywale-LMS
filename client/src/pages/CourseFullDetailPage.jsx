@@ -628,10 +628,15 @@ const CourseFullDetailPage = () => {
             </h1>
 
             {/* Red Call or WhatsApp subtitle */}
-            <div className="text-red-600 font-bold text-sm sm:text-base flex items-center gap-2 bg-red-50/50 p-2.5 rounded-lg border border-red-100">
-              <FaPhoneAlt className="text-xs shrink-0" />
+            <a
+              href="https://wa.me/919693320108"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-700 hover:text-red-800 font-extrabold text-xs sm:text-sm md:text-base flex items-center gap-2.5 bg-red-50/90 p-3 rounded-xl border border-red-200 shadow-xs hover:bg-red-100/80 transition-all cursor-pointer"
+            >
+              <FaPhoneAlt className="text-xs sm:text-sm text-red-600 shrink-0" />
               <span>Call or Whatsapp for more Details or Offers - 9693320108</span>
-            </div>
+            </a>
 
             {/* Options Selection Form (Label on left, Dropdown on right) */}
             {course.modeAttemptPricing && course.modeAttemptPricing.length > 0 && (
