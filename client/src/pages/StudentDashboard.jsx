@@ -682,13 +682,13 @@ export default function StudentDashboard() {
                         </summary>
                         <div className="p-4 pt-0 border-t border-neutral-800/60 text-xs text-neutral-300 space-y-2 mt-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{user.name || 'Learner'}</strong>
+                            <span className="text-neutral-400">👤</span> <strong className="text-white text-sm">{selectedOrderDetail.user_details?.fullName || selectedOrderDetail.user_details?.name || user.name || 'Learner'}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{user.email}</strong>
+                            <span className="text-neutral-400">✉️</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.email || user.email}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{user.phone || '+917557021866'}</strong>
+                            <span className="text-neutral-400">📱</span> <strong className="text-white text-sm underline">{selectedOrderDetail.user_details?.phone || selectedOrderDetail.user_details?.phoneNumber || user.phone || user.mobile || ''}</strong>
                           </div>
                         </div>
                       </details>
