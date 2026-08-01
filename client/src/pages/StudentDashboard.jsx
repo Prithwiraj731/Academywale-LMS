@@ -250,89 +250,84 @@ export default function StudentDashboard() {
                   return (
                     <div 
                       key={purchase.id} 
-                      className="bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-white rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group"
+                      className="bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-white rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group space-y-4"
                     >
-                      {/* Card Poster Image with Overlay Badges */}
-                      <div className="relative bg-slate-950 aspect-square flex items-center justify-center overflow-hidden border-b border-slate-800 p-2">
-                        <img 
-                          src={poster} 
-                          alt={courseDetails.title || courseDetails.subject || 'Course'}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
-                        />
-                        
-                        {/* Status Badge */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                          {isPending ? (
-                            <span className="bg-amber-500/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-amber-400/30 flex items-center gap-1">
-                              <FaClock className="text-xs" /> Verification Pending
-                            </span>
-                          ) : purchase.isExpired ? (
-                            <span className="bg-red-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-red-400/30">
-                              Expired
+                      <div>
+                        {/* Header Badge Row */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          {courseDetails.subject ? (
+                            <span className="bg-teal-950/80 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+                              {courseDetails.subject}
                             </span>
                           ) : (
-                            <span className="bg-emerald-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-emerald-400/30 flex items-center gap-1">
-                              <FaCheckCircle className="text-xs" /> Active Course
+                            <span className="bg-slate-800 text-slate-300 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+                              Enrolled Course
+                            </span>
+                          )}
+
+                          {/* Status Badge */}
+                          <div>
+                            {isPending ? (
+                              <span className="bg-amber-500/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-amber-400/30 flex items-center gap-1">
+                                <FaClock className="text-xs" /> Verification Pending
+                              </span>
+                            ) : purchase.isExpired ? (
+                              <span className="bg-red-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-red-400/30">
+                                Expired
+                              </span>
+                            ) : (
+                              <span className="bg-emerald-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-emerald-400/30 flex items-center gap-1">
+                                <FaCheckCircle className="text-xs" /> Active Course
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Course Title */}
+                        <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug mb-2 group-hover:text-teal-300 transition-colors">
+                          {courseDetails.title || courseDetails.subject || 'Enrolled Course'}
+                        </h3>
+                        
+                        {/* Faculty */}
+                        <p className="text-xs text-slate-400 font-semibold mb-3">
+                          Faculty: <span className="text-[#20b2aa] font-bold">{courseDetails.facultyName || 'AcademyWale Faculty'}</span>
+                        </p>
+
+                        {/* Mode & Validity Pills */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {courseDetails.mode && (
+                            <span className="bg-slate-800/90 text-slate-300 border border-slate-700/80 text-[11px] px-2.5 py-1 rounded-md font-semibold">
+                              Mode: {courseDetails.mode}
+                            </span>
+                          )}
+                          {(courseDetails.validity || courseDetails.attempt) && (
+                            <span className="bg-slate-800/90 text-slate-300 border border-slate-700/80 text-[11px] px-2.5 py-1 rounded-md font-semibold">
+                              Validity: {courseDetails.validity || courseDetails.attempt}
                             </span>
                           )}
                         </div>
 
-                        {/* Subject Tag Overlay */}
-                        {courseDetails.subject && (
-                          <div className="absolute bottom-3 left-3 bg-slate-900/90 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md backdrop-blur-md z-10">
-                            {courseDetails.subject}
-                          </div>
-                        )}
+                        {/* Purchase Date */}
+                        <p className="text-[11px] text-slate-400 font-medium">
+                          Purchased: {formatDate(purchase.purchaseDate || purchase.created_at)}
+                        </p>
                       </div>
 
-                      {/* Card Content Details */}
-                      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      {/* Price Paid & Details Action */}
+                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
                         <div>
-                          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug mb-1.5 group-hover:text-teal-300 transition-colors">
-                            {courseDetails.title || courseDetails.subject || 'Enrolled Course'}
-                          </h3>
-                          
-                          <p className="text-xs text-slate-400 font-semibold mb-3">
-                            Faculty: <span className="text-[#20b2aa] font-bold">{courseDetails.facultyName || 'AcademyWale Faculty'}</span>
-                          </p>
-
-                          {/* Mode & Validity Pills */}
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            {courseDetails.mode && (
-                              <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold">
-                                Mode: {courseDetails.mode}
-                              </span>
-                            )}
-                            {(courseDetails.validity || courseDetails.attempt) && (
-                              <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[10px] px-2 py-0.5 rounded-md font-bold">
-                                Validity: {courseDetails.validity || courseDetails.attempt}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Purchase Date */}
-                          <p className="text-[11px] text-slate-500 font-medium">
-                            Purchased: {formatDate(purchase.purchaseDate || purchase.created_at)}
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Amount Paid</p>
+                          <p className="text-lg font-extrabold text-teal-400 font-mono">
+                            ₹{Number(purchase.amount || 0).toLocaleString('en-IN')}
                           </p>
                         </div>
 
-                        {/* Price Paid & Details Action */}
-                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Amount Paid</p>
-                            <p className="text-lg font-extrabold text-teal-400 font-mono">
-                              ₹{Number(purchase.amount || 0).toLocaleString('en-IN')}
-                            </p>
-                          </div>
-
-                          <button
-                            onClick={() => setSelectedOrderDetail(purchase)}
-                            className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-teal-500/20 cursor-pointer flex items-center gap-1.5"
-                          >
-                            <FaFileInvoiceDollar /> View Invoice
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => setSelectedOrderDetail(purchase)}
+                          className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-teal-500/20 cursor-pointer flex items-center gap-1.5"
+                        >
+                          <FaFileInvoiceDollar /> View Invoice
+                        </button>
                       </div>
                     </div>
                   );
