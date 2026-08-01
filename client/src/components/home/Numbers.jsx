@@ -4,13 +4,13 @@ import { FaHeadset, FaSmile, FaMapMarkerAlt, FaUsers, FaBoxOpen, FaChalkboardTea
 const numbers = [
   { 
     label: 'Students Network', 
-    value: '50+',
+    value: '5000+',
     icon: <FaUsers className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Active learners'
   },
   { 
     label: 'Successful Orders', 
-    value: '100+',
+    value: '10000+',
     icon: <FaBoxOpen className="text-primary text-5xl xs:text-6xl sm:text-7xl" />,
     description: 'Completed orders'
   },

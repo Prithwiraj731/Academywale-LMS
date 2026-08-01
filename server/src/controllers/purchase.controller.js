@@ -368,6 +368,121 @@ exports.checkCoursePurchase = async (req, res) => {
 // @desc    Purchase a course via UPI
 // @route   POST /api/purchase/upi-purchase
 // @access  Private
+// @desc    Get user's purchased courses
+// @route   GET /api/purchase/user/:userId
+// @access  Private
+exports.getUserPurchases = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Resolve user UUID
+    const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    let userQuery = isUserUuid ? 'id' : 'mongo_id';
+
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, mobile, phone')
+      .eq(userQuery, userId)
+      .maybeSingle();
+
+    if (userError || !user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { data: purchases, error: purchaseErr } = await supabaseAdmin
+      .from('purchases')
+      .select(`
+        *,
+        courses (*),
+        faculties (*)
+      `)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('purchase_date', { ascending: false });
+
+    if (purchaseErr) throw purchaseErr;
+
+    // Format output for dashboard
+    const formattedPurchases = (purchases || []).map(p => {
+      const course = p.courses || {};
+      const faculty = p.faculties || {};
+      const courseDetails = p.course_details || {};
+      const userDetails = p.user_details || {};
+
+      const studentPhone = userDetails.phone || userDetails.phoneNumber || userDetails.phone_number || user.mobile || user.phone || '';
+
+      return {
+        id: p.id,
+        transaction_id: p.transaction_id,
+        transactionId: p.transaction_id,
+        amount: p.amount,
+        payment_method: p.payment_method,
+        paymentMethod: p.payment_method,
+        payment_status: p.payment_status,
+        paymentStatus: p.payment_status,
+        purchase_date: p.purchase_date,
+        purchaseDate: p.purchase_date,
+        access_expiry: p.access_expiry,
+        accessExpiry: p.access_expiry,
+        user_details: {
+          fullName: userDetails.fullName || userDetails.name || user.name || 'Student',
+          email: userDetails.email || user.email,
+          phone: studentPhone,
+          address: userDetails.address || {}
+        },
+        userDetails: {
+          fullName: userDetails.fullName || userDetails.name || user.name || 'Student',
+          email: userDetails.email || user.email,
+          phone: studentPhone,
+          address: userDetails.address || {}
+        },
+        course_details: {
+          title: courseDetails.title || course.title || course.subject,
+          subject: courseDetails.subject || course.subject,
+          poster_url: courseDetails.poster_url || courseDetails.posterUrl || course.poster_url || course.posterUrl || '',
+          posterUrl: courseDetails.poster_url || courseDetails.posterUrl || course.poster_url || course.posterUrl || '',
+          mode: courseDetails.mode || course.mode || '',
+          validity: courseDetails.validity || courseDetails.attempt || course.validity || '',
+          attempt: courseDetails.attempt || courseDetails.validity || course.attempt || '',
+          facultyName: courseDetails.facultyName || faculty.name || course.faculty_name || '',
+          noOfLecture: courseDetails.noOfLecture || course.no_of_lecture || '',
+          books: courseDetails.books || course.books || '',
+          videoLanguage: courseDetails.videoLanguage || course.video_language || 'Hindi',
+          videoRunOn: courseDetails.videoRunOn || course.video_run_on || '',
+          timing: courseDetails.timing || course.timing || '',
+          doubtSolving: courseDetails.doubtSolving || course.doubt_solving || '',
+          supportMail: courseDetails.supportMail || course.support_mail || '',
+          supportCall: courseDetails.supportCall || course.support_call || '',
+          institute: courseDetails.institute || course.institute_name || '',
+          selectedOptions: courseDetails.selectedOptions || {}
+        },
+        course: {
+          id: course.id,
+          title: course.title || course.subject,
+          subject: course.subject,
+          faculty_name: faculty.name || course.faculty_name
+        }
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      purchases: formattedPurchases
+    });
+
+  } catch (error) {
+    console.error('Get purchases error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch purchases',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Purchase a course via UPI
+// @route   POST /api/purchase/upi-purchase
+// @access  Private
 exports.upiPurchase = async (req, res) => {
   try {
     const { userId, courseId, transactionId, amount, userDetails, courseDetails, coupon, discountPercent } = req.body;
@@ -722,14 +837,29 @@ exports.cartPurchase = async (req, res) => {
     const isUserUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
     let userQuery = isUserUuid ? 'id' : 'mongo_id';
     
-    const { data: user, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq(userQuery, userId)
-      .maybeSingle();
+    let user = null;
+    if (isUserUuid) {
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('id', userId).maybeSingle();
+      user = data;
+    }
+    if (!user) {
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('mongo_id', userId).maybeSingle();
+      user = data;
+    }
+    if (!user && userDetails?.email) {
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('email', userDetails.email).maybeSingle();
+      user = data;
+    }
 
-    if (userError || !user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User account not found' });
+    }
+
+    const studentPhone = userDetails?.phone || userDetails?.phoneNumber || userDetails?.phone_number || user?.phone || user?.mobile || '';
+
+    // Automatically sync phone to user profile if missing
+    if (user && studentPhone && (!user.mobile || !user.phone)) {
+      await supabaseAdmin.from('users').update({ mobile: studentPhone, phone: studentPhone }).eq('id', user.id);
     }
 
     const createdPurchases = [];
@@ -1191,6 +1321,13 @@ exports.verifyRazorpayPayment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User account not found' });
     }
 
+    const studentPhone = userDetails?.phone || userDetails?.phoneNumber || userDetails?.phone_number || user?.phone || user?.mobile || '';
+
+    // Automatically sync phone to user profile if missing
+    if (user && studentPhone && (!user.mobile || !user.phone)) {
+      await supabaseAdmin.from('users').update({ mobile: studentPhone, phone: studentPhone }).eq('id', user.id);
+    }
+
     const createdPurchases = [];
     const skippedPurchases = [];
     const isCart = Array.isArray(cartItems) && cartItems.length > 0;
@@ -1251,6 +1388,12 @@ exports.verifyRazorpayPayment = async (req, res) => {
           amount: itemPayableAmount,
           transaction_id: `${razorpay_payment_id}${isCart ? `_${idx + 1}` : ''}`,
           payment_status: 'completed',
+          user_details: {
+            fullName: userDetails?.fullName || userDetails?.name || user?.name || 'Student',
+            email: userDetails?.email || user?.email,
+            phone: studentPhone,
+            address: userDetails?.address || {}
+          },
            course_details: {
             title: course.title || course.subject,
             subject: course.subject,
