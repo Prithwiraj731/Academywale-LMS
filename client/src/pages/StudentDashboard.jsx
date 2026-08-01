@@ -70,6 +70,21 @@ export default function StudentDashboard() {
     });
   };
 
+  const getCleanTag = (details) => {
+    if (!details) return 'Online Course';
+    const raw = details.category || details.level || details.subject || details.title || '';
+    if (/CMA\s*Final/i.test(raw)) return 'CMA Final';
+    if (/CMA\s*Inter/i.test(raw)) return 'CMA Inter';
+    if (/CMA\s*Foundation/i.test(raw)) return 'CMA Foundation';
+    if (/CA\s*Final/i.test(raw)) return 'CA Final';
+    if (/CA\s*Inter/i.test(raw)) return 'CA Inter';
+    if (/CA\s*Foundation/i.test(raw)) return 'CA Foundation';
+    
+    if (raw.length > 0 && raw.length <= 18) return raw;
+
+    return 'Online Course';
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -85,39 +100,39 @@ export default function StudentDashboard() {
   const pendingCount = purchases.filter(p => p.paymentStatus === 'pending_verification' || p.paymentStatus === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-950 text-white py-6 sm:py-8 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
         
         {/* Top Student Header Card */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 sm:p-8 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800/90 p-4 sm:p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
             {/* Student Avatar & Basic Info */}
-            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-teal-600 flex items-center justify-center shadow-md">
+            <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-5 text-center sm:text-left w-full sm:w-auto">
+              <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-teal-600 flex items-center justify-center shadow-md flex-shrink-0">
                 <span className="text-2xl sm:text-3xl font-bold text-white uppercase select-none">
                   {user.name ? user.name[0] : 'U'}
                 </span>
               </div>
 
-              <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 text-teal-400 text-[11px] font-bold mb-1.5 uppercase tracking-wider border border-slate-700">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 text-teal-400 text-[10px] sm:text-[11px] font-bold mb-1 uppercase tracking-wider border border-slate-700">
                   <FaUserGraduate className="text-xs" />
                   <span>Student Panel</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight break-words">
                   Welcome back, <span className="text-[#20b2aa]">{user.name || 'Learner'}</span>!
                 </h1>
-                <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5">
+                <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5 truncate max-w-xs sm:max-w-md mx-auto sm:mx-0">
                   {user.email}
                 </p>
               </div>
             </div>
             
             {/* Header Action Navigation Pills */}
-            <div className="flex gap-3 w-full sm:w-auto justify-center">
+            <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto justify-center">
               <button 
                 onClick={() => setActiveTab('courses')}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'courses' 
                     ? 'bg-[#20b2aa] text-white shadow-sm' 
                     : 'bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -128,7 +143,7 @@ export default function StudentDashboard() {
               </button>
               <button 
                 onClick={() => setActiveTab('cart')}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'cart' 
                     ? 'bg-[#20b2aa] text-white shadow-sm' 
                     : 'bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -142,51 +157,51 @@ export default function StudentDashboard() {
         </div>
 
         {/* Clean Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {/* Purchased Metric */}
-          <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-slate-800 rounded-xl text-teal-400">
-              <FaBookOpen className="text-xl" />
+          <div className="bg-slate-900/90 rounded-2xl p-3.5 sm:p-5 border border-slate-800/90 shadow-sm flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2.5 sm:p-3 bg-slate-800/90 rounded-xl text-teal-400 flex-shrink-0">
+              <FaBookOpen className="text-lg sm:text-xl" />
             </div>
-            <div>
-              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Purchased</p>
-              <p className="text-2xl sm:text-3xl font-extrabold text-white">{purchases.length}</p>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">Purchased</p>
+              <p className="text-xl sm:text-3xl font-extrabold text-white leading-tight">{purchases.length}</p>
             </div>
           </div>
           
           {/* Active Metric */}
-          <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-slate-800 rounded-xl text-emerald-400">
-              <FaCheckCircle className="text-xl" />
+          <div className="bg-slate-900/90 rounded-2xl p-3.5 sm:p-5 border border-slate-800/90 shadow-sm flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2.5 sm:p-3 bg-slate-800/90 rounded-xl text-emerald-400 flex-shrink-0">
+              <FaCheckCircle className="text-lg sm:text-xl" />
             </div>
-            <div>
-              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Active</p>
-              <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400">{activeCount}</p>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">Active</p>
+              <p className="text-xl sm:text-3xl font-extrabold text-emerald-400 leading-tight">{activeCount}</p>
             </div>
           </div>
           
           {/* Pending Metric */}
-          <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm flex items-center space-x-4">
-            <div className="p-3 bg-slate-800 rounded-xl text-amber-400">
-              <FaClock className="text-xl" />
+          <div className="bg-slate-900/90 rounded-2xl p-3.5 sm:p-5 border border-slate-800/90 shadow-sm flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2.5 sm:p-3 bg-slate-800/90 rounded-xl text-amber-400 flex-shrink-0">
+              <FaClock className="text-lg sm:text-xl" />
             </div>
-            <div>
-              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Pending</p>
-              <p className="text-2xl sm:text-3xl font-extrabold text-amber-400">{pendingCount}</p>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">Pending</p>
+              <p className="text-xl sm:text-3xl font-extrabold text-amber-400 leading-tight">{pendingCount}</p>
             </div>
           </div>
           
           {/* In Cart Metric */}
           <div 
             onClick={() => setActiveTab('cart')}
-            className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-sm flex items-center space-x-4 cursor-pointer hover:border-slate-700 transition-colors"
+            className="bg-slate-900/90 rounded-2xl p-3.5 sm:p-5 border border-slate-800/90 shadow-sm flex items-center space-x-3 sm:space-x-4 cursor-pointer hover:border-slate-700 transition-colors"
           >
-            <div className="p-3 bg-slate-800 rounded-xl text-purple-400">
-              <FaShoppingCart className="text-xl" />
+            <div className="p-2.5 sm:p-3 bg-slate-800/90 rounded-xl text-purple-400 flex-shrink-0">
+              <FaShoppingCart className="text-lg sm:text-xl" />
             </div>
-            <div>
-              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">In Cart</p>
-              <p className="text-2xl sm:text-3xl font-extrabold text-purple-400">{cartCount}</p>
+            <div className="min-w-0">
+              <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">In Cart</p>
+              <p className="text-xl sm:text-3xl font-extrabold text-purple-400 leading-tight">{cartCount}</p>
             </div>
           </div>
         </div>
@@ -195,7 +210,7 @@ export default function StudentDashboard() {
         {activeTab === 'courses' ? (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+              <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5 sm:gap-3">
                 <FaUserGraduate className="text-[#20b2aa]" />
                 <span>My Purchased Courses</span>
               </h2>
@@ -238,45 +253,37 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            {/* Clean 3-Column Grid Cards for Enrolled Courses */}
-            {/* Professional Grid Cards for Enrolled Courses */}
             {!loading && !error && purchases.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {purchases.map((purchase) => {
                   const courseDetails = purchase.courseDetails || purchase.course_details || {};
-                  const poster = getCourseImageUrl(courseDetails.posterUrl || courseDetails.poster_url || courseDetails.poster || courseDetails);
                   const isPending = purchase.paymentStatus === 'pending_verification' || purchase.paymentStatus === 'pending';
+                  const cleanTag = getCleanTag(courseDetails);
                   
                   return (
                     <div 
                       key={purchase.id} 
-                      className="bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-white rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group space-y-4"
+                      className="bg-slate-900/90 border border-slate-800/90 hover:border-teal-500/40 text-white rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group space-y-4"
                     >
                       <div>
                         {/* Header Badge Row */}
                         <div className="flex items-center justify-between gap-2 mb-3">
-                          {courseDetails.subject ? (
-                            <span className="bg-teal-950/80 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
-                              {courseDetails.subject}
-                            </span>
-                          ) : (
-                            <span className="bg-slate-800 text-slate-300 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
-                              Enrolled Course
-                            </span>
-                          )}
+                          <span className="bg-teal-950/80 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold truncate max-w-[55%]">
+                            {cleanTag}
+                          </span>
 
                           {/* Status Badge */}
-                          <div>
+                          <div className="flex-shrink-0">
                             {isPending ? (
-                              <span className="bg-amber-500/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-amber-400/30 flex items-center gap-1">
+                              <span className="bg-amber-500/90 text-white text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md border border-amber-400/30 flex items-center gap-1">
                                 <FaClock className="text-xs" /> Verification Pending
                               </span>
                             ) : purchase.isExpired ? (
-                              <span className="bg-red-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-red-400/30">
+                              <span className="bg-red-600/90 text-white text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md border border-red-400/30">
                                 Expired
                               </span>
                             ) : (
-                              <span className="bg-emerald-600/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md border border-emerald-400/30 flex items-center gap-1">
+                              <span className="bg-emerald-600/90 text-white text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md border border-emerald-400/30 flex items-center gap-1">
                                 <FaCheckCircle className="text-xs" /> Active Course
                               </span>
                             )}
@@ -284,7 +291,7 @@ export default function StudentDashboard() {
                         </div>
 
                         {/* Course Title */}
-                        <h3 className="text-base sm:text-lg font-bold text-white line-clamp-2 leading-snug mb-2 group-hover:text-teal-300 transition-colors">
+                        <h3 className="text-sm sm:text-base font-extrabold text-white line-clamp-2 leading-snug mb-2 group-hover:text-teal-300 transition-colors">
                           {courseDetails.title || courseDetails.subject || 'Enrolled Course'}
                         </h3>
                         
@@ -296,12 +303,12 @@ export default function StudentDashboard() {
                         {/* Mode & Validity Pills */}
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {courseDetails.mode && (
-                            <span className="bg-slate-800/90 text-slate-300 border border-slate-700/80 text-[11px] px-2.5 py-1 rounded-md font-semibold">
+                            <span className="bg-slate-800/90 text-slate-200 border border-slate-700/80 text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg font-semibold">
                               Mode: {courseDetails.mode}
                             </span>
                           )}
                           {(courseDetails.validity || courseDetails.attempt) && (
-                            <span className="bg-slate-800/90 text-slate-300 border border-slate-700/80 text-[11px] px-2.5 py-1 rounded-md font-semibold">
+                            <span className="bg-slate-800/90 text-slate-200 border border-slate-700/80 text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg font-semibold">
                               Validity: {courseDetails.validity || courseDetails.attempt}
                             </span>
                           )}
@@ -316,15 +323,15 @@ export default function StudentDashboard() {
                       {/* Price Paid & Details Action */}
                       <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
                         <div>
-                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Amount Paid</p>
-                          <p className="text-lg font-extrabold text-teal-400 font-mono">
+                          <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Amount Paid</p>
+                          <p className="text-base sm:text-xl font-extrabold text-teal-400 font-mono">
                             ₹{Number(purchase.amount || 0).toLocaleString('en-IN')}
                           </p>
                         </div>
 
                         <button
                           onClick={() => setSelectedOrderDetail(purchase)}
-                          className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-teal-500/20 cursor-pointer flex items-center gap-1.5"
+                          className="bg-[#20b2aa] hover:bg-[#1a9690] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-teal-500/20 active:scale-95 cursor-pointer flex items-center gap-1.5"
                         >
                           <FaFileInvoiceDollar /> View Invoice
                         </button>
