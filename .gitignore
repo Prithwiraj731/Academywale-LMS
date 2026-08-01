@@ -4,6 +4,7 @@ jspm_packages/
 web_modules/
 
 # Local env files
+*.env
 .env
 .env.example
 .env.local

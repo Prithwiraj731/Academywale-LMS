@@ -253,16 +253,16 @@ export default function StudentDashboard() {
                       className="bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-white rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-teal-500/10 group"
                     >
                       {/* Card Poster Image with Overlay Badges */}
-                      <div className="relative bg-slate-950 aspect-video flex items-center justify-center overflow-hidden border-b border-slate-800">
+                      <div className="relative bg-slate-950 aspect-square flex items-center justify-center overflow-hidden border-b border-slate-800 p-2">
                         <img 
                           src={poster} 
                           alt={courseDetails.title || courseDetails.subject || 'Course'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                         />
                         
                         {/* Status Badge */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                           {isPending ? (
                             <span className="bg-amber-500/90 text-white text-[11px] px-3 py-1 rounded-full font-bold shadow-md backdrop-blur-md border border-amber-400/30 flex items-center gap-1">
                               <FaClock className="text-xs" /> Verification Pending
@@ -280,7 +280,7 @@ export default function StudentDashboard() {
 
                         {/* Subject Tag Overlay */}
                         {courseDetails.subject && (
-                          <div className="absolute bottom-3 left-3 bg-slate-900/90 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md backdrop-blur-md">
+                          <div className="absolute bottom-3 left-3 bg-slate-900/90 text-[#20b2aa] border border-teal-500/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-md backdrop-blur-md z-10">
                             {courseDetails.subject}
                           </div>
                         )}
@@ -376,11 +376,11 @@ export default function StudentDashboard() {
                         key={item.uniqueId} 
                         className="bg-neutral-950 rounded-2xl p-4 border border-neutral-800 shadow-md flex flex-col sm:flex-row items-center gap-4 hover:border-teal-500/40 transition-colors"
                       >
-                        <div className="w-full sm:w-28 h-20 bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-neutral-800">
+                        <div className="w-full sm:w-28 h-24 bg-neutral-900 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-neutral-800 p-1">
                           <img 
                             src={poster} 
                             alt={item.title} 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             onError={(e) => { e.target.onerror = null; e.target.src = '/logo.svg'; }}
                           />
                         </div>

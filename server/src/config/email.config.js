@@ -12,7 +12,6 @@ const cleanEnvValue = (val) => {
   return val;
 };
 
-const brevoApiKey = cleanEnvValue(process.env.BREVO_API_KEY) || null;
 const resendApiKey = cleanEnvValue(process.env.RESEND_API_KEY) || null;
 
 // SMTP settings (fallback for local development)
@@ -32,7 +31,6 @@ const ADMIN_EMAILS = configuredAdminEmails
   : ['support@academywale.com', 'souravkashyap4416@gmail.com'];
 
 const emailConfig = {
-  brevoApiKey,
   resendApiKey,
   resendFrom,
   host,
