@@ -16,10 +16,12 @@ export default function ContactForm() {
   };
 
   const [status, setStatus] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus(null);
+    setLoading(true);
 
     try {
       const response = await fetch(`${API_URL}/api/contact`, {
@@ -39,9 +41,9 @@ export default function ContactForm() {
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (data.success) {
+      if (response.ok && data.success) {
         setStatus({ success: true, message: data.message || 'Message sent successfully.' });
         setFormData({ name: '', phone: '', city: '' });
       } else {
@@ -49,6 +51,8 @@ export default function ContactForm() {
       }
     } catch (error) {
       setStatus({ success: false, message: 'An error occurred. Please try again later.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,6 +68,7 @@ export default function ContactForm() {
             className="px-3 xs:px-4 py-2 xs:py-3 rounded border text-sm xs:text-base"
             value={formData.name}
             onChange={handleChange}
+            disabled={loading}
             required
           />
           <input
@@ -73,6 +78,7 @@ export default function ContactForm() {
             className="px-3 xs:px-4 py-2 xs:py-3 rounded border text-sm xs:text-base"
             value={formData.phone}
             onChange={handleChange}
+            disabled={loading}
             required
           />
           <input
@@ -82,13 +88,15 @@ export default function ContactForm() {
             className="px-3 xs:px-4 py-2 xs:py-3 rounded border text-sm xs:text-base"
             value={formData.city}
             onChange={handleChange}
+            disabled={loading}
             required
           />
           <button
             type="submit"
+            disabled={loading}
             className="bg-blue-600 text-white rounded px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
-            Request a Call Back
+            {loading ? 'Sending...' : 'Request a Call Back'}
           </button>
           {status && (
             <p className={`mt-3 text-center ${status.success ? 'text-green-600' : 'text-red-600'}`}>

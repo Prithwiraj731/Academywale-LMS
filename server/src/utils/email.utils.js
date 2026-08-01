@@ -13,10 +13,36 @@ const getAdminRecipients = () => {
 
 const getConfiguredProviders = () => {
   const providers = [];
+  if (emailConfig.host && emailConfig.user && emailConfig.password) providers.push('SMTP');
   if (emailConfig.brevoApiKey) providers.push('Brevo');
   if (emailConfig.resendApiKey) providers.push('Resend');
-  if (emailConfig.host && emailConfig.user && emailConfig.password) providers.push('SMTP');
   return providers;
+};
+
+const sendViaSmtp = async (mailOptions) => {
+  console.log('Attempting email delivery via Hostinger SMTP...');
+  const smtpTransport = nodemailer.createTransport({
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
+    auth: {
+      user: emailConfig.user,
+      pass: emailConfig.password
+    },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000
+  });
+
+  const toAddress = Array.isArray(mailOptions.to) ? mailOptions.to.join(', ') : mailOptions.to;
+  const result = await smtpTransport.sendMail({
+    ...mailOptions,
+    to: toAddress
+  });
+
+  console.log('Email sent via Hostinger SMTP:', result.messageId);
+  return result;
 };
 
 // Create transporter for sending emails
@@ -26,7 +52,20 @@ const createTransporter = () => {
     sendMail: async (mailOptions) => {
       let errors = [];
 
-      // 1. Try Brevo HTTP API if configured
+      // 1. Try Hostinger SMTP first. Resend is currently optional because it
+      // requires the academywale.com domain to be verified in Resend.
+      if (emailConfig.host && emailConfig.user && emailConfig.password) {
+        try {
+          return await sendViaSmtp(mailOptions);
+        } catch (err) {
+          console.warn('SMTP delivery error:', err.message);
+          errors.push(`SMTP: ${err.message}`);
+        }
+      } else {
+        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
+      }
+
+      // 2. Try Brevo HTTP API if configured
       if (emailConfig.brevoApiKey) {
         try {
           console.log('📧 Attempting email delivery via Brevo HTTP API...');
@@ -61,7 +100,7 @@ const createTransporter = () => {
         }
       }
 
-      // 2. Try Resend HTTP API if configured
+      // 3. Try Resend HTTP API if configured
       if (emailConfig.resendApiKey) {
         try {
           console.log('📧 Attempting email delivery via Resend HTTP API...');
@@ -91,40 +130,6 @@ const createTransporter = () => {
           console.warn('⚠️ Resend fetch error:', err.message);
           errors.push(`Resend: ${err.message}`);
         }
-      }
-
-      // 3. Fallback to Hostinger SMTP via Nodemailer
-      if (emailConfig.host && emailConfig.user && emailConfig.password) {
-        try {
-          console.log('Attempting email delivery via Hostinger SMTP...');
-          const smtpTransport = nodemailer.createTransport({
-            host: emailConfig.host,
-            port: emailConfig.port,
-            secure: emailConfig.secure,
-            auth: {
-              user: emailConfig.user,
-              pass: emailConfig.password
-            },
-            tls: { rejectUnauthorized: false },
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 15000
-          });
-
-          const toAddress = Array.isArray(mailOptions.to) ? mailOptions.to.join(', ') : mailOptions.to;
-          const result = await smtpTransport.sendMail({
-            ...mailOptions,
-            to: toAddress
-          });
-
-          console.log('Email sent via Hostinger SMTP:', result.messageId);
-          return result;
-        } catch (err) {
-          console.warn('SMTP delivery error:', err.message);
-          errors.push(`SMTP: ${err.message}`);
-        }
-      } else {
-        errors.push('SMTP: missing EMAIL_HOST, EMAIL_USER, or EMAIL_PASSWORD/EMAIL_PASS');
       }
 
       const configuredProviders = getConfiguredProviders();

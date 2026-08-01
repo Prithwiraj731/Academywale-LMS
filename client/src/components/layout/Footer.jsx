@@ -13,6 +13,7 @@ export default function Footer() {
     city: '',
   });
   const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -24,6 +25,7 @@ export default function Footer() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus(null);
+    setLoading(true);
 
     try {
       const response = await fetch(`${API_URL}/api/contact`, {
@@ -43,9 +45,9 @@ export default function Footer() {
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (data.success) {
+      if (response.ok && data.success) {
         setStatus({ success: true, message: data.message || 'Message sent successfully.' });
         setFormData({ fullName: '', phoneNumber: '', city: '' });
       } else {
@@ -53,6 +55,8 @@ export default function Footer() {
       }
     } catch (error) {
       setStatus({ success: false, message: 'An error occurred. Please try again later.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,6 +134,7 @@ export default function Footer() {
                   className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
                   value={formData.fullName}
                   onChange={handleChange}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -141,6 +146,7 @@ export default function Footer() {
                   className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
                   value={formData.phoneNumber}
                   onChange={handleChange}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -152,6 +158,7 @@ export default function Footer() {
                   className="w-full px-3.5 py-2.5 bg-gray-800/80 border border-gray-700/85 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#20b2aa] focus:ring-2 focus:ring-[#20b2aa]/20 transition-all duration-300 text-sm hover:border-gray-600"
                   value={formData.city}
                   onChange={handleChange}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -159,8 +166,9 @@ export default function Footer() {
                 type="submit" 
                 size="default"
                 className="w-full shadow-md hover:shadow-[#20b2aa]/10 font-bold"
+                disabled={loading}
               >
-                Request a Call Back
+                {loading ? 'Sending...' : 'Request a Call Back'}
               </MorphyButton>
 
 

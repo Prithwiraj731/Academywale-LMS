@@ -2,6 +2,14 @@ const { supabaseAdmin } = require('../config/supabase.config');
 const { sendPurchaseInvoiceEmail, sendAdminNotificationEmail } = require('../utils/email.utils');
 const { recordCouponUsage } = require('../utils/couponMetadata');
 
+const logEmailResult = (label, result) => {
+  if (result?.success) {
+    console.log(`${label} sent:`, result.messageId);
+  } else {
+    console.error(`${label} failed:`, result?.error || 'Unknown email error');
+  }
+};
+
 // Generate unique transaction ID
 const generateTransactionId = () => {
   return 'TXN' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -119,7 +127,7 @@ exports.purchaseCourse = async (req, res) => {
     // Send invoice email to student
     try {
       if (user && user.email) {
-        await sendPurchaseInvoiceEmail({
+        const invoiceResult = await sendPurchaseInvoiceEmail({
           userEmail: user.email,
           userName: user.name,
           purchases: [purchase.course_details],
@@ -127,6 +135,7 @@ exports.purchaseCourse = async (req, res) => {
           amount: amount,
           paymentMethod: paymentMethod || 'Online Payment'
         });
+        logEmailResult('Purchase invoice email', invoiceResult);
       }
     } catch (emailErr) {
       console.error('Failed to send invoice email:', emailErr);
@@ -459,7 +468,7 @@ exports.upiPurchase = async (req, res) => {
     // Send purchase invoice email to student & admins
     try {
       const studentPhone = userDetails?.phone || user?.phone || user?.mobile || '';
-      await sendPurchaseInvoiceEmail({
+      const invoiceResult = await sendPurchaseInvoiceEmail({
         userEmail: userDetails?.email || user?.email,
         userName: userDetails?.name || user?.name || 'Student',
         purchases: [purchase],
@@ -473,13 +482,14 @@ exports.upiPurchase = async (req, res) => {
           address: userDetails?.address
         }
       });
+      logEmailResult('UPI invoice email', invoiceResult);
     } catch (invoiceErr) {
       console.error('Failed to send invoice email in upiPurchase:', invoiceErr);
     }
 
     // Send notification email to admin
     try {
-      await sendAdminNotificationEmail({
+      const adminEmailResult = await sendAdminNotificationEmail({
         type: 'purchase',
         userDetails: {
           fullName: userDetails?.name || user?.name || 'Student',
@@ -496,6 +506,7 @@ exports.upiPurchase = async (req, res) => {
         transactionId,
         amount
       });
+      logEmailResult('UPI admin notification email', adminEmailResult);
     } catch (emailErr) {
       console.error('Failed to send notification email:', emailErr);
     }
@@ -653,7 +664,7 @@ exports.cartPurchase = async (req, res) => {
     // Send purchase invoice email to student & admins
     try {
       const studentPhone = userDetails?.phone || user?.phone || user?.mobile || '';
-      await sendPurchaseInvoiceEmail({
+      const invoiceResult = await sendPurchaseInvoiceEmail({
         userEmail: userDetails?.email || user?.email,
         userName: userDetails?.name || user?.name || 'Student',
         purchases: createdPurchases,
@@ -667,13 +678,14 @@ exports.cartPurchase = async (req, res) => {
           address: userDetails?.address
         }
       });
+      logEmailResult('Cart invoice email', invoiceResult);
     } catch (invoiceErr) {
       console.error('Failed to send invoice email in cartPurchase:', invoiceErr);
     }
 
     // Send consolidated notification email to admin
     try {
-      await sendAdminNotificationEmail({
+      const adminEmailResult = await sendAdminNotificationEmail({
         type: 'purchase',
         userDetails: {
           fullName: userDetails?.name || user?.name || 'Student',
@@ -692,6 +704,7 @@ exports.cartPurchase = async (req, res) => {
         transactionId,
         amount
       });
+      logEmailResult('Cart admin notification email', adminEmailResult);
     } catch (emailErr) {
       console.error('Failed to send notification email:', emailErr);
     }
@@ -1127,7 +1140,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
     try {
       const { sendPurchaseInvoiceEmail } = require('../utils/email.utils');
       const studentPhone = user?.phone || user?.mobile || userDetails?.phone || '';
-      await sendPurchaseInvoiceEmail({
+      const invoiceResult = await sendPurchaseInvoiceEmail({
         userEmail: user?.email || userDetails?.email,
         userName: user?.name || userDetails?.name || 'Student',
         purchases: createdPurchases,
@@ -1141,7 +1154,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
           address: userDetails?.address
         }
       });
-      console.log('✅ Student purchase receipt email sent to:', user?.email || userDetails?.email);
+      logEmailResult('Razorpay student receipt email', invoiceResult);
     } catch (studentEmailErr) {
       console.error('Failed to send student receipt email:', studentEmailErr);
     }
@@ -1149,7 +1162,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
     // 2. Send Admin Purchase Confirmation Email
     try {
       const { sendAdminNotificationEmail } = require('../utils/email.utils');
-      await sendAdminNotificationEmail({
+      const adminEmailResult = await sendAdminNotificationEmail({
         type: 'purchase',
         userDetails: {
           fullName: userDetails?.name || user?.name || 'Student',
@@ -1168,7 +1181,7 @@ exports.verifyRazorpayPayment = async (req, res) => {
         transactionId: razorpay_payment_id,
         amount
       });
-      console.log('✅ Admin purchase notification email sent to support@academywale.com');
+      logEmailResult('Razorpay admin notification email', adminEmailResult);
     } catch (adminEmailErr) {
       console.error('Failed to send admin notification email:', adminEmailErr);
     }
