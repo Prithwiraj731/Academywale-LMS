@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { FaSun, FaMoon } from 'react-icons/fa';
 import { API_URL } from '../../api';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
@@ -13,6 +15,7 @@ export default function Navbar() {
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -182,8 +185,21 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Account/Profile Button */}
+            {/* Account/Profile Button & Theme Toggle */}
             <div className="flex items-center space-x-2 sm:space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-200 focus:outline-none flex items-center justify-center border border-gray-200 dark:border-neutral-700 shadow-sm"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                aria-label="Toggle Theme"
+              >
+                {theme === 'dark' ? (
+                  <FaSun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <FaMoon className="w-4 h-4 text-slate-700" />
+                )}
+              </button>
+
               {!isAuthenticated ? (
                 <MorphyButton
                   onClick={() => navigate('/login', { state: { from: location.pathname + location.search } })}
@@ -381,6 +397,20 @@ export default function Navbar() {
                     </MorphyButton>
                   </div>
                 )}
+                <div className="pt-3 mt-2 border-t border-gray-200 dark:border-neutral-800 flex items-center justify-between px-4">
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Theme</span>
+                  <button
+                    onClick={toggleTheme}
+                    className="py-1.5 px-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-200 border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900"
+                    aria-label="Toggle Theme"
+                  >
+                    {theme === 'dark' ? (
+                      <span className="flex items-center gap-1.5 text-xs text-amber-400 font-bold"><FaSun className="w-3.5 h-3.5" /> Light Mode</span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-xs text-slate-700 font-bold"><FaMoon className="w-3.5 h-3.5" /> Dark Mode</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}

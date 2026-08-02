@@ -31,7 +31,7 @@ const certificates = [
   },
   {
     id: 2,
-    title: 'Bishnu Kedia Classes',
+    title: 'Bishnu Kedia Classes Authorized Partner',
     subtitle: 'Official Authorization & Recognition Certificate for Excellence in Professional Coaching',
     image: bisnuKediaCert,
     badge: '★ Authorized Partner'
