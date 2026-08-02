@@ -395,15 +395,15 @@ export default function Home() {
       {/* End rearranged section */}
       {/* Exclusive Courses Carousel Section */}
       {exclusiveCourses.length > 0 && (
-        <section className="py-12 xs:py-16 sm:py-20 bg-slate-50 text-slate-800 relative overflow-hidden">
+        <section className="py-12 xs:py-16 sm:py-20 bg-slate-50 dark:bg-neutral-950 text-slate-800 dark:text-gray-100 relative overflow-hidden transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
             {/* Header with Navigation Arrows */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4">
               <div>
-                <span className="inline-block text-xs sm:text-sm font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                <span className="inline-block text-xs sm:text-sm font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-50 dark:bg-teal-950/60 px-3 py-1 rounded-full border border-teal-200 dark:border-teal-800">
                   Premium Selection
                 </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight text-slate-900">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mt-3 font-heading tracking-tight leading-tight text-slate-900 dark:text-white">
                   Exclusive <span className="text-[#20b2aa]">Courses</span>
                 </h2>
               </div>
@@ -412,7 +412,7 @@ export default function Home() {
               <div className="flex items-center gap-2 self-start sm:self-end">
                 <button 
                   onClick={() => scroll('left')}
-                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center text-slate-600 dark:text-gray-200 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
                   aria-label="Previous slide"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -421,7 +421,7 @@ export default function Home() {
                 </button>
                 <button 
                   onClick={() => scroll('right')}
-                  className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
+                  className="w-10 h-10 rounded-full border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center text-slate-600 dark:text-gray-200 hover:text-[#20b2aa] hover:border-[#20b2aa] hover:shadow-md active:bg-slate-50 transition-all duration-200 cursor-pointer"
                   aria-label="Next slide"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -460,12 +460,12 @@ export default function Home() {
                     }}
                     key={course.id || course._id}
                     onClick={() => navigate(`/course/${encodeURIComponent(course.courseType || 'general')}/${course.id || course._id}`)}
-                    className="flex-shrink-0 w-[260px] xs:w-[300px] bg-white rounded-2xl border border-slate-200/60 p-4 hover:border-[#20b2aa]/40 hover:shadow-[0_10px_30px_rgba(32,178,170,0.08)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-sm flex flex-col justify-between group"
+                    className="flex-shrink-0 w-[260px] xs:w-[300px] bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200/60 dark:border-neutral-800 p-4 hover:border-[#20b2aa]/40 hover:shadow-[0_10px_30px_rgba(32,178,170,0.08)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-sm flex flex-col justify-between group"
                     style={{ scrollSnapAlign: 'start' }}
                   >
                     <div>
                       {/* Image container */}
-                      <div className="w-full aspect-square rounded-xl overflow-hidden relative mb-4 bg-white border border-slate-100 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-xl overflow-hidden relative mb-4 bg-white dark:bg-neutral-950 border border-slate-100 dark:border-neutral-800 flex items-center justify-center">
                         <img 
                           src={course.posterUrl || '/placeholder.png'} 
                           alt={course.title || course.subject}
@@ -480,22 +480,22 @@ export default function Home() {
                       <span className="text-[10px] font-extrabold text-[#20b2aa] tracking-widest uppercase">
                         {course.category} {course.subcategory}
                       </span>
-                      <h3 className="text-base sm:text-lg font-bold text-slate-800 mt-1 line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors duration-200">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-gray-100 mt-1 line-clamp-2 leading-snug group-hover:text-[#20b2aa] transition-colors duration-200">
                         {course.title || course.subject}
                       </h3>
-                      <p className="text-xs text-slate-500 mt-1 font-semibold">
+                      <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 font-semibold">
                         By {course.facultyName || 'Expert Faculty'}
                       </p>
                     </div>
 
-                    <div className="mt-4 border-t border-slate-100 pt-3 flex items-center justify-between">
+                    <div className="mt-4 border-t border-slate-100 dark:border-neutral-800 pt-3 flex items-center justify-between">
                       <div>
                         {originalPrice > sellingPrice && (
                           <span className="text-xs text-slate-400 line-through mr-1.5 font-medium">
                             ₹{Number(originalPrice).toLocaleString('en-IN')}
                           </span>
                         )}
-                        <span className="text-base sm:text-lg font-extrabold text-slate-900">
+                        <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                           ₹{Number(sellingPrice).toLocaleString('en-IN')}
                         </span>
                       </div>
@@ -512,14 +512,14 @@ export default function Home() {
       )}
 
       {/* Restore Meet Our Expert Faculties section */}
-      <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light">
+      <section className="flex-1 py-8 xs:py-10 sm:py-12 md:py-14 px-2 xs:px-3 sm:px-4 section-light bg-slate-100/50 dark:bg-neutral-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6 xs:mb-8 sm:mb-10">
             <div 
               onClick={() => navigate('/faculties')}
               className="group inline-flex flex-col items-center cursor-pointer"
             >
-              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
+              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white tracking-tight drop-shadow-sm font-heading">
                 Meet Our <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Expert Faculties</span>
               </h2>
               <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
@@ -534,7 +534,7 @@ export default function Home() {
                   href={`/faculties/${faculty.slug}`}
                   containerClassName="w-full h-full min-w-[120px] xs:min-w-[140px] sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] max-w-[140px] xs:max-w-[160px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-[240px] min-h-[160px] xs:min-h-[180px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-[300px] max-h-[180px] xs:max-h-[200px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[320px] mx-auto"
                 >
-                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-2 xs:p-3 sm:p-4 md:p-5 lg:p-8 cursor-pointer hover:scale-105 w-full h-full">
+                  <div className="group bg-white/95 dark:bg-neutral-900/95 border border-gray-100 dark:border-neutral-800 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-2 xs:p-3 sm:p-4 md:p-5 lg:p-8 cursor-pointer hover:scale-105 w-full h-full">
                     <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 mb-1 xs:mb-2 sm:mb-3 md:mb-4 rounded-full overflow-hidden border-2 xs:border-3 sm:border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
                       <img
                         src={faculty.image}
@@ -549,7 +549,7 @@ export default function Home() {
                         {faculty.name.charAt(0)}
                       </div>
                     </div>
-                    <div className="text-xs xs:text-sm sm:text-base md:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300 px-1">
+                    <div className="text-xs xs:text-sm sm:text-base md:text-base font-semibold text-black dark:text-white text-center leading-tight group-hover:text-blue-600 transition-colors duration-300 px-1">
                       {faculty.name}
                     </div>
                   </div>
@@ -581,24 +581,24 @@ export default function Home() {
       <Numbers />
       
       {/* Recognized & Accredited Institutions Section (3D Stacked Carousel) */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50/50 to-white relative overflow-hidden">
+      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50/50 to-white dark:from-neutral-950 dark:to-neutral-900 relative overflow-hidden transition-colors duration-300">
         {/* Background Decorative Elements */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#20b2aa]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         
         {/* Dot pattern background */}
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
 
         <div className="max-w-5xl mx-auto relative z-10">
           {/* Synchronized Header */}
           <div className="text-center mb-10 sm:mb-14">
             <div className="group inline-flex flex-col items-center">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white tracking-tight drop-shadow-sm font-heading">
                 Our Recognitions & <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Accreditations</span>
               </h2>
               <div className="h-1 w-16 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
             </div>
-            <p className="text-gray-600 mt-4 text-base sm:text-lg max-w-2xl mx-auto px-4 font-medium">
+            <p className="text-gray-600 dark:text-gray-300 mt-4 text-base sm:text-lg max-w-2xl mx-auto px-4 font-medium">
               Officially recognized and accredited partner certifying our commitment to excellence in CA & CMA education
             </p>
           </div>
@@ -625,8 +625,8 @@ export default function Home() {
                       exit={{ opacity: 0, scale: 0.8, y: -40 }}
                       transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
                       onClick={() => setActiveCertIndex(index)}
-                      className={`absolute w-full p-3 sm:p-5 bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border ${
-                        isCurrent ? 'border-[#20b2aa]/40 shadow-[0_25px_60px_-15px_rgba(32,178,170,0.3)]' : 'border-gray-200/80 shadow-md cursor-pointer'
+                      className={`absolute w-full p-3 sm:p-5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border ${
+                        isCurrent ? 'border-[#20b2aa]/40 shadow-[0_25px_60px_-15px_rgba(32,178,170,0.3)]' : 'border-gray-200/80 dark:border-neutral-800 shadow-md cursor-pointer'
                       }`}
                     >
                       {/* Golden Ribbon Badge */}
@@ -635,7 +635,7 @@ export default function Home() {
                       </div>
 
                       {/* Certificate Image Frame */}
-                      <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-gray-950 border border-gray-200 shadow-inner">
+                      <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-gray-950 border border-gray-200 dark:border-neutral-800 shadow-inner">
                         <img 
                           src={cert.image}
                           alt={cert.title} 
@@ -645,8 +645,8 @@ export default function Home() {
 
                       {/* Certificate Title Footer */}
                       <div className="mt-3 text-center">
-                        <h4 className="text-base sm:text-lg font-bold text-gray-900">{cert.title}</h4>
-                        <p className="text-xs sm:text-sm text-gray-500 font-medium">{cert.subtitle}</p>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{cert.title}</h4>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{cert.subtitle}</p>
                       </div>
                     </motion.div>
                   );
@@ -659,7 +659,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setActiveCertIndex((prev) => (prev - 1 + certificates.length) % certificates.length)}
-                className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white dark:bg-neutral-800 hover:bg-teal-50 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-200 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
                 title="Previous Certificate"
               >
                 ‹
@@ -672,7 +672,7 @@ export default function Home() {
                     type="button"
                     onClick={() => setActiveCertIndex(idx)}
                     className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                      idx === activeCertIndex ? 'w-8 bg-[#20b2aa]' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
+                      idx === activeCertIndex ? 'w-8 bg-[#20b2aa]' : 'w-2.5 bg-gray-300 dark:bg-neutral-700 hover:bg-gray-400'
                     }`}
                   />
                 ))}
@@ -681,7 +681,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setActiveCertIndex((prev) => (prev + 1) % certificates.length)}
-                className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white dark:bg-neutral-800 hover:bg-teal-50 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-200 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
                 title="Next Certificate"
               >
                 ›
@@ -689,7 +689,7 @@ export default function Home() {
             </div>
 
             {/* Verification Tag */}
-            <div className="mt-6 flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200/60 shadow-xs text-xs sm:text-sm text-gray-600 font-medium">
+            <div className="mt-6 flex items-center gap-2 bg-gray-50 dark:bg-neutral-900 px-4 py-2 rounded-full border border-gray-200/60 dark:border-neutral-800 shadow-xs text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Verified Authorization by SJC Institute & Bishnu Kedia Classes</span>
             </div>

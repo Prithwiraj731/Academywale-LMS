@@ -61,7 +61,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-white relative overflow-hidden">
+    <footer className="bg-gray-900 dark:bg-neutral-950 text-white relative overflow-hidden transition-colors duration-300">
       <div className="absolute inset-0 w-full h-full">
         <VenomBeam />
       </div>
