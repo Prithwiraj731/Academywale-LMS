@@ -28,14 +28,13 @@ const certificates = [
     title: 'SJC Institute Authorized Partner',
     subtitle: 'Authorized Business Partner certifying outstanding contribution to quality education',
     image: sjcCert,
-    badge: '★ Official Partner'
   },
   {
     id: 2,
-    title: 'Kedia Classes Accreditation',
-    subtitle: 'Official Accreditation & Recognition Certificate for Excellence in Professional Coaching',
+    title: 'Bishnu Kedia Classes',
+    subtitle: 'Official Authorization & Recognition Certificate for Excellence in Professional Coaching',
     image: bisnuKediaCert,
-    badge: '★ Accredited Partner'
+    badge: '★ Authorized Partner'
   }
 ];
 
