@@ -19,6 +19,17 @@ export default function Register() {
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
 
+  // Preserve redirect path in sessionStorage if present
+  useEffect(() => {
+    if (location.state?.from) {
+      sessionStorage.setItem('auth_redirect_from', location.state.from);
+    }
+  }, [location.state]);
+
+  const getRedirectPath = () => {
+    return location.state?.from || sessionStorage.getItem('auth_redirect_from') || '/student-dashboard';
+  };
+
   // Check if redirected from Login due to pending verification
   useEffect(() => {
     if (location.state?.showOtp && location.state?.email) {
@@ -77,7 +88,9 @@ export default function Register() {
       const result = await verifyOTP(email, otp);
       if (result.success) {
         // Success! User is authenticated and context state updated.
-        navigate('/student-dashboard');
+        const redirectPath = getRedirectPath();
+        sessionStorage.removeItem('auth_redirect_from');
+        navigate(redirectPath, { replace: true });
       } else {
         setError(result.message || "Invalid verification code");
       }
@@ -99,13 +112,13 @@ export default function Register() {
     try {
       const result = await resendOTP(email);
       if (result.success) {
-        setSuccessMsg("Verification code resent successfully!");
         setTimer(60);
+        setSuccessMsg("A new verification code has been sent to your email!");
       } else {
         setError(result.message || "Failed to resend code");
       }
     } catch (err) {
-      console.error('Resend error:', err);
+      console.error('Resend OTP error:', err);
       setError("Failed to resend code. Please try again.");
     } finally {
       setResending(false);
@@ -123,18 +136,16 @@ export default function Register() {
             <span className="text-[#20b2aa]">Academy</span>
             <span className="text-white">Wale</span>
           </Link>
-          <p className="text-neutral-400 text-xs mt-1 font-medium">Verify & Learn from Best Faculty</p>
         </div>
 
-        {error && (
-          <div className="bg-red-950/60 border border-red-900 text-red-200 px-4 py-3 rounded-xl text-sm mb-4 text-center">
-            {error}
+        {successMsg && (
+          <div className="mb-4 p-3 bg-emerald-950/40 border border-emerald-900 text-emerald-400 text-sm rounded-lg text-center">
+            {successMsg}
           </div>
         )}
-
-        {successMsg && (
-          <div className="bg-teal-950/60 border border-teal-900 text-teal-200 px-4 py-3 rounded-xl text-sm mb-4 text-center animate-pulse">
-            {successMsg}
+        {error && (
+          <div className="mb-4 p-3 bg-red-950/40 border border-red-900 text-red-400 text-sm rounded-lg text-center">
+            {error}
           </div>
         )}
 
@@ -144,7 +155,7 @@ export default function Register() {
             
             <div className="mt-6 text-center text-sm text-neutral-400 border-t border-neutral-800 pt-4">
               Already have an account?{" "}
-              <Link to="/login" className="text-[#20b2aa] font-semibold hover:underline">
+              <Link to="/login" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-semibold hover:underline">
                 Login
               </Link>
             </div>

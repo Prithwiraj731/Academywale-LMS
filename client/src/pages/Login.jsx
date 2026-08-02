@@ -10,13 +10,26 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Save redirect origin into sessionStorage if provided in state
+  useEffect(() => {
+    if (location.state?.from) {
+      sessionStorage.setItem('auth_redirect_from', location.state.from);
+    }
+  }, [location.state]);
+
+  const getRedirectPath = () => {
+    return location.state?.from || sessionStorage.getItem('auth_redirect_from') || '/';
+  };
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/admin-dashboard', { replace: true });
       } else {
-        navigate('/');
+        const redirectPath = getRedirectPath();
+        sessionStorage.removeItem('auth_redirect_from');
+        navigate(redirectPath, { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -37,17 +50,20 @@ export default function Login() {
       if (result.success) {
         // Check if user is admin
         if (result.user.role === 'admin') {
-          navigate('/admin-dashboard');
+          navigate('/admin-dashboard', { replace: true });
         } else {
-          // Navigate to homepage after successful login
-          navigate('/');
+          const redirectPath = getRedirectPath();
+          sessionStorage.removeItem('auth_redirect_from');
+          navigate(redirectPath, { replace: true });
         }
       } else {
         if (result.code === 'PENDING_VERIFICATION') {
+          const redirectPath = getRedirectPath();
           navigate('/register', {
             state: {
               email: result.email,
-              showOtp: true
+              showOtp: true,
+              from: redirectPath
             }
           });
         } else {
@@ -93,7 +109,7 @@ export default function Login() {
 
         <div className="mt-3 text-center text-sm text-neutral-400">
           New to AcademyWale?{" "}
-          <Link to="/register" className="text-[#20b2aa] font-semibold hover:underline">
+          <Link to="/register" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-semibold hover:underline">
             Create Account
           </Link>
         </div>

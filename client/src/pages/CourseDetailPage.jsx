@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt } from 'react-icons/fa';
 import { MdVideoLibrary, MdModeEdit } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
@@ -461,7 +461,7 @@ const CourseDetailPage = () => {
       // Redirect to login with return path
       navigate('/login', {
         state: {
-          from: courseType ? `/course/${courseType}/${courseId}` : `/course/${courseId}`,
+          from: location.pathname + location.search,
           message: 'Please log in to purchase this course',
           courseData: {
             selectedMode,

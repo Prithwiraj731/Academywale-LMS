@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaArrowLeft, FaRegClock, FaBook, FaLanguage, FaCalendarAlt,
   FaCheckCircle, FaUser, FaGraduationCap, FaChalkboardTeacher,
@@ -420,7 +420,7 @@ const CourseFullDetailPage = () => {
     if (!isAuthenticated) {
       navigate('/login', {
         state: {
-          from: `/course/${encodeURIComponent(courseType || 'general')}/${courseId}`,
+          from: location.pathname + location.search,
           message: 'Please log in to purchase this course'
         }
       });
@@ -470,7 +470,7 @@ const CourseFullDetailPage = () => {
     if (!isAuthenticated) {
       navigate('/login', {
         state: {
-          from: `/course/${encodeURIComponent(courseType || 'general')}/${courseId}`,
+          from: location.pathname + location.search,
           message: 'Please log in to add this course to cart'
         }
       });

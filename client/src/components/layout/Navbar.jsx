@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../api';
 import whatsappLogo from '../../assets/whatsapp.png';
@@ -14,6 +14,7 @@ export default function Navbar() {
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Close menus when clicking outside
   useEffect(() => {
@@ -185,7 +186,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               {!isAuthenticated ? (
                 <MorphyButton
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login', { state: { from: location.pathname + location.search } })}
                   size="default"
                   className="shadow-md font-bold"
                 >
@@ -370,7 +371,7 @@ export default function Navbar() {
                   <div className="mt-2 flex justify-start w-full">
                     <MorphyButton
                       onClick={() => {
-                        navigate('/login');
+                        navigate('/login', { state: { from: location.pathname + location.search } });
                         setIsMenuOpen(false);
                       }}
                       size="default"
