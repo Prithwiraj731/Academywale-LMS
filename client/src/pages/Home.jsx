@@ -691,7 +691,7 @@ export default function Home() {
             {/* Verification Tag */}
             <div className="mt-6 flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200/60 shadow-xs text-xs sm:text-sm text-gray-600 font-medium">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Verified Accreditations by SJC Institute & Kedia Classes</span>
+              <span>Verified Authorization by SJC Institute & Bishnu Kedia Classes</span>
             </div>
           </div>
         </div>
