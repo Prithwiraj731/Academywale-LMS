@@ -360,16 +360,16 @@ export default function AllCoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7] dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-[#f3e5f5] to-[#fffde7]">
       <main className="container mx-auto px-4 py-8">
         <BackButton />
         
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Available Courses</h1>
-          <p className="text-sm sm:text-lg text-gray-600 dark:text-gray-300 mt-1 sm:mt-2 font-medium">Browse through our CA & CMA course catalog</p>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Available Courses</h1>
+          <p className="text-sm sm:text-lg text-gray-600 mt-1 sm:mt-2 font-medium">Browse through our CA & CMA course catalog</p>
           <div className="mt-2">
-            <span className="inline-block bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-200 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold shadow-sm">
+            <span className="inline-block bg-teal-50 border border-teal-200 text-teal-800 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold shadow-sm">
               {courses.length} Courses Available
             </span>
           </div>
@@ -377,19 +377,19 @@ export default function AllCoursesPage() {
 
         {/* Search Bar */}
         <div className="max-w-md mx-auto mb-10 relative z-20">
-          <div className="flex items-center bg-white dark:bg-neutral-900 rounded-2xl border border-gray-300 dark:border-neutral-700 p-1 px-3 shadow-md focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-200 transition-all hover:border-gray-400">
+          <div className="flex items-center bg-white rounded-2xl border border-gray-300 p-1 px-3 shadow-md focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-200 transition-all hover:border-gray-400">
             <input
               type="text"
               placeholder="Search courses, papers, subjects, faculties..."
               value={searchVal}
               onChange={handleSearchChange}
-              className="w-full bg-transparent text-gray-800 dark:text-gray-100 px-2 py-2 text-sm focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 font-medium"
+              className="w-full bg-transparent text-gray-800 px-2 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
             />
             {searchVal && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm px-2 shrink-0 cursor-pointer font-bold"
+                className="text-gray-400 hover:text-gray-600 text-sm px-2 shrink-0 cursor-pointer font-bold"
                 title="Clear Search"
               >
                 ✕

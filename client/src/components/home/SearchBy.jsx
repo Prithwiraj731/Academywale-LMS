@@ -77,7 +77,7 @@ export default function SearchBy() {
   };
 
   return (
-    <section className="py-12 xs:py-16 sm:py-20 bg-teal-50/40 dark:bg-neutral-900 relative overflow-hidden transition-colors duration-300">
+    <section className="py-12 xs:py-16 sm:py-20 section-light relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 relative z-20">
         
         {/* Heading Section */}
@@ -86,12 +86,12 @@ export default function SearchBy() {
             onClick={() => navigate('/institutes')}
             className="group inline-flex flex-col items-center cursor-pointer"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white tracking-tight drop-shadow-sm font-heading">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
               Search by <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Institutes</span>
             </h2>
             <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
           </div>
-          <p className="text-gray-500 dark:text-gray-300 mt-3 text-base sm:text-lg max-w-2xl mx-auto px-4">
+          <p className="text-gray-500 mt-3 text-base sm:text-lg max-w-2xl mx-auto px-4">
             Access premium lectures and courses from the nation's leading coaching partners
           </p>
         </div>
@@ -103,13 +103,13 @@ export default function SearchBy() {
           onMouseLeave={() => setIsPaused(false)}
         >
           {/* Edge Fades */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-teal-50/80 dark:from-neutral-900 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-slate-100/80 dark:from-neutral-900 to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#e0f7f4] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#f1f5f9] to-transparent z-10 pointer-events-none" />
           
           {/* Forward / Backward Navigation Arrows */}
           <button
             onClick={handlePrev}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 bg-white/95 dark:bg-neutral-800/95 hover:bg-white dark:hover:bg-neutral-700 text-gray-800 dark:text-gray-100 rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 opacity-0 group-hover/slider:opacity-100 focus:outline-none"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg border border-neutral-100 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 opacity-0 group-hover/slider:opacity-100 focus:outline-none"
             aria-label="Previous slide"
           >
             <span className="text-lg font-bold">←</span>
@@ -117,7 +117,7 @@ export default function SearchBy() {
 
           <button
             onClick={handleNext}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 bg-white/95 dark:bg-neutral-800/95 hover:bg-white dark:hover:bg-neutral-700 text-gray-800 dark:text-gray-100 rounded-full shadow-lg border border-neutral-100 dark:border-neutral-700 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 opacity-0 group-hover/slider:opacity-100 focus:outline-none"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-10 sm:w-12 h-10 sm:h-12 bg-white/95 hover:bg-white text-gray-800 rounded-full shadow-lg border border-neutral-100 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 opacity-0 group-hover/slider:opacity-100 focus:outline-none"
             aria-label="Next slide"
           >
             <span className="text-lg font-bold">→</span>
@@ -132,10 +132,10 @@ export default function SearchBy() {
               <div
                 key={`${inst.name}-${index}`}
                 onClick={() => navigate(`/institutes/${encodeURIComponent(inst.name.replace(/\s+/g, '_'))}`)}
-                className="group flex flex-col items-center justify-between w-36 xs:w-40 sm:w-48 h-28 xs:h-32 sm:h-40 bg-white dark:bg-neutral-800 p-3 sm:p-4 rounded-2xl border border-neutral-100/80 dark:border-neutral-700 hover:border-teal-500/20 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex-shrink-0 mr-4 sm:mr-6"
+                className="group flex flex-col items-center justify-between w-36 xs:w-40 sm:w-48 h-28 xs:h-32 sm:h-40 bg-white p-3 sm:p-4 rounded-2xl border border-neutral-100/80 hover:border-teal-500/20 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex-shrink-0 mr-4 sm:mr-6"
               >
                 {/* Logo Wrapper */}
-                <div className="w-full flex-1 flex items-center justify-center overflow-hidden p-1 bg-white/90 dark:bg-white rounded-xl">
+                <div className="w-full flex-1 flex items-center justify-center overflow-hidden p-1">
                   <img
                     src={inst.img}
                     alt={inst.name}
@@ -144,7 +144,7 @@ export default function SearchBy() {
                   />
                 </div>
                 {/* Name Label */}
-                <span className="w-full text-center text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200 group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-1 sm:line-clamp-2 mt-2 leading-tight px-1">
+                <span className="w-full text-center text-xs sm:text-sm font-bold text-gray-700 group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-1 sm:line-clamp-2 mt-2 leading-tight px-1">
                   {inst.name}
                 </span>
               </div>

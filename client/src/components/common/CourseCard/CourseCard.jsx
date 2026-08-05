@@ -82,9 +82,9 @@ const CourseCard = ({
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl shadow-md border border-gray-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.01] flex flex-col h-full">
       {/* Image Section */}
-      <div className="relative w-full aspect-square bg-gray-50 dark:bg-neutral-950 border-b border-gray-100 dark:border-neutral-800 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full aspect-square bg-gray-50 border-b border-gray-100 overflow-hidden flex items-center justify-center">
         <img
           src={getPosterUrl(course)}
           alt={course.subject || 'Course'}
@@ -98,7 +98,7 @@ const CourseCard = ({
       {/* Content Section */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow">
         {/* Course Title */}
-        <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-gray-100 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem]">
+        <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1.5 sm:mb-2 line-clamp-2 min-h-[2.5rem]">
           {course.title || course.subject}
         </h3>
 
@@ -108,7 +108,7 @@ const CourseCard = ({
         {/* Pricing Section */}
         <div className="mb-2 sm:mb-3">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <span className="text-base md:text-lg font-extrabold text-black dark:text-white">
+            <span className="text-base md:text-lg font-extrabold text-black">
               ₹{sellingPrice?.toLocaleString() || '0'}
             </span>
             {costPrice > sellingPrice && (

@@ -626,7 +626,7 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 pb-8 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 pb-8">
       {/* Best Price Assurance Header Banner */}
       <PriceGuaranteeBanner />
 
@@ -634,12 +634,12 @@ const CourseDetailPage = () => {
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 dark:text-teal-400 hover:text-blue-800 dark:hover:text-teal-300 mb-4 md:mb-6 font-semibold"
+          className="flex items-center text-blue-600 hover:text-blue-800 mb-4 md:mb-6"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
 
-        <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-neutral-800">
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           {/* Course header with hero image */}
           <div className="relative">
             {/* Banner image with overlay gradient */}

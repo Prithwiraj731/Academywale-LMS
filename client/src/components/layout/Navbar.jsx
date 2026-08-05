@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
-import { FaSun, FaMoon } from 'react-icons/fa';
 import { API_URL } from '../../api';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
@@ -15,7 +13,6 @@ export default function Navbar() {
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -102,7 +99,7 @@ export default function Navbar() {
         </div>
       </div>
       {/* Main navigation */}
-      <nav className="bg-white dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 z-40 shadow-md sticky top-0 transition-colors duration-300">
+      <nav className="bg-white z-40 shadow-md sticky top-0">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-1 sm:py-2 relative z-50">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo only */}
@@ -114,58 +111,58 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <Link to="/" className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition text-sm xl:text-base font-medium">Home</Link>
+              <Link to="/" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Home</Link>
               <div className="relative group">
-                <button className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition flex items-center font-bold text-sm xl:text-base">
+                <button className="text-gray-800 hover:text-primary transition flex items-center font-bold text-sm xl:text-base">
                   CA
                   <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="p-2">
                     <div className="space-y-1 text-sm">
-                      <Link to="/ca/foundation-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CA Foundation</Link>
-                      <Link to="/ca/inter-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CA Inter</Link>
-                      <Link to="/ca/final-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CA Final</Link>
+                      <Link to="/ca/foundation-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Foundation</Link>
+                      <Link to="/ca/inter-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Inter</Link>
+                      <Link to="/ca/final-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CA Final</Link>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition flex items-center font-bold text-sm xl:text-base">
+                <button className="text-gray-800 hover:text-primary transition flex items-center font-bold text-sm xl:text-base">
                   CMA
                   <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="p-2">
                     <div className="space-y-1 text-sm">
-                      <Link to="/cma/foundation-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CMA Foundation</Link>
-                      <Link to="/cma/inter-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CMA Inter</Link>
-                      <Link to="/cma/final-papers" className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded">CMA Final</Link>
+                      <Link to="/cma/foundation-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CMA Foundation</Link>
+                      <Link to="/cma/inter-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CMA Inter</Link>
+                      <Link to="/cma/final-papers" className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded">CMA Final</Link>
                     </div>
                   </div>
                 </div>
               </div>
-              <Link to="/test-series" className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition font-bold text-sm xl:text-base">Test Series</Link>
+              <Link to="/test-series" className="text-gray-800 hover:text-primary transition font-bold text-sm xl:text-base">Test Series</Link>
 
               <div className="relative group">
-                <button className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition flex items-center font-bold text-sm xl:text-base">
+                <button className="text-gray-800 hover:text-primary transition flex items-center font-bold text-sm xl:text-base">
                   Faculties
                   <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 max-h-96 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 max-h-96 overflow-y-auto">
                   <div className="p-2">
                     {faculties.map(fac => {
                       return (
                         <Link
                           key={fac.slug}
                           to={`/faculties/${fac.slug}`}
-                          className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded"
+                          className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded"
                         >
                           {fac.name}
                         </Link>
@@ -174,8 +171,8 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
-              <Link to="/about" className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition text-sm xl:text-base font-medium">About</Link>
-              <Link to="/contact" className="text-gray-800 dark:text-gray-100 hover:text-primary dark:hover:text-[#20b2aa] transition text-sm xl:text-base font-medium">Contact</Link>
+              <Link to="/about" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">About</Link>
+              <Link to="/contact" className="text-gray-800 hover:text-primary transition text-sm xl:text-base">Contact</Link>
               {isAuthenticated && (
                 <MorphyButton asChild size="default" className="shadow-lg font-bold">
                   <Link to={user?.role === 'admin' ? "/admin-dashboard" : "/student-dashboard"}>
@@ -185,21 +182,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Account/Profile Button & Theme Toggle */}
+            {/* Account/Profile Button */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-200 focus:outline-none flex items-center justify-center border border-gray-200 dark:border-neutral-700 shadow-sm"
-                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                aria-label="Toggle Theme"
-              >
-                {theme === 'dark' ? (
-                  <FaSun className="w-4 h-4 text-amber-400" />
-                ) : (
-                  <FaMoon className="w-4 h-4 text-slate-700" />
-                )}
-              </button>
-
               {!isAuthenticated ? (
                 <MorphyButton
                   onClick={() => navigate('/login', { state: { from: location.pathname + location.search } })}
@@ -397,20 +381,6 @@ export default function Navbar() {
                     </MorphyButton>
                   </div>
                 )}
-                <div className="pt-3 mt-2 border-t border-gray-200 dark:border-neutral-800 flex items-center justify-between px-4">
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Theme</span>
-                  <button
-                    onClick={toggleTheme}
-                    className="py-1.5 px-3 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all duration-200 border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900"
-                    aria-label="Toggle Theme"
-                  >
-                    {theme === 'dark' ? (
-                      <span className="flex items-center gap-1.5 text-xs text-amber-400 font-bold"><FaSun className="w-3.5 h-3.5" /> Light Mode</span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-xs text-slate-700 font-bold"><FaMoon className="w-3.5 h-3.5" /> Dark Mode</span>
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
           )}

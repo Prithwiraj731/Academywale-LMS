@@ -43,7 +43,7 @@ export default function Numbers() {
           <h2 className="text-3xl xs:text-4xl md:text-5xl font-heading font-bold text-primary mb-4 xs:mb-6">
             Our Numbers Say it All
           </h2>
-          <p className="text-lg xs:text-xl text-gray-300 max-w-3xl mx-auto font-medium">
+          <p className="text-lg xs:text-xl text-gray-600 max-w-3xl mx-auto">
             Join thousands of successful students who have achieved their goals with Academywale
           </p>
         </div>
