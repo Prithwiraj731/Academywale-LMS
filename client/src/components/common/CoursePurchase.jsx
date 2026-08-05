@@ -129,70 +129,70 @@ export default function CoursePurchase({ course, onPurchaseSuccess, onPurchaseFa
   }
 
   return (
-    <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-white rounded-2xl shadow-xl p-6 transition-colors duration-300">
-      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Purchase Course</h3>
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <h3 className="text-2xl font-bold text-gray-800 mb-4">Purchase Course</h3>
       {/* Course Details */}
-      <div className="bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-lg p-4 mb-6">
-        <h4 className="font-semibold text-slate-900 dark:text-white mb-2">{course.subject}</h4>
-        <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-gray-800 mb-2">{course.subject}</h4>
+        <div className="space-y-2 text-sm text-gray-600">
           <div className="flex justify-between">
             <span>Faculty:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">{course.facultyName}</span>
+            <span>{course.facultyName}</span>
           </div>
           <div className="flex justify-between">
             <span>Attempt:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">{course.duration}</span>
+            <span>{course.duration}</span>
           </div>
           <div className="flex justify-between">
             <span>Lectures:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">{course.lectures || course.noOfLecture}</span>
+            <span>{course.lectures || course.noOfLecture}</span>
           </div>
           <div className="flex justify-between font-bold text-lg">
             <span>Price:</span>
             <span>
-              <span className="text-slate-400 line-through mr-2">₹{course.costPrice}</span>
-              <span className="text-emerald-600 dark:text-emerald-400">₹{course.sellingPrice || course.price}</span>
+              <span className="text-gray-400 line-through mr-2">₹{course.costPrice}</span>
+              <span className="text-green-600">₹{course.sellingPrice || course.price}</span>
             </span>
           </div>
         </div>
         {/* Mode, Duration, Validity, Books Dropdowns */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Mode</label>
+            <label className="text-xs font-semibold text-gray-500 mb-1">Mode</label>
             <select
               value={selectedMode}
               onChange={e => setSelectedMode(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-900 dark:text-white px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#20b2aa] min-w-[180px]"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[180px]"
             >
               {modeOptions.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Attempt</label>
+            <label className="text-xs font-semibold text-gray-500 mb-1">Attempt</label>
             <select
               value={selectedDuration}
               onChange={e => setSelectedDuration(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-900 dark:text-white px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#20b2aa] min-w-[180px]"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-400 min-w-[180px]"
             >
               {durationOptions.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Validity</label>
+            <label className="text-xs font-semibold text-gray-500 mb-1">Validity</label>
             <select
               value={selectedValidity}
               onChange={e => setSelectedValidity(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-900 dark:text-white px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#20b2aa] min-w-[180px]"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-yellow-400 min-w-[180px]"
             >
               {validityOptions.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Books</label>
+            <label className="text-xs font-semibold text-gray-500 mb-1">Books</label>
             <select
               value={selectedBook}
               onChange={e => setSelectedBook(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-900 dark:text-white px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#20b2aa] min-w-[180px]"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-green-400 min-w-[180px]"
             >
               {booksOptions.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
@@ -201,38 +201,38 @@ export default function CoursePurchase({ course, onPurchaseSuccess, onPurchaseFa
       </div>
       {/* Payment Methods */}
       <div className="space-y-4 mb-6">
-        <h4 className="font-semibold text-slate-900 dark:text-white">Choose Payment Method:</h4>
+        <h4 className="font-semibold text-gray-800">Choose Payment Method:</h4>
         <button
           onClick={handleRazorpayPayment}
-          className="w-full p-4 border-2 border-teal-200 dark:border-teal-900/50 rounded-xl hover:border-[#20b2aa] hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-all text-left"
+          className="w-full p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all text-left"
           disabled={isPaying}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/50 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <span className="text-xl">💳</span>
               </div>
               <div>
-                <div className="font-semibold text-slate-900 dark:text-white">Razorpay Payment</div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Pay directly with Razorpay</div>
+                <div className="font-semibold text-gray-800">Razorpay Payment</div>
+                <div className="text-sm text-gray-600">Pay directly with Razorpay</div>
               </div>
             </div>
-            <div className="text-[#20b2aa]">
+            <div className="text-blue-600">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
           </div>
-          <div className="mt-2 p-2 bg-teal-50 dark:bg-teal-950/50 rounded text-xs text-teal-800 dark:text-teal-300">
+          <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
             💡 <strong>Desktop Tip:</strong> Enter your UPI ID to receive a payment request notification on your phone
           </div>
         </button>
-        {error && <div className="text-red-600 dark:text-red-400 text-center mt-2">{error}</div>}
+        {error && <div className="text-red-600 text-center mt-2">{error}</div>}
       </div>
       {/* Features Included */}
-      <div className="bg-teal-50 dark:bg-teal-950/40 rounded-lg p-4 mb-6 border border-teal-200 dark:border-teal-900/50">
-        <h4 className="font-semibold text-teal-800 dark:text-teal-300 mb-2">What's included:</h4>
-        <ul className="text-sm text-teal-700 dark:text-teal-400 space-y-1">
+      <div className="bg-green-50 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-green-800 mb-2">What's included:</h4>
+        <ul className="text-sm text-green-700 space-y-1">
           <li>✅ Lifetime access to course content</li>
           <li>✅ {course.lectures || course.noOfLecture} video lectures</li>
           <li>✅ Course materials and resources</li>

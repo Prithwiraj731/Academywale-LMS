@@ -220,14 +220,14 @@ export default function ModernTestimonial({
   }, [activeIndex, isPaused, cardsToShow, totalSlides]);
   
   return (
-    <section className="py-12 bg-slate-50 dark:bg-black text-slate-800 dark:text-white transition-colors duration-300 overflow-hidden">
+    <section className="py-12 bg-black text-white overflow-hidden">
       <style>{styles}</style>
       <div className="max-w-7xl mx-auto testimonial-section">
         <div className="text-center mb-6 sm:mb-10">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-teal-500 to-[#20b2aa] text-transparent bg-clip-text">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-teal-400 to-[#20b2aa] text-transparent bg-clip-text">
             {title}
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 dark:text-gray-400 mt-2 sm:mt-3 px-2">
+          <p className="text-base sm:text-lg text-gray-400 mt-2 sm:mt-3 px-2">
             {subtitle}
           </p>
         </div>
@@ -277,7 +277,7 @@ export default function ModernTestimonial({
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                   activeIndex === index 
                     ? 'bg-[#20b2aa] w-5' 
-                    : 'bg-gray-400 dark:bg-gray-600'
+                    : 'bg-gray-600'
                 }`}
                 aria-label={`Go to testimonial set ${index + 1}`}
               />
@@ -305,13 +305,13 @@ export default function ModernTestimonial({
 function TestimonialCard({ testimonial }) {
   return (
     <div 
-      className="bg-white dark:bg-gray-900/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-slate-200 dark:border-teal-900/30 flex flex-col h-full hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:shadow-[#20b2aa]/15 relative mx-auto w-full max-w-sm sm:max-w-none"
+      className="bg-gray-900/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-teal-900/30 flex flex-col h-full hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:shadow-[#20b2aa]/15 relative mx-auto w-full max-w-sm sm:max-w-none"
     >
       {/* Teal glow effect */}
       <div className="absolute -top-1 -right-1 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-400 to-[#20b2aa] rounded-full opacity-10 blur-xl"></div>
       
       {/* Main review text */}
-      <p className="text-slate-700 dark:text-gray-300 mb-3 sm:mb-6 flex-grow relative z-10 text-sm sm:text-base line-clamp-4 sm:line-clamp-none leading-relaxed">
+      <p className="text-gray-300 mb-3 sm:mb-6 flex-grow relative z-10 text-sm sm:text-base line-clamp-4 sm:line-clamp-none leading-relaxed">
         "{testimonial.review}"
       </p>
       
@@ -337,8 +337,8 @@ function TestimonialCard({ testimonial }) {
         </div>
         
         <div className="ml-3 overflow-hidden">
-          <div className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base truncate">{testimonial.name}</div>
-          <div className="text-xs sm:text-sm text-teal-600 dark:text-teal-300 truncate">{testimonial.role}</div>
+          <div className="font-semibold text-white text-sm sm:text-base truncate">{testimonial.name}</div>
+          <div className="text-xs sm:text-sm text-teal-300 truncate">{testimonial.role}</div>
         </div>
       </div>
     </div>

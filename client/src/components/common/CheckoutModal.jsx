@@ -284,17 +284,17 @@ export default function CheckoutModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-3 md:p-4 z-[9999] backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-white rounded-2xl shadow-2xl p-5 md:p-7 max-w-xl w-full mx-auto my-8 animate-fadeIn max-h-[90vh] overflow-y-auto relative transition-colors duration-300">
+      <div className="bg-white rounded-2xl shadow-2xl p-5 md:p-7 max-w-xl w-full mx-auto my-8 animate-fadeIn max-h-[90vh] overflow-y-auto relative">
         
         {/* Header */}
-        <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-200 dark:border-neutral-800">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
             <FaUser className="text-[#20b2aa] text-lg md:text-xl" />
             Checkout Information
           </h2>
           <button 
             onClick={onClose}
-            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
+            className="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition-all"
             aria-label="Close"
           >
             <FaTimes className="w-5 h-5" />
@@ -302,7 +302,7 @@ export default function CheckoutModal({
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-500 text-red-700 dark:text-red-400 p-3 rounded text-sm mb-4">
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded text-sm mb-4">
             {error}
           </div>
         )}
@@ -310,21 +310,21 @@ export default function CheckoutModal({
         <div className="space-y-6">
           
           {/* Section 1: Personal Details */}
-          <div className="bg-slate-50 dark:bg-neutral-950 p-4 rounded-xl border border-slate-200 dark:border-neutral-800">
-            <h3 className="font-semibold text-slate-900 dark:text-white text-sm md:text-base mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-300 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+          <div className="bg-teal-50/30 p-4 rounded-xl border border-teal-100/50">
+            <h3 className="font-semibold text-gray-800 text-sm md:text-base mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center text-xs font-bold">1</span>
               Personal Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Full Name</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Full Name</label>
                 <div className="relative">
                   <input
                     type="text"
                     name="fullName"
                     value={personalDetails.fullName}
                     onChange={handleInputChange}
-                    className="w-full bg-white dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 rounded-lg py-2 pr-20 pl-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2 pr-20 pl-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa]"
                     required
                   />
                   {personalDetails.fullName !== initialName && personalDetails.fullName.trim() !== '' && (

@@ -30,7 +30,7 @@ const numbers = [
 
 export default function Numbers() {
   return (
-    <section className="py-10 xs:py-16 sm:py-20 bg-slate-100 dark:bg-gray-900 text-slate-800 dark:text-white relative overflow-hidden transition-colors duration-300">
+    <section className="py-10 xs:py-16 sm:py-20 bg-gray-900 relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 w-32 h-32 bg-primary rounded-full"></div>
@@ -43,7 +43,7 @@ export default function Numbers() {
           <h2 className="text-3xl xs:text-4xl md:text-5xl font-heading font-bold text-primary mb-4 xs:mb-6">
             Our Numbers Say it All
           </h2>
-          <p className="text-lg xs:text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto font-medium">
+          <p className="text-lg xs:text-xl text-gray-300 max-w-3xl mx-auto font-medium">
             Join thousands of successful students who have achieved their goals with Academywale
           </p>
         </div>
@@ -52,48 +52,48 @@ export default function Numbers() {
           {numbers.map((num, index) => (
             <div 
               key={num.label} 
-              className="bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-slate-200/60 dark:border-white/10 rounded-xl p-4 xs:p-5 sm:p-6 text-center transform transition-all duration-300 hover:scale-105 hover:bg-white dark:hover:bg-white/20 shadow-md"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-4 xs:p-5 sm:p-6 text-center transform transition-all duration-300 hover:scale-105 hover:bg-white/20"
             >
               <div className="flex justify-center mb-3 xs:mb-4">
               <div className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 rounded-full bg-primary/20 flex items-center justify-center">
                   {num.icon}
               </div>
               </div>
-              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-1 xs:mb-2">{num.value}</h3>
-              <p className="text-base xs:text-lg text-slate-700 dark:text-gray-300 font-semibold">{num.label}</p>
-              <p className="text-xs xs:text-sm text-slate-500 dark:text-gray-400 mt-1 xs:mt-2">{num.description}</p>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white mb-1 xs:mb-2">{num.value}</h3>
+              <p className="text-base xs:text-lg text-gray-300">{num.label}</p>
+              <p className="text-xs xs:text-sm text-gray-400 mt-1 xs:mt-2">{num.description}</p>
             </div>
           ))}
         </div>
         
         <div className="mt-8 xs:mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 xs:gap-6 sm:gap-8">
-          <div className="bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-            <div className="bg-blue-100 dark:bg-blue-900/50 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
-              <FaHeadset className="text-blue-600 dark:text-blue-400 text-xl xs:text-2xl" />
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+            <div className="bg-blue-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaHeadset className="text-blue-600 text-xl xs:text-2xl" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base xs:text-lg">24/7 Support</h3>
-              <p className="text-slate-600 dark:text-gray-300 text-sm xs:text-base">Always here to help you</p>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">24/7 Support</h3>
+              <p className="text-gray-600 text-sm xs:text-base">Always here to help you</p>
             </div>
           </div>
           
-          <div className="bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-            <div className="bg-green-100 dark:bg-green-900/50 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
-              <FaSmile className="text-green-600 dark:text-green-400 text-xl xs:text-2xl" />
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+            <div className="bg-green-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaSmile className="text-green-600 text-xl xs:text-2xl" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base xs:text-lg">100% Satisfaction</h3>
-              <p className="text-slate-600 dark:text-gray-300 text-sm xs:text-base">From our students</p>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">100% Satisfaction</h3>
+              <p className="text-gray-600 text-sm xs:text-base">From our students</p>
             </div>
           </div>
           
-          <div className="bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl sm:col-span-2 md:col-span-1">
-            <div className="bg-purple-100 dark:bg-purple-900/50 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
-              <FaMapMarkerAlt className="text-purple-600 dark:text-purple-400 text-xl xs:text-2xl" />
+          <div className="bg-white rounded-xl shadow-xl p-4 xs:p-5 sm:p-6 flex items-center transform transition-all duration-300 hover:scale-105 hover:shadow-2xl sm:col-span-2 md:col-span-1">
+            <div className="bg-purple-100 p-3 xs:p-4 rounded-full mr-3 xs:mr-4">
+              <FaMapMarkerAlt className="text-purple-600 text-xl xs:text-2xl" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white text-base xs:text-lg">All cities across India</h3>
-              <p className="text-slate-600 dark:text-gray-300 text-sm xs:text-base">Trusted</p>
+              <h3 className="font-bold text-gray-800 text-base xs:text-lg">All cities across India</h3>
+              <p className="text-gray-600 text-sm xs:text-base">Trusted</p>
             </div>
           </div>
         </div>

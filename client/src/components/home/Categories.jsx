@@ -12,10 +12,10 @@ const steps = [
 
 const Categories = () => {
   return (
-    <section className="w-full py-12 bg-slate-50/50 dark:bg-neutral-950 border-y border-slate-200/40 dark:border-neutral-800 transition-colors duration-300 animate-fadeIn">
+    <section className="w-full py-12 bg-slate-50/50 border-y border-slate-200/40 animate-fadeIn">
       {/* Banner */}
       <div className="w-full max-w-7xl mx-auto px-4 mb-10">
-        <div className="overflow-hidden rounded-2xl shadow-md border border-slate-200/50 dark:border-neutral-800">
+        <div className="overflow-hidden rounded-2xl shadow-md border border-slate-200/50">
           <img
             src={banner4}
             alt="Learning Journey Banner"
@@ -35,23 +35,23 @@ const Categories = () => {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.35, delay: idx * 0.08 }}
               whileHover={{ y: -4 }}
-              className="bg-white dark:bg-neutral-900 border border-slate-200/60 dark:border-neutral-800 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-[#20b2aa]/40 transition-all duration-200 flex flex-col items-center text-center relative group"
+              className="bg-white border border-slate-200/60 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-[#20b2aa]/40 transition-all duration-200 flex flex-col items-center text-center relative group"
             >
               {/* Step indicator */}
-              <span className="absolute top-4 right-4 text-xs font-semibold text-slate-300 dark:text-neutral-600 select-none group-hover:text-[#20b2aa]/40 transition-colors">
+              <span className="absolute top-4 right-4 text-xs font-semibold text-slate-300 select-none group-hover:text-[#20b2aa]/40 transition-colors">
                 {step.step}
               </span>
 
               {/* Icon Container */}
-              <div className="w-12 h-12 bg-slate-50 dark:bg-neutral-800 text-slate-700 dark:text-neutral-200 rounded-2xl flex items-center justify-center text-xl mb-5 border border-slate-100 dark:border-neutral-700 group-hover:bg-[#20b2aa]/10 group-hover:text-[#20b2aa] group-hover:border-[#20b2aa]/20 transition-all duration-200">
+              <div className="w-12 h-12 bg-slate-50 text-slate-700 rounded-2xl flex items-center justify-center text-xl mb-5 border border-slate-100 group-hover:bg-[#20b2aa]/10 group-hover:text-[#20b2aa] group-hover:border-[#20b2aa]/20 transition-all duration-200">
                 {step.icon}
               </div>
 
               {/* Content */}
-              <h3 className="text-base font-bold text-slate-800 dark:text-white tracking-tight mb-2 group-hover:text-[#20b2aa] transition-colors">
+              <h3 className="text-base font-bold text-slate-800 tracking-tight mb-2 group-hover:text-[#20b2aa] transition-colors">
                 {step.title}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed max-w-[180px]">
+              <p className="text-xs text-slate-500 leading-relaxed max-w-[180px]">
                 {step.desc}
               </p>
             </motion.div>

@@ -126,25 +126,25 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white py-12 px-4 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-900 py-12 px-4">
       {/* Card Container */}
-      <div className="w-full max-w-md bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 p-6 md:p-8 rounded-2xl shadow-2xl">
+      <div className="w-full max-w-md bg-neutral-950 border border-neutral-800 p-6 md:p-8 rounded-2xl shadow-2xl">
         
         {/* Brand header */}
         <div className="flex flex-col items-center mb-6">
-          <Link to="/" className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 hover:opacity-90 transition-opacity duration-200">
+          <Link to="/" className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 hover:opacity-90 transition-opacity duration-200">
             <span className="text-[#20b2aa]">Academy</span>
-            <span className="text-slate-900 dark:text-white">Wale</span>
+            <span className="text-white">Wale</span>
           </Link>
         </div>
 
         {successMsg && (
-          <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 text-sm rounded-lg text-center">
+          <div className="mb-4 p-3 bg-emerald-950/40 border border-emerald-900 text-emerald-400 text-sm rounded-lg text-center">
             {successMsg}
           </div>
         )}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm rounded-lg text-center">
+          <div className="mb-4 p-3 bg-red-950/40 border border-red-900 text-red-400 text-sm rounded-lg text-center">
             {error}
           </div>
         )}
@@ -153,7 +153,7 @@ export default function Register() {
           <>
             <SignupFormDemo onSignup={handleSignup} externalError={error} />
             
-            <div className="mt-6 text-center text-sm text-slate-600 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800 pt-4">
+            <div className="mt-6 text-center text-sm text-neutral-400 border-t border-neutral-800 pt-4">
               Already have an account?{" "}
               <Link to="/login" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-semibold hover:underline">
                 Login
@@ -164,22 +164,22 @@ export default function Register() {
           /* OTP Verification Step */
           <form onSubmit={handleVerifyOTP} className="space-y-6">
             <div className="text-center">
-              <div className="w-12 h-12 bg-slate-100 dark:bg-neutral-800/80 rounded-full flex items-center justify-center mx-auto mb-3 text-[#20b2aa] border border-slate-200 dark:border-neutral-700">
+              <div className="w-12 h-12 bg-neutral-800/80 rounded-full flex items-center justify-center mx-auto mb-3 text-[#20b2aa] border border-neutral-700">
                 <FaEnvelope className="text-xl" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Confirm your Email</h3>
-              <p className="text-slate-600 dark:text-neutral-400 text-xs mt-1 leading-relaxed">
+              <h3 className="text-lg font-bold text-white">Confirm your Email</h3>
+              <p className="text-neutral-400 text-xs mt-1 leading-relaxed">
                 We've sent a 6-digit verification code to <br />
                 <strong className="text-[#20b2aa] font-semibold">{email}</strong>
               </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 uppercase tracking-wider mb-2 text-center">
-                Enter Verification Code
+            <div className="space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400">
+                Verification Code
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-neutral-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
                   <FaKey />
                 </div>
                 <input
@@ -188,7 +188,7 @@ export default function Register() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // Numeric only
                   placeholder="Enter 6-digit code"
-                  className="w-full bg-slate-50 dark:bg-neutral-900 border border-slate-300 dark:border-neutral-800 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white text-center tracking-[4px] text-lg font-bold focus:outline-none focus:border-[#20b2aa] focus:ring-1 focus:ring-[#20b2aa]"
+                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl py-3 pl-10 pr-4 text-white text-center tracking-[4px] text-lg font-bold focus:outline-none focus:border-[#20b2aa] focus:ring-1 focus:ring-[#20b2aa]"
                   required
                   disabled={verifying}
                 />
@@ -200,7 +200,7 @@ export default function Register() {
               disabled={verifying || otp.length !== 6}
               className={`w-full py-3.5 rounded-xl font-bold transition-all ${
                 verifying || otp.length !== 6
-                  ? 'bg-slate-200 dark:bg-neutral-800 text-slate-400 dark:text-neutral-500 cursor-not-allowed'
+                  ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white hover:opacity-95 shadow-lg'
               }`}
             >
@@ -209,8 +209,8 @@ export default function Register() {
 
             <div className="text-center pt-2">
               {timer > 0 ? (
-                <p className="text-slate-600 dark:text-neutral-400 text-xs">
-                  Resend verification code in <span className="text-slate-900 dark:text-white font-bold">{timer}s</span>
+                <p className="text-neutral-400 text-xs">
+                  Resend verification code in <span className="text-white font-bold">{timer}s</span>
                 </p>
               ) : (
                 <button
@@ -231,7 +231,7 @@ export default function Register() {
                 setSuccessMsg("");
                 setStep("form");
               }}
-              className="w-full flex items-center justify-center text-xs text-slate-500 dark:text-neutral-500 hover:text-slate-700 dark:hover:text-neutral-400 transition-colors font-medium border-t border-slate-200 dark:border-neutral-800/80 pt-4 mt-2"
+              className="w-full flex items-center justify-center text-xs text-neutral-500 hover:text-neutral-400 transition-colors font-medium border-t border-neutral-800/80 pt-4 mt-2"
             >
               <FaArrowLeft className="mr-1.5" /> Back to Sign Up form
             </button>

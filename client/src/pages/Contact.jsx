@@ -55,12 +55,12 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-850 dark:to-neutral-950 text-slate-900 dark:text-white relative overflow-hidden font-sans py-12 sm:py-20 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-850 to-neutral-950 text-white relative overflow-hidden font-sans py-12 sm:py-20">
       
       {/* Background Glow Accents */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#20b2aa]/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:40px_40px] opacity-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:40px_40px] opacity-10 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -71,14 +71,14 @@ export default function Contact() {
             24/7 Student Support & Inquiries
           </span>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight">
             Get in Touch with <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#20b2aa] via-teal-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#20b2aa] via-teal-300 to-blue-400 bg-clip-text text-transparent">
               AcademyWale
             </span>
           </h1>
 
-          <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed font-medium">
+          <p className="text-slate-300 text-base sm:text-lg leading-relaxed font-medium">
             Have questions regarding CA, CMA, or CS course admissions, pricing, or technical setup? 
             Our counselors and support team are ready to assist you.
           </p>
@@ -88,14 +88,14 @@ export default function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* LEFT: Contact Form Card (7 cols) */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-[32px] p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-2xl relative overflow-hidden">
+          <div className="lg:col-span-7 bg-slate-900/80 backdrop-blur-xl rounded-[32px] p-6 sm:p-10 border border-slate-800 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#20b2aa] via-teal-400 to-blue-500" />
             
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Send Us a Message</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Fill out the form below and our team will get back to you within a few hours.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">Send Us a Message</h2>
+            <p className="text-slate-400 text-sm mb-8">Fill out the form below and our team will get back to you within a few hours.</p>
 
             {error && (
-              <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-300 text-sm font-semibold flex items-center gap-3">
+              <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm font-semibold flex items-center gap-3">
                 <span className="text-xl">⚠️</span>
                 <span>{error}</span>
               </div>
@@ -106,8 +106,8 @@ export default function Contact() {
                 <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto text-[#20b2aa] text-3xl">
                   <FaCheckCircle />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Message Sent Successfully!</h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-white">Message Sent Successfully!</h3>
+                <p className="text-slate-300 text-sm max-w-md mx-auto">
                   Thank you for contacting AcademyWale. Our student counselor will reach out to you shortly via Email / WhatsApp.
                 </p>
                 <button
@@ -123,7 +123,7 @@ export default function Contact() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Your Full Name</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Your Full Name</label>
                     <div className="relative">
                       <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                       <input
@@ -133,14 +133,14 @@ export default function Contact() {
                         onChange={handleChange}
                         required
                         disabled={loading}
-                        className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
+                        className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Email Address</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Email Address</label>
                     <div className="relative">
                       <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                       <input
@@ -150,7 +150,7 @@ export default function Contact() {
                         onChange={handleChange}
                         required
                         disabled={loading}
-                        className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
+                        className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
@@ -159,7 +159,7 @@ export default function Contact() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Phone Number */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Phone / WhatsApp Number</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Phone / WhatsApp Number</label>
                     <div className="relative">
                       <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                       <input
@@ -168,14 +168,14 @@ export default function Contact() {
                         value={form.phone}
                         onChange={handleChange}
                         disabled={loading}
-                        className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
+                        className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Subject */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Subject / Query Topic</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Subject / Query Topic</label>
                     <div className="relative">
                       <FaCommentDots className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                       <input
@@ -184,7 +184,7 @@ export default function Contact() {
                         value={form.subject}
                         onChange={handleChange}
                         disabled={loading}
-                        className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
+                        className="w-full bg-slate-950/60 border border-slate-800 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
@@ -192,15 +192,14 @@ export default function Contact() {
 
                 {/* Message */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Your Message</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Your Message</label>
                   <textarea
                     name="message"
                     value={form.message}
                     onChange={handleChange}
                     rows={4}
-                    required
                     disabled={loading}
-                    className="w-full bg-slate-50 dark:bg-slate-950/60 border border-slate-300 dark:border-slate-800 rounded-xl p-4 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
+                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl p-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -230,20 +229,20 @@ export default function Contact() {
           <div className="lg:col-span-5 space-y-6">
             
             {/* WhatsApp Card */}
-            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-emerald-500/30 shadow-xl hover:border-emerald-500/60 transition-all group">
+            <div className="bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-emerald-500/30 shadow-xl hover:border-emerald-500/60 transition-all group">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center text-emerald-500 dark:text-emerald-400 text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center text-emerald-400 text-2xl shrink-0 group-hover:scale-110 transition-transform">
                   <FaWhatsapp />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">WhatsApp & Call Support</h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs">Direct instant support for admission & student queries.</p>
+                  <h3 className="text-lg font-extrabold text-white">WhatsApp & Call Support</h3>
+                  <p className="text-slate-400 text-xs">Direct instant support for admission & student queries.</p>
                   <div className="flex flex-wrap gap-2 pt-1">
                     <a
                       href="https://wa.me/919693320108"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-500/30 border border-emerald-500/40 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-bold hover:bg-emerald-500/30 border border-emerald-500/40 transition-colors"
                     >
                       <span>+91 9693320108</span>
                     </a>
@@ -253,14 +252,14 @@ export default function Contact() {
             </div>
 
             {/* Email Support Card */}
-            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-teal-500/30 shadow-xl hover:border-teal-500/60 transition-all group">
+            <div className="bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-teal-500/30 shadow-xl hover:border-teal-500/60 transition-all group">
               <div className="flex items-start gap-4">
                 <div className="w-14 h-14 bg-teal-500/10 border border-teal-500/30 rounded-2xl flex items-center justify-center text-[#20b2aa] text-2xl shrink-0 group-hover:scale-110 transition-transform">
                   <FaEnvelope />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Email Us</h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs">Send detailed inquiries, course issues or feedback.</p>
+                  <h3 className="text-lg font-extrabold text-white">Email Us</h3>
+                  <p className="text-slate-400 text-xs">Send detailed inquiries, course issues or feedback.</p>
                   <a
                     href="mailto:support@academywale.com"
                     target="_blank"
@@ -274,19 +273,19 @@ export default function Contact() {
             </div>
 
             {/* Website & Portal Card */}
-            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-blue-500/30 shadow-xl hover:border-blue-500/60 transition-all group">
+            <div className="bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-blue-500/30 shadow-xl hover:border-blue-500/60 transition-all group">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-center text-blue-500 dark:text-blue-400 text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-center text-blue-400 text-2xl shrink-0 group-hover:scale-110 transition-transform">
                   <FaGlobe />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Official Learning Portal</h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs">Browse courses, view demos, and manage orders.</p>
+                  <h3 className="text-lg font-extrabold text-white">Official Learning Portal</h3>
+                  <p className="text-slate-400 text-xs">Browse courses, view demos, and manage orders.</p>
                   <a
                     href="https://academywale.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline"
+                    className="inline-block text-blue-400 text-sm font-bold hover:underline"
                   >
                     www.academywale.com
                   </a>
@@ -295,10 +294,10 @@ export default function Contact() {
             </div>
 
             {/* Working Hours Card */}
-            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-slate-200 dark:border-slate-800 shadow-xl">
-              <div className="flex items-center gap-3 mb-3 text-slate-700 dark:text-slate-300">
+            <div className="bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-slate-800 shadow-xl">
+              <div className="flex items-center gap-3 mb-3 text-slate-300">
                 <FaClock className="text-[#20b2aa] text-lg" />
-                <h4 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">Support Timings</h4>
+                <h4 className="text-sm font-extrabold uppercase tracking-wider">Support Timings</h4>
               </div>
               <div className="text-xs text-slate-400 space-y-1 font-medium">
                 <p>🗓️ Monday – Saturday: 9:00 AM – 9:00 PM IST</p>

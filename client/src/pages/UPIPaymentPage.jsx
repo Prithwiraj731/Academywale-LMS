@@ -235,13 +235,13 @@ const UPIPaymentPage = () => {
 
   if (paymentSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-neutral-950 dark:to-neutral-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-neutral-900 text-slate-900 dark:text-white rounded-2xl shadow-xl p-8 text-center border border-green-200 dark:border-green-900/50">
-          <div className="w-20 h-20 bg-green-100 dark:bg-green-950/60 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-green-200">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FaCheckCircle className="text-green-500 text-5xl" />
           </div>
-          <h2 className="text-3xl font-extrabold text-green-600 dark:text-green-400 mb-3">Payment Successful!</h2>
-          <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed font-medium">
+          <h2 className="text-3xl font-extrabold text-green-600 mb-3">Payment Successful!</h2>
+          <p className="text-gray-600 mb-6 leading-relaxed font-medium">
             Your payment has been successfully verified. Your course purchase is complete and active.
             You will be redirected to your dashboard shortly.
           </p>
@@ -258,11 +258,11 @@ const UPIPaymentPage = () => {
 
   if (!course && !loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 text-slate-900 dark:text-white flex flex-col items-center justify-center p-4">
-        <div className="text-slate-600 dark:text-slate-300 font-bold text-xl mb-4">Course not found</div>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="text-gray-600 font-bold text-xl mb-4">Course not found</div>
         <button
           onClick={() => navigate(-1)}
-          className="bg-[#20b2aa] text-white px-6 py-2 rounded-lg hover:bg-teal-600"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >
           Go Back
         </button>
@@ -271,18 +271,18 @@ const UPIPaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-yellow-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 text-slate-900 dark:text-white py-8 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-yellow-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-[#20b2aa] hover:text-teal-700 dark:hover:text-teal-300 mb-6 font-semibold"
+          className="flex items-center text-blue-600 hover:text-blue-800 mb-6 font-semibold"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
         
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-neutral-800">
-          <div className="bg-gradient-to-r from-[#20b2aa] to-[#126862] text-white p-6 sm:p-8">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-100">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 sm:p-8">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Checkout Details</h1>
             <p className="opacity-90 text-sm mt-1">Review your summary and complete your payment securely via Razorpay.</p>
           </div>
@@ -290,8 +290,8 @@ const UPIPaymentPage = () => {
           <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Course Summary */}
             <div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-lg mb-4">Order Summary</h3>
-              <div className="bg-slate-50 dark:bg-neutral-950 rounded-2xl p-5 border border-slate-200 dark:border-neutral-800 space-y-4">
+              <h3 className="font-extrabold text-gray-800 text-lg mb-4">Order Summary</h3>
+              <div className="bg-gray-50 rounded-2xl p-5 border border-gray-150 space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase">Course Title</label>
                   <p className="text-gray-800 font-extrabold leading-snug">{course?.title || course?.subject}</p>

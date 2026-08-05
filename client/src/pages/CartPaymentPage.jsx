@@ -246,16 +246,16 @@ const CartPaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-yellow-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 text-slate-900 dark:text-white py-8 px-4 sm:px-6 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-[#e0f7f4] via-purple-50 to-yellow-50 py-8 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold mb-6 transition-all"
+          className="flex items-center text-teal-700 hover:text-teal-800 font-semibold mb-6 transition-all"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
         
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-neutral-800">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-teal-100">
           {/* Header */}
           <div className="bg-gradient-to-r from-[#20b2aa] to-[#126862] px-6 py-5 text-white flex items-center justify-between">
             <div>

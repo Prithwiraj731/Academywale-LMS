@@ -230,10 +230,10 @@ export default function Navbar() {
                     </span>
                   </button>
                   {profileMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-lg shadow-lg py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-2 z-50">
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa]"
+                        className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                       >
                         Logout
                       </button>
@@ -243,7 +243,7 @@ export default function Navbar() {
               )}
               {/* Mobile menu button */}
               <button
-                className="lg:hidden p-2 rounded-lg text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-100 dark:hover:bg-neutral-800 transition-all"
+                className="lg:hidden p-2 rounded-lg text-gray-700 hover:text-primary hover:bg-gray-100 transition-all"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               >
@@ -260,11 +260,11 @@ export default function Navbar() {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="lg:hidden py-3 px-2 border-t border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg">
+            <div className="lg:hidden py-3 px-2 border-t border-gray-200 bg-white shadow-lg">
               <div className="space-y-1 max-h-96 overflow-y-auto">
                 <Link 
                   to="/" 
-                  className="block py-3 px-4 text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition font-semibold"
+                  className="block py-3 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
@@ -272,7 +272,7 @@ export default function Navbar() {
                 <div>
                   <button
                     onClick={() => setIsCaDropdownOpen(!isCaDropdownOpen)}
-                    className="w-full flex justify-between items-center font-semibold text-primary dark:text-[#20b2aa] py-3 px-4 focus:outline-none hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition"
+                    className="w-full flex justify-between items-center font-semibold text-primary py-3 px-4 focus:outline-none hover:bg-gray-50 rounded-lg transition"
                   >
                     CA Courses
                     <svg
@@ -284,10 +284,10 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {isCaDropdownOpen && (
-                    <div className="pl-4 space-y-1 bg-gray-50 dark:bg-neutral-800/80 rounded-lg py-2 mt-1">
+                    <div className="pl-4 space-y-1 bg-gray-50 rounded-lg py-2 mt-1">
                       <Link 
                         to="/ca/foundation-papers" 
-                        className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded-lg transition font-semibold"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -297,7 +297,7 @@ export default function Navbar() {
                       </Link>
                       <Link 
                         to="/ca/inter-papers" 
-                        className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded-lg transition font-semibold"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -307,7 +307,7 @@ export default function Navbar() {
                       </Link>
                       <Link 
                         to="/ca/final-papers" 
-                        className="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-neutral-700 hover:text-blue-700 dark:hover:text-[#20b2aa] rounded-lg transition font-semibold"
+                        className="block px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition font-semibold"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsCaDropdownOpen(false);
@@ -321,7 +321,7 @@ export default function Navbar() {
                 <div>
                   <button
                     onClick={() => setIsCmaDropdownOpen(!isCmaDropdownOpen)}
-                    className="w-full flex justify-between items-center font-semibold text-primary dark:text-[#20b2aa] py-2 px-4 focus:outline-none hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition"
+                    className="w-full flex justify-between items-center font-semibold text-primary py-2 px-4 focus:outline-none hover:bg-gray-50 rounded-lg transition"
                   >
                     CMA Courses
                     <svg
@@ -333,23 +333,23 @@ export default function Navbar() {
                     </svg>
                   </button>
                   {isCmaDropdownOpen && (
-                    <div className="pl-4 space-y-1 bg-gray-50 dark:bg-neutral-800/80 rounded-lg py-2 mt-1">
+                    <div className="pl-4">
                       <Link 
                         to="/cma/foundation-papers" 
-                        className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-700 rounded transition font-semibold"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Foundation
                       </Link>
                       <Link 
                         to="/cma/inter-papers" 
-                        className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-700 rounded transition font-semibold"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Inter</Link>
                       <Link 
                         to="/cma/final-papers" 
-                        className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-700 rounded transition font-semibold"
+                        className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         CMA Final
@@ -359,25 +359,25 @@ export default function Navbar() {
                 </div>
                 <Link 
                   to="/test-series" 
-                  className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-800 rounded transition font-semibold"
+                  className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Test Series
                 </Link>
 
-                <Link to="/faculties" className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-800 rounded transition font-semibold">
+                <Link to="/faculties" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   All Faculties
                 </Link>
-                <Link to="/about" className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-800 rounded transition font-semibold">
+                <Link to="/about" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   About
                 </Link>
-                <Link to="/contact" className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-800 rounded transition font-semibold">
+                <Link to="/contact" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   Contact
                 </Link>
                 {isAuthenticated && (
                   <Link
                     to={user?.role === 'admin' ? "/admin-dashboard" : "/student-dashboard"}
-                    className="block py-2 px-4 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-[#20b2aa] hover:bg-gray-50 dark:hover:bg-neutral-800 rounded transition font-semibold"
+                    className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard

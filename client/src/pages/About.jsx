@@ -10,13 +10,13 @@ export default function About() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-neutral-950 text-slate-800 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-300">
+    <div className="relative min-h-screen bg-white text-slate-800 overflow-hidden font-sans">
       
       {/* Decorative Background Patterns */}
-      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-50/40 via-blue-50/20 to-transparent dark:from-teal-950/20 dark:via-blue-950/10 dark:to-transparent -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-teal-50/40 via-blue-50/20 to-transparent -z-10 pointer-events-none" />
       <div className="absolute top-1/4 -left-48 w-96 h-96 bg-[#20b2aa]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 -right-48 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:32px_32px] opacity-70 -z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-70 -z-10 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10">
         
@@ -24,30 +24,30 @@ export default function About() {
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center mb-24 sm:mb-32">
           {/* Hero Left: Message & Stats */}
           <div className="lg:col-span-7 space-y-6 sm:space-y-8">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-100 dark:border-teal-900/50 text-[#20b2aa] text-xs sm:text-sm font-extrabold uppercase tracking-wider shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-100 text-[#20b2aa] text-xs sm:text-sm font-extrabold uppercase tracking-wider shadow-sm">
               <span className="w-2 h-2 rounded-full bg-[#20b2aa] animate-pulse" />
               Who We Are
             </span>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 tracking-tight leading-tight">
               Bridging the Gap to <br />
-              <span className="bg-gradient-to-r from-[#20b2aa] to-blue-600 dark:to-blue-400 bg-clip-text text-transparent">Professional Excellence</span>
+              <span className="bg-gradient-to-r from-[#20b2aa] to-blue-600 bg-clip-text text-transparent">Professional Excellence</span>
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed max-w-xl">
+            <p className="text-gray-500 text-base sm:text-lg leading-relaxed max-w-xl">
               AcademyWale is India's premier digital learning ecosystem for CA & CMA aspirants. We partner with the nation's leading coaching institutes and faculties to deliver high-quality, flexible, and affordable education straight to your screen.
             </p>
             
             {/* Interactive Stats Grid */}
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-4 sm:pt-6 border-t border-slate-200 dark:border-neutral-800">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-4 sm:pt-6 border-t border-gray-100">
               <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">50+</div>
-                <div className="text-xs sm:text-sm font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Expert Mentors</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">50+</div>
+                <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">Expert Mentors</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#20b2aa]">10k+</div>
-                <div className="text-xs sm:text-sm font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Active Students</div>
+                <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Students</div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-600 dark:text-blue-400">98%</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-600">98%</div>
                 <div className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">Success Ratio</div>
               </div>
             </div>
