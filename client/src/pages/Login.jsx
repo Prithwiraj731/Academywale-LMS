@@ -77,37 +77,37 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-900 py-12 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white py-12 px-4 transition-colors duration-300">
       {/* Card Container */}
-      <div className="w-full max-w-md bg-neutral-950 border border-neutral-800 p-6 md:p-8 rounded-2xl shadow-2xl">
+      <div className="w-full max-w-md bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 p-6 md:p-8 rounded-2xl shadow-2xl">
         {/* Brand header */}
         <div className="flex flex-col items-center mb-6">
-          <Link to="/" className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 hover:opacity-90 transition-opacity duration-200">
+          <Link to="/" className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 hover:opacity-90 transition-opacity duration-200">
             <span className="text-[#20b2aa]">Academy</span>
-            <span className="text-white">Wale</span>
+            <span className="text-slate-900 dark:text-white">Wale</span>
           </Link>
         </div>
 
         <LoginFormDemo onLogin={handleLogin} />
 
         {successMessage && (
-          <div className="mt-4 p-3 bg-emerald-950/40 border border-emerald-900 text-emerald-400 text-sm rounded-lg text-center">
+          <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 text-sm rounded-lg text-center">
             {successMessage}
           </div>
         )}
         {error && (
-          <div className="mt-4 p-3 bg-red-950/40 border border-red-900 text-red-400 text-sm rounded-lg text-center">
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm rounded-lg text-center">
             {error}
           </div>
         )}
 
-        <div className="mt-6 text-center text-sm text-neutral-400 border-t border-neutral-800 pt-4">
+        <div className="mt-6 text-center text-sm text-slate-600 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800 pt-4">
           <Link to="/forgot-password" className="text-[#20b2aa] font-semibold hover:underline">
             Forgot password?
           </Link>
         </div>
 
-        <div className="mt-3 text-center text-sm text-neutral-400">
+        <div className="mt-3 text-center text-sm text-slate-600 dark:text-neutral-400">
           New to AcademyWale?{" "}
           <Link to="/register" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-semibold hover:underline">
             Create Account

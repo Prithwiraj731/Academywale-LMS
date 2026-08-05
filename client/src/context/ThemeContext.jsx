@@ -9,13 +9,10 @@ export function ThemeProvider({ children }) {
       if (savedTheme === 'dark' || savedTheme === 'light') {
         return savedTheme;
       }
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-      }
     } catch (e) {
       console.warn('Unable to access localStorage for theme:', e);
     }
-    return 'light'; // Default to light theme
+    return 'dark'; // Default to dark theme
   });
 
   useEffect(() => {
@@ -56,3 +53,4 @@ export function useTheme() {
   }
   return context;
 }
+

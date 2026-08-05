@@ -99,19 +99,19 @@ export default function SubjectFilterSidebar({
   };
 
   return (
-    <aside className="w-full md:w-72 bg-white rounded-3xl border border-gray-200/80 p-5 shadow-lg flex flex-col shrink-0 transition-all duration-300">
+    <aside className="w-full md:w-72 bg-white dark:bg-neutral-900 rounded-3xl border border-slate-200 dark:border-neutral-800 p-5 shadow-lg flex flex-col shrink-0 transition-all duration-300">
       {/* Sidebar Header */}
-      <div className="flex items-center justify-between border-b border-gray-150 pb-4 mb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 pb-4 mb-4">
         <div className="flex items-center gap-2">
           <FaFilter className="text-[#20b2aa] text-lg" />
-          <h2 className="text-xl font-bold text-gray-900 tracking-tight">Subject</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Subject</h2>
         </div>
 
         <div className="flex items-center gap-2">
           {selectedSubjects.length > 0 && (
             <button
               onClick={onClearFilters}
-              className="text-xs font-semibold text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-800 transition-colors flex items-center gap-1 cursor-pointer"
               title="Clear Subject Filters"
             >
               <FaUndo className="text-[10px]" /> Clear
@@ -121,7 +121,7 @@ export default function SubjectFilterSidebar({
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="md:hidden text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-all cursor-pointer"
+              className="md:hidden text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
             >
               <FaTimes className="text-lg" />
             </button>
@@ -132,7 +132,7 @@ export default function SubjectFilterSidebar({
       {/* Category Level Subtitle */}
       {categoryTitle && (
         <div className="mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {categoryTitle}
           </span>
         </div>
@@ -146,9 +146,9 @@ export default function SubjectFilterSidebar({
             placeholder="Search subject..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-1.5 pl-8 pr-3 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:bg-white"
+            className="w-full bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-xl py-1.5 pl-8 pr-3 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#20b2aa] focus:bg-white dark:focus:bg-neutral-800"
           />
-          <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+          <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs" />
         </div>
       )}
 

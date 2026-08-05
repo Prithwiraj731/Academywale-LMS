@@ -101,7 +101,7 @@ export default function Reviews() {
 
                     return (
                       <div key={rev._id} className="w-full flex-shrink-0 px-2">
-                        <div className="bg-[#fef9f4] rounded-lg shadow-md p-4 border border-yellow-200 mx-auto max-w-sm">
+                        <div className="bg-[#fef9f4] dark:bg-neutral-800 rounded-lg shadow-md p-4 border border-yellow-200 dark:border-neutral-700 mx-auto max-w-sm">
                           <div className="flex items-start gap-3 mb-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#d4af37] flex-shrink-0">
                               {cloudinaryId ? (
@@ -130,16 +130,16 @@ export default function Reviews() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-gray-800 text-sm">
+                              <div className="font-semibold text-gray-800 dark:text-white text-sm">
                                 {rev.name}
                               </div>
                               {rev.course && (
-                                <div className="text-xs text-gray-500 mb-1">{rev.course}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{rev.course}</div>
                               )}
                             </div>
                           </div>
                           <div 
-                            className="text-gray-700 text-sm leading-relaxed font-comic-neue"
+                            className="text-gray-700 dark:text-gray-200 text-sm leading-relaxed font-comic-neue"
                             style={{
                               display: '-webkit-box',
                               WebkitLineClamp: 4,
@@ -175,7 +175,7 @@ export default function Reviews() {
                       key={index}
                       onClick={() => goToSlide(index)}
                       className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentSlide ? 'bg-[#17817a]' : 'bg-gray-300'
+                        index === currentSlide ? 'bg-[#17817a]' : 'bg-gray-300 dark:bg-gray-600'
                       }`}
                       aria-label={`Go to testimonial ${index + 1}`}
                     />
@@ -201,7 +201,7 @@ export default function Reviews() {
                 const fallbackImageUrl = getTestimonialImageUrl(rev);
 
                 return (
-                  <div key={rev._id} className="flex items-start bg-[#fef9f4] rounded-xl shadow-lg p-5 gap-4 sm:gap-6 border border-yellow-200">
+                  <div key={rev._id} className="flex items-start bg-[#fef9f4] dark:bg-neutral-800 rounded-xl shadow-lg p-5 gap-4 sm:gap-6 border border-yellow-200 dark:border-neutral-700">
                     <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#d4af37] flex-shrink-0">
                       {cloudinaryId ? (
                         <AdvancedImage 
@@ -229,11 +229,11 @@ export default function Reviews() {
                       />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-800 text-base">
+                      <div className="font-semibold text-gray-800 dark:text-white text-base">
                         {rev.name} 
-                        {rev.course && <span className="text-sm text-gray-500"> ({rev.course})</span>}
+                        {rev.course && <span className="text-sm text-gray-500 dark:text-gray-400"> ({rev.course})</span>}
                       </div>
-                      <div className="text-gray-700 text-base mt-2 font-comic-neue leading-relaxed">
+                      <div className="text-gray-700 dark:text-gray-200 text-base mt-2 font-comic-neue leading-relaxed">
                         "{rev.message || rev.text}"
                       </div>
                     </div>
