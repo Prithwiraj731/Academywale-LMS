@@ -114,8 +114,8 @@ const testimonials = [
   {
     id: 2,
     name: "Muskan",
-    role: "CMA Inter Aspirant",
-    review: "AcademyWale really understands student needs. I was able to choose the best faculty for my CMA Inter subjects with proper guidance. The purchase process was simple, and the team was always ready to help. Highly recommended!",
+    role: "CMA Final Student",
+    review: "AcademyWale really understands student needs. I was able to choose the best faculty for my CMA Final subjects with proper guidance. The purchase process was simple, and the team was always ready to help. Highly recommended!",
     avatar: testimonial2,
     handle: "@muskan",
   },
