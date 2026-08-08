@@ -78,7 +78,8 @@ app.get('/api/status', (req, res) => {
   res.json({
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    deployVersion: 'v2-manual-enrollment-fix'
   });
 });
 
@@ -140,6 +141,7 @@ app.use('/api/notify', notifyRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/', standaloneCourseRoutes);
 app.use('/api/migration', imageMigrationRoutes);
+
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
