@@ -138,6 +138,7 @@ const findUserByEmail = async (email) => {
 const findCourseById = async (courseId) => {
   if (!courseId) return null;
   const cleanId = String(courseId).trim();
+  const cleanLower = cleanId.toLowerCase();
 
   // 1. Check by primary id
   const { data: c1 } = await supabaseAdmin
@@ -162,6 +163,31 @@ const findCourseById = async (courseId) => {
     .eq('slug', cleanId)
     .maybeSingle();
   if (c3) return c3;
+
+  // 4. Bulletproof Fallback: Fetch courses list and match title, subject, slug, or IDs
+  const { data: allCourses } = await supabaseAdmin.from('courses').select('*');
+  if (Array.isArray(allCourses) && allCourses.length > 0) {
+    const matched = allCourses.find(c => {
+      const idStr = String(c.id || '').trim().toLowerCase();
+      const mongoStr = String(c.mongo_id || '').trim().toLowerCase();
+      const slugStr = String(c.slug || '').trim().toLowerCase();
+      const titleStr = String(c.title || '').trim().toLowerCase();
+      const subjectStr = String(c.subject || '').trim().toLowerCase();
+
+      return (
+        idStr === cleanLower ||
+        mongoStr === cleanLower ||
+        slugStr === cleanLower ||
+        titleStr === cleanLower ||
+        subjectStr === cleanLower ||
+        (titleStr && cleanLower.includes(titleStr)) ||
+        (cleanLower && titleStr.includes(cleanLower)) ||
+        (subjectStr && cleanLower.includes(subjectStr)) ||
+        (cleanLower && subjectStr.includes(cleanLower))
+      );
+    });
+    if (matched) return matched;
+  }
 
   return null;
 };
