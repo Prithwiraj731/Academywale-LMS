@@ -2,8 +2,6 @@ const bcrypt = require('bcryptjs');
 const { supabaseAdmin } = require('../config/supabase.config');
 const { sendManualEnrollmentEmail } = require('../utils/email.utils');
 
-const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
-
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 const normalizePhone = (phone) => String(phone || '').replace(/\D/g, '').trim();
 
@@ -95,17 +93,16 @@ const formatEnrollment = (purchase) => {
   const course = purchase.courses || {};
   const faculty = purchase.faculties || {};
   const details = purchase.course_details || {};
-  const userDetails = purchase.user_details || {};
-  const manual = userDetails.manualEnrollment || {};
+  const manual = details.manualEnrollment || (purchase.user_details && purchase.user_details.manualEnrollment) || {};
 
   return {
     id: purchase.id,
     userId: purchase.user_id,
     courseId: purchase.course_id,
     facultyId: purchase.faculty_id,
-    studentName: userDetails.fullName || userDetails.name || user.name || '',
-    studentEmail: userDetails.email || user.email || '',
-    studentPhone: userDetails.phone || user.mobile || '',
+    studentName: manual.studentName || user.name || '',
+    studentEmail: manual.studentEmail || user.email || '',
+    studentPhone: manual.studentPhone || user.mobile || '',
     courseTitle: details.title || course.title || course.subject || '',
     courseSubject: details.subject || course.subject || '',
     facultyName: details.facultyName || faculty.first_name || course.faculty_name || '',
@@ -121,7 +118,12 @@ const formatEnrollment = (purchase) => {
     purchaseDate: purchase.purchase_date || purchase.created_at,
     isActive: purchase.is_active !== false,
     courseDetails: details,
-    userDetails
+    userDetails: {
+      fullName: manual.studentName || user.name || '',
+      email: manual.studentEmail || user.email || '',
+      phone: manual.studentPhone || user.mobile || '',
+      manualEnrollment: manual
+    }
   };
 };
 
@@ -165,7 +167,7 @@ const findCourseById = async (courseId) => {
     if (c3) return c3;
   }
 
-  // 4. Bulletproof Fallback: Fetch courses list and match title, subject, slug, or IDs
+  // 4. Bulletproof Fallback: Fetch all courses and match title, subject, slug, or IDs
   const { data: allCourses } = await supabaseAdmin.from('courses').select('*');
   if (Array.isArray(allCourses) && allCourses.length > 0) {
     if (cleanLower) {
@@ -182,15 +184,13 @@ const findCourseById = async (courseId) => {
           slugStr === cleanLower ||
           titleStr === cleanLower ||
           subjectStr === cleanLower ||
-          (titleStr && cleanLower.includes(titleStr)) ||
-          (cleanLower && titleStr.includes(cleanLower)) ||
-          (subjectStr && cleanLower.includes(subjectStr)) ||
-          (cleanLower && subjectStr.includes(cleanLower))
+          (titleStr && (cleanLower.includes(titleStr) || titleStr.includes(cleanLower))) ||
+          (subjectStr && (cleanLower.includes(subjectStr) || subjectStr.includes(cleanLower)))
         );
       });
       if (matched) return matched;
     }
-    // Guaranteed Fallback: return first available course from database
+    // Return first available course as guaranteed fallback
     return allCourses[0];
   }
 
@@ -266,7 +266,12 @@ const sendEnrollmentMail = async ({ user, purchase, accountCreated }) => {
     amount: purchase.amount,
     paymentMethod: purchase.payment_method,
     accountCreated,
-    userDetails: purchase.user_details
+    userDetails: {
+      fullName: user.name,
+      email: user.email,
+      phone: user.mobile,
+      manualEnrollment: purchase.course_details?.manualEnrollment || {}
+    }
   });
 };
 
@@ -393,18 +398,19 @@ exports.createManualEnrollment = async (req, res) => {
       });
     }
 
-    const courseDetails = buildCourseSnapshot(course, selectedVariant, paidAmount);
-    const userDetails = {
-      fullName: user.name,
-      email: user.email,
-      phone: normalizePhone(studentPhone) || user.mobile || '',
+    const baseSnapshot = buildCourseSnapshot(course, selectedVariant, paidAmount);
+    const courseDetails = {
+      ...baseSnapshot,
       manualEnrollment: {
         source: 'admin_manual_enrollment',
         paymentReference: String(paymentReference || '').trim(),
         notes: String(notes || '').trim(),
         createdByAdminId: req.user?.id || null,
         createdAt: new Date().toISOString(),
-        accountCreated
+        accountCreated,
+        studentName: user.name,
+        studentEmail: user.email,
+        studentPhone: normalizePhone(studentPhone) || user.mobile || ''
       }
     };
 
@@ -413,13 +419,12 @@ exports.createManualEnrollment = async (req, res) => {
       .insert({
         user_id: user.id,
         course_id: course.id,
-        faculty_id: course.faculty_id,
+        faculty_id: course.faculty_id || null,
         course_details: courseDetails,
         payment_method: paymentMethod,
         payment_status: paymentStatus,
         amount: paidAmount,
         transaction_id: paymentReference ? String(paymentReference).trim() : generateOfflineTransactionId(),
-        user_details: userDetails,
         access_expiry: accessExpiry || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         is_active: true
       })
@@ -433,18 +438,18 @@ exports.createManualEnrollment = async (req, res) => {
       try {
         emailResult = await sendEnrollmentMail({ user, purchase, accountCreated });
         if (emailResult?.success) {
+          const updatedCourseDetails = {
+            ...courseDetails,
+            manualEnrollment: {
+              ...courseDetails.manualEnrollment,
+              mailSentAt: new Date().toISOString()
+            }
+          };
           await supabaseAdmin
             .from('purchases')
-            .update({
-              user_details: {
-                ...userDetails,
-                manualEnrollment: {
-                  ...userDetails.manualEnrollment,
-                  mailSentAt: new Date().toISOString()
-                }
-              }
-            })
+            .update({ course_details: updatedCourseDetails })
             .eq('id', purchase.id);
+          purchase.course_details = updatedCourseDetails;
         }
       } catch (eErr) {
         console.error('Email notification error during manual enrollment:', eErr);
@@ -461,7 +466,7 @@ exports.createManualEnrollment = async (req, res) => {
     });
   } catch (error) {
     console.error('Create manual enrollment error:', error);
-    res.status(error.statusCode || 500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Failed to create manual enrollment',
       error: error.message
@@ -556,33 +561,30 @@ exports.updateManualEnrollment = async (req, res) => {
     }
 
     const nextAmount = amount === undefined ? Number(current.amount || 0) : Number(amount);
-    const currentUserDetails = current.user_details || {};
-    const currentManual = currentUserDetails.manualEnrollment || {};
-    const courseDetails = course
-      ? buildCourseSnapshot(course, selectedVariant, nextAmount)
-      : current.course_details;
-
-    const userDetails = {
-      ...currentUserDetails,
-      fullName: user.name,
-      email: user.email,
-      phone: normalizePhone(studentPhone) || user.mobile || currentUserDetails.phone || '',
+    const currentDetails = current.course_details || {};
+    const currentManual = currentDetails.manualEnrollment || {};
+    const baseSnapshot = buildCourseSnapshot(course, selectedVariant, nextAmount);
+    const courseDetails = {
+      ...currentDetails,
+      ...baseSnapshot,
       manualEnrollment: {
         ...currentManual,
         source: 'admin_manual_enrollment',
         paymentReference: paymentReference !== undefined ? String(paymentReference || '').trim() : currentManual.paymentReference || '',
         notes: notes !== undefined ? String(notes || '').trim() : currentManual.notes || '',
         updatedByAdminId: req.user?.id || null,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        studentName: user.name,
+        studentEmail: user.email,
+        studentPhone: normalizePhone(studentPhone) || user.mobile || ''
       }
     };
 
     const updatePayload = {
       user_id: user.id,
       course_id: course?.id || current.course_id,
-      faculty_id: course?.faculty_id || current.faculty_id,
-      course_details: courseDetails,
-      user_details: userDetails
+      faculty_id: course?.faculty_id || current.faculty_id || null,
+      course_details: courseDetails
     };
 
     if (amount !== undefined) updatePayload.amount = nextAmount;
@@ -603,21 +605,26 @@ exports.updateManualEnrollment = async (req, res) => {
 
     let emailResult = null;
     if (resendEmail) {
-      emailResult = await sendEnrollmentMail({ user, purchase: updatedPurchase, accountCreated: false });
-      if (emailResult?.success) {
-        const updatedUserDetails = {
-          ...userDetails,
-          manualEnrollment: {
-            ...userDetails.manualEnrollment,
-            mailSentAt: new Date().toISOString()
-          }
-        };
-        await supabaseAdmin.from('purchases').update({ user_details: updatedUserDetails }).eq('id', enrollmentId);
-        updatedPurchase.user_details = updatedUserDetails;
+      try {
+        emailResult = await sendEnrollmentMail({ user, purchase: updatedPurchase, accountCreated: false });
+        if (emailResult?.success) {
+          const updatedCourseDetails = {
+            ...courseDetails,
+            manualEnrollment: {
+              ...courseDetails.manualEnrollment,
+              mailSentAt: new Date().toISOString()
+            }
+          };
+          await supabaseAdmin.from('purchases').update({ course_details: updatedCourseDetails }).eq('id', enrollmentId);
+          updatedPurchase.course_details = updatedCourseDetails;
+        }
+      } catch (eErr) {
+        console.error('Email resend error during manual enrollment update:', eErr);
+        emailResult = { success: false, error: eErr.message };
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Manual enrollment updated successfully',
       enrollment: formatEnrollment({ ...updatedPurchase, users: user, courses: course }),
@@ -625,7 +632,7 @@ exports.updateManualEnrollment = async (req, res) => {
     });
   } catch (error) {
     console.error('Update manual enrollment error:', error);
-    res.status(error.statusCode || 500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Failed to update manual enrollment',
       error: error.message
@@ -655,31 +662,31 @@ exports.resendEnrollmentEmail = async (req, res) => {
     const emailResult = await sendEnrollmentMail({
       user,
       purchase,
-      accountCreated: Boolean(purchase.user_details?.manualEnrollment?.accountCreated)
+      accountCreated: Boolean(purchase.course_details?.manualEnrollment?.accountCreated)
     });
 
     if (!emailResult?.success) {
       return res.status(500).json({ success: false, message: emailResult?.error || 'Failed to resend confirmation email' });
     }
 
-    const userDetails = purchase.user_details || {};
-    const updatedUserDetails = {
-      ...userDetails,
+    const courseDetails = purchase.course_details || {};
+    const updatedCourseDetails = {
+      ...courseDetails,
       manualEnrollment: {
-        ...(userDetails.manualEnrollment || {}),
+        ...(courseDetails.manualEnrollment || {}),
         mailSentAt: new Date().toISOString()
       }
     };
 
     await supabaseAdmin
       .from('purchases')
-      .update({ user_details: updatedUserDetails })
+      .update({ course_details: updatedCourseDetails })
       .eq('id', enrollmentId);
 
-    res.status(200).json({ success: true, message: `Enrollment confirmation email sent to ${user.email}`, email: emailResult });
+    return res.status(200).json({ success: true, message: `Enrollment confirmation email sent to ${user.email}`, email: emailResult });
   } catch (error) {
     console.error('Resend enrollment email error:', error);
-    res.status(500).json({ success: false, message: 'Failed to resend enrollment email', error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to resend enrollment email', error: error.message });
   }
 };
 
@@ -706,9 +713,9 @@ exports.deleteManualEnrollment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Manual enrollment not found' });
     }
 
-    res.status(200).json({ success: true, message: 'Manual enrollment deactivated', enrollment: formatEnrollment(data) });
+    return res.status(200).json({ success: true, message: 'Manual enrollment deactivated', enrollment: formatEnrollment(data) });
   } catch (error) {
     console.error('Delete manual enrollment error:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete manual enrollment', error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to delete manual enrollment', error: error.message });
   }
 };
