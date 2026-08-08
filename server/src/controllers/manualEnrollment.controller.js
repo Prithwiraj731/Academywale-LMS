@@ -163,7 +163,6 @@ const createOrUpdateStudent = async ({ name, email, phone }) => {
   const profilePayload = {
     name: String(name).trim(),
     mobile: cleanPhone || null,
-    phone: cleanPhone || null,
     role: 'user',
     is_active: true
   };
@@ -175,7 +174,6 @@ const createOrUpdateStudent = async ({ name, email, phone }) => {
     };
     if (cleanPhone) {
       updatePayload.mobile = cleanPhone;
-      updatePayload.phone = cleanPhone;
     }
 
     const { data, error } = await supabaseAdmin
@@ -224,7 +222,7 @@ exports.listManualEnrollments = async (req, res) => {
 
     let query = supabaseAdmin
       .from('purchases')
-      .select('*, users(id, name, email, mobile, phone), courses(id, title, subject, faculty_name), faculties(id, first_name, last_name, slug)')
+      .select('*, users(id, name, email, mobile), courses(id, title, subject, faculty_name), faculties(id, first_name, last_name, slug)')
       .order('purchase_date', { ascending: false });
 
     if (status) query = query.eq('payment_status', status);
@@ -262,7 +260,7 @@ exports.getManualEnrollment = async (req, res) => {
     const { enrollmentId } = req.params;
     const { data, error } = await supabaseAdmin
       .from('purchases')
-      .select('*, users(id, name, email, mobile, phone), courses(*), faculties(*)')
+      .select('*, users(id, name, email, mobile), courses(*), faculties(*)')
       .eq('id', enrollmentId)
       .maybeSingle();
 

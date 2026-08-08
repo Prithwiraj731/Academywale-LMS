@@ -384,7 +384,7 @@ exports.getUserPurchases = async (req, res) => {
 
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
-      .select('id, name, email, mobile, phone')
+      .select('id, name, email, mobile')
       .eq(userQuery, userId)
       .maybeSingle();
 
@@ -850,15 +850,15 @@ exports.cartPurchase = async (req, res) => {
     
     let user = null;
     if (isUserUuid) {
-      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('id', userId).maybeSingle();
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile').eq('id', userId).maybeSingle();
       user = data;
     }
     if (!user) {
-      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('mongo_id', userId).maybeSingle();
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile').eq('mongo_id', userId).maybeSingle();
       user = data;
     }
     if (!user && userDetails?.email) {
-      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, phone').eq('email', userDetails.email).maybeSingle();
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile').eq('email', userDetails.email).maybeSingle();
       user = data;
     }
 
@@ -1335,8 +1335,8 @@ exports.verifyRazorpayPayment = async (req, res) => {
     const studentPhone = userDetails?.phone || userDetails?.phoneNumber || userDetails?.phone_number || user?.phone || user?.mobile || '';
 
     // Automatically sync phone to user profile if missing
-    if (user && studentPhone && (!user.mobile || !user.phone)) {
-      await supabaseAdmin.from('users').update({ mobile: studentPhone, phone: studentPhone }).eq('id', user.id);
+    if (user && studentPhone && !user.mobile) {
+      await supabaseAdmin.from('users').update({ mobile: studentPhone }).eq('id', user.id);
     }
 
     const createdPurchases = [];
