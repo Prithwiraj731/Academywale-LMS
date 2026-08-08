@@ -178,6 +178,7 @@ export default function Register() {
               <p className="text-neutral-300 text-xs mt-2 leading-relaxed">
                 We've sent a 6-digit verification code to <br />
                 <strong className="text-[#20b2aa] font-bold text-sm">+91 {mobile || 'your phone number'}</strong>
+                {email && <span className="block text-neutral-400 text-[11px] mt-1">(and a copy to {email})</span>}
               </p>
             </div>
 

@@ -176,13 +176,18 @@ exports.signup = async (req, res) => {
       targetUserId = newUser.id;
     }
 
-    // Send OTP via SMS to the provided phone number
+    // Send OTP via SMS to the provided phone number & Email backup
     await sendSMSOTP(cleanMobile, otp);
+    try {
+      await sendOTPEmail(cleanEmail, name.trim(), otp, cleanMobile);
+    } catch (emailErr) {
+      console.warn('⚠️ Backup OTP email notice:', emailErr.message);
+    }
 
-    console.log(`✅ Verification OTP sent to phone number: +91 ${cleanMobile}`);
+    console.log(`✅ Verification OTP dispatched to phone +91 ${cleanMobile} and email ${cleanEmail}`);
     res.status(201).json({
       status: 'success',
-      message: `Verification code sent to your phone number +91 ${cleanMobile}`,
+      message: `Verification code sent to +91 ${cleanMobile} (and your email address)`,
       email: cleanEmail,
       mobile: cleanMobile
     });
@@ -349,15 +354,23 @@ exports.resendOTP = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    // Send OTP via SMS
+    // Send OTP via SMS & Email backup
     const targetMobile = user.mobile || cleanMobile;
+    const targetEmail = user.email || cleanEmail;
     await sendSMSOTP(targetMobile, otp);
+    try {
+      if (targetEmail) {
+        await sendOTPEmail(targetEmail, user.name || 'Student', otp, targetMobile);
+      }
+    } catch (emailErr) {
+      console.warn('⚠️ Backup OTP email notice:', emailErr.message);
+    }
 
     res.status(200).json({
       status: 'success',
-      message: `A new verification code has been sent to your phone number +91 ${targetMobile}`,
+      message: `A new verification code has been sent to +91 ${targetMobile} (and your email address)`,
       mobile: targetMobile,
-      email: user.email
+      email: targetEmail
     });
   } catch (error) {
     console.error('❌ Resend OTP error:', error);

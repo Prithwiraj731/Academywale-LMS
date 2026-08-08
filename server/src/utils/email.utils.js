@@ -477,27 +477,28 @@ const sendPurchaseInvoiceEmail = async (options) => {
 };
 
 // Send OTP email for registration verification
-const sendOTPEmail = async (userEmail, userName, otp) => {
+const sendOTPEmail = async (userEmail, userName, otp, mobile = '') => {
   try {
     const transporter = createTransporter();
+    const phoneInfo = mobile ? ` for phone number +91 ${mobile}` : '';
     
     const mailOptions = {
       from: emailConfig.from,
       to: userEmail,
-      subject: `${otp} is your AcademyWale Verification Code`,
+      subject: `${otp} is your AcademyWale Account Verification Code`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #0d9488; text-align: center; font-weight: bold;">AcademyWale Verification</h2>
-          <p>Dear ${userName},</p>
-          <p>Thank you for signing up with AcademyWale. Please use the following One-Time Password (OTP) to verify your email address and activate your account:</p>
-          <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #0d9488;">${otp}</span>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+          <h2 style="color: #0d9488; text-align: center; font-weight: bold; margin-top: 0;">AcademyWale Account Verification</h2>
+          <p>Dear ${userName || 'Student'},</p>
+          <p>Thank you for creating an account with AcademyWale. Please use the 6-digit One-Time Password (OTP) below to complete your registration${phoneInfo}:</p>
+          <div style="background-color: #f0fdfa; border: 1px solid #ccfbf1; padding: 18px; border-radius: 10px; text-align: center; margin: 24px 0;">
+            <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #0d9488;">${otp}</span>
           </div>
-          <p style="color: #64748b; font-size: 14px;">This code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p style="color: #64748b; font-size: 12px; text-align: center;">
+          <p style="color: #64748b; font-size: 14px;">This verification code is valid for 10 minutes. If you did not request this code, please ignore this message.</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+          <p style="color: #64748b; font-size: 12px; text-align: center; margin-bottom: 0;">
             Best regards,<br /><strong>The AcademyWale Team</strong><br />
-            <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a>
+            <a href="mailto:support@academywale.com" style="color: #0d9488; text-decoration: none;">support@academywale.com</a>
           </p>
         </div>
       `
