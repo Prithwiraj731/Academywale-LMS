@@ -38,6 +38,21 @@ const certificates = [
   }
 ];
 
+const videoHighlights = [
+  {
+    id: 1,
+    url: 'https://www.youtube.com/embed/kAmN62HupSk',
+    title: 'AcademyWale Guidance & Insights',
+    subtitle: 'CA & CMA Student Success Shorts'
+  },
+  {
+    id: 2,
+    url: 'https://www.youtube.com/embed/5H8P_TzpOYs',
+    title: 'Course & Faculty Overview',
+    subtitle: 'Quality Learning at Your Fingertips'
+  }
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const [searchVal, setSearchVal] = useState('');
@@ -45,6 +60,7 @@ export default function Home() {
   const [exclusiveCourses, setExclusiveCourses] = useState([]);
   const [activePath, setActivePath] = useState(null);
   const [activeCertIndex, setActiveCertIndex] = useState(0);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const carouselRef = useRef(null);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -587,7 +603,7 @@ export default function Home() {
 
         <div className="max-w-6xl mx-auto relative z-10">
           {/* Section Header */}
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-8 sm:mb-14">
             <div className="group inline-flex flex-col items-center">
               <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3">
                 🎬 Featured Highlights
@@ -602,51 +618,134 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Video Grid Container - Fully Responsive 2-Col for Desktop / 1-Col for Mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 max-w-4xl mx-auto items-center">
-            
-            {/* Video Card 1 */}
-            <div className="flex flex-col items-center bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 p-3.5 sm:p-5 rounded-3xl shadow-2xl hover:border-[#20b2aa]/40 transition-all duration-300 group">
-              <div className="relative w-full aspect-[9/16] max-w-[320px] rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
-                <iframe
-                  src="https://www.youtube.com/embed/kAmN62HupSk"
-                  title="AcademyWale Highlight Video 1"
-                  className="w-full h-full object-cover border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+          {/* Desktop / Tablet Layout: Side-by-Side 2-Col Grid (hidden on mobile) */}
+          <div className="hidden sm:grid sm:grid-cols-2 gap-6 md:gap-10 max-w-4xl mx-auto items-center">
+            {videoHighlights.map((video) => (
+              <div
+                key={video.id}
+                className="flex flex-col items-center bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 p-3.5 sm:p-5 rounded-3xl shadow-2xl hover:border-[#20b2aa]/40 transition-all duration-300 group"
+              >
+                <div className="relative w-full aspect-[9/16] max-w-[320px] rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
+                  <iframe
+                    src={video.url}
+                    title={video.title}
+                    className="w-full h-full object-cover border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+                <div className="mt-4 text-center px-2 pb-1">
+                  <h4 className="text-base font-bold text-white group-hover:text-[#20b2aa] transition-colors">
+                    {video.title}
+                  </h4>
+                  <p className="text-xs text-neutral-400 mt-1 font-medium">
+                    {video.subtitle}
+                  </p>
+                </div>
               </div>
-              <div className="mt-4 text-center px-2 pb-1">
-                <h4 className="text-base font-bold text-white group-hover:text-[#20b2aa] transition-colors">
-                  AcademyWale Guidance & Insights
-                </h4>
-                <p className="text-xs text-neutral-400 mt-1 font-medium">
-                  CA & CMA Student Success Shorts
-                </p>
-              </div>
+            ))}
+          </div>
+
+          {/* Mobile Layout: 3D Swipeable Stacked Cards Carousel (only on mobile screens < sm) */}
+          <div className="block sm:hidden flex flex-col items-center">
+            <div className="relative w-full max-w-[320px] min-h-[490px] flex items-center justify-center">
+              <AnimatePresence mode="popLayout">
+                {videoHighlights.map((video, index) => {
+                  const isCurrent = index === activeVideoIndex;
+                  const isNext = (index === (activeVideoIndex + 1) % videoHighlights.length);
+
+                  return (
+                    <motion.div
+                      key={video.id}
+                      initial={{ opacity: 0, scale: 0.85, y: 25 }}
+                      animate={{
+                        opacity: isCurrent ? 1 : (isNext ? 0.65 : 0.2),
+                        scale: isCurrent ? 1 : (isNext ? 0.92 : 0.84),
+                        y: isCurrent ? 0 : (isNext ? 18 : 36),
+                        rotate: isCurrent ? 0 : (isNext ? -2.5 : 2.5),
+                        zIndex: isCurrent ? 30 : (isNext ? 20 : 10)
+                      }}
+                      exit={{ opacity: 0, scale: 0.85, y: -25 }}
+                      transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
+                      drag={isCurrent ? "x" : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.2}
+                      onDragEnd={(_e, { offset, velocity }) => {
+                        if (offset.x < -35 || velocity.x < -250) {
+                          setActiveVideoIndex((prev) => (prev + 1) % videoHighlights.length);
+                        } else if (offset.x > 35 || velocity.x > 250) {
+                          setActiveVideoIndex((prev) => (prev - 1 + videoHighlights.length) % videoHighlights.length);
+                        }
+                      }}
+                      onClick={() => {
+                        if (!isCurrent) setActiveVideoIndex(index);
+                      }}
+                      className={`absolute w-full p-3 bg-neutral-900/90 backdrop-blur-xl rounded-3xl border transition-all duration-300 ${
+                        isCurrent
+                          ? 'border-[#20b2aa]/50 shadow-[0_20px_50px_-10px_rgba(32,178,170,0.3)]'
+                          : 'border-neutral-800 shadow-md cursor-pointer'
+                      }`}
+                    >
+                      <div className="relative w-full aspect-[9/16] max-w-[290px] mx-auto rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
+                        <iframe
+                          src={video.url}
+                          title={video.title}
+                          className="w-full h-full object-cover border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                      <div className="mt-3 text-center px-2 pb-1">
+                        <h4 className="text-sm font-bold text-white">
+                          {video.title}
+                        </h4>
+                        <p className="text-[11px] text-neutral-400 mt-0.5 font-medium">
+                          {video.subtitle}
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
 
-            {/* Video Card 2 */}
-            <div className="flex flex-col items-center bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 p-3.5 sm:p-5 rounded-3xl shadow-2xl hover:border-[#20b2aa]/40 transition-all duration-300 group">
-              <div className="relative w-full aspect-[9/16] max-w-[320px] rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
-                <iframe
-                  src="https://www.youtube.com/embed/5H8P_TzpOYs"
-                  title="AcademyWale Highlight Video 2"
-                  className="w-full h-full object-cover border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+            {/* Mobile Controls & Indicator */}
+            <div className="mt-6 flex flex-col items-center gap-2.5 z-30">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveVideoIndex((prev) => (prev - 1 + videoHighlights.length) % videoHighlights.length)}
+                  className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-sm font-bold border border-neutral-700 active:scale-95 transition-all shadow-md cursor-pointer"
+                  title="Previous Video"
+                >
+                  ‹
+                </button>
+                <div className="flex gap-2 px-1">
+                  {videoHighlights.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveVideoIndex(idx)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        idx === activeVideoIndex ? 'w-7 bg-[#20b2aa]' : 'w-2 bg-neutral-700 hover:bg-neutral-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveVideoIndex((prev) => (prev + 1) % videoHighlights.length)}
+                  className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-sm font-bold border border-neutral-700 active:scale-95 transition-all shadow-md cursor-pointer"
+                  title="Next Video"
+                >
+                  ›
+                </button>
               </div>
-              <div className="mt-4 text-center px-2 pb-1">
-                <h4 className="text-base font-bold text-white group-hover:text-[#20b2aa] transition-colors">
-                  Course & Faculty Overview
-                </h4>
-                <p className="text-xs text-neutral-400 mt-1 font-medium">
-                  Quality Learning at Your Fingertips
-                </p>
-              </div>
-            </div>
 
+              <span className="text-[11px] font-semibold text-[#20b2aa] bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 select-none">
+                👈 Swipe card to switch videos 👉
+              </span>
+            </div>
           </div>
         </div>
       </section>

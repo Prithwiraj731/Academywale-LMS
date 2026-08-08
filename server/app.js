@@ -135,13 +135,11 @@ app.use('/', facultyRoutes);
 app.use('/', instituteRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/purchase', purchaseRoutes);
-app.use('/', manualEnrollmentRoutes);
+app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes);
 app.use('/api/notify', notifyRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/', standaloneCourseRoutes);
 app.use('/api/migration', imageMigrationRoutes);
-
-// --- Serve React Build Files ---
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, '../client/dist')));
 

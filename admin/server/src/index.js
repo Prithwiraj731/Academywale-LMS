@@ -23,7 +23,7 @@ app.use(cookieParser())
 app.use(facultyRoutes)
 app.use(courseRoutes)
 app.use('/api/testimonials', testimonialRoutes) // read-only
-app.use(manualEnrollmentRoutes)
+app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'admin-server' }))
 
