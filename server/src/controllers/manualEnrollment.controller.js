@@ -13,6 +13,38 @@ const generateOfflineTransactionId = () => {
   return `OFFLINE-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 };
 
+const ensureUniqueTransactionId = async (candidateId, excludeId = null) => {
+  let baseId = String(candidateId || '').trim();
+  if (!baseId) {
+    baseId = generateOfflineTransactionId();
+  }
+
+  let uniqueId = baseId;
+  let counter = 1;
+
+  while (counter <= 100) {
+    let query = supabaseAdmin
+      .from('purchases')
+      .select('id')
+      .eq('transaction_id', uniqueId);
+
+    if (excludeId) {
+      query = query.neq('id', excludeId);
+    }
+
+    const { data: existing } = await query.maybeSingle();
+
+    if (!existing) {
+      return uniqueId;
+    }
+
+    uniqueId = `${baseId}-${counter}`;
+    counter++;
+  }
+
+  return `${baseId}-${Date.now()}`;
+};
+
 const getVariantPrice = (course, selectedVariant = {}) => {
   const requestedMode = selectedVariant.mode || '';
   const requestedAttempt = selectedVariant.attempt || selectedVariant.validity || '';
@@ -422,6 +454,9 @@ exports.createManualEnrollment = async (req, res) => {
       }
     };
 
+    const rawTransactionId = paymentReference ? String(paymentReference).trim() : generateOfflineTransactionId();
+    const transactionId = await ensureUniqueTransactionId(rawTransactionId);
+
     const { data: purchase, error: insertError } = await supabaseAdmin
       .from('purchases')
       .insert({
@@ -432,7 +467,7 @@ exports.createManualEnrollment = async (req, res) => {
         payment_method: paymentMethod,
         payment_status: paymentStatus,
         amount: paidAmount,
-        transaction_id: paymentReference ? String(paymentReference).trim() : generateOfflineTransactionId(),
+        transaction_id: transactionId,
         access_expiry: accessExpiry || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         is_active: true
       })
@@ -598,7 +633,9 @@ exports.updateManualEnrollment = async (req, res) => {
     if (amount !== undefined) updatePayload.amount = nextAmount;
     if (paymentMethod !== undefined) updatePayload.payment_method = paymentMethod;
     if (paymentStatus !== undefined) updatePayload.payment_status = paymentStatus;
-    if (paymentReference !== undefined && paymentReference) updatePayload.transaction_id = String(paymentReference).trim();
+    if (paymentReference !== undefined && paymentReference) {
+      updatePayload.transaction_id = await ensureUniqueTransactionId(String(paymentReference).trim(), enrollmentId);
+    }
     if (accessExpiry !== undefined) updatePayload.access_expiry = accessExpiry || null;
     if (isActive !== undefined) updatePayload.is_active = Boolean(isActive);
 
