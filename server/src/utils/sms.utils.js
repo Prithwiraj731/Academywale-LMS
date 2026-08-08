@@ -15,20 +15,30 @@ const sendSMSOTP = async (mobile, otp) => {
   let dispatched = false;
   let errors = [];
 
-  // 1. Fast2SMS Integration
+  // 1. Fast2SMS Integration (supports both 'otp' and 'q' Quick SMS routes)
   const fast2smsKey = process.env.FAST2SMS_API_KEY || process.env.FAST2SMS_KEY;
   if (fast2smsKey) {
     try {
-      console.log('🚀 Attempting SMS dispatch via Fast2SMS API...');
-      // Try GET request endpoint for Fast2SMS OTP route
+      console.log('🚀 Attempting SMS dispatch via Fast2SMS API (OTP route)...');
       const fast2smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=otp&variables_values=${otp}&flash=0&numbers=${cleanMobile}`;
       const response = await fetch(fast2smsUrl, { method: 'GET' });
       const result = await response.json();
-      console.log('✅ Fast2SMS API Result:', result);
+      console.log('✅ Fast2SMS OTP Route Result:', result);
+      
       if (result.return || result.status_code === 200) {
         dispatched = true;
       } else {
-        errors.push(`Fast2SMS: ${result.message || JSON.stringify(result)}`);
+        // Fallback: Try Quick SMS route (route=q)
+        console.log('🚀 Attempting Fast2SMS Quick SMS (route=q)...');
+        const qUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=q&message=${encodeURIComponent(`Your AcademyWale verification code is: ${otp}`)}&flash=0&numbers=${cleanMobile}`;
+        const qRes = await fetch(qUrl, { method: 'GET' });
+        const qResult = await qRes.json();
+        console.log('✅ Fast2SMS Quick SMS Result:', qResult);
+        if (qResult.return || qResult.status_code === 200) {
+          dispatched = true;
+        } else {
+          errors.push(`Fast2SMS: ${result.message || qResult.message || JSON.stringify(result)}`);
+        }
       }
     } catch (err) {
       console.warn('⚠️ Fast2SMS dispatch error:', err.message);
