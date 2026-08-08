@@ -99,6 +99,9 @@ exports.purchaseCourse = async (req, res) => {
         course_details: {
           title: targetCourse.title,
           subject: targetCourse.subject,
+          costPrice: targetCourse.cost_price || targetCourse.costPrice || targetCourse.original_price || targetCourse.originalPrice || targetCourse.price || Number(amount),
+          originalPrice: targetCourse.cost_price || targetCourse.costPrice || targetCourse.original_price || targetCourse.originalPrice || targetCourse.price || Number(amount),
+          sellingPrice: targetCourse.selling_price || targetCourse.sellingPrice || Number(amount),
           mode: targetCourse.mode_attempt_pricing?.[0]?.mode || '',
           validity: targetCourse.mode_attempt_pricing?.[0]?.attempt || '',
           facultyName: targetCourse.faculty_name,
@@ -559,6 +562,9 @@ exports.upiPurchase = async (req, res) => {
         course_details: {
           title: course.title || course.subject,
           subject: course.subject,
+          costPrice: course.cost_price || course.costPrice || course.original_price || course.originalPrice || courseDetails?.costPrice || courseDetails?.originalPrice || course.price || Number(amount),
+          originalPrice: course.cost_price || course.costPrice || course.original_price || course.originalPrice || courseDetails?.costPrice || courseDetails?.originalPrice || course.price || Number(amount),
+          sellingPrice: courseDetails?.sellingPrice || Number(amount),
           poster_url: course.poster_url || course.posterUrl || courseDetails?.posterUrl || '',
           posterUrl: course.poster_url || course.posterUrl || courseDetails?.posterUrl || '',
           mode: courseDetails?.mode || '',
@@ -730,6 +736,9 @@ exports.cartPurchase = async (req, res) => {
           course_details: {
             title: course.title || course.subject,
             subject: course.subject,
+            costPrice: item.costPrice || item.originalPrice || item.cost_price || course.cost_price || course.costPrice || course.original_price || course.originalPrice || course.price || item.price || itemBaseAmount,
+            originalPrice: item.costPrice || item.originalPrice || item.cost_price || course.cost_price || course.costPrice || course.original_price || course.originalPrice || course.price || item.price || itemBaseAmount,
+            sellingPrice: itemBaseAmount,
             poster_url: course.poster_url || course.posterUrl || item.posterUrl || '',
             posterUrl: course.poster_url || course.posterUrl || item.posterUrl || '',
             mode: item.mode || '',
@@ -1398,6 +1407,9 @@ exports.verifyRazorpayPayment = async (req, res) => {
           },
            course_details: {
             title: course.title || course.subject,
+            costPrice: item.costPrice || item.originalPrice || item.cost_price || course.cost_price || course.costPrice || course.original_price || course.originalPrice || req.body.courseDetails?.costPrice || req.body.courseDetails?.originalPrice || course.price || itemBaseAmount,
+            originalPrice: item.costPrice || item.originalPrice || item.cost_price || course.cost_price || course.costPrice || course.original_price || course.originalPrice || req.body.courseDetails?.costPrice || req.body.courseDetails?.originalPrice || course.price || itemBaseAmount,
+            sellingPrice: itemBaseAmount,
             subject: course.subject,
             poster_url: course.poster_url || course.posterUrl || item.posterUrl || '',
             posterUrl: course.poster_url || course.posterUrl || item.posterUrl || '',

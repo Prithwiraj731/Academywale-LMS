@@ -312,7 +312,8 @@ const sendPurchaseInvoiceEmail = async (options) => {
       const supportMail = details.supportMail || details.support_mail || '';
       const supportCall = details.supportCall || details.support_call || '';
       const institute = details.institute || details.instituteName || details.institute_name || '';
-      const itemPrice = item.amount || item.price || amount;
+      // Actual Course Price set by Admin (Cost Price / Original Price)
+      const actualCoursePrice = details.costPrice || details.cost_price || details.originalPrice || details.original_price || details.actualPrice || item.costPrice || item.cost_price || item.originalPrice || item.original_price || item.actualPrice || details.sellingPrice || details.price || item.amount || item.price || amount;
 
       let detailString = `Mode: <strong>${mode}</strong> | Validity: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>`;
       if (attempt) detailString += ` | Attempt/Term: <strong>${attempt}</strong>`;
@@ -336,7 +337,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
             </span>
           </td>
           <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
-            ₹${Number(itemPrice).toLocaleString('en-IN')}
+            ₹${Number(actualCoursePrice).toLocaleString('en-IN')}
           </td>
         </tr>
       `;
