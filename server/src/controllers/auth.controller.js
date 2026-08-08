@@ -78,7 +78,7 @@ exports.signup = async (req, res) => {
     console.log('🔍 Checking if user exists with email:', cleanEmail);
     const { data: existingUserByEmail, error: checkEmailError } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, name, email, password, mobile, role, is_active, otp_code, otp_expires_at')
       .eq('email', cleanEmail)
       .maybeSingle();
 
@@ -95,7 +95,7 @@ exports.signup = async (req, res) => {
     // Check if user already exists by mobile
     const { data: existingUserByMobile, error: checkMobileError } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, name, email, password, mobile, role, is_active, otp_code, otp_expires_at')
       .eq('mobile', cleanMobile)
       .maybeSingle();
 
@@ -167,7 +167,7 @@ exports.signup = async (req, res) => {
           created_at: new Date(),
           last_login_at: new Date()
         })
-        .select('*')
+        .select('id, name, email, mobile, role, is_active')
         .single();
 
       if (insertError) throw insertError;
@@ -223,7 +223,7 @@ exports.verifyOTP = async (req, res) => {
     if (cleanMobile) {
       const { data, error } = await supabaseAdmin
         .from('users')
-        .select('*')
+        .select('id, name, email, mobile, is_active, otp_code, otp_expires_at, password, role')
         .eq('mobile', cleanMobile)
         .maybeSingle();
       if (!error && data) user = data;
@@ -232,7 +232,7 @@ exports.verifyOTP = async (req, res) => {
     if (!user && cleanEmail) {
       const { data, error } = await supabaseAdmin
         .from('users')
-        .select('*')
+        .select('id, name, email, mobile, is_active, otp_code, otp_expires_at, password, role')
         .eq('email', cleanEmail)
         .maybeSingle();
       if (!error && data) user = data;
@@ -278,7 +278,7 @@ exports.verifyOTP = async (req, res) => {
         last_login_at: new Date()
       })
       .eq('id', user.id)
-      .select('*')
+      .select('id, name, email, mobile, role, is_active')
       .single();
 
     if (updateError) throw updateError;
@@ -316,11 +316,11 @@ exports.resendOTP = async (req, res) => {
 
     let user = null;
     if (cleanMobile) {
-      const { data } = await supabaseAdmin.from('users').select('*').eq('mobile', cleanMobile).maybeSingle();
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, is_active').eq('mobile', cleanMobile).maybeSingle();
       user = data;
     }
     if (!user && cleanEmail) {
-      const { data } = await supabaseAdmin.from('users').select('*').eq('email', cleanEmail).maybeSingle();
+      const { data } = await supabaseAdmin.from('users').select('id, name, email, mobile, is_active').eq('email', cleanEmail).maybeSingle();
       user = data;
     }
 
@@ -405,8 +405,6 @@ exports.forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(200).json({
         status: 'success',
-        // Do not reveal whether an email is registered, but let the UI avoid
-        // showing an OTP form when no email was actually dispatched.
         emailSent: false,
         message: 'If an account exists with this email, a password reset code has been sent.'
       });
@@ -478,7 +476,7 @@ exports.resetPassword = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
     const { data: user, error: fetchError } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, name, email, mobile, is_active, otp_code, otp_expires_at')
       .eq('email', normalizedEmail)
       .maybeSingle();
 
@@ -561,7 +559,7 @@ exports.login = async (req, res) => {
     // Check if user exists
     const { data: user, error: fetchError } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, name, email, password, mobile, role, is_active, otp_code')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
