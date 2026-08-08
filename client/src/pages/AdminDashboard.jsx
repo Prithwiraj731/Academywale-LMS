@@ -314,6 +314,7 @@ export default function AdminDashboard() {
   const [manualEnrollmentForm, setManualEnrollmentForm] = useState(defaultManualEnrollmentForm);
   const [manualEnrollments, setManualEnrollments] = useState([]);
   const [manualEnrollmentSearch, setManualEnrollmentSearch] = useState('');
+  const [manualCourseSelectSearch, setManualCourseSelectSearch] = useState('');
   const [manualEnrollmentLoading, setManualEnrollmentLoading] = useState(false);
   const [manualEnrollmentSaving, setManualEnrollmentSaving] = useState(false);
   const [manualEnrollmentError, setManualEnrollmentError] = useState('');
@@ -327,6 +328,17 @@ export default function AdminDashboard() {
     const subcategory = String(c.subcategory || '').toLowerCase();
     const query = courseSearchQuery.toLowerCase();
     return title.includes(query) || subject.includes(query) || category.includes(query) || subcategory.includes(query);
+  });
+
+  const filteredAvailableCoursesForManualForm = availableCourses.filter(c => {
+    if (!manualCourseSelectSearch.trim()) return true;
+    const query = manualCourseSelectSearch.toLowerCase().trim();
+    const title = String(c.title || '').toLowerCase();
+    const subject = String(c.subject || '').toLowerCase();
+    const faculty = String(c.facultyName || c.faculty_name || '').toLowerCase();
+    const category = String(c.category || c.courseType || '').toLowerCase();
+    const paperName = String(c.paperName || c.paper_name || '').toLowerCase();
+    return title.includes(query) || subject.includes(query) || faculty.includes(query) || category.includes(query) || paperName.includes(query);
   });
 
   const filteredCoursesForManualEnrollment = availableCourses.filter(c => {
@@ -3706,8 +3718,36 @@ export default function AdminDashboard() {
 
             {/* Course & Payment Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Select Course *</label>
+              <div className="sm:col-span-2">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-gray-700">Select Course *</label>
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    Showing {filteredAvailableCoursesForManualForm.length} of {availableCourses.length} courses
+                  </span>
+                </div>
+
+                {/* Instant Course Search Box */}
+                <div className="relative mb-2">
+                  <input
+                    type="text"
+                    value={manualCourseSelectSearch}
+                    onChange={(e) => setManualCourseSelectSearch(e.target.value)}
+                    placeholder="🔍 Search course by title, faculty, or paper (e.g. AFM, Gourav, Costing)..."
+                    className="w-full rounded-lg border border-emerald-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/40 text-gray-800 font-medium placeholder-gray-400"
+                  />
+                  {manualCourseSelectSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setManualCourseSelectSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold px-1 cursor-pointer"
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Course Dropdown */}
                 <select
                   name="courseId"
                   value={manualEnrollmentForm.courseId}
@@ -3715,12 +3755,12 @@ export default function AdminDashboard() {
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                   required
                 >
-                  <option value="">-- Choose Course --</option>
-                  {availableCourses.map(c => {
+                  <option value="">-- Choose Course ({filteredAvailableCoursesForManualForm.length} options) --</option>
+                  {filteredAvailableCoursesForManualForm.map(c => {
                     const cId = getCourseId(c);
                     return (
                       <option key={cId} value={cId}>
-                        {c.title || c.subject} ({c.category || 'Course'})
+                        {c.title || c.subject} {c.facultyName ? `(${c.facultyName})` : ''}
                       </option>
                     );
                   })}
