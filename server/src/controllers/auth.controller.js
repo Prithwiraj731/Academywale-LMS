@@ -175,19 +175,23 @@ exports.signup = async (req, res) => {
     }
 
     // Send OTP via SMS to the provided phone number & Email backup
-    await sendSMSOTP(cleanMobile, otp);
+    const smsResult = await sendSMSOTP(cleanMobile, otp);
     try {
       await sendOTPEmail(cleanEmail, name.trim(), otp, cleanMobile);
     } catch (emailErr) {
       console.warn('⚠️ Backup OTP email notice:', emailErr.message);
     }
 
-    console.log(`✅ Verification OTP dispatched to phone +91 ${cleanMobile} and email ${cleanEmail}`);
+    console.log(`✅ Verification OTP dispatched to phone +91 ${cleanMobile} and email ${cleanEmail}. SMS Result:`, smsResult);
     res.status(201).json({
       status: 'success',
-      message: `Verification code sent to +91 ${cleanMobile} (and your email address)`,
+      message: smsResult.dispatched
+        ? `Verification code sent via SMS to +91 ${cleanMobile} (and a copy to ${cleanEmail})`
+        : `Verification code sent to your email (${cleanEmail}). ${smsResult.errors.length > 0 ? 'SMS Status: ' + smsResult.errors.join(' | ') : ''}`,
       email: cleanEmail,
-      mobile: cleanMobile
+      mobile: cleanMobile,
+      smsDispatched: smsResult.dispatched,
+      smsErrors: smsResult.errors
     });
   } catch (error) {
     console.error('❌ Signup error:', error);
@@ -355,7 +359,7 @@ exports.resendOTP = async (req, res) => {
     // Send OTP via SMS & Email backup
     const targetMobile = user.mobile || cleanMobile;
     const targetEmail = user.email || cleanEmail;
-    await sendSMSOTP(targetMobile, otp);
+    const smsResult = await sendSMSOTP(targetMobile, otp);
     try {
       if (targetEmail) {
         await sendOTPEmail(targetEmail, user.name || 'Student', otp, targetMobile);
@@ -366,9 +370,13 @@ exports.resendOTP = async (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      message: `A new verification code has been sent to +91 ${targetMobile} (and your email address)`,
+      message: smsResult.dispatched
+        ? `A new verification code has been sent via SMS to +91 ${targetMobile} (and your email address)`
+        : `A new verification code has been sent to your email (${targetEmail}). ${smsResult.errors.length > 0 ? 'SMS Status: ' + smsResult.errors.join(' | ') : ''}`,
       mobile: targetMobile,
-      email: targetEmail
+      email: targetEmail,
+      smsDispatched: smsResult.dispatched,
+      smsErrors: smsResult.errors
     });
   } catch (error) {
     console.error('❌ Resend OTP error:', error);
