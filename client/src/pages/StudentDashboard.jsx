@@ -141,7 +141,7 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-[#0b1329] text-slate-100 font-sans selection:bg-teal-500 selection:text-black relative overflow-hidden pb-12">
       
-      {/* Background Soft Teal & Blue Ambient Orbs (Official Brand Palette) */}
+      {/* Background Soft Teal & Blue Ambient Orbs */}
       <div className="absolute top-[-100px] left-[15%] w-[650px] h-[650px] bg-teal-500/10 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute top-[35%] right-[-100px] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute bottom-[-100px] left-[-50px] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[180px] pointer-events-none" />
@@ -155,7 +155,7 @@ export default function StudentDashboard() {
           {/* 📱 / 💻 Left Floating Vertical Glass Dock (Sidebar) */}
           <aside className="hidden md:flex flex-col justify-between items-center py-8 px-4 bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/15 rounded-[32px] w-20 shrink-0 min-h-[85vh] sticky top-6 shadow-2xl z-30">
             
-            {/* Top Home Link Icon (Clean Brand Replacement - AW Logo Removed as Requested) */}
+            {/* Top Home Link Icon */}
             <button
               onClick={() => navigate('/')}
               title="Back to Home"
@@ -171,7 +171,7 @@ export default function StudentDashboard() {
                 title="My Enrollments"
                 className={`p-3.5 rounded-2xl transition-all duration-300 cursor-pointer ${
                   activeTab === 'courses'
-                    ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/30'
+                    ? 'bg-teal-500 text-slate-950 font-bold shadow-lg shadow-teal-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -183,7 +183,7 @@ export default function StudentDashboard() {
                 title="Shopping Cart"
                 className={`p-3.5 rounded-2xl transition-all duration-300 relative cursor-pointer ${
                   activeTab === 'cart'
-                    ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/30'
+                    ? 'bg-teal-500 text-slate-950 font-bold shadow-lg shadow-teal-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -214,7 +214,7 @@ export default function StudentDashboard() {
 
             {/* Bottom Student Avatar Indicator */}
             <div className="flex flex-col items-center gap-5">
-              <div className="w-10 h-10 rounded-xl bg-teal-950 border border-teal-500/30 flex items-center justify-center text-teal-300 font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-teal-950 border border-teal-500/30 flex items-center justify-center text-teal-300 font-semibold text-sm">
                 {user.name ? user.name[0].toUpperCase() : 'S'}
               </div>
             </div>
@@ -226,10 +226,10 @@ export default function StudentDashboard() {
             {/* Top Navigation & Header Row */}
             <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#111c38]/70 backdrop-blur-2xl border border-teal-500/15 rounded-[28px] p-4 sm:p-5 shadow-xl">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   Student Dashboard
                 </h1>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-xs text-slate-400 font-medium mt-0.5">
                   Welcome back, <span className="text-teal-300 font-semibold">{user.name || 'Learner'}</span>
                 </p>
               </div>
@@ -244,16 +244,16 @@ export default function StudentDashboard() {
                     value={courseSearch}
                     onChange={(e) => setCourseSearch(e.target.value)}
                     placeholder="Search courses..."
-                    className="w-full bg-[#0b1329]/80 text-xs text-slate-200 placeholder-slate-400 pl-9 pr-3 py-2 rounded-full border border-teal-500/20 focus:outline-none focus:border-teal-400/60"
+                    className="w-full bg-[#0b1329]/80 text-xs text-slate-200 placeholder-slate-400 pl-9 pr-3 py-2 rounded-full border border-teal-500/20 focus:outline-none focus:border-teal-400/60 font-normal"
                   />
                 </div>
 
                 {/* Profile Pill */}
                 <div className="flex items-center gap-2 bg-[#0b1329]/80 border border-teal-500/20 rounded-full px-3 py-1.5 shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-xs">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 flex items-center justify-center text-slate-950 font-bold text-xs">
                     {user.name ? user.name[0].toUpperCase() : 'S'}
                   </div>
-                  <span className="text-xs font-bold text-slate-200 hidden sm:inline">{user.name?.split(' ')[0]}</span>
+                  <span className="text-xs font-semibold text-slate-200 hidden sm:inline">{user.name?.split(' ')[0]}</span>
                 </div>
               </div>
             </header>
@@ -262,14 +262,14 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Large Glass Hero Banner */}
-              <div className="lg:col-span-8 bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[300px]">
+              <div className="lg:col-span-8 bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[290px]">
                 
                 {/* Background Ambient Teal Lighting */}
                 <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-teal-500/20 via-cyan-500/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
                 <div>
-                  <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-1.5">Learning Analytics</p>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+                  <p className="text-xs font-semibold text-teal-400 uppercase tracking-wider mb-2">Learning Analytics</p>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug tracking-tight mb-5">
                     Welcome to Your <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-emerald-200">
                       AcademyWale Learning Portal
@@ -277,7 +277,7 @@ export default function StudentDashboard() {
                   </h2>
                   <button
                     onClick={() => navigate('/courses/all')}
-                    className="bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 px-6 py-2.5 rounded-full font-black text-xs tracking-wide shadow-xl shadow-teal-500/20 transition-all cursor-pointer inline-flex items-center gap-2"
+                    className="bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 px-5 py-2.5 rounded-full font-bold text-xs tracking-wide shadow-xl shadow-teal-500/20 transition-all cursor-pointer inline-flex items-center gap-2"
                   >
                     <span>Browse All Courses</span>
                     <FaArrowRight className="text-xs" />
@@ -287,26 +287,26 @@ export default function StudentDashboard() {
                 {/* 🧊 FLOATING FROSTED GLASS STAT CAPSULE OVERLAY */}
                 <div className="mt-8 bg-slate-950/40 backdrop-blur-2xl border border-teal-500/20 rounded-2xl p-4 sm:p-5 grid grid-cols-4 gap-2 text-center shadow-2xl">
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-white font-mono">{purchases.length}</p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
+                    <p className="text-lg sm:text-xl font-bold text-white font-mono">{purchases.length}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-300 flex items-center justify-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-cyan-400" /> Enrolled
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-emerald-400 font-mono">{activeCount}</p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
+                    <p className="text-lg sm:text-xl font-bold text-emerald-400 font-mono">{activeCount}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-300 flex items-center justify-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" /> Active
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-amber-300 font-mono">{pendingCount}</p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
+                    <p className="text-lg sm:text-xl font-bold text-amber-300 font-mono">{pendingCount}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-300 flex items-center justify-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-amber-400" /> Pending
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-teal-300 font-mono">₹{(totalSpent / 1000).toFixed(1)}k</p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
+                    <p className="text-lg sm:text-xl font-bold text-teal-300 font-mono">₹{(totalSpent / 1000).toFixed(1)}k</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-300 flex items-center justify-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-teal-400" /> Investment
                     </p>
                   </div>
@@ -314,7 +314,7 @@ export default function StudentDashboard() {
 
               </div>
 
-              {/* Right Side Glass Card: Shopping Cart Status (Graph removed as requested) */}
+              {/* Right Side Glass Card: Shopping Cart Status */}
               <div className="lg:col-span-4 flex flex-col justify-between gap-6">
 
                 {/* Shopping Cart Status Widget */}
@@ -323,25 +323,25 @@ export default function StudentDashboard() {
                   className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 shadow-2xl flex-1 flex flex-col justify-between cursor-pointer hover:border-teal-400/40 transition-all group"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs font-extrabold text-teal-400 uppercase tracking-wider">Shopping Cart Status</p>
-                    <span className="text-[10px] font-bold text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2.5 py-0.5 rounded-full">
+                    <p className="text-xs font-semibold text-teal-400 uppercase tracking-wider">Shopping Cart Status</p>
+                    <span className="text-[10px] font-medium text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2.5 py-0.5 rounded-full">
                       {cartCount} Items
                     </span>
                   </div>
 
                   <div className="space-y-2 my-2">
-                    <p className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">₹{cartTotal.toLocaleString()}</p>
-                    <p className="text-xs font-semibold text-slate-300">
+                    <p className="text-2xl sm:text-3xl font-bold text-white font-mono tracking-tight">₹{cartTotal.toLocaleString()}</p>
+                    <p className="text-xs font-medium text-slate-300">
                       {cartCount === 0 ? 'Your cart is currently empty' : `${cartCount} Course(s) Ready for Checkout`}
                     </p>
                   </div>
 
                   <div className="pt-4 border-t border-teal-500/15 flex items-center justify-between">
-                    <span className="text-xs font-bold text-teal-300 group-hover:underline flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-teal-300 group-hover:underline flex items-center gap-1.5">
                       <span>View Cart</span>
                       <FaChevronRight className="text-[10px]" />
                     </span>
-                    <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xl group-hover:scale-110 transition-transform">
+                    <div className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 text-lg group-hover:scale-110 transition-transform">
                       <FaShoppingCart />
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export default function StudentDashboard() {
                       <FaHeadset className="text-lg" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-white">Need Assistance?</p>
+                      <p className="text-xs font-semibold text-white">Need Assistance?</p>
                       <p className="text-[11px] text-slate-400">AcademyWale Support Team</p>
                     </div>
                   </div>
@@ -362,7 +362,7 @@ export default function StudentDashboard() {
                     href="https://wa.me/919693320108"
                     target="_blank"
                     rel="noreferrer"
-                    className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all"
+                    className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                   >
                     Chat
                   </a>
@@ -379,7 +379,7 @@ export default function StudentDashboard() {
                 {/* Header Row */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-teal-500/15">
                   <div>
-                    <h3 className="text-xl font-extrabold text-white">My Enrolled Courses</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-white">My Enrolled Courses</h3>
                     <p className="text-xs text-slate-400">Manage and access your purchased lectures</p>
                   </div>
 
@@ -393,9 +393,9 @@ export default function StudentDashboard() {
                       <button
                         key={f.id}
                         onClick={() => setStatusFilter(f.id)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                           statusFilter === f.id
-                            ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/20'
+                            ? 'bg-teal-500 text-slate-950 font-bold shadow-lg shadow-teal-500/20'
                             : 'bg-slate-900/60 text-slate-400 hover:text-white border border-teal-500/15'
                         }`}
                       >
@@ -407,7 +407,7 @@ export default function StudentDashboard() {
 
                 {/* Loading State */}
                 {loading && (
-                  <div className="py-16 text-center text-slate-400 text-xs font-semibold">
+                  <div className="py-16 text-center text-slate-400 text-xs font-medium">
                     Loading your enrollments...
                   </div>
                 )}
@@ -418,7 +418,7 @@ export default function StudentDashboard() {
                     <p className="text-slate-400 text-sm">No courses enrolled yet.</p>
                     <button
                       onClick={() => navigate('/courses/all')}
-                      className="bg-teal-500 text-slate-950 px-6 py-2.5 rounded-full text-xs font-extrabold cursor-pointer hover:bg-teal-400 shadow-lg shadow-teal-500/20"
+                      className="bg-teal-500 text-slate-950 px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer hover:bg-teal-400 shadow-lg shadow-teal-500/20"
                     >
                       Explore Courses
                     </button>
@@ -452,17 +452,17 @@ export default function StudentDashboard() {
 
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-teal-500/15 border border-teal-500/25 text-teal-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                                <span className="bg-teal-500/15 border border-teal-500/25 text-teal-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                                   {cleanTag}
                                 </span>
                                 {isPending ? (
-                                  <span className="text-amber-300 text-[10px] font-bold">● Pending</span>
+                                  <span className="text-amber-300 text-[10px] font-semibold">● Pending</span>
                                 ) : (
-                                  <span className="text-emerald-400 text-[10px] font-bold">● Active</span>
+                                  <span className="text-emerald-400 text-[10px] font-semibold">● Active</span>
                                 )}
                               </div>
 
-                              <h4 className="text-sm font-extrabold text-white truncate max-w-xs sm:max-w-md">
+                              <h4 className="text-sm font-semibold text-white truncate max-w-xs sm:max-w-md">
                                 {courseDetails.title || courseDetails.subject || 'Enrolled Course'}
                               </h4>
 
@@ -486,7 +486,7 @@ export default function StudentDashboard() {
                                 Term: {courseDetails.validity || courseDetails.attempt}
                               </span>
                             )}
-                            <span className="font-mono text-base font-extrabold text-white">
+                            <span className="font-mono text-base font-bold text-white">
                               ₹{Number(purchase.amount || 0).toLocaleString()}
                             </span>
                           </div>
@@ -495,7 +495,7 @@ export default function StudentDashboard() {
                           <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 border-teal-500/15 pt-3 md:pt-0">
                             <button
                               onClick={() => setSelectedInvoice(purchase)}
-                              className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/25 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                              className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/25 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
                             >
                               <FaFileInvoiceDollar className="text-teal-400" />
                               <span>Invoice</span>
@@ -503,7 +503,7 @@ export default function StudentDashboard() {
 
                             <button
                               onClick={() => setSelectedOrderDetail(purchase)}
-                              className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg shadow-teal-500/20"
+                              className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg shadow-teal-500/20"
                             >
                               Details
                             </button>
@@ -520,7 +520,7 @@ export default function StudentDashboard() {
 
               /* 🛒 CART CONTENT */
               <div className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 sm:p-8 shadow-2xl space-y-6">
-                <h3 className="text-xl font-extrabold text-white">Shopping Cart</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white">Shopping Cart</h3>
 
                 {cartItems.length === 0 ? (
                   <div className="py-16 text-center text-slate-400 text-xs">
@@ -531,11 +531,11 @@ export default function StudentDashboard() {
                     {cartItems.map((item) => (
                       <div key={item.uniqueId} className="bg-[#0b1329]/80 p-4 rounded-2xl border border-teal-500/15 flex items-center justify-between gap-4">
                         <div>
-                          <h4 className="font-bold text-white text-sm">{item.title}</h4>
+                          <h4 className="font-semibold text-white text-sm">{item.title}</h4>
                           <p className="text-xs text-slate-400">Faculty: {item.facultyName}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-mono text-base font-extrabold text-white">₹{Number(item.price || 0).toLocaleString()}</span>
+                          <span className="font-mono text-base font-bold text-white">₹{Number(item.price || 0).toLocaleString()}</span>
                           <button onClick={() => removeFromCart(item.uniqueId)} className="text-red-400 hover:text-red-300 text-xs cursor-pointer">
                             <FaTrashAlt />
                           </button>
@@ -546,11 +546,11 @@ export default function StudentDashboard() {
                     <div className="pt-4 border-t border-teal-500/15 flex justify-between items-center">
                       <div>
                         <p className="text-xs text-slate-400">Total Price</p>
-                        <p className="text-2xl font-black text-teal-300 font-mono">₹{cartTotal.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-teal-300 font-mono">₹{cartTotal.toLocaleString()}</p>
                       </div>
                       <button
                         onClick={() => setShowCheckoutModal(true)}
-                        className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-6 py-3 rounded-full font-black text-xs cursor-pointer shadow-xl shadow-teal-500/20"
+                        className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-6 py-3 rounded-full font-bold text-xs cursor-pointer shadow-xl shadow-teal-500/20"
                       >
                         Proceed to Checkout
                       </button>
@@ -571,7 +571,7 @@ export default function StudentDashboard() {
           <div className="bg-[#111c38] text-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-teal-500/25 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-teal-500/20 mb-6">
               <div>
-                <h3 className="text-xl font-extrabold text-white">Tax Invoice</h3>
+                <h3 className="text-lg font-bold text-white">Tax Invoice</h3>
                 <p className="text-xs text-slate-400">AcademyWale LMS Official Receipt</p>
               </div>
               <button
@@ -600,14 +600,14 @@ export default function StudentDashboard() {
 
               <div className="flex justify-between items-center pt-2 font-bold text-sm text-white">
                 <span>Total Amount Paid:</span>
-                <span className="text-teal-300 text-xl font-mono font-black">₹{Number(selectedInvoice.amount || 0).toLocaleString()}</span>
+                <span className="text-teal-300 text-xl font-mono font-bold">₹{Number(selectedInvoice.amount || 0).toLocaleString()}</span>
               </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-teal-500/20 flex justify-end">
               <button
                 onClick={() => window.print()}
-                className="bg-teal-500 text-slate-950 hover:bg-teal-400 px-6 py-2.5 rounded-full text-xs font-black shadow cursor-pointer"
+                className="bg-teal-500 text-slate-950 hover:bg-teal-400 px-6 py-2.5 rounded-full text-xs font-bold shadow cursor-pointer"
               >
                 Print / Save PDF
               </button>
@@ -643,7 +643,7 @@ export default function StudentDashboard() {
               return (
                 <div className="space-y-4 text-xs text-slate-300">
                   <div className="bg-[#0b1329]/80 p-4 rounded-2xl border border-teal-500/20 space-y-2">
-                    <h4 className="text-base font-extrabold text-teal-300 leading-snug">
+                    <h4 className="text-base font-bold text-teal-300 leading-snug">
                       {courseDetails.title || courseDetails.subject || 'Course Title'}
                     </h4>
                     <p>Faculty: <strong className="text-white">{courseDetails.facultyName || 'AcademyWale Faculty'}</strong></p>
@@ -653,7 +653,7 @@ export default function StudentDashboard() {
 
                   <div className="flex justify-between items-center pt-2 font-bold text-sm text-white">
                     <span>Amount Paid:</span>
-                    <span className="text-teal-300 text-lg font-mono font-black">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
+                    <span className="text-teal-300 text-lg font-mono font-bold">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
                   </div>
                 </div>
               );
