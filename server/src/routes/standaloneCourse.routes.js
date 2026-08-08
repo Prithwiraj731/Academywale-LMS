@@ -51,22 +51,19 @@ router.get('/api/courses/standalone', (req, res) => {
 
 // Route for all courses - now redirects to get all courses from all faculties
 router.get('/api/courses/all', async (req, res) => {
-  console.log('⚠️ Legacy route /api/courses/all called - retrieving courses from all faculties');
-
   try {
     const { data: courses, error } = await supabaseAdmin
       .from('courses')
       .select('*')
-      .eq('is_active', true);
-
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    const mappedCourses = mapCoursesToFrontend(courses);
+    const mappedCourses = mapCoursesToFrontend(courses || []);
 
     res.status(200).json({
       courses: mappedCourses,
-      notice: 'Using faculty-based course system'
+      notice: 'Retrieved all website courses'
     });
   } catch (err) {
     console.error('Error in all courses redirect:', err);
