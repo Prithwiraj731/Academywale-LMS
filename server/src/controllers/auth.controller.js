@@ -124,7 +124,6 @@ exports.signup = async (req, res) => {
           name: name.trim(),
           password: hashedPassword,
           mobile: cleanMobile,
-          phone: cleanMobile,
           role: role || 'user',
           otp_code: otp,
           otp_expires_at: otpExpires
