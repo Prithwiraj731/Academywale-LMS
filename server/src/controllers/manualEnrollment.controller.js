@@ -105,7 +105,7 @@ const formatEnrollment = (purchase) => {
     facultyId: purchase.faculty_id,
     studentName: userDetails.fullName || userDetails.name || user.name || '',
     studentEmail: userDetails.email || user.email || '',
-    studentPhone: userDetails.phone || user.mobile || user.phone || '',
+    studentPhone: userDetails.phone || user.mobile || '',
     courseTitle: details.title || course.title || course.subject || '',
     courseSubject: details.subject || course.subject || '',
     facultyName: details.facultyName || faculty.first_name || course.faculty_name || '',
@@ -128,7 +128,7 @@ const formatEnrollment = (purchase) => {
 const findUserByEmail = async (email) => {
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select('id, name, email, mobile, role, is_active')
     .eq('email', email)
     .maybeSingle();
   if (error) throw error;
@@ -136,11 +136,34 @@ const findUserByEmail = async (email) => {
 };
 
 const findCourseById = async (courseId) => {
-  let query = supabaseAdmin.from('courses').select('*');
-  query = isUuid(courseId) ? query.eq('id', courseId) : query.eq('mongo_id', courseId);
-  const { data, error } = await query.maybeSingle();
-  if (error) throw error;
-  return data;
+  if (!courseId) return null;
+  const cleanId = String(courseId).trim();
+
+  // 1. Check by primary id
+  const { data: c1 } = await supabaseAdmin
+    .from('courses')
+    .select('*')
+    .eq('id', cleanId)
+    .maybeSingle();
+  if (c1) return c1;
+
+  // 2. Check by mongo_id
+  const { data: c2 } = await supabaseAdmin
+    .from('courses')
+    .select('*')
+    .eq('mongo_id', cleanId)
+    .maybeSingle();
+  if (c2) return c2;
+
+  // 3. Check by slug
+  const { data: c3 } = await supabaseAdmin
+    .from('courses')
+    .select('*')
+    .eq('slug', cleanId)
+    .maybeSingle();
+  if (c3) return c3;
+
+  return null;
 };
 
 const createOrUpdateStudent = async ({ name, email, phone }) => {
@@ -180,7 +203,7 @@ const createOrUpdateStudent = async ({ name, email, phone }) => {
       .from('users')
       .update(updatePayload)
       .eq('id', user.id)
-      .select('*')
+      .select('id, name, email, mobile, role, is_active')
       .single();
     if (error) throw error;
     return { user: data, created: false };
@@ -196,7 +219,7 @@ const createOrUpdateStudent = async ({ name, email, phone }) => {
       created_at: new Date().toISOString(),
       last_login_at: null
     })
-    .select('*')
+    .select('id, name, email, mobile, role, is_active')
     .single();
 
   if (error) throw error;
@@ -332,7 +355,7 @@ exports.createManualEnrollment = async (req, res) => {
     const userDetails = {
       fullName: user.name,
       email: user.email,
-      phone: normalizePhone(studentPhone) || user.mobile || user.phone || '',
+      phone: normalizePhone(studentPhone) || user.mobile || '',
       manualEnrollment: {
         source: 'admin_manual_enrollment',
         paymentReference: String(paymentReference || '').trim(),
@@ -420,7 +443,7 @@ exports.updateManualEnrollment = async (req, res) => {
 
     const { data: current, error: currentError } = await supabaseAdmin
       .from('purchases')
-      .select('*, users(*)')
+      .select('*, users(id, name, email, mobile)')
       .eq('id', enrollmentId)
       .maybeSingle();
     if (currentError) throw currentError;
@@ -432,18 +455,17 @@ exports.updateManualEnrollment = async (req, res) => {
     if (studentEmail || studentName || studentPhone) {
       const email = normalizeEmail(studentEmail || user.email);
       const name = String(studentName || user.name || '').trim();
-      const phone = normalizePhone(studentPhone || user.mobile || user.phone || '');
+      const phone = normalizePhone(studentPhone || user.mobile || '');
       const updatePayload = { name, email, is_active: true };
       if (phone) {
         updatePayload.mobile = phone;
-        updatePayload.phone = phone;
       }
 
       const { data: updatedUser, error: userError } = await supabaseAdmin
         .from('users')
         .update(updatePayload)
         .eq('id', user.id)
-        .select('*')
+        .select('id, name, email, mobile, role, is_active')
         .single();
       if (userError) throw userError;
       user = updatedUser;
@@ -483,7 +505,7 @@ exports.updateManualEnrollment = async (req, res) => {
       ...currentUserDetails,
       fullName: user.name,
       email: user.email,
-      phone: normalizePhone(studentPhone) || user.mobile || user.phone || currentUserDetails.phone || '',
+      phone: normalizePhone(studentPhone) || user.mobile || currentUserDetails.phone || '',
       manualEnrollment: {
         ...currentManual,
         source: 'admin_manual_enrollment',
@@ -547,6 +569,56 @@ exports.updateManualEnrollment = async (req, res) => {
       message: error.message || 'Failed to update manual enrollment',
       error: error.message
     });
+  }
+};
+
+exports.resendEnrollmentEmail = async (req, res) => {
+  try {
+    const { enrollmentId } = req.params;
+    const { data: purchase, error } = await supabaseAdmin
+      .from('purchases')
+      .select('*, users(id, name, email, mobile), courses(*)')
+      .eq('id', enrollmentId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!purchase) {
+      return res.status(404).json({ success: false, message: 'Enrollment record not found' });
+    }
+
+    const user = purchase.users || {};
+    if (!user.email) {
+      return res.status(400).json({ success: false, message: 'Student email is missing on this enrollment record' });
+    }
+
+    const emailResult = await sendEnrollmentMail({
+      user,
+      purchase,
+      accountCreated: Boolean(purchase.user_details?.manualEnrollment?.accountCreated)
+    });
+
+    if (!emailResult?.success) {
+      return res.status(500).json({ success: false, message: emailResult?.error || 'Failed to resend confirmation email' });
+    }
+
+    const userDetails = purchase.user_details || {};
+    const updatedUserDetails = {
+      ...userDetails,
+      manualEnrollment: {
+        ...(userDetails.manualEnrollment || {}),
+        mailSentAt: new Date().toISOString()
+      }
+    };
+
+    await supabaseAdmin
+      .from('purchases')
+      .update({ user_details: updatedUserDetails })
+      .eq('id', enrollmentId);
+
+    res.status(200).json({ success: true, message: `Enrollment confirmation email sent to ${user.email}`, email: emailResult });
+  } catch (error) {
+    console.error('Resend enrollment email error:', error);
+    res.status(500).json({ success: false, message: 'Failed to resend enrollment email', error: error.message });
   }
 };
 

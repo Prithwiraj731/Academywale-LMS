@@ -7,10 +7,12 @@ const { requireAdminCookie } = require('../middlewares/auth.middleware');
 // CORS preflight handlers
 router.options('/', cors());
 router.options('/:enrollmentId', cors());
+router.options('/:enrollmentId/resend-email', cors());
 
 router.get('/', requireAdminCookie, manualEnrollmentController.listManualEnrollments);
 router.get('/:enrollmentId', requireAdminCookie, manualEnrollmentController.getManualEnrollment);
 router.post('/', requireAdminCookie, manualEnrollmentController.createManualEnrollment);
+router.post('/:enrollmentId/resend-email', requireAdminCookie, manualEnrollmentController.resendEnrollmentEmail);
 router.put('/:enrollmentId', requireAdminCookie, manualEnrollmentController.updateManualEnrollment);
 router.delete('/:enrollmentId', requireAdminCookie, manualEnrollmentController.deleteManualEnrollment);
 
