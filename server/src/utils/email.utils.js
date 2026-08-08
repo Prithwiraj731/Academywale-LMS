@@ -304,18 +304,23 @@ const sendManualEnrollmentEmail = async (options) => {
     const supportCall = details.supportCall || details.support_call || '';
     const institute = details.institute || details.instituteName || details.institute_name || '';
 
-    let detailString = `Mode: <strong>${mode}</strong> | Validity / Attempt: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>`;
-    if (attempt && attempt !== validity) detailString += ` | Attempt: <strong>${attempt}</strong>`;
-    if (institute && institute !== 'N/A') detailString += ` | Institute: <strong>${institute}</strong>`;
-    if (noOfLecture) detailString += ` | Lectures: <strong>${noOfLecture}</strong>`;
-    if (books) detailString += ` | Material: <strong>${books}</strong>`;
-    if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
-    if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
-    if (doubtSolving) detailString += ` | Doubts: <strong>${doubtSolving}</strong>`;
+    const detailLines = [];
+    if (mode) detailLines.push(`• <strong>Mode:</strong> ${mode}`);
+    if (validity) detailLines.push(`• <strong>Validity / Attempt:</strong> ${validity}`);
+    if (faculty) detailLines.push(`• <strong>Faculty:</strong> ${faculty}`);
+    if (attempt && attempt !== validity) detailLines.push(`• <strong>Attempt:</strong> ${attempt}`);
+    if (institute && institute !== 'N/A') detailLines.push(`• <strong>Institute:</strong> ${institute}`);
+    if (noOfLecture) detailLines.push(`• <strong>Lectures:</strong> ${noOfLecture}`);
+    if (books) detailLines.push(`• <strong>Material:</strong> ${books}`);
+    if (videoLanguage) detailLines.push(`• <strong>Language:</strong> ${videoLanguage}`);
+    if (videoRunOn) detailLines.push(`• <strong>Run On:</strong> ${videoRunOn}`);
+    if (doubtSolving) detailLines.push(`• <strong>Doubts:</strong> ${doubtSolving}`);
     if (supportMail || supportCall) {
       const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
-      detailString += ` | Support: <strong>${supportInfo}</strong>`;
+      detailLines.push(`• <strong>Support:</strong> ${supportInfo}`);
     }
+
+    const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569;">${line}</div>`).join('');
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
@@ -392,9 +397,7 @@ const sendManualEnrollmentEmail = async (options) => {
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                   <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
                     <strong style="color: #0f766e; font-size: 15px;">1. ${title}</strong><br/>
-                    <span style="font-size: 12px; color: #64748b; font-weight: 500;">
-                      ${detailString}
-                    </span>
+                    ${detailHtml}
                   </td>
                   <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
                     INR ${Number(details.sellingPrice || details.selling_price || details.originalPrice || details.original_price || details.costPrice || details.cost_price || details.price || options.sellingPrice || amount).toLocaleString('en-IN')}

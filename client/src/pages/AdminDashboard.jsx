@@ -307,6 +307,10 @@ export default function AdminDashboard() {
     variantMode: '',
     variantAttempt: '',
     variantBooks: '',
+    variantLectures: '',
+    variantLanguage: '',
+    variantRunOn: '',
+    variantDoubtSolving: '',
     sendEmail: true,
     resendEmail: false,
     isActive: true
@@ -370,9 +374,13 @@ export default function AdminDashboard() {
         ...prev,
         courseId: value,
         amount: prev.amount || getCoursePrice(selectedCourse),
-        variantMode: '',
-        variantAttempt: '',
-        variantBooks: ''
+        variantMode: selectedCourse?.mode || selectedCourse?.mode_attempt_pricing?.[0]?.mode || '',
+        variantAttempt: selectedCourse?.attempt || selectedCourse?.validity || selectedCourse?.mode_attempt_pricing?.[0]?.attempts?.[0]?.attempt || '',
+        variantBooks: selectedCourse?.books || '',
+        variantLectures: selectedCourse?.no_of_lecture || selectedCourse?.noOfLecture || '',
+        variantLanguage: selectedCourse?.video_language || selectedCourse?.videoLanguage || 'Hindi & English Mix',
+        variantRunOn: selectedCourse?.video_run_on || selectedCourse?.videoRunOn || 'Windows Laptop / Android Mobile',
+        variantDoubtSolving: selectedCourse?.doubt_solving || selectedCourse?.doubtSolving || 'WhatsApp / Telegram / Mail'
       }));
       return;
     }
@@ -441,7 +449,11 @@ export default function AdminDashboard() {
         mode: manualEnrollmentForm.variantMode.trim(),
         attempt: manualEnrollmentForm.variantAttempt.trim(),
         validity: manualEnrollmentForm.variantAttempt.trim(),
-        books: manualEnrollmentForm.variantBooks.trim()
+        books: manualEnrollmentForm.variantBooks.trim(),
+        noOfLecture: manualEnrollmentForm.variantLectures.trim(),
+        videoLanguage: manualEnrollmentForm.variantLanguage.trim(),
+        videoRunOn: manualEnrollmentForm.variantRunOn.trim(),
+        doubtSolving: manualEnrollmentForm.variantDoubtSolving.trim()
       },
       sendEmail: manualEnrollmentForm.sendEmail,
       resendEmail: manualEnrollmentForm.resendEmail,
@@ -475,6 +487,7 @@ export default function AdminDashboard() {
 
   const handleEditManualEnrollment = (item) => {
     setEditingManualEnrollmentId(item.id);
+    const details = item.courseDetails || {};
     setManualEnrollmentForm({
       ...defaultManualEnrollmentForm,
       id: item.id,
@@ -488,9 +501,13 @@ export default function AdminDashboard() {
       paymentReference: item.paymentReference || item.transactionId || '',
       notes: item.notes || '',
       accessExpiry: item.accessExpiry ? String(item.accessExpiry).slice(0, 10) : '',
-      variantMode: item.courseDetails?.mode || '',
-      variantAttempt: item.courseDetails?.attempt || item.courseDetails?.validity || '',
-      variantBooks: item.courseDetails?.books || '',
+      variantMode: details.mode || '',
+      variantAttempt: details.attempt || details.validity || '',
+      variantBooks: details.books || '',
+      variantLectures: details.noOfLecture || details.no_of_lecture || '',
+      variantLanguage: details.videoLanguage || details.video_language || '',
+      variantRunOn: details.videoRunOn || details.video_run_on || '',
+      variantDoubtSolving: details.doubtSolving || details.doubt_solving || '',
       sendEmail: false,
       resendEmail: false,
       isActive: item.isActive !== false
@@ -3829,34 +3846,92 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Variant Package Selections */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
-              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Package / Variant Customization (Optional)</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  name="variantMode"
-                  value={manualEnrollmentForm.variantMode}
-                  onChange={handleManualEnrollmentChange}
-                  placeholder="Mode (e.g. Google Drive, Recorded)"
-                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
-                />
-                <input
-                  type="text"
-                  name="variantAttempt"
-                  value={manualEnrollmentForm.variantAttempt}
-                  onChange={handleManualEnrollmentChange}
-                  placeholder="Validity / Attempt (e.g. Aug 2026, 12 Months)"
-                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
-                />
-                <input
-                  type="text"
-                  name="variantBooks"
-                  value={manualEnrollmentForm.variantBooks}
-                  onChange={handleManualEnrollmentChange}
-                  placeholder="Study Material (e.g. Hard Copy Books)"
-                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
-                />
+            {/* Variants & Options Customization */}
+            <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>⚙️ Variants & Options (Receipt Details)</span>
+                </h4>
+                <span className="text-[11px] text-slate-500 italic">Customize course attributes sent to student email & receipt</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Mode</label>
+                  <input
+                    type="text"
+                    name="variantMode"
+                    value={manualEnrollmentForm.variantMode}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. Google Drive / Pen Drive"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Validity / Attempt</label>
+                  <input
+                    type="text"
+                    name="variantAttempt"
+                    value={manualEnrollmentForm.variantAttempt}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. DEC27 or Till 31st Dec 2026"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Study Material / Books</label>
+                  <input
+                    type="text"
+                    name="variantBooks"
+                    value={manualEnrollmentForm.variantBooks}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. Hard Copy Book / E-Book"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">No. of Lectures</label>
+                  <input
+                    type="text"
+                    name="variantLectures"
+                    value={manualEnrollmentForm.variantLectures}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. 60 Lectures / 150 Hours"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Video Language</label>
+                  <input
+                    type="text"
+                    name="variantLanguage"
+                    value={manualEnrollmentForm.variantLanguage}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. Hindi & English Mix"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Run On / Devices</label>
+                  <input
+                    type="text"
+                    name="variantRunOn"
+                    value={manualEnrollmentForm.variantRunOn}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. Laptop / Mobile"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Doubt Solving Facility</label>
+                  <input
+                    type="text"
+                    name="variantDoubtSolving"
+                    value={manualEnrollmentForm.variantDoubtSolving}
+                    onChange={handleManualEnrollmentChange}
+                    placeholder="e.g. WhatsApp / Telegram / Mail"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
               </div>
             </div>
 
