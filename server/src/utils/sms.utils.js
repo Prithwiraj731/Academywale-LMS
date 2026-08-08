@@ -1,6 +1,6 @@
 /**
  * SMS & OTP Dispatch Utility for AcademyWale Core System
- * Multi-Gateway Support: Fast2SMS (Official OpenAPI /dev/otp/send & /dev/bulkV2), 2Factor, Twilio
+ * Multi-Gateway Support: Fast2SMS (Header-based Authorization & Query-based Authorization), 2Factor, Twilio
  */
 
 const sendSMSOTP = async (mobile, otp) => {
@@ -18,68 +18,99 @@ const sendSMSOTP = async (mobile, otp) => {
   const fast2smsKey = process.env.FAST2SMS_API_KEY || process.env.FAST2SMS_KEY;
   const fast2smsOtpId = process.env.FAST2SMS_OTP_ID;
 
-  // 1. Fast2SMS Integration
+  // 1. Fast2SMS Integration (Multi-Strategy with Header Authorization)
   if (fast2smsKey) {
-    // 1A. Try Official Fast2SMS POST /dev/otp/send API
+    // Strategy 1: GET /dev/bulkV2 with Authorization Header (Official Fast2SMS Quick SMS GET)
     try {
-      console.log('🚀 Attempting Fast2SMS Official POST /dev/otp/send API...');
-      const payload = {
-        mobile: cleanMobile,
-        otp: String(otp),
-        otp_expiry: 10
-      };
-      if (fast2smsOtpId) {
-        payload.otp_id = fast2smsOtpId;
-      }
-
-      const postRes = await fetch('https://www.fast2sms.com/dev/otp/send', {
-        method: 'POST',
+      console.log('🚀 [Fast2SMS] Attempting GET /dev/bulkV2 (route=q with Authorization Header)...');
+      const qUrl = `https://www.fast2sms.com/dev/bulkV2?route=q&message=${encodeURIComponent(`Your AcademyWale verification code is: ${otp}`)}&numbers=${cleanMobile}`;
+      const qRes = await fetch(qUrl, {
+        method: 'GET',
         headers: {
-          'Authorization': fast2smsKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+          'Authorization': fast2smsKey
+        }
       });
-      const postResult = await postRes.json();
-      console.log('✅ Fast2SMS POST /dev/otp/send Result:', postResult);
-
-      if (postResult.return || postResult.status_code === 200) {
+      const qResult = await qRes.json();
+      console.log('✅ Fast2SMS Quick SMS GET Result:', qResult);
+      if (qResult.return || qResult.status_code === 200) {
         dispatched = true;
-      } else {
-        errors.push(`Fast2SMS POST: ${postResult.message || JSON.stringify(postResult)}`);
       }
-    } catch (postErr) {
-      console.warn('⚠️ Fast2SMS POST /dev/otp/send error:', postErr.message);
-      errors.push(`Fast2SMS POST Error: ${postErr.message}`);
+    } catch (err) {
+      console.warn('⚠️ Fast2SMS Quick GET error:', err.message);
     }
 
-    // 1B. Fallback: Fast2SMS GET /dev/bulkV2 (route=otp)
+    // Strategy 2: POST /dev/bulkV2 with Authorization Header (Official Fast2SMS Quick SMS POST)
     if (!dispatched) {
       try {
-        console.log('🚀 Attempting Fast2SMS GET /dev/bulkV2 (route=otp)...');
-        const fast2smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=otp&variables_values=${otp}&flash=0&numbers=${cleanMobile}`;
-        const response = await fetch(fast2smsUrl, { method: 'GET' });
-        const result = await response.json();
-        console.log('✅ Fast2SMS GET (route=otp) Result:', result);
-        
-        if (result.return || result.status_code === 200) {
+        console.log('🚀 [Fast2SMS] Attempting POST /dev/bulkV2 with Authorization Header...');
+        const postRes = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+          method: 'POST',
+          headers: {
+            'Authorization': fast2smsKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            route: 'q',
+            message: `Your AcademyWale verification code is: ${otp}`,
+            language: 'english',
+            flash: 0,
+            numbers: cleanMobile
+          })
+        });
+        const postResult = await postRes.json();
+        console.log('✅ Fast2SMS POST /dev/bulkV2 Result:', postResult);
+        if (postResult.return || postResult.status_code === 200) {
+          dispatched = true;
+        }
+      } catch (err) {
+        console.warn('⚠️ Fast2SMS POST /dev/bulkV2 error:', err.message);
+      }
+    }
+
+    // Strategy 3: Official POST /dev/otp/send API
+    if (!dispatched) {
+      try {
+        console.log('🚀 [Fast2SMS] Attempting POST /dev/otp/send API...');
+        const payload = {
+          mobile: cleanMobile,
+          otp: String(otp),
+          otp_expiry: 10
+        };
+        if (fast2smsOtpId) payload.otp_id = fast2smsOtpId;
+
+        const otpRes = await fetch('https://www.fast2sms.com/dev/otp/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': fast2smsKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const otpResult = await otpRes.json();
+        console.log('✅ Fast2SMS POST /dev/otp/send Result:', otpResult);
+        if (otpResult.return || otpResult.status_code === 200) {
+          dispatched = true;
+        }
+      } catch (err) {
+        console.warn('⚠️ Fast2SMS POST /dev/otp/send error:', err.message);
+      }
+    }
+
+    // Strategy 4: Legacy GET /dev/bulkV2 with authorization in query params
+    if (!dispatched) {
+      try {
+        console.log('🚀 [Fast2SMS] Attempting GET /dev/bulkV2 (route=otp with query auth)...');
+        const legacyUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=otp&variables_values=${otp}&flash=0&numbers=${cleanMobile}`;
+        const legacyRes = await fetch(legacyUrl, { method: 'GET' });
+        const legacyResult = await legacyRes.json();
+        console.log('✅ Fast2SMS Legacy Result:', legacyResult);
+        if (legacyResult.return || legacyResult.status_code === 200) {
           dispatched = true;
         } else {
-          // 1C. Fallback: Fast2SMS GET /dev/bulkV2 (route=q Quick SMS)
-          console.log('🚀 Attempting Fast2SMS GET /dev/bulkV2 (route=q Quick SMS)...');
-          const qUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=q&message=${encodeURIComponent(`Your AcademyWale verification code is: ${otp}`)}&flash=0&numbers=${cleanMobile}`;
-          const qRes = await fetch(qUrl, { method: 'GET' });
-          const qResult = await qRes.json();
-          console.log('✅ Fast2SMS Quick SMS Result:', qResult);
-          if (qResult.return || qResult.status_code === 200) {
-            dispatched = true;
-          } else {
-            errors.push(`Fast2SMS GET: ${result.message || qResult.message || JSON.stringify(result)}`);
-          }
+          errors.push(`Fast2SMS: ${legacyResult.message || JSON.stringify(legacyResult)}`);
         }
-      } catch (getErr) {
-        console.warn('⚠️ Fast2SMS GET error:', getErr.message);
-        errors.push(`Fast2SMS GET Error: ${getErr.message}`);
+      } catch (err) {
+        console.warn('⚠️ Fast2SMS Legacy GET error:', err.message);
       }
     }
   }
