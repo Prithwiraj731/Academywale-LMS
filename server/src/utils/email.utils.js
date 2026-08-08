@@ -274,105 +274,153 @@ const sendManualEnrollmentEmail = async (options) => {
     const transporter = createTransporter();
 
     const userEmail = options.userEmail || options.email;
-    const userName = options.userName || options.name || 'Student';
+    const userName = options.userName || options.name || 'Valued Student';
     const details = options.courseDetails || {};
-    const transactionId = options.transactionId || 'N/A';
-    const amount = Number(options.amount || 0);
-    const paymentMethod = options.paymentMethod || 'Offline payment';
+    const transactionId = options.transactionId || options.paymentReference || 'N/A';
+    const amount = Number(options.amount !== undefined ? options.amount : (details.amountPaid || details.sellingPrice || 0));
+    const paymentMethod = options.paymentMethod || 'offline';
     const userDetails = options.userDetails || {};
-    const manual = userDetails.manualEnrollment || {};
-    const accountCreated = Boolean(options.accountCreated);
-    const dashboardUrl = 'https://academywale.com/student-dashboard';
-    const forgotPasswordUrl = 'https://academywale.com/forgot-password';
 
-    const courseRows = [
-      ['Course', details.title || details.subject || 'Course Package'],
-      ['Subject', details.subject],
-      ['Faculty', details.facultyName],
-      ['Institute', details.institute],
-      ['Mode', details.mode],
-      ['Validity / Attempt', details.validity || details.attempt],
-      ['Lectures', details.noOfLecture],
-      ['Books / Material', details.books],
-      ['Language', details.videoLanguage],
-      ['Runs On', details.videoRunOn],
-      ['Doubt Solving', details.doubtSolving],
-      ['Support', [details.supportMail, details.supportCall].filter(Boolean).join(' / ')]
-    ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '');
+    const formattedDate = new Date().toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
-    const rowsHtml = courseRows.map(([label, value]) => `
-      <tr>
-        <td style="padding: 9px 12px; color: #64748b; font-size: 13px; border-bottom: 1px solid #e2e8f0; width: 34%;"><strong>${label}</strong></td>
-        <td style="padding: 9px 12px; color: #0f172a; font-size: 13px; border-bottom: 1px solid #e2e8f0;">${value}</td>
-      </tr>
-    `).join('');
+    const title = details.title || details.subject || 'Course Package';
+    const mode = details.mode || 'Recorded Video';
+    const validity = details.validity || details.attempt || 'Standard';
+    const faculty = details.facultyName || 'AcademyWale Faculty';
+    const attempt = details.attempt || '';
+    const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
+    const books = details.books || '';
+    const videoLanguage = details.videoLanguage || details.video_language || '';
+    const videoRunOn = details.videoRunOn || details.video_run_on || '';
+    const doubtSolving = details.doubtSolving || details.doubt_solving || '';
+    const supportMail = details.supportMail || details.support_mail || '';
+    const supportCall = details.supportCall || details.support_call || '';
+    const institute = details.institute || details.instituteName || details.institute_name || '';
 
-    const accountNote = accountCreated
-      ? `
-        <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px; margin-top: 18px;">
-          <p style="margin: 0; color: #9a3412; font-size: 13px; line-height: 1.6;">
-            An AcademyWale account has been created for this email. For privacy, no password is sent by email.
-            Open the password setup link below, enter this email address, and set your password using the OTP.
-          </p>
-        </div>
-      `
-      : `
-        <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 18px;">
-          <p style="margin: 0; color: #115e59; font-size: 13px; line-height: 1.6;">
-            You can log in with your existing AcademyWale account. If you do not remember your password, use the password setup link below.
-          </p>
-        </div>
-      `;
+    let detailString = `Mode: <strong>${mode}</strong> | Validity / Attempt: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>`;
+    if (attempt && attempt !== validity) detailString += ` | Attempt: <strong>${attempt}</strong>`;
+    if (institute && institute !== 'N/A') detailString += ` | Institute: <strong>${institute}</strong>`;
+    if (noOfLecture) detailString += ` | Lectures: <strong>${noOfLecture}</strong>`;
+    if (books) detailString += ` | Material: <strong>${books}</strong>`;
+    if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
+    if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
+    if (doubtSolving) detailString += ` | Doubts: <strong>${doubtSolving}</strong>`;
+    if (supportMail || supportCall) {
+      const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
+      detailString += ` | Support: <strong>${supportInfo}</strong>`;
+    }
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; background: #f8fafc; padding: 28px 14px; color: #334155;">
-        <div style="max-width: 650px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
-          <div style="background: #0f766e; color: #ffffff; padding: 24px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">AcademyWale</h1>
-            <p style="margin: 6px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .5px;">Course Enrollment Confirmed</p>
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
+        <div style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Header Banner -->
+          <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 32px 25px; text-align: center; color: #ffffff;">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">AcademyWale</h1>
+            <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.95; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
+              Official Tax Invoice & Course Payment Receipt
+            </p>
           </div>
-          <div style="padding: 24px;">
-            <p style="font-size: 14px; line-height: 1.6; margin-top: 0;">Dear <strong>${userName}</strong>,</p>
-            <p style="font-size: 14px; line-height: 1.6;">
-              Your offline/admin-assisted payment has been recorded and your course enrollment is now active.
+
+          <!-- Status Bar -->
+          <div style="background-color: #f0fdfa; border-bottom: 1px solid #ccfbf1; padding: 14px 25px; font-size: 13px; color: #0f766e;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span><strong>STATUS:</strong> <span style="color: #16a34a; font-weight: 800;">VERIFIED & CONFIRMED</span></span>
+              <span><strong>Transaction ID:</strong> ${transactionId}</span>
+            </div>
+          </div>
+
+          <!-- Body Content -->
+          <div style="padding: 28px 25px;">
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-top: 0; margin-bottom: 10px;">
+              Dear <strong>${userName}</strong>,
+            </p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+              Your payment has been recorded and your course enrollment is now active. 🎉
+            </p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 22px;">
+              Your course details are provided below. You can access your enrolled courses anytime by logging into your Student Dashboard.
             </p>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin: 18px 0;">
-              <table style="width: 100%; border-collapse: collapse;">
+            <!-- Metadata Box -->
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <tr>
-                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Transaction / Reference</strong></td>
-                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right; font-family: monospace;">${transactionId}</td>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Transaction / Reference:</strong></td>
+                  <td style="padding: 4px 0; color: #0d9488; text-align: right; font-weight: 700; font-family: monospace;">${transactionId}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Payment Method</strong></td>
-                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right;">${paymentMethod}</td>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Receipt Date:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${formattedDate}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Amount Paid</strong></td>
-                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right; font-weight: 800;">INR ${amount.toLocaleString('en-IN')}</td>
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Payment Method:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${paymentMethod}</td>
                 </tr>
-                ${manual.paymentReference ? `
                 <tr>
-                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Admin Reference</strong></td>
-                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right;">${manual.paymentReference}</td>
-                </tr>` : ''}
+                  <td style="padding: 4px 0; color: #64748b;"><strong>Registered Email:</strong></td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userEmail}</td>
+                </tr>
+                ${(userDetails.phone || options.userPhone || options.phone) ? `
+                  <tr>
+                    <td style="padding: 4px 0; color: #64748b;"><strong>Mobile Number:</strong></td>
+                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userDetails.phone || options.userPhone || options.phone}</td>
+                  </tr>
+                ` : ''}
               </table>
             </div>
 
-            <h2 style="font-size: 16px; color: #0f766e; margin: 20px 0 10px;">Course Details</h2>
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
-              ${rowsHtml}
+            <!-- Items Purchased Table -->
+            <h3 style="font-size: 15px; font-weight: 800; color: #0f766e; margin-bottom: 10px; margin-top: 0;">
+              Enrolled Courses
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+              <thead>
+                <tr style="background-color: #f8fafc; text-align: left; font-size: 12px; color: #64748b; text-transform: uppercase;">
+                  <th style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">Description</th>
+                  <th style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
+                    <strong style="color: #0f766e; font-size: 15px;">1. ${title}</strong><br/>
+                    <span style="font-size: 12px; color: #64748b; font-weight: 500;">
+                      ${detailString}
+                    </span>
+                  </td>
+                  <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
+                    INR ${amount.toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </tbody>
             </table>
 
-            ${accountNote}
-
-            <div style="text-align: center; margin-top: 24px;">
-              <a href="${dashboardUrl}" style="display: inline-block; background: #0f766e; color: #ffffff; padding: 12px 22px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; margin: 4px;">Open Student Dashboard</a>
-              <a href="${forgotPasswordUrl}" style="display: inline-block; background: #334155; color: #ffffff; padding: 12px 22px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; margin: 4px;">Set / Reset Password</a>
+            <!-- Summary Total Box -->
+            <div style="background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <tr>
+                  <td style="padding: 6px 0; font-size: 16px; font-weight: 800; color: #0f766e;">Amount Paid:</td>
+                  <td style="padding: 6px 0; font-size: 20px; font-weight: 900; color: #0d9488; text-align: right;">
+                    INR ${amount.toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </table>
             </div>
+
           </div>
-          <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px; text-align: center; font-size: 12px; color: #64748b;">
-            Need help? Contact <a href="mailto:support@academywale.com" style="color: #0f766e;">support@academywale.com</a> or call <strong>+91 9693320108</strong>.
+
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 25px; text-align: center; font-size: 12px; color: #64748b;">
+            <p style="margin: 0 0 4px 0; font-weight: bold; color: #334155;">AcademyWale Learning Management System</p>
+            <p style="margin: 0;">Need help? Contact <a href="mailto:support@academywale.com" style="color: #0d9488; text-decoration: none; font-weight: bold;">support@academywale.com</a> or call <strong>+91 9693320108</strong>.</p>
           </div>
         </div>
       </div>

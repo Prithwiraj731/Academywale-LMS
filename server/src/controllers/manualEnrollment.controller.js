@@ -63,6 +63,7 @@ const getVariantPrice = (course, selectedVariant = {}) => {
 
 const buildCourseSnapshot = (course, selectedVariant = {}, amount) => {
   const variant = getVariantPrice(course, selectedVariant);
+  const paidAmount = Number(amount || 0);
   return {
     title: course.title || course.subject || 'Course Package',
     subject: course.subject || '',
@@ -81,9 +82,11 @@ const buildCourseSnapshot = (course, selectedVariant = {}, amount) => {
     supportMail: course.support_mail || '',
     supportCall: course.support_call || '',
     institute: course.institute_name || '',
-    costPrice: variant.costPrice || Number(course.cost_price || amount || 0),
-    originalPrice: variant.costPrice || Number(course.cost_price || amount || 0),
-    sellingPrice: variant.sellingPrice || Number(course.selling_price || amount || 0),
+    costPrice: variant.costPrice || Number(course.cost_price || paidAmount || 0),
+    originalPrice: variant.costPrice || Number(course.cost_price || paidAmount || 0),
+    sellingPrice: paidAmount > 0 ? paidAmount : Number(variant.sellingPrice || course.selling_price || 0),
+    amountPaid: paidAmount,
+    amount: paidAmount,
     selectedOptions: selectedVariant.selectedOptions || {}
   };
 };
@@ -257,14 +260,15 @@ const createOrUpdateStudent = async ({ name, email, phone }) => {
   return { user: data, created: true };
 };
 
-const sendEnrollmentMail = async ({ user, purchase, accountCreated }) => {
+const sendEnrollmentMail = async ({ user, purchase, accountCreated, overrideAmount }) => {
+  const finalAmount = Number(overrideAmount !== undefined ? overrideAmount : (purchase.amount !== undefined ? purchase.amount : (purchase.course_details?.amountPaid || 0)));
   return sendManualEnrollmentEmail({
     userEmail: user.email,
     userName: user.name || 'Student',
     courseDetails: purchase.course_details,
     transactionId: purchase.transaction_id,
-    amount: purchase.amount,
-    paymentMethod: purchase.payment_method,
+    amount: finalAmount,
+    paymentMethod: purchase.payment_method || 'offline',
     accountCreated,
     userDetails: {
       fullName: user.name,
@@ -440,7 +444,7 @@ exports.createManualEnrollment = async (req, res) => {
     let emailResult = null;
     if (sendEmail) {
       try {
-        emailResult = await sendEnrollmentMail({ user, purchase, accountCreated });
+        emailResult = await sendEnrollmentMail({ user, purchase, accountCreated, overrideAmount: paidAmount });
         if (emailResult?.success) {
           const updatedCourseDetails = {
             ...courseDetails,
