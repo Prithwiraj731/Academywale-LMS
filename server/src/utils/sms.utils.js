@@ -1,6 +1,6 @@
 /**
  * SMS & OTP Dispatch Utility for AcademyWale Core System
- * Multi-Gateway Support (Fast2SMS, 2Factor, Twilio, MSG91)
+ * Multi-Gateway Support: Fast2SMS (Official OpenAPI /dev/otp/send & /dev/bulkV2), 2Factor, Twilio
  */
 
 const sendSMSOTP = async (mobile, otp) => {
@@ -15,34 +15,72 @@ const sendSMSOTP = async (mobile, otp) => {
   let dispatched = false;
   let errors = [];
 
-  // 1. Fast2SMS Integration (supports both 'otp' and 'q' Quick SMS routes)
   const fast2smsKey = process.env.FAST2SMS_API_KEY || process.env.FAST2SMS_KEY;
+  const fast2smsOtpId = process.env.FAST2SMS_OTP_ID;
+
+  // 1. Fast2SMS Integration
   if (fast2smsKey) {
+    // 1A. Try Official Fast2SMS POST /dev/otp/send API
     try {
-      console.log('🚀 Attempting SMS dispatch via Fast2SMS API (OTP route)...');
-      const fast2smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=otp&variables_values=${otp}&flash=0&numbers=${cleanMobile}`;
-      const response = await fetch(fast2smsUrl, { method: 'GET' });
-      const result = await response.json();
-      console.log('✅ Fast2SMS OTP Route Result:', result);
-      
-      if (result.return || result.status_code === 200) {
+      console.log('🚀 Attempting Fast2SMS Official POST /dev/otp/send API...');
+      const payload = {
+        mobile: cleanMobile,
+        otp: String(otp),
+        otp_expiry: 10
+      };
+      if (fast2smsOtpId) {
+        payload.otp_id = fast2smsOtpId;
+      }
+
+      const postRes = await fetch('https://www.fast2sms.com/dev/otp/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': fast2smsKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const postResult = await postRes.json();
+      console.log('✅ Fast2SMS POST /dev/otp/send Result:', postResult);
+
+      if (postResult.return || postResult.status_code === 200) {
         dispatched = true;
       } else {
-        // Fallback: Try Quick SMS route (route=q)
-        console.log('🚀 Attempting Fast2SMS Quick SMS (route=q)...');
-        const qUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=q&message=${encodeURIComponent(`Your AcademyWale verification code is: ${otp}`)}&flash=0&numbers=${cleanMobile}`;
-        const qRes = await fetch(qUrl, { method: 'GET' });
-        const qResult = await qRes.json();
-        console.log('✅ Fast2SMS Quick SMS Result:', qResult);
-        if (qResult.return || qResult.status_code === 200) {
+        errors.push(`Fast2SMS POST: ${postResult.message || JSON.stringify(postResult)}`);
+      }
+    } catch (postErr) {
+      console.warn('⚠️ Fast2SMS POST /dev/otp/send error:', postErr.message);
+      errors.push(`Fast2SMS POST Error: ${postErr.message}`);
+    }
+
+    // 1B. Fallback: Fast2SMS GET /dev/bulkV2 (route=otp)
+    if (!dispatched) {
+      try {
+        console.log('🚀 Attempting Fast2SMS GET /dev/bulkV2 (route=otp)...');
+        const fast2smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=otp&variables_values=${otp}&flash=0&numbers=${cleanMobile}`;
+        const response = await fetch(fast2smsUrl, { method: 'GET' });
+        const result = await response.json();
+        console.log('✅ Fast2SMS GET (route=otp) Result:', result);
+        
+        if (result.return || result.status_code === 200) {
           dispatched = true;
         } else {
-          errors.push(`Fast2SMS: ${result.message || qResult.message || JSON.stringify(result)}`);
+          // 1C. Fallback: Fast2SMS GET /dev/bulkV2 (route=q Quick SMS)
+          console.log('🚀 Attempting Fast2SMS GET /dev/bulkV2 (route=q Quick SMS)...');
+          const qUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2smsKey}&route=q&message=${encodeURIComponent(`Your AcademyWale verification code is: ${otp}`)}&flash=0&numbers=${cleanMobile}`;
+          const qRes = await fetch(qUrl, { method: 'GET' });
+          const qResult = await qRes.json();
+          console.log('✅ Fast2SMS Quick SMS Result:', qResult);
+          if (qResult.return || qResult.status_code === 200) {
+            dispatched = true;
+          } else {
+            errors.push(`Fast2SMS GET: ${result.message || qResult.message || JSON.stringify(result)}`);
+          }
         }
+      } catch (getErr) {
+        console.warn('⚠️ Fast2SMS GET error:', getErr.message);
+        errors.push(`Fast2SMS GET Error: ${getErr.message}`);
       }
-    } catch (err) {
-      console.warn('⚠️ Fast2SMS dispatch error:', err.message);
-      errors.push(`Fast2SMS Error: ${err.message}`);
     }
   }
 
