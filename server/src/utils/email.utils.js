@@ -310,29 +310,29 @@ const sendManualEnrollmentEmail = async (options) => {
         const lbl = String(opt.label || opt.name || '').trim();
         const val = String(opt.value || '').trim();
         if (lbl && val) {
-          detailLines.push(`• <strong>${lbl}:</strong> ${val}`);
+          detailLines.push(`${lbl}: <strong>${val}</strong>`);
         } else if (val) {
-          detailLines.push(`• ${val}`);
+          detailLines.push(val);
         }
       });
     } else {
-      if (mode) detailLines.push(`• <strong>Mode:</strong> ${mode}`);
-      if (validity) detailLines.push(`• <strong>Validity / Attempt:</strong> ${validity}`);
-      if (faculty) detailLines.push(`• <strong>Faculty:</strong> ${faculty}`);
-      if (attempt && attempt !== validity) detailLines.push(`• <strong>Attempt:</strong> ${attempt}`);
-      if (institute && institute !== 'N/A') detailLines.push(`• <strong>Institute:</strong> ${institute}`);
-      if (noOfLecture) detailLines.push(`• <strong>Lectures:</strong> ${noOfLecture}`);
-      if (books) detailLines.push(`• <strong>Material:</strong> ${books}`);
-      if (videoLanguage) detailLines.push(`• <strong>Language:</strong> ${videoLanguage}`);
-      if (videoRunOn) detailLines.push(`• <strong>Run On:</strong> ${videoRunOn}`);
-      if (doubtSolving) detailLines.push(`• <strong>Doubts:</strong> ${doubtSolving}`);
+      if (mode) detailLines.push(`Mode: <strong>${mode}</strong>`);
+      if (validity) detailLines.push(`Validity / Attempt: <strong>${validity}</strong>`);
+      if (faculty) detailLines.push(`Faculty: <strong>${faculty}</strong>`);
+      if (attempt && attempt !== validity) detailLines.push(`Attempt: <strong>${attempt}</strong>`);
+      if (institute && institute !== 'N/A') detailLines.push(`Institute: <strong>${institute}</strong>`);
+      if (noOfLecture) detailLines.push(`Lectures: <strong>${noOfLecture}</strong>`);
+      if (books) detailLines.push(`Material: <strong>${books}</strong>`);
+      if (videoLanguage) detailLines.push(`Language: <strong>${videoLanguage}</strong>`);
+      if (videoRunOn) detailLines.push(`Run On: <strong>${videoRunOn}</strong>`);
+      if (doubtSolving) detailLines.push(`Doubts: <strong>${doubtSolving}</strong>`);
     }
     if (supportMail || supportCall) {
       const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
-      detailLines.push(`• <strong>Support:</strong> ${supportInfo}`);
+      detailLines.push(`Support: <strong>${supportInfo}</strong>`);
     }
 
-    const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569;">${line}</div>`).join('');
+    const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569; font-weight: 500;">${line}</div>`).join('');
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
