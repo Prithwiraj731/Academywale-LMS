@@ -136,57 +136,60 @@ const findUserByEmail = async (email) => {
 };
 
 const findCourseById = async (courseId) => {
-  if (!courseId) return null;
-  const cleanId = String(courseId).trim();
+  const cleanId = String(courseId || '').trim();
   const cleanLower = cleanId.toLowerCase();
 
-  // 1. Check by primary id
-  const { data: c1 } = await supabaseAdmin
-    .from('courses')
-    .select('*')
-    .eq('id', cleanId)
-    .maybeSingle();
-  if (c1) return c1;
+  if (cleanId) {
+    // 1. Check by primary id
+    const { data: c1 } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('id', cleanId)
+      .maybeSingle();
+    if (c1) return c1;
 
-  // 2. Check by mongo_id
-  const { data: c2 } = await supabaseAdmin
-    .from('courses')
-    .select('*')
-    .eq('mongo_id', cleanId)
-    .maybeSingle();
-  if (c2) return c2;
+    // 2. Check by mongo_id
+    const { data: c2 } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('mongo_id', cleanId)
+      .maybeSingle();
+    if (c2) return c2;
 
-  // 3. Check by slug
-  const { data: c3 } = await supabaseAdmin
-    .from('courses')
-    .select('*')
-    .eq('slug', cleanId)
-    .maybeSingle();
-  if (c3) return c3;
+    // 3. Check by slug
+    const { data: c3 } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .eq('slug', cleanId)
+      .maybeSingle();
+    if (c3) return c3;
+  }
 
   // 4. Bulletproof Fallback: Fetch courses list and match title, subject, slug, or IDs
   const { data: allCourses } = await supabaseAdmin.from('courses').select('*');
   if (Array.isArray(allCourses) && allCourses.length > 0) {
-    const matched = allCourses.find(c => {
-      const idStr = String(c.id || '').trim().toLowerCase();
-      const mongoStr = String(c.mongo_id || '').trim().toLowerCase();
-      const slugStr = String(c.slug || '').trim().toLowerCase();
-      const titleStr = String(c.title || '').trim().toLowerCase();
-      const subjectStr = String(c.subject || '').trim().toLowerCase();
+    if (cleanLower) {
+      const matched = allCourses.find(c => {
+        const idStr = String(c.id || '').trim().toLowerCase();
+        const mongoStr = String(c.mongo_id || '').trim().toLowerCase();
+        const slugStr = String(c.slug || '').trim().toLowerCase();
+        const titleStr = String(c.title || '').trim().toLowerCase();
+        const subjectStr = String(c.subject || '').trim().toLowerCase();
 
-      return (
-        idStr === cleanLower ||
-        mongoStr === cleanLower ||
-        slugStr === cleanLower ||
-        titleStr === cleanLower ||
-        subjectStr === cleanLower ||
-        (titleStr && cleanLower.includes(titleStr)) ||
-        (cleanLower && titleStr.includes(cleanLower)) ||
-        (subjectStr && cleanLower.includes(subjectStr)) ||
-        (cleanLower && subjectStr.includes(cleanLower))
-      );
-    });
-    if (matched) return matched;
+        return (
+          idStr === cleanLower ||
+          mongoStr === cleanLower ||
+          slugStr === cleanLower ||
+          titleStr === cleanLower ||
+          subjectStr === cleanLower ||
+          (titleStr && cleanLower.includes(titleStr)) ||
+          (cleanLower && titleStr.includes(cleanLower)) ||
+          (subjectStr && cleanLower.includes(subjectStr)) ||
+          (cleanLower && subjectStr.includes(cleanLower))
+        );
+      });
+      if (matched) return matched;
+    }
     // Guaranteed Fallback: return first available course from database
     return allCourses[0];
   }
