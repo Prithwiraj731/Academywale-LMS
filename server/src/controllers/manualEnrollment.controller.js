@@ -119,6 +119,7 @@ const buildCourseSnapshot = (course, selectedVariant = {}, amount) => {
     sellingPrice: paidAmount > 0 ? paidAmount : Number(variant.sellingPrice || course.selling_price || 0),
     amountPaid: paidAmount,
     amount: paidAmount,
+    customOptions: Array.isArray(selectedVariant.customOptions) ? selectedVariant.customOptions : [],
     selectedOptions: selectedVariant.selectedOptions || {}
   };
 };

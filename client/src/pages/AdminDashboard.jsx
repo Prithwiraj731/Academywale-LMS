@@ -292,6 +292,16 @@ export default function AdminDashboard() {
   const [couponSuccess, setCouponSuccess] = useState('');
   const [editingCouponCode, setEditingCouponCode] = useState(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
+  const defaultCustomOptions = [
+    { label: 'Mode', value: '' },
+    { label: 'Validity / Attempt', value: '' },
+    { label: 'Study Material / Books', value: '' },
+    { label: 'No. of Lectures', value: '' },
+    { label: 'Video Language', value: '' },
+    { label: 'Run On / Devices', value: '' },
+    { label: 'Doubt Solving Facility', value: '' }
+  ];
+
   const defaultManualEnrollmentForm = {
     id: '',
     studentName: '',
@@ -304,13 +314,7 @@ export default function AdminDashboard() {
     paymentReference: '',
     notes: '',
     accessExpiry: '',
-    variantMode: '',
-    variantAttempt: '',
-    variantBooks: '',
-    variantLectures: '',
-    variantLanguage: '',
-    variantRunOn: '',
-    variantDoubtSolving: '',
+    customOptions: defaultCustomOptions,
     sendEmail: true,
     resendEmail: false,
     isActive: true
@@ -366,21 +370,48 @@ export default function AdminDashboard() {
     return firstAttempt?.sellingPrice || firstAttempt?.selling_price || course.selling_price || course.sellingPrice || course.cost_price || course.costPrice || '';
   };
 
+  const handleCustomOptionChange = (index, field, value) => {
+    setManualEnrollmentForm(prev => {
+      const updated = [...(prev.customOptions || [])];
+      if (updated[index]) {
+        updated[index] = { ...updated[index], [field]: value };
+      }
+      return { ...prev, customOptions: updated };
+    });
+  };
+
+  const handleAddCustomOption = () => {
+    setManualEnrollmentForm(prev => ({
+      ...prev,
+      customOptions: [...(prev.customOptions || []), { label: 'New Custom Option', value: '' }]
+    }));
+  };
+
+  const handleRemoveCustomOption = (index) => {
+    setManualEnrollmentForm(prev => ({
+      ...prev,
+      customOptions: (prev.customOptions || []).filter((_, i) => i !== index)
+    }));
+  };
+
   const handleManualEnrollmentChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (name === 'courseId') {
       const selectedCourse = availableCourses.find(c => String(getCourseId(c)) === String(value));
+      const autoOptions = [
+        { label: 'Mode', value: selectedCourse?.mode || selectedCourse?.mode_attempt_pricing?.[0]?.mode || 'Google Drive' },
+        { label: 'Validity / Attempt', value: selectedCourse?.attempt || selectedCourse?.validity || selectedCourse?.mode_attempt_pricing?.[0]?.attempts?.[0]?.attempt || '' },
+        { label: 'Study Material / Books', value: selectedCourse?.books || '' },
+        { label: 'No. of Lectures', value: selectedCourse?.no_of_lecture || selectedCourse?.noOfLecture || '' },
+        { label: 'Video Language', value: selectedCourse?.video_language || selectedCourse?.videoLanguage || 'Hindi & English Mix' },
+        { label: 'Run On / Devices', value: selectedCourse?.video_run_on || selectedCourse?.videoRunOn || 'Windows Laptop / Android Mobile' },
+        { label: 'Doubt Solving Facility', value: selectedCourse?.doubt_solving || selectedCourse?.doubtSolving || 'WhatsApp / Telegram / Mail' }
+      ];
       setManualEnrollmentForm(prev => ({
         ...prev,
         courseId: value,
         amount: prev.amount || getCoursePrice(selectedCourse),
-        variantMode: selectedCourse?.mode || selectedCourse?.mode_attempt_pricing?.[0]?.mode || '',
-        variantAttempt: selectedCourse?.attempt || selectedCourse?.validity || selectedCourse?.mode_attempt_pricing?.[0]?.attempts?.[0]?.attempt || '',
-        variantBooks: selectedCourse?.books || '',
-        variantLectures: selectedCourse?.no_of_lecture || selectedCourse?.noOfLecture || '',
-        variantLanguage: selectedCourse?.video_language || selectedCourse?.videoLanguage || 'Hindi & English Mix',
-        variantRunOn: selectedCourse?.video_run_on || selectedCourse?.videoRunOn || 'Windows Laptop / Android Mobile',
-        variantDoubtSolving: selectedCourse?.doubt_solving || selectedCourse?.doubtSolving || 'WhatsApp / Telegram / Mail'
+        customOptions: autoOptions
       }));
       return;
     }
@@ -446,14 +477,15 @@ export default function AdminDashboard() {
       notes: manualEnrollmentForm.notes.trim(),
       accessExpiry: manualEnrollmentForm.accessExpiry || undefined,
       selectedVariant: {
-        mode: manualEnrollmentForm.variantMode.trim(),
-        attempt: manualEnrollmentForm.variantAttempt.trim(),
-        validity: manualEnrollmentForm.variantAttempt.trim(),
-        books: manualEnrollmentForm.variantBooks.trim(),
-        noOfLecture: manualEnrollmentForm.variantLectures.trim(),
-        videoLanguage: manualEnrollmentForm.variantLanguage.trim(),
-        videoRunOn: manualEnrollmentForm.variantRunOn.trim(),
-        doubtSolving: manualEnrollmentForm.variantDoubtSolving.trim()
+        customOptions: (manualEnrollmentForm.customOptions || []).filter(opt => String(opt.label || '').trim() || String(opt.value || '').trim()),
+        mode: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('mode'))?.value || '',
+        attempt: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('validity') || String(o.label || '').toLowerCase().includes('attempt'))?.value || '',
+        validity: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('validity') || String(o.label || '').toLowerCase().includes('attempt'))?.value || '',
+        books: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('material') || String(o.label || '').toLowerCase().includes('book'))?.value || '',
+        noOfLecture: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('lecture'))?.value || '',
+        videoLanguage: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('language'))?.value || '',
+        videoRunOn: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('run on') || String(o.label || '').toLowerCase().includes('device'))?.value || '',
+        doubtSolving: (manualEnrollmentForm.customOptions || []).find(o => String(o.label || '').toLowerCase().includes('doubt'))?.value || ''
       },
       sendEmail: manualEnrollmentForm.sendEmail,
       resendEmail: manualEnrollmentForm.resendEmail,
@@ -488,6 +520,20 @@ export default function AdminDashboard() {
   const handleEditManualEnrollment = (item) => {
     setEditingManualEnrollmentId(item.id);
     const details = item.courseDetails || {};
+    let loadedOptions = [];
+    if (Array.isArray(details.customOptions) && details.customOptions.length > 0) {
+      loadedOptions = details.customOptions;
+    } else {
+      loadedOptions = [
+        { label: 'Mode', value: details.mode || '' },
+        { label: 'Validity / Attempt', value: details.attempt || details.validity || '' },
+        { label: 'Study Material / Books', value: details.books || '' },
+        { label: 'No. of Lectures', value: details.noOfLecture || details.no_of_lecture || '' },
+        { label: 'Video Language', value: details.videoLanguage || details.video_language || '' },
+        { label: 'Run On / Devices', value: details.videoRunOn || details.video_run_on || '' },
+        { label: 'Doubt Solving Facility', value: details.doubtSolving || details.doubt_solving || '' }
+      ];
+    }
     setManualEnrollmentForm({
       ...defaultManualEnrollmentForm,
       id: item.id,
@@ -501,13 +547,7 @@ export default function AdminDashboard() {
       paymentReference: item.paymentReference || item.transactionId || '',
       notes: item.notes || '',
       accessExpiry: item.accessExpiry ? String(item.accessExpiry).slice(0, 10) : '',
-      variantMode: details.mode || '',
-      variantAttempt: details.attempt || details.validity || '',
-      variantBooks: details.books || '',
-      variantLectures: details.noOfLecture || details.no_of_lecture || '',
-      variantLanguage: details.videoLanguage || details.video_language || '',
-      variantRunOn: details.videoRunOn || details.video_run_on || '',
-      variantDoubtSolving: details.doubtSolving || details.doubt_solving || '',
+      customOptions: loadedOptions,
       sendEmail: false,
       resendEmail: false,
       isActive: item.isActive !== false
@@ -3848,90 +3888,59 @@ export default function AdminDashboard() {
 
             {/* Variants & Options Customization */}
             <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <span>⚙️ Variants & Options (Receipt Details)</span>
-                </h4>
-                <span className="text-[11px] text-slate-500 italic">Customize course attributes sent to student email & receipt</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>⚙️ Variants & Options (Receipt Details)</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Customize both the <strong>Headings</strong> and <strong>Values</strong> sent to student email & receipt.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddCustomOption}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-all shadow-sm flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                >
+                  <span>+ Add Custom Heading / Option</span>
+                </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Mode</label>
-                  <input
-                    type="text"
-                    name="variantMode"
-                    value={manualEnrollmentForm.variantMode}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. Google Drive / Pen Drive"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Validity / Attempt</label>
-                  <input
-                    type="text"
-                    name="variantAttempt"
-                    value={manualEnrollmentForm.variantAttempt}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. DEC27 or Till 31st Dec 2026"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Study Material / Books</label>
-                  <input
-                    type="text"
-                    name="variantBooks"
-                    value={manualEnrollmentForm.variantBooks}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. Hard Copy Book / E-Book"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">No. of Lectures</label>
-                  <input
-                    type="text"
-                    name="variantLectures"
-                    value={manualEnrollmentForm.variantLectures}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. 60 Lectures / 150 Hours"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Video Language</label>
-                  <input
-                    type="text"
-                    name="variantLanguage"
-                    value={manualEnrollmentForm.variantLanguage}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. Hindi & English Mix"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Run On / Devices</label>
-                  <input
-                    type="text"
-                    name="variantRunOn"
-                    value={manualEnrollmentForm.variantRunOn}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. Laptop / Mobile"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">Doubt Solving Facility</label>
-                  <input
-                    type="text"
-                    name="variantDoubtSolving"
-                    value={manualEnrollmentForm.variantDoubtSolving}
-                    onChange={handleManualEnrollmentChange}
-                    placeholder="e.g. WhatsApp / Telegram / Mail"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                {(manualEnrollmentForm.customOptions || []).map((opt, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative group hover:border-emerald-300 transition-colors">
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 w-full">
+                        <span className="text-slate-400 shrink-0">✏️ Heading:</span>
+                        <input
+                          type="text"
+                          value={opt.label}
+                          onChange={(e) => handleCustomOptionChange(idx, 'label', e.target.value)}
+                          placeholder="e.g. Mode, Validity, Class Timing..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs font-bold text-emerald-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomOption(idx)}
+                        className="text-slate-400 hover:text-red-500 font-bold text-xs p-1 rounded transition-colors"
+                        title="Remove this option"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Value / Detail</label>
+                      <input
+                        type="text"
+                        value={opt.value}
+                        onChange={(e) => handleCustomOptionChange(idx, 'value', e.target.value)}
+                        placeholder={`Enter ${opt.label || 'detail'}...`}
+                        className="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -305,16 +305,28 @@ const sendManualEnrollmentEmail = async (options) => {
     const institute = details.institute || details.instituteName || details.institute_name || '';
 
     const detailLines = [];
-    if (mode) detailLines.push(`• <strong>Mode:</strong> ${mode}`);
-    if (validity) detailLines.push(`• <strong>Validity / Attempt:</strong> ${validity}`);
-    if (faculty) detailLines.push(`• <strong>Faculty:</strong> ${faculty}`);
-    if (attempt && attempt !== validity) detailLines.push(`• <strong>Attempt:</strong> ${attempt}`);
-    if (institute && institute !== 'N/A') detailLines.push(`• <strong>Institute:</strong> ${institute}`);
-    if (noOfLecture) detailLines.push(`• <strong>Lectures:</strong> ${noOfLecture}`);
-    if (books) detailLines.push(`• <strong>Material:</strong> ${books}`);
-    if (videoLanguage) detailLines.push(`• <strong>Language:</strong> ${videoLanguage}`);
-    if (videoRunOn) detailLines.push(`• <strong>Run On:</strong> ${videoRunOn}`);
-    if (doubtSolving) detailLines.push(`• <strong>Doubts:</strong> ${doubtSolving}`);
+    if (Array.isArray(details.customOptions) && details.customOptions.length > 0) {
+      details.customOptions.forEach(opt => {
+        const lbl = String(opt.label || opt.name || '').trim();
+        const val = String(opt.value || '').trim();
+        if (lbl && val) {
+          detailLines.push(`• <strong>${lbl}:</strong> ${val}`);
+        } else if (val) {
+          detailLines.push(`• ${val}`);
+        }
+      });
+    } else {
+      if (mode) detailLines.push(`• <strong>Mode:</strong> ${mode}`);
+      if (validity) detailLines.push(`• <strong>Validity / Attempt:</strong> ${validity}`);
+      if (faculty) detailLines.push(`• <strong>Faculty:</strong> ${faculty}`);
+      if (attempt && attempt !== validity) detailLines.push(`• <strong>Attempt:</strong> ${attempt}`);
+      if (institute && institute !== 'N/A') detailLines.push(`• <strong>Institute:</strong> ${institute}`);
+      if (noOfLecture) detailLines.push(`• <strong>Lectures:</strong> ${noOfLecture}`);
+      if (books) detailLines.push(`• <strong>Material:</strong> ${books}`);
+      if (videoLanguage) detailLines.push(`• <strong>Language:</strong> ${videoLanguage}`);
+      if (videoRunOn) detailLines.push(`• <strong>Run On:</strong> ${videoRunOn}`);
+      if (doubtSolving) detailLines.push(`• <strong>Doubts:</strong> ${doubtSolving}`);
+    }
     if (supportMail || supportCall) {
       const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
       detailLines.push(`• <strong>Support:</strong> ${supportInfo}`);
