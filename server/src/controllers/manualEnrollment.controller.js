@@ -430,24 +430,29 @@ exports.createManualEnrollment = async (req, res) => {
 
     let emailResult = null;
     if (sendEmail) {
-      emailResult = await sendEnrollmentMail({ user, purchase, accountCreated });
-      if (emailResult?.success) {
-        await supabaseAdmin
-          .from('purchases')
-          .update({
-            user_details: {
-              ...userDetails,
-              manualEnrollment: {
-                ...userDetails.manualEnrollment,
-                mailSentAt: new Date().toISOString()
+      try {
+        emailResult = await sendEnrollmentMail({ user, purchase, accountCreated });
+        if (emailResult?.success) {
+          await supabaseAdmin
+            .from('purchases')
+            .update({
+              user_details: {
+                ...userDetails,
+                manualEnrollment: {
+                  ...userDetails.manualEnrollment,
+                  mailSentAt: new Date().toISOString()
+                }
               }
-            }
-          })
-          .eq('id', purchase.id);
+            })
+            .eq('id', purchase.id);
+        }
+      } catch (eErr) {
+        console.error('Email notification error during manual enrollment:', eErr);
+        emailResult = { success: false, error: eErr.message };
       }
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Manual enrollment created successfully',
       enrollment: formatEnrollment({ ...purchase, users: user, courses: course }),

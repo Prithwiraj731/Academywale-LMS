@@ -127,7 +127,6 @@ app.post('/api/purchase/razorpay-webhook', purchaseController.handleRazorpayWebh
 app.all('/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 
 app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes);
-app.use('/', manualEnrollmentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/', couponRoutes);
 app.use('/', courseDetailRoutes);
