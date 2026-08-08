@@ -385,7 +385,11 @@ export default function AdminDashboard() {
       if (res.ok && data.success) {
         setManualEnrollments(data.enrollments || []);
       } else {
-        setManualEnrollmentError(data.message || data.error || 'Failed to fetch manual enrollments');
+        if (res.status === 404) {
+          setManualEnrollmentError('Backend server is deploying the new enrollment routes on Render. Please wait 1-2 minutes for deployment to complete.');
+        } else {
+          setManualEnrollmentError(data.message || data.error || 'Failed to fetch manual enrollments');
+        }
       }
     } catch (err) {
       setManualEnrollmentError(err.message || 'Server error');
@@ -448,7 +452,11 @@ export default function AdminDashboard() {
         resetManualEnrollmentForm();
         await fetchManualEnrollments();
       } else {
-        setManualEnrollmentError(data.message || data.error || 'Failed to save manual enrollment');
+        if (res.status === 404) {
+          setManualEnrollmentError('Backend server is deploying the new enrollment routes on Render. Please wait 1-2 minutes for deployment to finish and click submit again.');
+        } else {
+          setManualEnrollmentError(data.message || data.error || 'Failed to save manual enrollment');
+        }
       }
     } catch (err) {
       setManualEnrollmentError(err.message || 'Server error');
