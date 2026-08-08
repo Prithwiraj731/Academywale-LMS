@@ -429,20 +429,7 @@ exports.createManualEnrollment = async (req, res) => {
       };
     }
 
-    const { data: existing, error: existingError } = await supabaseAdmin
-      .from('purchases')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', course.id)
-      .eq('is_active', true)
-      .maybeSingle();
-    if (existingError) throw existingError;
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: 'This student already has an active enrollment for this course'
-      });
-    }
+    // Duplicate active enrollment check removed as requested so admin can create multiple enrollments for same user/course
 
     const baseSnapshot = buildCourseSnapshot(course, selectedVariant, paidAmount);
     const courseDetails = {
@@ -575,20 +562,7 @@ exports.updateManualEnrollment = async (req, res) => {
     let course = null;
     if (courseId && courseId !== current.course_id) {
       course = await findCourseById(courseId);
-      if (course) {
-        const { data: duplicate, error: duplicateError } = await supabaseAdmin
-          .from('purchases')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', course.id)
-          .eq('is_active', true)
-          .neq('id', enrollmentId)
-          .maybeSingle();
-        if (duplicateError) throw duplicateError;
-        if (duplicate) {
-          return res.status(409).json({ success: false, message: 'Student already has an active enrollment for the selected course' });
-        }
-      }
+      // Duplicate check removed so admin can change or assign courses freely
     }
 
     if (!course) {

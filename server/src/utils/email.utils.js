@@ -397,7 +397,7 @@ const sendManualEnrollmentEmail = async (options) => {
                     </span>
                   </td>
                   <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
-                    INR ${amount.toLocaleString('en-IN')}
+                    INR ${Number(details.sellingPrice || details.selling_price || details.originalPrice || details.original_price || details.costPrice || details.cost_price || details.price || options.sellingPrice || amount).toLocaleString('en-IN')}
                   </td>
                 </tr>
               </tbody>
@@ -480,18 +480,6 @@ const sendPurchaseInvoiceEmail = async (options) => {
       const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
       const books = details.books || '';
       const videoLanguage = details.videoLanguage || details.video_language || '';
-      const videoRunOn = details.videoRunOn || details.video_run_on || '';
-      const doubtSolving = details.doubtSolving || details.doubt_solving || '';
-      const supportMail = details.supportMail || details.support_mail || '';
-      const supportCall = details.supportCall || details.support_call || '';
-      const institute = details.institute || details.instituteName || details.institute_name || '';
-      // Actual Course Price set by Admin (Cost Price / Original Price)
-      const actualCoursePrice = details.costPrice || details.cost_price || details.originalPrice || details.original_price || details.actualPrice || item.costPrice || item.cost_price || item.originalPrice || item.original_price || item.actualPrice || details.sellingPrice || details.price || item.amount || item.price || amount;
-
-      let detailString = `Mode: <strong>${mode}</strong> | Validity: <strong>${validity}</strong> | Faculty: <strong>${faculty}</strong>`;
-      if (attempt) detailString += ` | Attempt/Term: <strong>${attempt}</strong>`;
-      if (institute) detailString += ` | Institute: <strong>${institute}</strong>`;
-      if (noOfLecture) detailString += ` | Lectures: <strong>${noOfLecture}</strong>`;
       if (books) detailString += ` | Material: <strong>${books}</strong>`;
       if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
       if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
