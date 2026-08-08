@@ -130,6 +130,12 @@ const formatEnrollment = (purchase) => {
   const details = purchase.course_details || {};
   const manual = details.manualEnrollment || (purchase.user_details && purchase.user_details.manualEnrollment) || {};
 
+  const paidAmount = Number(
+    purchase.amount !== undefined && purchase.amount !== null && Number(purchase.amount) > 0
+      ? purchase.amount
+      : (details.amountPaid || details.amount || details.sellingPrice || 0)
+  );
+
   return {
     id: purchase.id,
     userId: purchase.user_id,
@@ -141,7 +147,7 @@ const formatEnrollment = (purchase) => {
     courseTitle: details.title || course.title || course.subject || '',
     courseSubject: details.subject || course.subject || '',
     facultyName: details.facultyName || faculty.first_name || course.faculty_name || '',
-    amount: Number(purchase.amount || 0),
+    amount: paidAmount,
     paymentMethod: purchase.payment_method || 'offline',
     paymentStatus: purchase.payment_status || 'completed',
     transactionId: purchase.transaction_id || '',
