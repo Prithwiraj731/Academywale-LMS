@@ -709,21 +709,34 @@ exports.deleteManualEnrollment = async (req, res) => {
       return res.status(200).json({ success: true, message: 'Manual enrollment permanently deleted' });
     }
 
+    const { data: current, error: currentError } = await supabaseAdmin
+      .from('purchases')
+      .select('is_active')
+      .eq('id', enrollmentId)
+      .maybeSingle();
+
+    if (currentError) throw currentError;
+    if (!current) {
+      return res.status(404).json({ success: false, message: 'Manual enrollment not found' });
+    }
+
+    const newActiveStatus = !(current.is_active ?? true);
     const { data, error } = await supabaseAdmin
       .from('purchases')
-      .update({ is_active: false })
+      .update({ is_active: newActiveStatus })
       .eq('id', enrollmentId)
       .select('*')
       .maybeSingle();
 
     if (error) throw error;
-    if (!data) {
-      return res.status(404).json({ success: false, message: 'Manual enrollment not found' });
-    }
 
-    return res.status(200).json({ success: true, message: 'Manual enrollment deactivated', enrollment: formatEnrollment(data) });
+    return res.status(200).json({
+      success: true,
+      message: newActiveStatus ? 'Manual enrollment activated' : 'Manual enrollment deactivated',
+      enrollment: formatEnrollment(data)
+    });
   } catch (error) {
-    console.error('Delete manual enrollment error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to delete manual enrollment', error: error.message });
+    console.error('Delete/Toggle manual enrollment error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update enrollment status', error: error.message });
   }
 };

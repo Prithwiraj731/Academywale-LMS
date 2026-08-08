@@ -500,10 +500,12 @@ export default function AdminDashboard() {
     document.getElementById('manual-enrollment-title')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleDeleteManualEnrollment = async (id, hard = false) => {
+  const handleDeleteManualEnrollment = async (id, hard = false, isCurrentlyActive = true) => {
     const confirmText = hard
       ? 'Permanently delete this enrollment record? This cannot be undone.'
-      : 'Deactivate this enrollment? Student course access will stop, but the audit record remains.';
+      : isCurrentlyActive
+      ? 'Deactivate this enrollment? Student course access will stop, but the audit record remains.'
+      : 'Re-activate this enrollment? Student course access will be restored.';
     if (!window.confirm(confirmText)) return;
 
     setManualEnrollmentError('');
@@ -514,11 +516,15 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setManualEnrollmentSuccess(hard ? 'Enrollment permanently deleted.' : 'Enrollment deactivated.');
+        setManualEnrollmentSuccess(
+          hard
+            ? 'Enrollment permanently deleted.'
+            : data.message || (isCurrentlyActive ? 'Enrollment deactivated.' : 'Enrollment activated.')
+        );
         await fetchManualEnrollments();
         if (editingManualEnrollmentId === id) resetManualEnrollmentForm();
       } else {
-        setManualEnrollmentError(data.message || data.error || 'Failed to delete enrollment');
+        setManualEnrollmentError(data.message || data.error || 'Failed to update enrollment');
       }
     } catch (err) {
       setManualEnrollmentError(err.message || 'Server error');
@@ -529,27 +535,12 @@ export default function AdminDashboard() {
     setManualEnrollmentError('');
     setManualEnrollmentSuccess('');
     try {
-      const res = await fetchWithCredentials(`${API_URL}/api/admin/manual-enrollments/${item.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentName: item.studentName,
-          studentEmail: item.studentEmail,
-          studentPhone: item.studentPhone,
-          courseId: item.courseId,
-          amount: item.amount,
-          paymentMethod: item.paymentMethod,
-          paymentStatus: item.paymentStatus,
-          paymentReference: item.paymentReference || item.transactionId,
-          notes: item.notes,
-          accessExpiry: item.accessExpiry,
-          resendEmail: true,
-          isActive: item.isActive
-        })
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/manual-enrollments/${item.id}/resend-email`, {
+        method: 'POST'
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setManualEnrollmentSuccess('Enrollment email resent.');
+        setManualEnrollmentSuccess(`Enrollment email sent to ${item.studentEmail}`);
         await fetchManualEnrollments();
       } else {
         setManualEnrollmentError(data.message || data.error || 'Failed to resend email');
@@ -4087,15 +4078,19 @@ export default function AdminDashboard() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteManualEnrollment(item.id, false)}
-                                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-[11px] rounded border border-amber-200 transition-all cursor-pointer"
-                                title="Deactivate Access"
+                                onClick={() => handleDeleteManualEnrollment(item.id, false, isRowActive)}
+                                className={`px-2 py-1 font-bold text-[11px] rounded border transition-all cursor-pointer ${
+                                  isRowActive
+                                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
+                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                                }`}
+                                title={isRowActive ? "Deactivate Student Access" : "Re-activate Student Access"}
                               >
-                                🚫 Disable
+                                {isRowActive ? '🚫 Disable' : '✅ Enable'}
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteManualEnrollment(item.id, true)}
+                                onClick={() => handleDeleteManualEnrollment(item.id, true, isRowActive)}
                                 className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-[11px] rounded border border-red-200 transition-all cursor-pointer"
                                 title="Permanently Delete Record"
                               >
