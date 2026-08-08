@@ -22,7 +22,8 @@ import {
   FaBell,
   FaCog,
   FaPlay,
-  FaDownload
+  FaDownload,
+  FaHome
 } from 'react-icons/fa';
 import { API_URL } from '../api';
 import CheckoutModal from '../components/common/CheckoutModal';
@@ -138,25 +139,30 @@ export default function StudentDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#18181c] text-slate-100 font-sans selection:bg-amber-500 selection:text-black relative overflow-hidden pb-12">
+    <div className="min-h-screen bg-[#0b1329] text-slate-100 font-sans selection:bg-teal-500 selection:text-black relative overflow-hidden pb-12">
       
-      {/* Background Soft Warm Glow Orbs (Exact Dribbble Atmosphere) */}
-      <div className="absolute top-[-100px] left-[20%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[-100px] w-[550px] h-[550px] bg-rose-600/10 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-[-100px] left-[-50px] w-[500px] h-[500px] bg-teal-600/10 rounded-full blur-[160px] pointer-events-none" />
+      {/* Background Soft Teal & Blue Ambient Orbs (Official Brand Palette) */}
+      <div className="absolute top-[-100px] left-[15%] w-[650px] h-[650px] bg-teal-500/10 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute top-[35%] right-[-100px] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-[-100px] left-[-50px] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[180px] pointer-events-none" />
 
-      {/* Main Container Frame with Outer Border */}
+      {/* Main Container Frame */}
       <div className="max-w-[1440px] mx-auto p-3 sm:p-6 lg:p-8">
         
         {/* Layout Grid: Left Vertical Glass Dock + Right Content Area */}
         <div className="flex flex-col md:flex-row gap-6">
 
           {/* 📱 / 💻 Left Floating Vertical Glass Dock (Sidebar) */}
-          <aside className="hidden md:flex flex-col justify-between items-center py-8 px-4 bg-[#242428]/80 backdrop-blur-2xl border border-white/10 rounded-[32px] w-20 shrink-0 min-h-[90vh] sticky top-6 shadow-2xl z-30">
-            {/* Top Brand Logo Icon */}
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-amber-500/20 cursor-pointer" onClick={() => navigate('/')}>
-              AW
-            </div>
+          <aside className="hidden md:flex flex-col justify-between items-center py-8 px-4 bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/15 rounded-[32px] w-20 shrink-0 min-h-[85vh] sticky top-6 shadow-2xl z-30">
+            
+            {/* Top Home Link Icon (Clean Brand Replacement - AW Logo Removed as Requested) */}
+            <button
+              onClick={() => navigate('/')}
+              title="Back to Home"
+              className="p-3.5 rounded-2xl text-teal-400 hover:text-white bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/20 transition-all cursor-pointer shadow-lg shadow-teal-500/10"
+            >
+              <FaHome className="text-xl" />
+            </button>
 
             {/* Middle Nav Icons */}
             <div className="flex flex-col items-center gap-6">
@@ -165,7 +171,7 @@ export default function StudentDashboard() {
                 title="My Enrollments"
                 className={`p-3.5 rounded-2xl transition-all duration-300 cursor-pointer ${
                   activeTab === 'courses'
-                    ? 'bg-white/15 text-white border border-white/20 shadow-lg'
+                    ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -177,13 +183,13 @@ export default function StudentDashboard() {
                 title="Shopping Cart"
                 className={`p-3.5 rounded-2xl transition-all duration-300 relative cursor-pointer ${
                   activeTab === 'cart'
-                    ? 'bg-white/15 text-white border border-white/20 shadow-lg'
+                    ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <FaShoppingCart className="text-xl" />
                 {cartCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-cyan-300 animate-pulse" />
                 )}
               </button>
 
@@ -206,9 +212,9 @@ export default function StudentDashboard() {
               </a>
             </div>
 
-            {/* Bottom Actions */}
+            {/* Bottom Student Avatar Indicator */}
             <div className="flex flex-col items-center gap-5">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-amber-400 font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-teal-950 border border-teal-500/30 flex items-center justify-center text-teal-300 font-bold text-sm">
                 {user.name ? user.name[0].toUpperCase() : 'S'}
               </div>
             </div>
@@ -218,13 +224,13 @@ export default function StudentDashboard() {
           <main className="flex-1 space-y-6 min-w-0">
 
             {/* Top Navigation & Header Row */}
-            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#242428]/60 backdrop-blur-2xl border border-white/10 rounded-[28px] p-4 sm:p-5 shadow-xl">
+            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#111c38]/70 backdrop-blur-2xl border border-teal-500/15 rounded-[28px] p-4 sm:p-5 shadow-xl">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-serif">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Student Dashboard
                 </h1>
                 <p className="text-xs text-slate-400 font-medium">
-                  Welcome back, <span className="text-amber-300 font-semibold">{user.name || 'Learner'}</span>
+                  Welcome back, <span className="text-teal-300 font-semibold">{user.name || 'Learner'}</span>
                 </p>
               </div>
 
@@ -232,19 +238,19 @@ export default function StudentDashboard() {
               <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                 {/* Search Bar Input */}
                 <div className="relative flex-1 sm:w-64">
-                  <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs" />
+                  <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
                   <input
                     type="text"
                     value={courseSearch}
                     onChange={(e) => setCourseSearch(e.target.value)}
                     placeholder="Search courses..."
-                    className="w-full bg-[#1c1c20] text-xs text-slate-200 placeholder-slate-500 pl-9 pr-3 py-2 rounded-full border border-white/10 focus:outline-none focus:border-amber-400/50"
+                    className="w-full bg-[#0b1329]/80 text-xs text-slate-200 placeholder-slate-400 pl-9 pr-3 py-2 rounded-full border border-teal-500/20 focus:outline-none focus:border-teal-400/60"
                   />
                 </div>
 
                 {/* Profile Pill */}
-                <div className="flex items-center gap-2 bg-[#1c1c20] border border-white/10 rounded-full px-3 py-1.5 shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-black font-extrabold text-xs">
+                <div className="flex items-center gap-2 bg-[#0b1329]/80 border border-teal-500/20 rounded-full px-3 py-1.5 shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-xs">
                     {user.name ? user.name[0].toUpperCase() : 'S'}
                   </div>
                   <span className="text-xs font-bold text-slate-200 hidden sm:inline">{user.name?.split(' ')[0]}</span>
@@ -252,34 +258,34 @@ export default function StudentDashboard() {
               </div>
             </header>
 
-            {/* 🌟 TOP HERO CARD + SIDE METRICS (Exact Dribbble Style) */}
+            {/* 🌟 TOP HERO CARD + SHOPPING CART SUMMARY */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
-              {/* Left Large Glass Hero Banner ("Optimize Your Metrics" equivalent) */}
-              <div className="lg:col-span-7 bg-[#26262a]/90 backdrop-blur-2xl border border-white/10 rounded-[36px] p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[340px]">
+              {/* Left Large Glass Hero Banner */}
+              <div className="lg:col-span-8 bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 sm:p-8 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[300px]">
                 
-                {/* Background Ambient Warm Coral Lighting */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/25 via-rose-500/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+                {/* Background Ambient Teal Lighting */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-teal-500/20 via-cyan-500/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Learning Analytics</p>
-                  <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-none mb-4 font-serif">
-                    Master Your <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-300 to-amber-100">
-                      CA & CMA Exams
+                  <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-1.5">Learning Analytics</p>
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+                    Welcome to Your <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-300 to-emerald-200">
+                      AcademyWale Learning Portal
                     </span>
                   </h2>
                   <button
                     onClick={() => navigate('/courses/all')}
-                    className="bg-white hover:bg-slate-100 text-black px-6 py-2.5 rounded-full font-extrabold text-xs tracking-wide shadow-xl transition-all cursor-pointer inline-flex items-center gap-2"
+                    className="bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 px-6 py-2.5 rounded-full font-black text-xs tracking-wide shadow-xl shadow-teal-500/20 transition-all cursor-pointer inline-flex items-center gap-2"
                   >
                     <span>Browse All Courses</span>
                     <FaArrowRight className="text-xs" />
                   </button>
                 </div>
 
-                {/* 🧊 FLOATING FROSTED GLASS STAT CAPSULE OVERLAY (Signature Dribbble Element) */}
-                <div className="mt-8 bg-white/10 backdrop-blur-2xl border border-white/15 rounded-2xl p-4 sm:p-5 grid grid-cols-4 gap-2 text-center shadow-2xl">
+                {/* 🧊 FLOATING FROSTED GLASS STAT CAPSULE OVERLAY */}
+                <div className="mt-8 bg-slate-950/40 backdrop-blur-2xl border border-teal-500/20 rounded-2xl p-4 sm:p-5 grid grid-cols-4 gap-2 text-center shadow-2xl">
                   <div>
                     <p className="text-lg sm:text-2xl font-black text-white font-mono">{purchases.length}</p>
                     <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
@@ -293,91 +299,88 @@ export default function StudentDashboard() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-amber-400 font-mono">{pendingCount}</p>
+                    <p className="text-lg sm:text-2xl font-black text-amber-300 font-mono">{pendingCount}</p>
                     <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full bg-amber-400" /> Pending
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg sm:text-2xl font-black text-rose-300 font-mono">₹{(totalSpent / 1000).toFixed(1)}k</p>
+                    <p className="text-lg sm:text-2xl font-black text-teal-300 font-mono">₹{(totalSpent / 1000).toFixed(1)}k</p>
                     <p className="text-[10px] sm:text-xs font-bold text-slate-300 flex items-center justify-center gap-1 mt-0.5">
-                      <span className="w-2 h-2 rounded-full bg-rose-400" /> Investment
+                      <span className="w-2 h-2 rounded-full bg-teal-400" /> Investment
                     </p>
                   </div>
                 </div>
 
               </div>
 
-              {/* Right Side Stacked Glass Cards */}
-              <div className="lg:col-span-5 flex flex-col gap-6">
+              {/* Right Side Glass Card: Shopping Cart Status (Graph removed as requested) */}
+              <div className="lg:col-span-4 flex flex-col justify-between gap-6">
 
-                {/* Right Top Card 1: "Active Users right now" Wave Sparkline Card */}
-                <div className="bg-[#26262a]/90 backdrop-blur-2xl border border-white/10 rounded-[32px] p-5 sm:p-6 shadow-2xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                      <span>Course Access Overview</span>
-                      <span className="text-amber-400 text-xs">💡</span>
-                    </h3>
-                    <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
-                      2026 Batch
+                {/* Shopping Cart Status Widget */}
+                <div 
+                  onClick={() => setActiveTab('cart')}
+                  className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 shadow-2xl flex-1 flex flex-col justify-between cursor-pointer hover:border-teal-400/40 transition-all group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-extrabold text-teal-400 uppercase tracking-wider">Shopping Cart Status</p>
+                    <span className="text-[10px] font-bold text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2.5 py-0.5 rounded-full">
+                      {cartCount} Items
                     </span>
                   </div>
 
-                  {/* Wave Sparkline Graphic */}
-                  <div className="h-28 relative flex items-center justify-center">
-                    <svg className="w-full h-full text-amber-400" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M0 70 Q 50 20, 100 60 T 200 30 T 300 50"
-                        stroke="url(#gradientWave)"
-                        strokeWidth="3.5"
-                        fill="none"
-                      />
-                      <defs>
-                        <linearGradient id="gradientWave" x1="0" y1="0" x2="300" y2="0" gradientUnits="userSpaceOnUse">
-                          <stop stopColor="#fbbf24" />
-                          <stop offset="0.5" stopColor="#f43f5e" />
-                          <stop offset="1" stopColor="#38bdf8" />
-                        </linearGradient>
-                      </defs>
-                      <circle cx="230" cy="30" r="5" fill="#fbbf24" />
-                    </svg>
-                    
-                    {/* Glowing Node Tooltip */}
-                    <div className="absolute top-2 right-12 bg-black/90 text-amber-300 font-mono text-[11px] font-black px-2 py-0.5 rounded-md border border-amber-400/40 shadow-lg">
-                      100% Verified
+                  <div className="space-y-2 my-2">
+                    <p className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight">₹{cartTotal.toLocaleString()}</p>
+                    <p className="text-xs font-semibold text-slate-300">
+                      {cartCount === 0 ? 'Your cart is currently empty' : `${cartCount} Course(s) Ready for Checkout`}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-teal-500/15 flex items-center justify-between">
+                    <span className="text-xs font-bold text-teal-300 group-hover:underline flex items-center gap-1.5">
+                      <span>View Cart</span>
+                      <FaChevronRight className="text-[10px]" />
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xl group-hover:scale-110 transition-transform">
+                      <FaShoppingCart />
                     </div>
                   </div>
                 </div>
 
-                {/* Right Top Card 2: "Latest Sales / Cart" Glass Widget */}
-                <div 
-                  onClick={() => setActiveTab('cart')}
-                  className="bg-[#26262a]/90 backdrop-blur-2xl border border-white/10 rounded-[32px] p-5 sm:p-6 shadow-2xl flex items-center justify-between gap-4 cursor-pointer hover:border-amber-400/30 transition-all"
-                >
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-400">Shopping Cart Status</p>
-                    <p className="text-3xl font-black text-amber-400 font-mono">₹{cartTotal.toLocaleString()}</p>
-                    <p className="text-[11px] font-semibold text-slate-300">{cartCount} Courses Ready for Checkout</p>
+                {/* Helpdesk Quick Contact Pill Card */}
+                <div className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[28px] p-4 shadow-xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                      <FaHeadset className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Need Assistance?</p>
+                      <p className="text-[11px] text-slate-400">AcademyWale Support Team</p>
+                    </div>
                   </div>
-
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-rose-500/20 border border-white/10 flex items-center justify-center text-amber-400 text-2xl shrink-0">
-                    <FaShoppingCart />
-                  </div>
+                  <a
+                    href="https://wa.me/919693320108"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all"
+                  >
+                    Chat
+                  </a>
                 </div>
 
               </div>
 
             </div>
 
-            {/* 📋 BOTTOM SECTION: "MY ENROLLED COURSES" (Exact Dribbble Horizontal Pill Row Layout) */}
+            {/* 📋 BOTTOM SECTION: "MY ENROLLED COURSES" */}
             {activeTab === 'courses' ? (
-              <div className="bg-[#26262a]/90 backdrop-blur-2xl border border-white/10 rounded-[36px] p-5 sm:p-8 shadow-2xl space-y-6">
+              <div className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-5 sm:p-8 shadow-2xl space-y-6">
                 
                 {/* Header Row */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-teal-500/15">
                   <div>
-                    <h3 className="text-xl font-extrabold text-white font-serif">My Enrolled Courses</h3>
-                    <p className="text-xs text-slate-400">Manage and access your purchased CA & CMA lectures</p>
+                    <h3 className="text-xl font-extrabold text-white">My Enrolled Courses</h3>
+                    <p className="text-xs text-slate-400">Manage and access your purchased lectures</p>
                   </div>
 
                   {/* Filter Pills */}
@@ -392,8 +395,8 @@ export default function StudentDashboard() {
                         onClick={() => setStatusFilter(f.id)}
                         className={`px-4 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                           statusFilter === f.id
-                            ? 'bg-white text-black'
-                            : 'bg-white/5 text-slate-400 hover:text-white border border-white/10'
+                            ? 'bg-teal-500 text-slate-950 font-black shadow-lg shadow-teal-500/20'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-white border border-teal-500/15'
                         }`}
                       >
                         {f.label}
@@ -415,14 +418,14 @@ export default function StudentDashboard() {
                     <p className="text-slate-400 text-sm">No courses enrolled yet.</p>
                     <button
                       onClick={() => navigate('/courses/all')}
-                      className="bg-white text-black px-6 py-2.5 rounded-full text-xs font-extrabold cursor-pointer hover:bg-slate-200"
+                      className="bg-teal-500 text-slate-950 px-6 py-2.5 rounded-full text-xs font-extrabold cursor-pointer hover:bg-teal-400 shadow-lg shadow-teal-500/20"
                     >
                       Explore Courses
                     </button>
                   </div>
                 )}
 
-                {/* 🎴 Course Rows List (Matching Dribbble Row Style) */}
+                {/* 🎴 Course Rows List */}
                 {!loading && !error && filteredPurchases.length > 0 && (
                   <div className="space-y-3">
                     {filteredPurchases.map((purchase) => {
@@ -434,11 +437,11 @@ export default function StudentDashboard() {
                       return (
                         <div
                           key={purchase.id}
-                          className="group bg-[#202024]/90 border border-white/5 hover:border-white/20 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300 hover:bg-[#28282c]"
+                          className="group bg-[#0b1329]/70 border border-teal-500/15 hover:border-teal-400/40 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300 hover:bg-[#111c38]"
                         >
                           {/* Thumbnail + Title + Faculty */}
                           <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-20 h-16 rounded-xl bg-black border border-white/10 overflow-hidden shrink-0">
+                            <div className="w-20 h-16 rounded-xl bg-slate-950 border border-teal-500/20 overflow-hidden shrink-0">
                               <img
                                 src={poster}
                                 alt={courseDetails.title || courseDetails.subject}
@@ -449,11 +452,11 @@ export default function StudentDashboard() {
 
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-white/10 text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                                <span className="bg-teal-500/15 border border-teal-500/25 text-teal-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
                                   {cleanTag}
                                 </span>
                                 {isPending ? (
-                                  <span className="text-amber-400 text-[10px] font-bold">● Pending</span>
+                                  <span className="text-amber-300 text-[10px] font-bold">● Pending</span>
                                 ) : (
                                   <span className="text-emerald-400 text-[10px] font-bold">● Active</span>
                                 )}
@@ -472,14 +475,14 @@ export default function StudentDashboard() {
                           {/* Middle Specs & Price */}
                           <div className="flex flex-wrap items-center gap-4 text-xs">
                             {courseDetails.mode && (
-                              <span className="text-slate-400 flex items-center gap-1.5 font-medium">
-                                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                              <span className="text-slate-300 flex items-center gap-1.5 font-medium">
+                                <span className="w-2 h-2 rounded-full bg-teal-400" />
                                 Mode: {courseDetails.mode}
                               </span>
                             )}
                             {(courseDetails.validity || courseDetails.attempt) && (
-                              <span className="text-slate-400 flex items-center gap-1.5 font-medium">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                              <span className="text-slate-300 flex items-center gap-1.5 font-medium">
+                                <span className="w-2 h-2 rounded-full bg-cyan-400" />
                                 Term: {courseDetails.validity || courseDetails.attempt}
                               </span>
                             )}
@@ -488,19 +491,19 @@ export default function StudentDashboard() {
                             </span>
                           </div>
 
-                          {/* Right Sparkline & Actions */}
-                          <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
+                          {/* Right Actions */}
+                          <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 border-teal-500/15 pt-3 md:pt-0">
                             <button
                               onClick={() => setSelectedInvoice(purchase)}
-                              className="bg-white/5 hover:bg-white/15 text-slate-200 border border-white/10 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                              className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/25 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                             >
-                              <FaFileInvoiceDollar className="text-amber-400" />
+                              <FaFileInvoiceDollar className="text-teal-400" />
                               <span>Invoice</span>
                             </button>
 
                             <button
                               onClick={() => setSelectedOrderDetail(purchase)}
-                              className="bg-white text-black hover:bg-slate-200 px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer"
+                              className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-lg shadow-teal-500/20"
                             >
                               Details
                             </button>
@@ -516,8 +519,8 @@ export default function StudentDashboard() {
             ) : (
 
               /* 🛒 CART CONTENT */
-              <div className="bg-[#26262a]/90 backdrop-blur-2xl border border-white/10 rounded-[36px] p-6 sm:p-8 shadow-2xl space-y-6">
-                <h3 className="text-xl font-extrabold text-white font-serif">Shopping Cart</h3>
+              <div className="bg-[#111c38]/80 backdrop-blur-2xl border border-teal-500/20 rounded-[36px] p-6 sm:p-8 shadow-2xl space-y-6">
+                <h3 className="text-xl font-extrabold text-white">Shopping Cart</h3>
 
                 {cartItems.length === 0 ? (
                   <div className="py-16 text-center text-slate-400 text-xs">
@@ -526,7 +529,7 @@ export default function StudentDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => (
-                      <div key={item.uniqueId} className="bg-[#202024] p-4 rounded-2xl border border-white/10 flex items-center justify-between gap-4">
+                      <div key={item.uniqueId} className="bg-[#0b1329]/80 p-4 rounded-2xl border border-teal-500/15 flex items-center justify-between gap-4">
                         <div>
                           <h4 className="font-bold text-white text-sm">{item.title}</h4>
                           <p className="text-xs text-slate-400">Faculty: {item.facultyName}</p>
@@ -540,14 +543,14 @@ export default function StudentDashboard() {
                       </div>
                     ))}
 
-                    <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                    <div className="pt-4 border-t border-teal-500/15 flex justify-between items-center">
                       <div>
                         <p className="text-xs text-slate-400">Total Price</p>
-                        <p className="text-2xl font-black text-amber-400 font-mono">₹{cartTotal.toLocaleString()}</p>
+                        <p className="text-2xl font-black text-teal-300 font-mono">₹{cartTotal.toLocaleString()}</p>
                       </div>
                       <button
                         onClick={() => setShowCheckoutModal(true)}
-                        className="bg-white text-black hover:bg-slate-200 px-6 py-3 rounded-full font-extrabold text-xs cursor-pointer shadow-xl"
+                        className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-6 py-3 rounded-full font-black text-xs cursor-pointer shadow-xl shadow-teal-500/20"
                       >
                         Proceed to Checkout
                       </button>
@@ -564,11 +567,11 @@ export default function StudentDashboard() {
 
       {/* 📄 TAX INVOICE MODAL */}
       {selectedInvoice && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#242428] text-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-white/15 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111c38] text-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-teal-500/25 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-teal-500/20 mb-6">
               <div>
-                <h3 className="text-xl font-extrabold text-white font-serif">Tax Invoice</h3>
+                <h3 className="text-xl font-extrabold text-white">Tax Invoice</h3>
                 <p className="text-xs text-slate-400">AcademyWale LMS Official Receipt</p>
               </div>
               <button
@@ -580,7 +583,7 @@ export default function StudentDashboard() {
             </div>
 
             <div className="space-y-4 text-xs text-slate-300">
-              <div className="flex justify-between border-b border-white/10 pb-3">
+              <div className="flex justify-between border-b border-teal-500/20 pb-3">
                 <div>
                   <p className="font-bold text-white text-sm">Billed To:</p>
                   <p className="font-semibold text-slate-200">{user.name}</p>
@@ -589,7 +592,7 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-white">Invoice Ref:</p>
-                  <p className="font-mono text-amber-400 font-bold">{selectedInvoice.transactionId || selectedInvoice.id}</p>
+                  <p className="font-mono text-teal-300 font-bold">{selectedInvoice.transactionId || selectedInvoice.id}</p>
                   <p className="mt-1 font-bold text-white">Date:</p>
                   <p>{formatDate(selectedInvoice.purchaseDate || selectedInvoice.purchase_date)}</p>
                 </div>
@@ -597,14 +600,14 @@ export default function StudentDashboard() {
 
               <div className="flex justify-between items-center pt-2 font-bold text-sm text-white">
                 <span>Total Amount Paid:</span>
-                <span className="text-amber-400 text-xl font-mono font-black">₹{Number(selectedInvoice.amount || 0).toLocaleString()}</span>
+                <span className="text-teal-300 text-xl font-mono font-black">₹{Number(selectedInvoice.amount || 0).toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
+            <div className="mt-6 pt-4 border-t border-teal-500/20 flex justify-end">
               <button
                 onClick={() => window.print()}
-                className="bg-white text-black px-6 py-2.5 rounded-full text-xs font-extrabold shadow hover:bg-slate-200 cursor-pointer"
+                className="bg-teal-500 text-slate-950 hover:bg-teal-400 px-6 py-2.5 rounded-full text-xs font-black shadow cursor-pointer"
               >
                 Print / Save PDF
               </button>
@@ -615,9 +618,9 @@ export default function StudentDashboard() {
 
       {/* 🔍 ORDER DETAILS MODAL */}
       {selectedOrderDetail && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#242428] text-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-white/15 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111c38] text-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl relative border border-teal-500/25 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-teal-500/20 mb-5">
               <div>
                 <h3 className="text-lg font-bold text-white">
                   Order #{selectedOrderDetail.transactionId || String(selectedOrderDetail.id).slice(0, 12)}
@@ -639,8 +642,8 @@ export default function StudentDashboard() {
               const courseDetails = selectedOrderDetail.courseDetails || selectedOrderDetail.course_details || {};
               return (
                 <div className="space-y-4 text-xs text-slate-300">
-                  <div className="bg-[#1c1c20] p-4 rounded-2xl border border-white/10 space-y-2">
-                    <h4 className="text-base font-extrabold text-amber-300 leading-snug">
+                  <div className="bg-[#0b1329]/80 p-4 rounded-2xl border border-teal-500/20 space-y-2">
+                    <h4 className="text-base font-extrabold text-teal-300 leading-snug">
                       {courseDetails.title || courseDetails.subject || 'Course Title'}
                     </h4>
                     <p>Faculty: <strong className="text-white">{courseDetails.facultyName || 'AcademyWale Faculty'}</strong></p>
@@ -650,7 +653,7 @@ export default function StudentDashboard() {
 
                   <div className="flex justify-between items-center pt-2 font-bold text-sm text-white">
                     <span>Amount Paid:</span>
-                    <span className="text-amber-400 text-lg font-mono font-black">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
+                    <span className="text-teal-300 text-lg font-mono font-black">₹{Number(selectedOrderDetail.amount || 0).toLocaleString()}</span>
                   </div>
                 </div>
               );
