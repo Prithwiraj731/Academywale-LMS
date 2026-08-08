@@ -43,12 +43,11 @@ export default function Login() {
 
   const handleLogin = async (form) => {
     setError("");
-    setSuccessMessage(""); // Clear success message when attempting login
+    setSuccessMessage("");
     try {
       const result = await login(form.email, form.password);
       
       if (result.success) {
-        // Check if user is admin
         if (result.user.role === 'admin') {
           navigate('/admin-dashboard', { replace: true });
         } else {
@@ -67,7 +66,7 @@ export default function Login() {
             }
           });
         } else {
-          setError(result.message || "Login failed. Please try again.");
+          setError(result.message || "Login failed. Please check your credentials.");
         }
       }
     } catch (error) {
@@ -77,12 +76,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-900 py-12 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 py-12 px-4 relative overflow-hidden">
+      {/* Glow Effects */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#20b2aa]/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Card Container */}
-      <div className="w-full max-w-md bg-neutral-950 border border-neutral-800 p-6 md:p-8 rounded-2xl shadow-2xl">
+      <div className="w-full max-w-md bg-neutral-900/90 border border-neutral-800 p-6 md:p-8 rounded-3xl shadow-2xl backdrop-blur-xl relative z-10">
+        
         {/* Brand header */}
         <div className="flex flex-col items-center mb-6">
-          <Link to="/" className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 hover:opacity-90 transition-opacity duration-200">
+          <Link to="/" className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2 hover:opacity-95 transition-opacity">
             <span className="text-[#20b2aa]">Academy</span>
             <span className="text-white">Wale</span>
           </Link>
@@ -91,25 +94,22 @@ export default function Login() {
         <LoginFormDemo onLogin={handleLogin} />
 
         {successMessage && (
-          <div className="mt-4 p-3 bg-emerald-950/40 border border-emerald-900 text-emerald-400 text-sm rounded-lg text-center">
+          <div className="mt-4 p-3.5 bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs font-semibold rounded-xl text-center">
             {successMessage}
           </div>
         )}
         {error && (
-          <div className="mt-4 p-3 bg-red-950/40 border border-red-900 text-red-400 text-sm rounded-lg text-center">
+          <div className="mt-4 p-3.5 bg-red-950/70 border border-red-800 text-red-300 text-xs font-semibold rounded-xl text-center">
             {error}
           </div>
         )}
 
-        <div className="mt-6 text-center text-sm text-neutral-400 border-t border-neutral-800 pt-4">
+        <div className="mt-6 text-center text-xs font-medium text-neutral-400 border-t border-neutral-800 pt-4 flex items-center justify-between">
           <Link to="/forgot-password" className="text-[#20b2aa] font-semibold hover:underline">
             Forgot password?
           </Link>
-        </div>
-
-        <div className="mt-3 text-center text-sm text-neutral-400">
-          New to AcademyWale?{" "}
-          <Link to="/register" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-semibold hover:underline">
+          <span className="text-neutral-500">•</span>
+          <Link to="/register" state={{ from: getRedirectPath() }} className="text-[#20b2aa] font-bold hover:underline">
             Create Account
           </Link>
         </div>

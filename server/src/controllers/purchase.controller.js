@@ -778,18 +778,20 @@ exports.cartPurchase = async (req, res) => {
     }
 
     if (coupon) {
-      recordCouponUsage(coupon, user.id, user.email);
+      recordCouponUsage(coupon, user.id, userDetails?.email || user.email);
     }
 
     // Send purchase invoice email to student & admin notifications
     try {
       const studentPhone = userDetails?.phone || userDetails?.phoneNumber || user?.phone || user?.mobile || '';
+      const targetEmail = userDetails?.email || user?.email;
+      const targetName = userDetails?.fullName || userDetails?.name || user?.name || 'Student';
       const invoiceResult = await sendPurchaseInvoiceEmail({
-        userEmail: userDetails?.email || user?.email,
-        userName: userDetails?.name || userDetails?.fullName || user?.name || 'Student',
+        userEmail: targetEmail,
+        userName: targetName,
         purchases: createdPurchases,
         transactionId,
-        amount: totalAmount,
+        amount,
         paymentMethod: 'UPI',
         couponCode: coupon || '',
         discountPercent: couponDiscount,

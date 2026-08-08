@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { supabaseAdmin } = require('../config/supabase.config');
 const { sendOTPEmail, sendPasswordResetOTPEmail } = require('../utils/email.utils');
+const { sendSMSOTP } = require('../utils/sms.utils');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
@@ -47,7 +48,7 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-// @desc    Register user (generates & sends OTP)
+// @desc    Register user (generates & sends Phone OTP)
 // @route   POST /api/auth/signup
 // @access  Public
 exports.signup = async (req, res) => {
@@ -55,120 +56,135 @@ exports.signup = async (req, res) => {
     console.log('📥 Signup request received');
     const { name, email, password, mobile, role } = req.body;
 
-    // Validate required fields
-    if (!name || !email || !password) {
+    // Validate required fields (Name, Email, Password, and Phone Number)
+    if (!name || !email || !password || !mobile) {
       return res.status(400).json({
         status: 'error',
-        message: 'Name, email, and password are required'
+        message: 'Name, email address, password, and phone number are required'
       });
     }
 
-    // Check if user already exists
-    console.log('🔍 Checking if user exists with email:', email);
-    const { data: existingUser, error: checkError } = await supabaseAdmin
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanMobile = String(mobile).replace(/\D/g, '').trim();
+
+    if (cleanMobile.length < 10) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please enter a valid 10-digit phone number'
+      });
+    }
+
+    // Check if user already exists by email
+    console.log('🔍 Checking if user exists with email:', cleanEmail);
+    const { data: existingUserByEmail, error: checkEmailError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('email', email.toLowerCase())
+      .eq('email', cleanEmail)
       .maybeSingle();
 
-    if (checkError) {
-      throw checkError;
+    if (checkEmailError) throw checkEmailError;
+
+    if (existingUserByEmail && existingUserByEmail.is_active) {
+      console.log('❌ User already exists with email:', cleanEmail);
+      return res.status(400).json({
+        status: 'error',
+        message: 'User with this email address already exists'
+      });
+    }
+
+    // Check if user already exists by mobile
+    const { data: existingUserByMobile, error: checkMobileError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('mobile', cleanMobile)
+      .maybeSingle();
+
+    if (checkMobileError) throw checkMobileError;
+
+    if (existingUserByMobile && existingUserByMobile.is_active) {
+      console.log('❌ User already exists with mobile:', cleanMobile);
+      return res.status(400).json({
+        status: 'error',
+        message: 'User with this phone number already exists'
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    if (existingUser) {
-      if (existingUser.is_active) {
-        console.log('❌ User already exists with email:', email);
-        return res.status(400).json({
-          status: 'error',
-          message: 'User with this email already exists'
-        });
-      } else if (existingUser.otp_code) {
-        // Pending verification, update record with new details and OTP
-        console.log('👤 Updating pending user with new registration details...');
-        const { error: updateError } = await supabaseAdmin
-          .from('users')
-          .update({
-            name,
-            password: hashedPassword,
-            mobile: mobile || null,
-            role: role || 'user',
-            otp_code: otp,
-            otp_expires_at: otpExpires
-          })
-          .eq('id', existingUser.id);
+    let targetUserId = null;
 
-        if (updateError) throw updateError;
-        
-        // Send OTP email
-        await sendOTPEmail(email.toLowerCase(), name, otp);
-
-        return res.status(200).json({
-          status: 'success',
-          message: 'Verification code resent to your email.',
-          email: email.toLowerCase()
-        });
-      } else {
-        // Deactivated by admin
-        return res.status(401).json({
-          status: 'error',
-          message: 'Your account has been deactivated. Please contact support.'
-        });
-      }
-    }
-
-    // Check unique mobile if provided
-    if (mobile) {
-      const { data: existingMobile, error: mobileCheckError } = await supabaseAdmin
+    if (existingUserByEmail && !existingUserByEmail.is_active) {
+      // Pending user exists by email, update details
+      console.log('👤 Updating pending user with new registration details...');
+      const { error: updateError } = await supabaseAdmin
         .from('users')
-        .select('id')
-        .eq('mobile', mobile)
-        .maybeSingle();
+        .update({
+          name: name.trim(),
+          password: hashedPassword,
+          mobile: cleanMobile,
+          phone: cleanMobile,
+          role: role || 'user',
+          otp_code: otp,
+          otp_expires_at: otpExpires
+        })
+        .eq('id', existingUserByEmail.id);
 
-      if (mobileCheckError) throw mobileCheckError;
-      if (existingMobile) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'User with this mobile number already exists'
-        });
-      }
+      if (updateError) throw updateError;
+      targetUserId = existingUserByEmail.id;
+    } else if (existingUserByMobile && !existingUserByMobile.is_active) {
+      // Pending user exists by mobile, update details
+      console.log('👤 Updating pending user with new registration details...');
+      const { error: updateError } = await supabaseAdmin
+        .from('users')
+        .update({
+          name: name.trim(),
+          email: cleanEmail,
+          password: hashedPassword,
+          phone: cleanMobile,
+          role: role || 'user',
+          otp_code: otp,
+          otp_expires_at: otpExpires
+        })
+        .eq('id', existingUserByMobile.id);
+
+      if (updateError) throw updateError;
+      targetUserId = existingUserByMobile.id;
+    } else {
+      // Create new user (inactive until verified via Phone OTP)
+      console.log('👤 Creating new user record pending phone verification...');
+      const { data: newUser, error: insertError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          name: name.trim(),
+          email: cleanEmail,
+          password: hashedPassword,
+          mobile: cleanMobile,
+          phone: cleanMobile,
+          role: role || 'user',
+          is_active: false,
+          otp_code: otp,
+          otp_expires_at: otpExpires,
+          created_at: new Date(),
+          last_login_at: new Date()
+        })
+        .select('*')
+        .single();
+
+      if (insertError) throw insertError;
+      targetUserId = newUser.id;
     }
 
-    console.log('👤 Creating new inactive user and generating verification code...');
-    
-    // Create new user (inactive until verified via OTP)
-    const { data: newUser, error: insertError } = await supabaseAdmin
-      .from('users')
-      .insert({
-        name,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        mobile: mobile || null,
-        role: role || 'user',
-        is_active: false,
-        otp_code: otp,
-        otp_expires_at: otpExpires,
-        created_at: new Date(),
-        last_login_at: new Date()
-      })
-      .select('*')
-      .single();
+    // Send OTP via SMS to the provided phone number
+    await sendSMSOTP(cleanMobile, otp);
 
-    if (insertError) {
-      throw insertError;
-    }
-
-    // Send OTP email
-    await sendOTPEmail(email.toLowerCase(), name, otp);
-
-    console.log('✅ User registered successfully. Verification code sent to:', newUser.email);
+    console.log(`✅ Verification OTP sent to phone number: +91 ${cleanMobile}`);
     res.status(201).json({
       status: 'success',
-      message: 'Verification code sent to your email.',
-      email: newUser.email
+      message: `Verification code sent to your phone number +91 ${cleanMobile}`,
+      email: cleanEmail,
+      mobile: cleanMobile
     });
   } catch (error) {
     console.error('❌ Signup error:', error);
@@ -179,33 +195,50 @@ exports.signup = async (req, res) => {
   }
 };
 
-// @desc    Verify OTP for sign-up completion
+// @desc    Verify OTP for sign-up completion (Phone OTP)
 // @route   POST /api/auth/verify-otp
 // @access  Public
 exports.verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, mobile, otp } = req.body;
+    const identifier = mobile || email;
 
-    if (!email || !otp) {
+    if (!identifier || !otp) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email and verification code are required'
+        message: 'Phone number/email and verification code are required'
       });
     }
 
-    console.log(`🔐 Verification request received for ${email} with code ${otp}`);
+    const cleanMobile = mobile ? String(mobile).replace(/\D/g, '').trim() : '';
+    const cleanEmail = email ? String(email).toLowerCase().trim() : '';
 
-    // Fetch user
-    const { data: user, error: fetchError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
+    console.log(`🔐 Verification request received for ${cleanMobile || cleanEmail} with code ${otp}`);
 
-    if (fetchError || !user) {
+    // Fetch user by mobile or email
+    let user = null;
+    if (cleanMobile) {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('mobile', cleanMobile)
+        .maybeSingle();
+      if (!error && data) user = data;
+    }
+
+    if (!user && cleanEmail) {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+      if (!error && data) user = data;
+    }
+
+    if (!user) {
       return res.status(404).json({
         status: 'error',
-        message: 'User not found'
+        message: 'User account not found'
       });
     }
 
@@ -216,7 +249,7 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
-    if (!user.otp_code || user.otp_code !== otp) {
+    if (!user.otp_code || user.otp_code !== String(otp).trim()) {
       return res.status(400).json({
         status: 'error',
         message: 'Incorrect verification code'
@@ -232,7 +265,7 @@ exports.verifyOTP = async (req, res) => {
     }
 
     // Activate user and clear OTP fields
-    console.log(`✅ Code matched. Activating account for ${email}...`);
+    console.log(`✅ Phone OTP matched. Activating account for ${user.email} (${user.mobile})...`);
     const { data: updatedUser, error: updateError } = await supabaseAdmin
       .from('users')
       .update({
@@ -258,33 +291,40 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-// @desc    Resend OTP to email
+// @desc    Resend Phone OTP
 // @route   POST /api/auth/resend-otp
 // @access  Public
 exports.resendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, mobile } = req.body;
+    const identifier = mobile || email;
 
-    if (!email) {
+    if (!identifier) {
       return res.status(400).json({
         status: 'error',
-        message: 'Email is required'
+        message: 'Phone number or email is required'
       });
     }
 
-    console.log(`🔄 OTP Resend requested for ${email}`);
+    const cleanMobile = mobile ? String(mobile).replace(/\D/g, '').trim() : '';
+    const cleanEmail = email ? String(email).toLowerCase().trim() : '';
 
-    // Fetch user
-    const { data: user, error: fetchError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
+    console.log(`🔄 Phone OTP Resend requested for ${cleanMobile || cleanEmail}`);
 
-    if (fetchError || !user) {
+    let user = null;
+    if (cleanMobile) {
+      const { data } = await supabaseAdmin.from('users').select('*').eq('mobile', cleanMobile).maybeSingle();
+      user = data;
+    }
+    if (!user && cleanEmail) {
+      const { data } = await supabaseAdmin.from('users').select('*').eq('email', cleanEmail).maybeSingle();
+      user = data;
+    }
+
+    if (!user) {
       return res.status(404).json({
         status: 'error',
-        message: 'User not found'
+        message: 'User account not found'
       });
     }
 
@@ -309,24 +349,21 @@ exports.resendOTP = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    // Send OTP email
-    const emailResult = await sendOTPEmail(email.toLowerCase(), user.name, otp);
-    if (!emailResult.success) {
-      return res.status(500).json({
-        status: 'error',
-        message: emailResult.error || 'Failed to send verification code. Please try again.'
-      });
-    }
+    // Send OTP via SMS
+    const targetMobile = user.mobile || cleanMobile;
+    await sendSMSOTP(targetMobile, otp);
 
     res.status(200).json({
       status: 'success',
-      message: 'New verification code sent to your email.'
+      message: `A new verification code has been sent to your phone number +91 ${targetMobile}`,
+      mobile: targetMobile,
+      email: user.email
     });
   } catch (error) {
     console.error('❌ Resend OTP error:', error);
     res.status(500).json({
       status: 'error',
-      message: error.message || 'Error resending verification code'
+      message: error.message || 'Failed to resend verification code'
     });
   }
 };

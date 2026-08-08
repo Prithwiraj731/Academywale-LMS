@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Signup response data:', data);
 
       if (response.ok) {
-        return { success: true, message: data.message, email: data.email };
+        return { success: true, message: data.message, email: data.email, mobile: data.mobile };
       } else {
         return { success: false, message: data.message };
       }
@@ -130,14 +130,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (email, otp) => {
+  const verifyOTP = async (emailOrMobile, otp, extraParams = {}) => {
     try {
+      const payload = {
+        otp,
+        email: typeof emailOrMobile === 'string' && emailOrMobile.includes('@') ? emailOrMobile : extraParams.email,
+        mobile: typeof emailOrMobile === 'string' && !emailOrMobile.includes('@') ? emailOrMobile : extraParams.mobile
+      };
+
       const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -159,14 +165,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const resendOTP = async (email) => {
+  const resendOTP = async (emailOrMobile, extraParams = {}) => {
     try {
+      const payload = {
+        email: typeof emailOrMobile === 'string' && emailOrMobile.includes('@') ? emailOrMobile : extraParams.email,
+        mobile: typeof emailOrMobile === 'string' && !emailOrMobile.includes('@') ? emailOrMobile : extraParams.mobile
+      };
+
       const response = await fetch(`${API_URL}/api/auth/resend-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();

@@ -37,5 +37,29 @@
     "message": null,
     "isVisible": true,
     "updatedAt": "2026-07-27T17:09:27.589Z"
+  },
+  "ACAD21": {
+    "exactDiscountPercent": 21,
+    "courseIds": [
+      "f9288ec9-c0e5-4b4e-8c9e-d1a7ef0c380e",
+      "e30cac61-5404-4867-ae17-81e19c6dd1d3"
+    ],
+    "courseId": "f9288ec9-c0e5-4b4e-8c9e-d1a7ef0c380e",
+    "message": null,
+    "isVisible": true,
+    "updatedAt": "2026-08-06T06:37:44.297Z"
+  },
+  "ACAD20": {
+    "exactDiscountPercent": 20,
+    "courseIds": [
+      "3ef11ea5-5c7a-45cd-bfbe-fefa15473eb7",
+      "cadc7e55-882b-45cc-b620-163d1ccab1a8",
+      "3d08944e-321c-4402-908e-5c83bec1161a",
+      "4b0535f6-70c4-4f8e-a156-4c81188399e1"
+    ],
+    "courseId": "3ef11ea5-5c7a-45cd-bfbe-fefa15473eb7",
+    "message": null,
+    "isVisible": true,
+    "updatedAt": "2026-08-06T09:48:26.614Z"
   }
 }

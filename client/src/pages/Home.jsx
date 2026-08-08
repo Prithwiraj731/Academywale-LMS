@@ -580,6 +580,77 @@ export default function Home() {
       {/* <Partners /> */}
       <Numbers />
       
+      {/* Featured Video Highlights Section (Embedded YouTube Shorts) */}
+      <section className="py-14 sm:py-20 px-4 bg-slate-950 text-white border-y border-neutral-850 relative overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#20b2aa]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-10 sm:mb-14">
+            <div className="group inline-flex flex-col items-center">
+              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3">
+                🎬 Featured Highlights
+              </span>
+              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-sm font-heading">
+                Watch Us in <span className="text-[#20b2aa]">Action</span>
+              </h2>
+              <div className="h-1 w-16 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
+            </div>
+            <p className="text-neutral-400 mt-3 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
+              Watch quick student insights, faculty guidance, and course highlights directly below.
+            </p>
+          </div>
+
+          {/* Video Grid Container - Fully Responsive 2-Col for Desktop / 1-Col for Mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 max-w-4xl mx-auto items-center">
+            
+            {/* Video Card 1 */}
+            <div className="flex flex-col items-center bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 p-3.5 sm:p-5 rounded-3xl shadow-2xl hover:border-[#20b2aa]/40 transition-all duration-300 group">
+              <div className="relative w-full aspect-[9/16] max-w-[320px] rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
+                <iframe
+                  src="https://www.youtube.com/embed/kAmN62HupSk"
+                  title="AcademyWale Highlight Video 1"
+                  className="w-full h-full object-cover border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+              <div className="mt-4 text-center px-2 pb-1">
+                <h4 className="text-base font-bold text-white group-hover:text-[#20b2aa] transition-colors">
+                  AcademyWale Guidance & Insights
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1 font-medium">
+                  CA & CMA Student Success Shorts
+                </p>
+              </div>
+            </div>
+
+            {/* Video Card 2 */}
+            <div className="flex flex-col items-center bg-neutral-900/80 backdrop-blur-xl border border-neutral-800 p-3.5 sm:p-5 rounded-3xl shadow-2xl hover:border-[#20b2aa]/40 transition-all duration-300 group">
+              <div className="relative w-full aspect-[9/16] max-w-[320px] rounded-2xl overflow-hidden shadow-xl bg-black border border-neutral-800">
+                <iframe
+                  src="https://www.youtube.com/embed/5H8P_TzpOYs"
+                  title="AcademyWale Highlight Video 2"
+                  className="w-full h-full object-cover border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+              <div className="mt-4 text-center px-2 pb-1">
+                <h4 className="text-base font-bold text-white group-hover:text-[#20b2aa] transition-colors">
+                  Course & Faculty Overview
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1 font-medium">
+                  Quality Learning at Your Fingertips
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+      
       {/* Recognized & Accredited Institutions Section (3D Stacked Carousel) */}
       <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50/50 to-white relative overflow-hidden">
         {/* Background Decorative Elements */}
