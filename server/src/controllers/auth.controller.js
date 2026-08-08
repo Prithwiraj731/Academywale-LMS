@@ -142,7 +142,7 @@ exports.signup = async (req, res) => {
           name: name.trim(),
           email: cleanEmail,
           password: hashedPassword,
-          phone: cleanMobile,
+          mobile: cleanMobile,
           role: role || 'user',
           otp_code: otp,
           otp_expires_at: otpExpires
@@ -161,7 +161,6 @@ exports.signup = async (req, res) => {
           email: cleanEmail,
           password: hashedPassword,
           mobile: cleanMobile,
-          phone: cleanMobile,
           role: role || 'user',
           is_active: false,
           otp_code: otp,

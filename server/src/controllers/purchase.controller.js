@@ -869,8 +869,8 @@ exports.cartPurchase = async (req, res) => {
     const studentPhone = userDetails?.phone || userDetails?.phoneNumber || userDetails?.phone_number || user?.phone || user?.mobile || '';
 
     // Automatically sync phone to user profile if missing
-    if (user && studentPhone && (!user.mobile || !user.phone)) {
-      await supabaseAdmin.from('users').update({ mobile: studentPhone, phone: studentPhone }).eq('id', user.id);
+    if (user && studentPhone && !user.mobile) {
+      await supabaseAdmin.from('users').update({ mobile: studentPhone }).eq('id', user.id);
     }
 
     const createdPurchases = [];
