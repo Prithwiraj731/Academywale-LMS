@@ -12,6 +12,7 @@ const require = createRequire(import.meta.url)
 const facultyRoutes = require('../../../server/src/routes/faculty.routes')
 const courseRoutes = require('../../../server/src/routes/course.routes')
 const testimonialRoutes = require('../../../server/src/routes/testimonial.routes')
+const manualEnrollmentRoutes = require('../../../server/src/routes/manualEnrollment.routes')
 
 const app = express()
 app.use(cors({ origin: true, credentials: true }))
@@ -22,6 +23,7 @@ app.use(cookieParser())
 app.use(facultyRoutes)
 app.use(courseRoutes)
 app.use('/api/testimonials', testimonialRoutes) // read-only
+app.use(manualEnrollmentRoutes)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'admin-server' }))
 

@@ -268,6 +268,131 @@ const sendEnrollmentEmail = async (userEmail, userName, courseName) => {
   }
 };
 
+// Send manual/offline enrollment confirmation with account access guidance
+const sendManualEnrollmentEmail = async (options) => {
+  try {
+    const transporter = createTransporter();
+
+    const userEmail = options.userEmail || options.email;
+    const userName = options.userName || options.name || 'Student';
+    const details = options.courseDetails || {};
+    const transactionId = options.transactionId || 'N/A';
+    const amount = Number(options.amount || 0);
+    const paymentMethod = options.paymentMethod || 'Offline payment';
+    const userDetails = options.userDetails || {};
+    const manual = userDetails.manualEnrollment || {};
+    const accountCreated = Boolean(options.accountCreated);
+    const dashboardUrl = 'https://academywale.com/student-dashboard';
+    const forgotPasswordUrl = 'https://academywale.com/forgot-password';
+
+    const courseRows = [
+      ['Course', details.title || details.subject || 'Course Package'],
+      ['Subject', details.subject],
+      ['Faculty', details.facultyName],
+      ['Institute', details.institute],
+      ['Mode', details.mode],
+      ['Validity / Attempt', details.validity || details.attempt],
+      ['Lectures', details.noOfLecture],
+      ['Books / Material', details.books],
+      ['Language', details.videoLanguage],
+      ['Runs On', details.videoRunOn],
+      ['Doubt Solving', details.doubtSolving],
+      ['Support', [details.supportMail, details.supportCall].filter(Boolean).join(' / ')]
+    ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '');
+
+    const rowsHtml = courseRows.map(([label, value]) => `
+      <tr>
+        <td style="padding: 9px 12px; color: #64748b; font-size: 13px; border-bottom: 1px solid #e2e8f0; width: 34%;"><strong>${label}</strong></td>
+        <td style="padding: 9px 12px; color: #0f172a; font-size: 13px; border-bottom: 1px solid #e2e8f0;">${value}</td>
+      </tr>
+    `).join('');
+
+    const accountNote = accountCreated
+      ? `
+        <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px; margin-top: 18px;">
+          <p style="margin: 0; color: #9a3412; font-size: 13px; line-height: 1.6;">
+            An AcademyWale account has been created for this email. For privacy, no password is sent by email.
+            Open the password setup link below, enter this email address, and set your password using the OTP.
+          </p>
+        </div>
+      `
+      : `
+        <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px; margin-top: 18px;">
+          <p style="margin: 0; color: #115e59; font-size: 13px; line-height: 1.6;">
+            You can log in with your existing AcademyWale account. If you do not remember your password, use the password setup link below.
+          </p>
+        </div>
+      `;
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; background: #f8fafc; padding: 28px 14px; color: #334155;">
+        <div style="max-width: 650px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
+          <div style="background: #0f766e; color: #ffffff; padding: 24px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">AcademyWale</h1>
+            <p style="margin: 6px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .5px;">Course Enrollment Confirmed</p>
+          </div>
+          <div style="padding: 24px;">
+            <p style="font-size: 14px; line-height: 1.6; margin-top: 0;">Dear <strong>${userName}</strong>,</p>
+            <p style="font-size: 14px; line-height: 1.6;">
+              Your offline/admin-assisted payment has been recorded and your course enrollment is now active.
+            </p>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin: 18px 0;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Transaction / Reference</strong></td>
+                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right; font-family: monospace;">${transactionId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Payment Method</strong></td>
+                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right;">${paymentMethod}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Amount Paid</strong></td>
+                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right; font-weight: 800;">INR ${amount.toLocaleString('en-IN')}</td>
+                </tr>
+                ${manual.paymentReference ? `
+                <tr>
+                  <td style="padding: 5px 0; color: #64748b; font-size: 13px;"><strong>Admin Reference</strong></td>
+                  <td style="padding: 5px 0; color: #0f172a; font-size: 13px; text-align: right;">${manual.paymentReference}</td>
+                </tr>` : ''}
+              </table>
+            </div>
+
+            <h2 style="font-size: 16px; color: #0f766e; margin: 20px 0 10px;">Course Details</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
+              ${rowsHtml}
+            </table>
+
+            ${accountNote}
+
+            <div style="text-align: center; margin-top: 24px;">
+              <a href="${dashboardUrl}" style="display: inline-block; background: #0f766e; color: #ffffff; padding: 12px 22px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; margin: 4px;">Open Student Dashboard</a>
+              <a href="${forgotPasswordUrl}" style="display: inline-block; background: #334155; color: #ffffff; padding: 12px 22px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; margin: 4px;">Set / Reset Password</a>
+            </div>
+          </div>
+          <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px; text-align: center; font-size: 12px; color: #64748b;">
+            Need help? Contact <a href="mailto:support@academywale.com" style="color: #0f766e;">support@academywale.com</a> or call <strong>+91 9693320108</strong>.
+          </div>
+        </div>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: emailConfig.from,
+      to: Array.from(new Set([userEmail, ...getAdminRecipients()])).filter(Boolean),
+      subject: `Course Enrollment Confirmed - ${details.title || details.subject || 'AcademyWale'}`,
+      html: htmlContent
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('Manual enrollment email sending error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Send purchase invoice email (Professional HTML Receipt)
 const sendPurchaseInvoiceEmail = async (options) => {
   try {
@@ -799,6 +924,7 @@ module.exports = {
   sendContactEmail,
   sendWelcomeEmail,
   sendEnrollmentEmail,
+  sendManualEnrollmentEmail,
   sendPurchaseInvoiceEmail,
   sendOTPEmail,
   sendPasswordResetOTPEmail,

@@ -75,7 +75,7 @@ export default function AdminDashboard() {
   }
 
   // UI state for which panel is active
-  const [activePanel, setActivePanel] = useState('course'); // 'course' or 'faculty' or 'institute'
+  const [activePanel, setActivePanel] = useState('course'); // 'course', 'faculty', 'institute', 'bulk', or 'manualEnrollment'
 
   // Faculty Add Panel State
   const [facultyAdd, setFacultyAdd] = useState({
@@ -292,6 +292,33 @@ export default function AdminDashboard() {
   const [couponSuccess, setCouponSuccess] = useState('');
   const [editingCouponCode, setEditingCouponCode] = useState(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
+  const defaultManualEnrollmentForm = {
+    id: '',
+    studentName: '',
+    studentEmail: '',
+    studentPhone: '',
+    courseId: '',
+    amount: '',
+    paymentMethod: 'offline',
+    paymentStatus: 'completed',
+    paymentReference: '',
+    notes: '',
+    accessExpiry: '',
+    variantMode: '',
+    variantAttempt: '',
+    variantBooks: '',
+    sendEmail: true,
+    resendEmail: false,
+    isActive: true
+  };
+  const [manualEnrollmentForm, setManualEnrollmentForm] = useState(defaultManualEnrollmentForm);
+  const [manualEnrollments, setManualEnrollments] = useState([]);
+  const [manualEnrollmentSearch, setManualEnrollmentSearch] = useState('');
+  const [manualEnrollmentLoading, setManualEnrollmentLoading] = useState(false);
+  const [manualEnrollmentSaving, setManualEnrollmentSaving] = useState(false);
+  const [manualEnrollmentError, setManualEnrollmentError] = useState('');
+  const [manualEnrollmentSuccess, setManualEnrollmentSuccess] = useState('');
+  const [editingManualEnrollmentId, setEditingManualEnrollmentId] = useState(null);
 
   const filteredCoursesForCoupon = availableCourses.filter(c => {
     const title = String(c.title || '').toLowerCase();
@@ -301,6 +328,220 @@ export default function AdminDashboard() {
     const query = courseSearchQuery.toLowerCase();
     return title.includes(query) || subject.includes(query) || category.includes(query) || subcategory.includes(query);
   });
+
+  const filteredCoursesForManualEnrollment = availableCourses.filter(c => {
+    const query = manualEnrollmentSearch.toLowerCase();
+    const title = String(c.title || '').toLowerCase();
+    const subject = String(c.subject || '').toLowerCase();
+    const faculty = String(c.faculty_name || c.facultyName || '').toLowerCase();
+    const category = String(c.category || '').toLowerCase();
+    return title.includes(query) || subject.includes(query) || faculty.includes(query) || category.includes(query);
+  });
+
+  const getCourseId = (course) => course?.id || course?._id || course?.mongo_id || '';
+
+  const getCoursePrice = (course) => {
+    if (!course) return '';
+    const pricing = Array.isArray(course.mode_attempt_pricing || course.modeAttemptPricing)
+      ? (course.mode_attempt_pricing || course.modeAttemptPricing)
+      : [];
+    const firstMode = pricing[0];
+    const firstAttempt = Array.isArray(firstMode?.attempts) ? firstMode.attempts[0] : firstMode;
+    return firstAttempt?.sellingPrice || firstAttempt?.selling_price || course.selling_price || course.sellingPrice || course.cost_price || course.costPrice || '';
+  };
+
+  const handleManualEnrollmentChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === 'courseId') {
+      const selectedCourse = availableCourses.find(c => String(getCourseId(c)) === String(value));
+      setManualEnrollmentForm(prev => ({
+        ...prev,
+        courseId: value,
+        amount: prev.amount || getCoursePrice(selectedCourse),
+        variantMode: '',
+        variantAttempt: '',
+        variantBooks: ''
+      }));
+      return;
+    }
+    setManualEnrollmentForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const resetManualEnrollmentForm = () => {
+    setManualEnrollmentForm(defaultManualEnrollmentForm);
+    setEditingManualEnrollmentId(null);
+    setManualEnrollmentError('');
+    setManualEnrollmentSuccess('');
+  };
+
+  const fetchManualEnrollments = async () => {
+    setManualEnrollmentLoading(true);
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/manual-enrollments?search=${encodeURIComponent(manualEnrollmentSearch)}`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setManualEnrollments(data.enrollments || []);
+      } else {
+        setManualEnrollmentError(data.message || data.error || 'Failed to fetch manual enrollments');
+      }
+    } catch (err) {
+      setManualEnrollmentError(err.message || 'Server error');
+    } finally {
+      setManualEnrollmentLoading(false);
+    }
+  };
+
+  const handleManualEnrollmentSubmit = async (e) => {
+    e.preventDefault();
+    setManualEnrollmentError('');
+    setManualEnrollmentSuccess('');
+
+    if (!manualEnrollmentForm.studentName.trim() || !manualEnrollmentForm.studentEmail.trim() || !manualEnrollmentForm.courseId) {
+      setManualEnrollmentError('Student name, email, and course are required.');
+      return;
+    }
+
+    const amountValue = Number(manualEnrollmentForm.amount);
+    if (!Number.isFinite(amountValue) || amountValue < 0) {
+      setManualEnrollmentError('Enter a valid paid amount.');
+      return;
+    }
+
+    const payload = {
+      studentName: manualEnrollmentForm.studentName.trim(),
+      studentEmail: manualEnrollmentForm.studentEmail.trim(),
+      studentPhone: manualEnrollmentForm.studentPhone.trim(),
+      courseId: manualEnrollmentForm.courseId,
+      amount: amountValue,
+      paymentMethod: manualEnrollmentForm.paymentMethod,
+      paymentStatus: manualEnrollmentForm.paymentStatus,
+      paymentReference: manualEnrollmentForm.paymentReference.trim(),
+      notes: manualEnrollmentForm.notes.trim(),
+      accessExpiry: manualEnrollmentForm.accessExpiry || undefined,
+      selectedVariant: {
+        mode: manualEnrollmentForm.variantMode.trim(),
+        attempt: manualEnrollmentForm.variantAttempt.trim(),
+        validity: manualEnrollmentForm.variantAttempt.trim(),
+        books: manualEnrollmentForm.variantBooks.trim()
+      },
+      sendEmail: manualEnrollmentForm.sendEmail,
+      resendEmail: manualEnrollmentForm.resendEmail,
+      isActive: manualEnrollmentForm.isActive
+    };
+
+    setManualEnrollmentSaving(true);
+    try {
+      const url = editingManualEnrollmentId
+        ? `${API_URL}/api/admin/manual-enrollments/${editingManualEnrollmentId}`
+        : `${API_URL}/api/admin/manual-enrollments`;
+      const res = await fetchWithCredentials(url, {
+        method: editingManualEnrollmentId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setManualEnrollmentSuccess(editingManualEnrollmentId ? 'Manual enrollment updated.' : 'Manual enrollment created and course access activated.');
+        resetManualEnrollmentForm();
+        await fetchManualEnrollments();
+      } else {
+        setManualEnrollmentError(data.message || data.error || 'Failed to save manual enrollment');
+      }
+    } catch (err) {
+      setManualEnrollmentError(err.message || 'Server error');
+    } finally {
+      setManualEnrollmentSaving(false);
+    }
+  };
+
+  const handleEditManualEnrollment = (item) => {
+    setEditingManualEnrollmentId(item.id);
+    setManualEnrollmentForm({
+      ...defaultManualEnrollmentForm,
+      id: item.id,
+      studentName: item.studentName || '',
+      studentEmail: item.studentEmail || '',
+      studentPhone: item.studentPhone || '',
+      courseId: item.courseId || '',
+      amount: item.amount || '',
+      paymentMethod: item.paymentMethod || 'offline',
+      paymentStatus: item.paymentStatus || 'completed',
+      paymentReference: item.paymentReference || item.transactionId || '',
+      notes: item.notes || '',
+      accessExpiry: item.accessExpiry ? String(item.accessExpiry).slice(0, 10) : '',
+      variantMode: item.courseDetails?.mode || '',
+      variantAttempt: item.courseDetails?.attempt || item.courseDetails?.validity || '',
+      variantBooks: item.courseDetails?.books || '',
+      sendEmail: false,
+      resendEmail: false,
+      isActive: item.isActive !== false
+    });
+    setManualEnrollmentError('');
+    setManualEnrollmentSuccess('');
+    document.getElementById('manual-enrollment-title')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDeleteManualEnrollment = async (id, hard = false) => {
+    const confirmText = hard
+      ? 'Permanently delete this enrollment record? This cannot be undone.'
+      : 'Deactivate this enrollment? Student course access will stop, but the audit record remains.';
+    if (!window.confirm(confirmText)) return;
+
+    setManualEnrollmentError('');
+    setManualEnrollmentSuccess('');
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/manual-enrollments/${id}${hard ? '?hard=true' : ''}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setManualEnrollmentSuccess(hard ? 'Enrollment permanently deleted.' : 'Enrollment deactivated.');
+        await fetchManualEnrollments();
+        if (editingManualEnrollmentId === id) resetManualEnrollmentForm();
+      } else {
+        setManualEnrollmentError(data.message || data.error || 'Failed to delete enrollment');
+      }
+    } catch (err) {
+      setManualEnrollmentError(err.message || 'Server error');
+    }
+  };
+
+  const handleResendManualEnrollmentEmail = async (item) => {
+    setManualEnrollmentError('');
+    setManualEnrollmentSuccess('');
+    try {
+      const res = await fetchWithCredentials(`${API_URL}/api/admin/manual-enrollments/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: item.studentName,
+          studentEmail: item.studentEmail,
+          studentPhone: item.studentPhone,
+          courseId: item.courseId,
+          amount: item.amount,
+          paymentMethod: item.paymentMethod,
+          paymentStatus: item.paymentStatus,
+          paymentReference: item.paymentReference || item.transactionId,
+          notes: item.notes,
+          accessExpiry: item.accessExpiry,
+          resendEmail: true,
+          isActive: item.isActive
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setManualEnrollmentSuccess('Enrollment email resent.');
+        await fetchManualEnrollments();
+      } else {
+        setManualEnrollmentError(data.message || data.error || 'Failed to resend email');
+      }
+    } catch (err) {
+      setManualEnrollmentError(err.message || 'Server error');
+    }
+  };
 
   const handleStartEditCoupon = (c) => {
     setEditingCouponCode(c.code);
@@ -476,6 +717,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchCoupons();
     fetchAvailableCourses();
+    fetchManualEnrollments();
   }, []);
 
   const fetchAvailableCourses = async () => {
@@ -2444,34 +2686,44 @@ export default function AdminDashboard() {
       </div>
 
       {/* Animated Button Row */}
-      <div className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-10">
+      <div className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-10">
         <button
           className={`${buttonBase} ${activePanel === 'course' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('course')}
         >
-          <span className="mb-1 text-3xl">📚</span>
-          <span className="text-sm font-semibold">Add Course</span>
+          <span className="mb-1 text-2xl sm:text-3xl">📚</span>
+          <span className="text-xs sm:text-sm font-semibold">Add Course</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'faculty' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('faculty')}
         >
-          <span className="mb-1 text-3xl">👨‍🏫</span>
-          <span className="text-sm font-semibold">Add Faculty</span>
+          <span className="mb-1 text-2xl sm:text-3xl">👨‍🏫</span>
+          <span className="text-xs sm:text-sm font-semibold">Add Faculty</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'institute' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('institute')}
         >
-          <span className="mb-1 text-3xl">🏫</span>
-          <span className="text-sm font-semibold">Add Institute</span>
+          <span className="mb-1 text-2xl sm:text-3xl">🏫</span>
+          <span className="text-xs sm:text-sm font-semibold">Add Institute</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'bulk' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('bulk')}
         >
-          <span className="mb-1 text-3xl">📤</span>
-          <span className="text-sm font-semibold">Bulk Upload</span>
+          <span className="mb-1 text-2xl sm:text-3xl">📤</span>
+          <span className="text-xs sm:text-sm font-semibold">Bulk Upload</span>
+        </button>
+        <button
+          className={`${buttonBase} ${activePanel === 'manualEnrollment' ? buttonActive : buttonInactive}`}
+          onClick={() => {
+            setActivePanel('manualEnrollment');
+            fetchManualEnrollments();
+          }}
+        >
+          <span className="mb-1 text-2xl sm:text-3xl">👤💳</span>
+          <span className="text-xs sm:text-sm font-semibold">Offline Enrollment</span>
         </button>
       </div>
       {/* Panel Switcher */}
@@ -3374,6 +3626,447 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {activePanel === 'manualEnrollment' && (
+        <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-emerald-100 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-emerald-100 pb-4 mb-6 gap-2">
+            <div>
+              <h2 id="manual-enrollment-title" className="text-2xl sm:text-3xl font-bold text-emerald-800 flex items-center gap-2">
+                <span>👤💳</span> Manual & Offline Enrollment
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Record cash/offline payments, auto-activate course access, and email receipt + login details to students.
+              </p>
+            </div>
+            {editingManualEnrollmentId && (
+              <button
+                type="button"
+                onClick={resetManualEnrollmentForm}
+                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-lg transition-all border border-gray-300 cursor-pointer"
+              >
+                + Create New Instead
+              </button>
+            )}
+          </div>
+
+          {/* Form Box */}
+          <form onSubmit={handleManualEnrollmentSubmit} className="space-y-6 bg-slate-50/80 p-5 sm:p-6 rounded-xl border border-slate-200 mb-8">
+            <h3 className="text-lg font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center justify-between">
+              <span>{editingManualEnrollmentId ? `Edit Enrollment (#${editingManualEnrollmentId.slice(0, 8)})` : 'Create Offline Student Enrollment'}</span>
+              {editingManualEnrollmentId && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full">Editing Mode</span>
+              )}
+            </h3>
+
+            {/* Student Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Student Full Name *</label>
+                <input
+                  type="text"
+                  name="studentName"
+                  value={manualEnrollmentForm.studentName}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="e.g. Rahul Sharma"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Student Email Address *</label>
+                <input
+                  type="email"
+                  name="studentEmail"
+                  value={manualEnrollmentForm.studentEmail}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="e.g. rahul@gmail.com"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Mobile / Phone Number</label>
+                <input
+                  type="text"
+                  name="studentPhone"
+                  value={manualEnrollmentForm.studentPhone}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="e.g. 9876543210"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Course & Payment Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Select Course *</label>
+                <select
+                  name="courseId"
+                  value={manualEnrollmentForm.courseId}
+                  onChange={handleManualEnrollmentChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  required
+                >
+                  <option value="">-- Choose Course --</option>
+                  {availableCourses.map(c => {
+                    const cId = getCourseId(c);
+                    return (
+                      <option key={cId} value={cId}>
+                        {c.title || c.subject} ({c.category || 'Course'})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Amount Paid (₹) *</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={manualEnrollmentForm.amount}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="e.g. 4500"
+                  min="0"
+                  step="1"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-800"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Payment Method</label>
+                <select
+                  name="paymentMethod"
+                  value={manualEnrollmentForm.paymentMethod}
+                  onChange={handleManualEnrollmentChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                >
+                  <option value="offline">Cash / Offline</option>
+                  <option value="upi">UPI / GPay / PhonePe</option>
+                  <option value="bank_transfer">Bank Transfer / NEFT / IMPS</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="other">Other Direct Method</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Payment Details & Notes Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Payment Status</label>
+                <select
+                  name="paymentStatus"
+                  value={manualEnrollmentForm.paymentStatus}
+                  onChange={handleManualEnrollmentChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-semibold"
+                >
+                  <option value="completed">Paid (Completed)</option>
+                  <option value="pending">Pending Payment Verification</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Transaction Ref / Receipt No</label>
+                <input
+                  type="text"
+                  name="paymentReference"
+                  value={manualEnrollmentForm.paymentReference}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="e.g. CASH-REC-0812 or UTR123456"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Access Expiry Date (Optional)</label>
+                <input
+                  type="date"
+                  name="accessExpiry"
+                  value={manualEnrollmentForm.accessExpiry}
+                  onChange={handleManualEnrollmentChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Variant Package Selections */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Package / Variant Customization (Optional)</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  name="variantMode"
+                  value={manualEnrollmentForm.variantMode}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="Mode (e.g. Google Drive, Recorded)"
+                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
+                />
+                <input
+                  type="text"
+                  name="variantAttempt"
+                  value={manualEnrollmentForm.variantAttempt}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="Validity / Attempt (e.g. Aug 2026, 12 Months)"
+                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
+                />
+                <input
+                  type="text"
+                  name="variantBooks"
+                  value={manualEnrollmentForm.variantBooks}
+                  onChange={handleManualEnrollmentChange}
+                  placeholder="Study Material (e.g. Hard Copy Books)"
+                  className="rounded border border-gray-300 px-3 py-1.5 text-xs bg-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Admin Notes / Remarks</label>
+              <textarea
+                name="notes"
+                value={manualEnrollmentForm.notes}
+                onChange={handleManualEnrollmentChange}
+                placeholder="Internal notes (e.g. Collected cash at institute desk, verified by Sourav Sir)"
+                rows={2}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+              />
+            </div>
+
+            {/* Email Checkbox and Buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-slate-200">
+              <div className="flex flex-col gap-1">
+                {!editingManualEnrollmentId ? (
+                  <label className="flex items-center gap-2 text-xs font-bold text-emerald-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="sendEmail"
+                      checked={manualEnrollmentForm.sendEmail}
+                      onChange={handleManualEnrollmentChange}
+                      className="w-4 h-4 text-emerald-600 rounded"
+                    />
+                    <span>📧 Automatically send receipt & course details email to student</span>
+                  </label>
+                ) : (
+                  <label className="flex items-center gap-2 text-xs font-bold text-blue-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="resendEmail"
+                      checked={manualEnrollmentForm.resendEmail}
+                      onChange={handleManualEnrollmentChange}
+                      className="w-4 h-4 text-blue-600 rounded"
+                    />
+                    <span>📧 Resend updated enrollment email to student</span>
+                  </label>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                {editingManualEnrollmentId && (
+                  <button
+                    type="button"
+                    onClick={resetManualEnrollmentForm}
+                    className="px-5 py-2.5 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold text-sm rounded-xl transition-all cursor-pointer"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={manualEnrollmentSaving}
+                  className={`px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-sm rounded-xl shadow-md transition-all cursor-pointer ${
+                    manualEnrollmentSaving ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]'
+                  }`}
+                >
+                  {manualEnrollmentSaving
+                    ? 'Saving...'
+                    : editingManualEnrollmentId
+                    ? 'Update Enrollment'
+                    : 'Activate Access & Send Confirmation'}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {manualEnrollmentSuccess && (
+            <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-semibold text-center shadow-sm">
+              ✅ {manualEnrollmentSuccess}
+            </div>
+          )}
+
+          {manualEnrollmentError && (
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-semibold text-center shadow-sm">
+              ❌ {manualEnrollmentError}
+            </div>
+          )}
+
+          {/* Enrollments Table Section */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <span>📋 Enrolled Students List</span>
+                <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">
+                  {manualEnrollments.length} Records
+                </span>
+              </h3>
+
+              <div className="flex gap-2 w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="🔍 Search name, email, phone, course..."
+                  value={manualEnrollmentSearch}
+                  onChange={(e) => setManualEnrollmentSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchManualEnrollments()}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white w-full sm:w-64"
+                />
+                <button
+                  type="button"
+                  onClick={fetchManualEnrollments}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow transition-all shrink-0 cursor-pointer"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+
+            {manualEnrollmentLoading ? (
+              <div className="text-center py-8 text-gray-500 font-semibold">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-2"></div>
+                Loading manual enrollments...
+              </div>
+            ) : manualEnrollments.length === 0 ? (
+              <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm">
+                No manual enrollments found. Use the form above to add an offline student enrollment.
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-sm max-h-[500px] overflow-y-auto bg-white">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 border-b border-gray-200 font-bold text-gray-700 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3">Student Info</th>
+                      <th className="p-3">Course & Package</th>
+                      <th className="p-3">Paid Amount</th>
+                      <th className="p-3">Payment Info</th>
+                      <th className="p-3">Mail Status</th>
+                      <th className="p-3">Date / Status</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {manualEnrollments.map((item) => {
+                      const isRowActive = item.isActive;
+                      return (
+                        <tr
+                          key={item.id}
+                          className={`hover:bg-slate-50/80 transition-colors ${
+                            !isRowActive ? 'bg-red-50/20' : ''
+                          }`}
+                        >
+                          <td className="p-3">
+                            <div className="font-bold text-slate-800 text-sm">{item.studentName || 'N/A'}</div>
+                            <div className="text-gray-600 text-[11px] font-mono">{item.studentEmail}</div>
+                            {item.studentPhone && (
+                              <div className="text-emerald-700 text-[11px] font-semibold">📞 +91 {item.studentPhone}</div>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <div className="font-bold text-slate-800">{item.courseTitle || 'Course'}</div>
+                            <div className="text-[10px] text-gray-500 mt-0.5">
+                              {[item.courseDetails?.mode, item.courseDetails?.validity || item.courseDetails?.attempt, item.courseDetails?.books]
+                                .filter(Boolean)
+                                .join(' | ')}
+                            </div>
+                            {item.facultyName && (
+                              <div className="text-[10px] text-purple-700 font-semibold">Faculty: {item.facultyName}</div>
+                            )}
+                          </td>
+                          <td className="p-3 font-extrabold text-emerald-700 text-sm">
+                            ₹{Number(item.amount || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td className="p-3">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              {item.paymentMethod}
+                            </span>
+                            {item.paymentReference && (
+                              <div className="text-[10px] text-gray-600 font-mono mt-1">Ref: {item.paymentReference}</div>
+                            )}
+                            {item.notes && (
+                              <div className="text-[10px] text-gray-500 italic mt-0.5 truncate max-w-[150px]" title={item.notes}>
+                                📝 {item.notes}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            {item.mailSentAt ? (
+                              <span className="text-green-700 font-bold flex items-center gap-1 text-[11px]">
+                                ✓ Sent ({new Date(item.mailSentAt).toLocaleDateString()})
+                              </span>
+                            ) : (
+                              <span className="text-amber-600 font-semibold text-[11px]">⏳ Not Sent Yet</span>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <div className="text-[11px] text-gray-600">
+                              {new Date(item.purchaseDate).toLocaleDateString()}
+                            </div>
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 ${
+                                isRowActive
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {isRowActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleEditManualEnrollment(item)}
+                                className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] rounded border border-blue-200 transition-all cursor-pointer"
+                                title="Edit Enrollment"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleResendManualEnrollmentEmail(item)}
+                                className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-[11px] rounded border border-purple-200 transition-all cursor-pointer"
+                                title="Resend Email to Student"
+                              >
+                                ✉️ Resend
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteManualEnrollment(item.id, false)}
+                                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-[11px] rounded border border-amber-200 transition-all cursor-pointer"
+                                title="Deactivate Access"
+                              >
+                                🚫 Disable
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteManualEnrollment(item.id, true)}
+                                className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-[11px] rounded border border-red-200 transition-all cursor-pointer"
+                                title="Permanently Delete Record"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
