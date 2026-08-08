@@ -336,6 +336,9 @@ exports.getManualEnrollment = async (req, res) => {
 };
 
 exports.createManualEnrollment = async (req, res) => {
+  console.log('🔵 [MANUAL-ENROLLMENT-V3] createManualEnrollment invoked at', new Date().toISOString());
+  console.log('🔵 [MANUAL-ENROLLMENT-V3] req.body keys:', Object.keys(req.body || {}));
+  console.log('🔵 [MANUAL-ENROLLMENT-V3] courseId:', req.body?.courseId);
   try {
     const {
       studentName,
@@ -353,6 +356,7 @@ exports.createManualEnrollment = async (req, res) => {
     } = req.body;
 
     if (!courseId) {
+      console.log('🔴 [MANUAL-ENROLLMENT-V3] No courseId provided');
       return res.status(400).json({ success: false, message: 'Course is required' });
     }
 

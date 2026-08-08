@@ -79,7 +79,8 @@ app.get('/api/status', (req, res) => {
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    deployVersion: 'v2-manual-enrollment-fix'
+    deployVersion: 'v3-manual-enrollment-2026-08-08T18',
+    buildTimestamp: '2026-08-08T18:44:00Z'
   });
 });
 
@@ -126,6 +127,10 @@ app.options('/api/purchase/razorpay-webhook', cors());
 app.post('/api/purchase/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 app.all('/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 
+// Diagnostic: Confirm manual enrollment routes are mounted
+app.get('/api/admin/manual-enrollments-health', (req, res) => {
+  res.json({ ok: true, message: 'Manual enrollment route is mounted v3', ts: new Date().toISOString() });
+});
 app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/', couponRoutes);
