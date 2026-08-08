@@ -126,6 +126,8 @@ app.options('/api/purchase/razorpay-webhook', cors());
 app.post('/api/purchase/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 app.all('/razorpay-webhook', purchaseController.handleRazorpayWebhook);
 
+app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes);
+app.use('/', manualEnrollmentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/', couponRoutes);
 app.use('/', courseDetailRoutes);
@@ -136,7 +138,6 @@ app.use('/', facultyRoutes);
 app.use('/', instituteRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/purchase', purchaseRoutes);
-app.use('/api/admin/manual-enrollments', manualEnrollmentRoutes);
 app.use('/api/notify', notifyRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/', standaloneCourseRoutes);
