@@ -1,13 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { BookOpen, GraduationCap, FileText, Users, Award } from "lucide-react";
 import banner4 from "../../assets/banner4.png";
 
 const steps = [
-  { title: "Choose Course", icon: "📚", desc: "Find the perfect course for your goals.", step: "01" },
-  { title: "Learn from Experts", icon: "🎓", desc: "Get guidance from top faculty.", step: "02" },
-  { title: "Practice & Review", icon: "📝", desc: "Test yourself and master concepts.", step: "03" },
-  { title: "Get Support", icon: "🤝", desc: "Doubt-solving and mentorship.", step: "04" },
-  { title: "Achieve Success", icon: "🏆", desc: "Crack your exams and celebrate!", step: "05" },
+  { title: "Choose Course", icon: BookOpen, desc: "Find the perfect course for your goals.", step: "01" },
+  { title: "Learn from Experts", icon: GraduationCap, desc: "Get guidance from top faculty.", step: "02" },
+  { title: "Practice & Review", icon: FileText, desc: "Test yourself and master concepts.", step: "03" },
+  { title: "Get Support", icon: Users, desc: "Doubt-solving and mentorship.", step: "04" },
+  { title: "Achieve Success", icon: Award, desc: "Crack your exams and celebrate!", step: "05" },
 ];
 
 const Categories = () => {
@@ -44,7 +45,7 @@ const Categories = () => {
 
               {/* Icon Container */}
               <div className="w-12 h-12 bg-slate-50 text-slate-700 rounded-2xl flex items-center justify-center text-xl mb-5 border border-slate-100 group-hover:bg-[#20b2aa]/10 group-hover:text-[#20b2aa] group-hover:border-[#20b2aa]/20 transition-all duration-200">
-                {step.icon}
+                <step.icon className="w-5 h-5" />
               </div>
 
               {/* Content */}

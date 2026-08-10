@@ -7,6 +7,10 @@ import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
+import { 
+  BookOpen, GraduationCap as GradCapIcon, Building2, UploadCloud, UserPlus, 
+  Edit as EditIcon, Trash2, Mail, Ban, CheckCircle2, Settings, Eye, EyeOff, MessageSquare, Plus 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
@@ -2755,28 +2759,28 @@ export default function AdminDashboard() {
           className={`${buttonBase} ${activePanel === 'course' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('course')}
         >
-          <span className="mb-1 text-2xl sm:text-3xl">📚</span>
+          <BookOpen className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Add Course</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'faculty' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('faculty')}
         >
-          <span className="mb-1 text-2xl sm:text-3xl">👨‍🏫</span>
+          <GradCapIcon className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Add Faculty</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'institute' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('institute')}
         >
-          <span className="mb-1 text-2xl sm:text-3xl">🏫</span>
+          <Building2 className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Add Institute</span>
         </button>
         <button
           className={`${buttonBase} ${activePanel === 'bulk' ? buttonActive : buttonInactive}`}
           onClick={() => setActivePanel('bulk')}
         >
-          <span className="mb-1 text-2xl sm:text-3xl">📤</span>
+          <UploadCloud className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Bulk Upload</span>
         </button>
         <button
@@ -2786,7 +2790,7 @@ export default function AdminDashboard() {
             fetchManualEnrollments();
           }}
         >
-          <span className="mb-1 text-2xl sm:text-3xl">👤💳</span>
+          <UserPlus className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Offline Enrollment</span>
         </button>
       </div>
@@ -3396,8 +3400,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0 md:ml-auto shrink-0">
-                  <button onClick={() => openEditFacultyModal(fac)} className="px-3 py-1 rounded bg-yellow-250 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition cursor-pointer">✏️ Edit</button>
-                  <button onClick={() => handleDeleteFaculty(fac.slug)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition cursor-pointer">🗑️ Delete</button>
+                  <button onClick={() => openEditFacultyModal(fac)} className="px-3 py-1 rounded bg-yellow-250 text-yellow-900 font-bold text-xs hover:bg-yellow-300 transition cursor-pointer flex items-center gap-1"><EditIcon className="w-3 h-3" /> Edit</button>
+                  <button onClick={() => handleDeleteFaculty(fac.slug)} className="px-3 py-1 rounded bg-red-200 text-red-900 font-bold text-xs hover:bg-red-300 transition cursor-pointer flex items-center gap-1"><Trash2 className="w-3 h-3" /> Delete</button>
                 </div>
               </div>
             ))}
@@ -3487,8 +3491,8 @@ export default function AdminDashboard() {
                     <div className="font-bold text-gray-800 truncate" title={inst.name}>{inst.name}</div>
                   </div>
                   <div className="flex gap-1.5">
-                    <button onClick={() => openEditInstituteModal(inst)} className="px-2.5 py-1 rounded bg-yellow-250 hover:bg-yellow-350 text-yellow-900 font-bold text-xs transition cursor-pointer">✏️</button>
-                    <button onClick={() => handleDeleteInstitute(inst._id || inst.id)} className="px-2.5 py-1 rounded bg-red-250 hover:bg-red-350 text-red-900 font-bold text-xs transition cursor-pointer">🗑️</button>
+                    <button onClick={() => openEditInstituteModal(inst)} className="px-2.5 py-1 rounded bg-yellow-250 hover:bg-yellow-350 text-yellow-900 font-bold text-xs transition cursor-pointer flex items-center justify-center"><EditIcon className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => handleDeleteInstitute(inst._id || inst.id)} className="px-2.5 py-1 rounded bg-red-250 hover:bg-red-350 text-red-900 font-bold text-xs transition cursor-pointer flex items-center justify-center"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               ))}
@@ -3891,7 +3895,8 @@ export default function AdminDashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
                 <div>
                   <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>⚙️ Variants & Options (Receipt Details)</span>
+                    <Settings className="w-4 h-4 text-slate-600" />
+                    <span>Variants & Options (Receipt Details)</span>
                   </h4>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     Customize both the <strong>Headings</strong> and <strong>Values</strong> sent to student email & receipt.
@@ -3902,7 +3907,8 @@ export default function AdminDashboard() {
                   onClick={handleAddCustomOption}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-all shadow-sm flex items-center gap-1 self-start sm:self-auto cursor-pointer"
                 >
-                  <span>+ Add Custom Heading / Option</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Custom Heading / Option</span>
                 </button>
               </div>
 
@@ -3911,7 +3917,8 @@ export default function AdminDashboard() {
                   <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2 relative group hover:border-emerald-300 transition-colors">
                     <div className="flex items-center justify-between gap-1">
                       <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 w-full">
-                        <span className="text-slate-400 shrink-0">✏️ Heading:</span>
+                        <EditIcon className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="text-slate-400 shrink-0">Heading:</span>
                         <input
                           type="text"
                           value={opt.label}
@@ -3926,7 +3933,7 @@ export default function AdminDashboard() {
                         className="text-slate-400 hover:text-red-500 font-bold text-xs p-1 rounded transition-colors"
                         title="Remove this option"
                       >
-                        🗑️
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     <div>
@@ -4145,41 +4152,53 @@ export default function AdminDashboard() {
                           <td className="p-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
-                                type="button"
-                                onClick={() => handleEditManualEnrollment(item)}
-                                className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] rounded border border-blue-200 transition-all cursor-pointer"
-                                title="Edit Enrollment"
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleResendManualEnrollmentEmail(item)}
-                                className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-[11px] rounded border border-purple-200 transition-all cursor-pointer"
-                                title="Resend Email to Student"
-                              >
-                                ✉️ Resend
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteManualEnrollment(item.id, false, isRowActive)}
-                                className={`px-2 py-1 font-bold text-[11px] rounded border transition-all cursor-pointer ${
-                                  isRowActive
-                                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
-                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
-                                }`}
-                                title={isRowActive ? "Deactivate Student Access" : "Re-activate Student Access"}
-                              >
-                                {isRowActive ? '🚫 Disable' : '✅ Enable'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteManualEnrollment(item.id, true, isRowActive)}
-                                className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-[11px] rounded border border-red-200 transition-all cursor-pointer"
-                                title="Permanently Delete Record"
-                              >
-                                🗑️
-                              </button>
+                                  type="button"
+                                  onClick={() => handleEditManualEnrollment(item)}
+                                  className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[11px] rounded border border-blue-200 transition-all cursor-pointer flex items-center gap-1"
+                                  title="Edit Enrollment"
+                                >
+                                  <EditIcon className="w-3 h-3 text-blue-600" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResendManualEnrollmentEmail(item)}
+                                  className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-[11px] rounded border border-purple-200 transition-all cursor-pointer flex items-center gap-1"
+                                  title="Resend Email to Student"
+                                >
+                                  <Mail className="w-3 h-3 text-purple-600" />
+                                  <span>Resend</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteManualEnrollment(item.id, false, isRowActive)}
+                                  className={`px-2 py-1 font-bold text-[11px] rounded border transition-all cursor-pointer flex items-center gap-1 ${
+                                    isRowActive
+                                      ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
+                                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                                  }`}
+                                  title={isRowActive ? "Deactivate Student Access" : "Re-activate Student Access"}
+                                >
+                                  {isRowActive ? (
+                                    <>
+                                      <Ban className="w-3 h-3 text-amber-700" />
+                                      <span>Disable</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                                      <span>Enable</span>
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteManualEnrollment(item.id, true, isRowActive)}
+                                  className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-[11px] rounded border border-red-200 transition-all cursor-pointer flex items-center justify-center"
+                                  title="Permanently Delete Record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                                </button>
                             </div>
                           </td>
                         </tr>
@@ -4327,21 +4346,25 @@ export default function AdminDashboard() {
                         }`}
                         title="Click to toggle visibility on course detail page"
                       >
-                        {c.isVisible !== false ? '👁️ Visible on Course Page (Click to Hide)' : '🙈 Hidden (Click to Show)'}
+                        {c.isVisible !== false ? (
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3 text-emerald-700" /> Visible on Course Page (Click to Hide)</span>
+                        ) : (
+                          <span className="flex items-center gap-1"><EyeOff className="w-3 h-3 text-gray-500" /> Hidden (Click to Show)</span>
+                        )}
                       </button>
 
                     </div>
                     <span className="text-xs text-gray-500 mt-0.5">
                       {c.courseIds && c.courseIds.length > 0 
-                        ? `🎯 Courses: ${c.courseIds.map(id => {
+                        ? `Courses: ${c.courseIds.map(id => {
                             const found = availableCourses.find(ac => (ac.id || ac._id) === id);
                             return found ? (found.title || found.subject) : id;
                           }).join(', ')}` 
-                        : (linkedCourse ? `🎯 Course: ${linkedCourse.title || linkedCourse.subject}` : '🌐 Scope: All Courses')}
+                        : (linkedCourse ? `Course: ${linkedCourse.title || linkedCourse.subject}` : 'Scope: All Courses')}
                     </span>
 
                     {c.message && (
-                      <span className="text-xs text-teal-700 font-semibold mt-0.5">💬 {c.message}</span>
+                      <span className="text-xs text-teal-700 font-semibold mt-0.5 flex items-center gap-1"><MessageSquare className="w-3 h-3 text-teal-600" /> {c.message}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-4">

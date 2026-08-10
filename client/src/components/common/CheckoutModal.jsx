@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaTrashAlt, FaEdit, FaCheckCircle, FaTimes, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
+import { AlertTriangle } from 'lucide-react';
 import { API_URL } from '../../api';
 
 const INDIAN_STATES = [
@@ -339,8 +340,9 @@ export default function CheckoutModal({
                   )}
                 </div>
                 {personalDetails.fullName !== initialName && personalDetails.fullName.trim() !== '' && (
-                  <p className="text-[11px] text-amber-600 mt-1 font-semibold">
-                    ⚠️ Click "Update" to save name changes before proceeding.
+                  <p className="text-[11px] text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>Click "Update" to save name changes before proceeding.</span>
                   </p>
                 )}
                 {nameUpdatedSuccess && (

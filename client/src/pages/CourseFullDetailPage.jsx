@@ -7,6 +7,7 @@ import {
   FaExternalLinkAlt, FaBookOpen, FaTag, FaWhatsapp
 } from 'react-icons/fa';
 import { MdVideoLibrary } from 'react-icons/md';
+import { Tag as TagIcon, ChevronLeft, ChevronRight, AlertTriangle as AlertTriangleIcon } from 'lucide-react';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { getCourseImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
@@ -740,7 +741,8 @@ const CourseFullDetailPage = () => {
                   <div className="flex flex-wrap gap-2">
                     {appliedCoupons.map((c, i) => (
                       <span key={i} className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-xs font-bold shadow-xs">
-                        🏷️ {c.code} ({c.discountPercent}% OFF)
+                        <TagIcon className="w-3 h-3 text-green-600" />
+                        <span>{c.code} ({c.discountPercent}% OFF)</span>
                         <button
                           type="button"
                           onClick={() => setAppliedCoupons(prev => prev.filter((_, idx) => idx !== i))}
@@ -987,8 +989,10 @@ const CourseFullDetailPage = () => {
                 ))}
               </div>
               <div className="flex justify-center items-center gap-1 mt-1">
-                <span className="text-[11px] text-teal-700 font-semibold flex items-center gap-1">
-                  👈 Swipe horizontally for more courses 👉
+                <span className="text-[11px] text-teal-700 font-semibold inline-flex items-center gap-1">
+                  <ChevronLeft className="w-3 h-3" />
+                  <span>Swipe horizontally for more courses</span>
+                  <ChevronRight className="w-3 h-3" />
                 </span>
               </div>
             </div>
@@ -1049,7 +1053,7 @@ const CourseFullDetailPage = () => {
             {modalCouponError && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs font-semibold shadow-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">⚠️</span>
+                  <AlertTriangleIcon className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{modalCouponError}</span>
                 </div>
                 <button

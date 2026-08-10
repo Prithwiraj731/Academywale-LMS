@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL } from '../../api';
+import { Lightbulb } from 'lucide-react';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -223,8 +224,9 @@ export default function CoursePurchase({ course, onPurchaseSuccess, onPurchaseFa
               </svg>
             </div>
           </div>
-          <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
-            💡 <strong>Desktop Tip:</strong> Enter your UPI ID to receive a payment request notification on your phone
+          <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700 flex items-center gap-1.5 font-medium">
+            <Lightbulb className="w-4 h-4 text-blue-600 shrink-0" />
+            <span><strong>Desktop Tip:</strong> Enter your UPI ID to receive a payment request notification on your phone</span>
           </div>
         </button>
         {error && <div className="text-red-600 text-center mt-2">{error}</div>}

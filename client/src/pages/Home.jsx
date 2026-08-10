@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search, GraduationCap as GradCapIcon, Lightbulb as LightbulbIcon, Video as VideoIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import Hero from '../components/home/Hero';
 import Numbers from '../components/home/Numbers';
@@ -239,7 +240,7 @@ export default function Home() {
                   type="submit"
                   className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
                 >
-                  <span>🔍</span>
+                  <Search className="w-3.5 h-3.5" />
                   <span>Search</span>
                 </button>
               </form>
@@ -247,9 +248,10 @@ export default function Home() {
                 <MorphyButton
                   onClick={() => navigate('/courses/all')}
                   size="lg"
-                  className="shadow-xl hover:shadow-2xl font-extrabold"
+                  className="shadow-xl hover:shadow-2xl font-extrabold flex items-center gap-2"
                 >
-                  🎓 Browse All Courses
+                  <GradCapIcon className="w-5 h-5 text-white" />
+                  <span>Browse All Courses</span>
                 </MorphyButton>
               </div>
             </div>
@@ -396,9 +398,10 @@ export default function Home() {
                         key="no-path"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-neutral-500 text-xs font-semibold py-8 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20 w-full"
+                        className="text-neutral-500 text-xs font-semibold py-8 text-center border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20 w-full flex items-center justify-center gap-2"
                       >
-                        💡 Select CA or CMA above to view levels
+                        <LightbulbIcon className="w-4 h-4 text-teal-400 shrink-0" />
+                        <span>Select CA or CMA above to view levels</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -605,8 +608,9 @@ export default function Home() {
           {/* Section Header */}
           <div className="text-center mb-8 sm:mb-14">
             <div className="group inline-flex flex-col items-center">
-              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3">
-                🎬 Featured Highlights
+              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3 inline-flex items-center gap-2">
+                <VideoIcon className="w-3.5 h-3.5" />
+                <span>Featured Highlights</span>
               </span>
               <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-sm font-heading">
                 Watch Us in <span className="text-[#20b2aa]">Action</span>
@@ -742,8 +746,10 @@ export default function Home() {
                 </button>
               </div>
 
-              <span className="text-[11px] font-semibold text-[#20b2aa] bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 select-none">
-                👈 Swipe card to switch videos 👉
+              <span className="text-[11px] font-semibold text-[#20b2aa] bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 select-none inline-flex items-center gap-1.5">
+                <ChevronLeft className="w-3 h-3" />
+                <span>Swipe card to switch videos</span>
+                <ChevronRight className="w-3 h-3" />
               </span>
             </div>
           </div>

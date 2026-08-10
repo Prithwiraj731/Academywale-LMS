@@ -22,28 +22,28 @@ export default function NotFoundPage() {
     {
       id: 'A',
       option: 'I got lost in the infinite CA/CMA syllabus.',
-      feedback: '📚 Relatable! The syllabus is indeed larger than our database. Let\'s get you back to a topic that actually has video lectures!',
+      feedback: 'Relatable! The syllabus is indeed larger than our database. Let\'s get you back to a topic that actually has video lectures!',
       icon: BookOpen,
       color: 'from-blue-500/10 to-blue-600/10 border-blue-500/30 text-blue-700'
     },
     {
       id: 'B',
       option: 'My balance sheet didn\'t tally, so I ran away.',
-      feedback: '⚖️ Standard accounting protocol! We have created a "Suspense Account" to hide this 404 error code. Nobody will notice... except the auditor.',
+      feedback: 'Standard accounting protocol! We have created a "Suspense Account" to hide this 404 error code. Nobody will notice... except the auditor.',
       icon: Scale,
       color: 'from-amber-500/10 to-amber-600/10 border-amber-500/30 text-amber-700'
     },
     {
       id: 'C',
       option: 'I\'m conducting audit checks for missing pages.',
-      feedback: '🔎 Audit Report: Qualified opinion. The page is verified as missing, and internal controls have failed. 10/10 for professional skepticism!',
+      feedback: 'Audit Report: Qualified opinion. The page is verified as missing, and internal controls have failed. 10/10 for professional skepticism!',
       icon: FileQuestion,
       color: 'from-emerald-500/10 to-emerald-600/10 border-emerald-500/30 text-emerald-700'
     },
     {
       id: 'D',
       option: 'I clicked a broken link (and I demand grace marks).',
-      feedback: '🎓 Grace marks denied by the ICAI/ICMAI examiners! However, we will grant you a free redirection back to safety.',
+      feedback: 'Grace marks denied by the ICAI/ICMAI examiners! However, we will grant you a free redirection back to safety.',
       icon: Award,
       color: 'from-purple-500/10 to-purple-600/10 border-purple-500/30 text-purple-700'
     }
@@ -54,28 +54,28 @@ export default function NotFoundPage() {
     if (hours < 40) {
       return {
         percentage: `${(hours * 0.5).toFixed(1)}%`,
-        message: '⚠️ Below passing marks! Get off the 404 page and go back to lectures!',
+        message: 'Below passing marks! Get off the 404 page and go back to lectures!',
         color: 'text-red-600',
         bg: 'bg-red-50 border-red-200'
       };
     } else if (hours < 75) {
       return {
         percentage: `${(40 + (hours - 40) * 1.2).toFixed(1)}%`,
-        message: '✍️ Passing aggregate zone. Decent, but the examiner is watching. Revise more!',
+        message: 'Passing aggregate zone. Decent, but the examiner is watching. Revise more!',
         color: 'text-yellow-600',
         bg: 'bg-yellow-50 border-yellow-200'
       };
     } else if (hours < 95) {
       return {
         percentage: `${(82 + (hours - 75) * 0.8).toFixed(1)}%`,
-        message: '🔥 Rank-holder vibes! You are solid. Just don\'t write 404 on your exam sheets.',
+        message: 'Rank-holder vibes! You are solid. Just don\'t write 404 on your exam sheets.',
         color: 'text-teal-600',
         bg: 'bg-teal-50 border-teal-200'
       };
     } else {
       return {
         percentage: '99.9%',
-        message: '🏆 Outstanding! Even the syllabus is scared of you. Go back and claim your degree!',
+        message: 'Outstanding! Even the syllabus is scared of you. Go back and claim your degree!',
         color: 'text-emerald-600',
         bg: 'bg-emerald-50 border-emerald-200'
       };
@@ -209,7 +209,7 @@ export default function NotFoundPage() {
               <div className="flex items-center gap-2 mb-3">
                 <HelpCircle className="text-[#20b2aa] w-5 h-5 shrink-0" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  🚨 SURPRISE TEST: Where did the page go?
+                  SURPRISE TEST: Where did the page go?
                 </h3>
               </div>
               <p className="text-xs text-gray-500 mb-4">
@@ -266,7 +266,7 @@ export default function NotFoundPage() {
               <div className="flex items-center gap-2">
                 <Calculator className="text-[#20b2aa] w-5 h-5 shrink-0" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                  📈 Syllabus Completion vs. Passing Odds
+                  Syllabus Completion vs. Passing Odds
                 </h3>
               </div>
               <p className="text-xs text-gray-500">

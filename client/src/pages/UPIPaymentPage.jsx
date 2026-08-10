@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaCheckCircle, FaExclamationTriangle, FaCreditCard } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { GraduationCap } from 'lucide-react';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { API_URL } from '../api';
 import { loadRazorpayCheckout } from '../utils/RazorpayCheckout';
@@ -360,7 +361,7 @@ const UPIPaymentPage = () => {
 
               {alreadyPurchased ? (
                 <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 mb-6 text-center shadow-lg">
-                  <div className="text-4xl mb-2">🎓</div>
+                  <GraduationCap className="w-12 h-12 text-amber-600 mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-amber-800 mb-2">Already Enrolled in this Course!</h3>
                   <p className="text-sm text-amber-700 mb-4">
                     You have already purchased this course. You can access all course materials directly from your Student Dashboard.

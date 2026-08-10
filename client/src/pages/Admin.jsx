@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Lock, ShieldCheck, AlertTriangle, CheckCircle2, Lightbulb, ArrowLeft, Send, KeyRound } from 'lucide-react';
 
 export default function Admin() {
   const [email, setEmail] = useState('souravkashyap4416@gmail.com');
@@ -97,7 +98,7 @@ export default function Admin() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white shadow-lg mb-2">
-            <span className="text-3xl">🔒</span>
+            <Lock className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight">Admin Security Portal</h2>
           <p className="text-xs text-slate-500 font-medium">
@@ -106,14 +107,16 @@ export default function Admin() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold leading-relaxed animate-fade-in text-center">
-            ⚠️ {error}
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold leading-relaxed animate-fade-in text-center flex items-center justify-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+            <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold leading-relaxed animate-fade-in text-center">
-            ✅ {successMsg}
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold leading-relaxed animate-fade-in text-center flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <span>{successMsg}</span>
           </div>
         )}
 
@@ -134,8 +137,11 @@ export default function Admin() {
               />
             </div>
 
-            <div className="bg-teal-50/70 border border-teal-200/60 rounded-xl p-3.5 text-[11px] text-teal-900 leading-relaxed font-medium">
-              💡 <strong>High Security Enforced:</strong> Password authentication is disabled for admin access to eliminate XSS & credential leaks. Login codes are sent directly to your email.
+            <div className="bg-teal-50/70 border border-teal-200/60 rounded-xl p-3.5 text-[11px] text-teal-900 leading-relaxed font-medium flex items-start gap-2.5">
+              <Lightbulb className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+              <div>
+                <strong>High Security Enforced:</strong> Password authentication is disabled for admin access to eliminate XSS & credential leaks. Login codes are sent directly to your email.
+              </div>
             </div>
 
             <button
@@ -154,7 +160,10 @@ export default function Admin() {
                   <span>Sending Code...</span>
                 </>
               ) : (
-                <span>🔒 Request Admin OTP</span>
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Request Admin OTP</span>
+                </>
               )}
             </button>
           </form>
@@ -196,7 +205,10 @@ export default function Admin() {
                   <span>Verifying Code...</span>
                 </>
               ) : (
-                <span>🚀 Verify OTP & Login</span>
+                <>
+                  <KeyRound className="w-4 h-4" />
+                  <span>Verify OTP & Login</span>
+                </>
               )}
             </button>
 
@@ -208,9 +220,10 @@ export default function Admin() {
                   setError('');
                   setSuccessMsg('');
                 }}
-                className="text-slate-500 hover:text-teal-700 font-semibold transition-colors cursor-pointer"
+                className="text-slate-500 hover:text-teal-700 font-semibold transition-colors cursor-pointer flex items-center gap-1"
               >
-                ← Change Email
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Change Email</span>
               </button>
 
               <button

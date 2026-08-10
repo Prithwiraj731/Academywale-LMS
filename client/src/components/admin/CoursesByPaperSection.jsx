@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '../../api';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 const emptyGroups = () => ({
   CA: { Foundation: [], Inter: [], Final: [] },
@@ -278,7 +279,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
                 className="px-2 py-1 text-xs font-bold bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed border-r border-gray-300"
                 title="Move Up in Sequence"
               >
-                ⬆️
+                <ArrowUp className="w-3.5 h-3.5 text-gray-700" />
               </button>
               <button
                 type="button"
@@ -287,7 +288,7 @@ const CoursesByPaperSection = ({ onEditCourse, onDeleteCourse, onCloneCourse, re
                 className="px-2 py-1 text-xs font-bold bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Move Down in Sequence"
               >
-                ⬇️
+                <ArrowDown className="w-3.5 h-3.5 text-gray-700" />
               </button>
             </div>
             <button
