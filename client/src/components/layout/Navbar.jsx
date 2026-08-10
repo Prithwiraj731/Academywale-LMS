@@ -89,7 +89,7 @@ export default function Navbar() {
             <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
               <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
-            <a href="https://t.me/CMAspirants_01" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
+            <a href="https://t.me/CMAspirants_010" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
               <img src={telegramLogo} alt="Telegram" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </a>
             <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
