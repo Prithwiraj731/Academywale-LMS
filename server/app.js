@@ -79,8 +79,8 @@ app.get('/api/status', (req, res) => {
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    deployVersion: 'v3-manual-enrollment-2026-08-08T18',
-    buildTimestamp: '2026-08-08T18:44:00Z'
+    deployVersion: 'v5-admin-otp-fixed-2026-08-10',
+    buildTimestamp: new Date().toISOString()
   });
 });
 
@@ -118,7 +118,20 @@ const contactRoutes = require('./src/routes/contact.routes.js');
 const standaloneCourseRoutes = require('./src/routes/standaloneCourse.routes.js');
 const imageMigrationRoutes = require('./src/routes/image-migration.routes.js');
 
+const authController = require('./src/controllers/auth.controller.js');
 const purchaseController = require('./src/controllers/purchase.controller.js');
+
+// Direct Admin OTP Routes (guarantees route matching)
+app.options('/api/auth/admin/send-otp', cors());
+app.post('/api/auth/admin/send-otp', authController.sendAdminOTP);
+app.options('/api/admin/send-otp', cors());
+app.post('/api/admin/send-otp', authController.sendAdminOTP);
+
+app.options('/api/auth/admin/verify-otp', cors());
+app.post('/api/auth/admin/verify-otp', authController.verifyAdminOTP);
+app.options('/api/admin/verify-otp', cors());
+app.post('/api/admin/verify-otp', authController.verifyAdminOTP);
+
 app.options('/api/purchase/razorpay-order', cors());
 app.post('/api/purchase/razorpay-order', purchaseController.createRazorpayOrder);
 app.options('/api/purchase/razorpay-verify', cors());

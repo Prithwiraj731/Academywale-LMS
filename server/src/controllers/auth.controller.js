@@ -718,14 +718,50 @@ exports.sendAdminOTP = async (req, res) => {
     const email = (req.body.email || 'souravkashyap4416@gmail.com').toLowerCase().trim();
     console.log(`🔒 Requesting Admin Login OTP for: ${email}`);
 
-    // Verify user exists and has admin role
-    const { data: adminUser, error: fetchError } = await supabaseAdmin
+    let targetAdmin = null;
+
+    // Verify user exists and has admin role (case-insensitive email matching)
+    const { data: existingUser, error: fetchError } = await supabaseAdmin
       .from('users')
       .select('id, name, email, role, is_active')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
 
-    if (fetchError || !adminUser || adminUser.role !== 'admin' || !adminUser.is_active) {
+    if (existingUser) {
+      if (existingUser.role !== 'admin' || !existingUser.is_active) {
+        // Auto-promote configured admin emails
+        if (email === 'souravkashyap4416@gmail.com' || email === 'admin@academywale.com') {
+          await supabaseAdmin
+            .from('users')
+            .update({ role: 'admin', is_active: true })
+            .eq('id', existingUser.id);
+          targetAdmin = { ...existingUser, role: 'admin', is_active: true };
+        } else {
+          console.warn(`❌ Admin OTP rejected for non-admin email: ${email}`);
+          return res.status(403).json({
+            status: 'error',
+            message: 'Access denied. Only registered admin accounts can request admin login OTP.'
+          });
+        }
+      } else {
+        targetAdmin = existingUser;
+      }
+    } else if (email === 'souravkashyap4416@gmail.com' || email === 'admin@academywale.com') {
+      // Auto-create designated primary admin user if not created yet
+      const { data: newAdmin, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert([{
+          email,
+          name: 'AcademyWale Admin',
+          role: 'admin',
+          is_active: true
+        }])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      targetAdmin = newAdmin;
+    } else {
       console.warn(`❌ Admin OTP rejected for non-admin email: ${email}`);
       return res.status(403).json({
         status: 'error',
@@ -743,7 +779,7 @@ exports.sendAdminOTP = async (req, res) => {
         otp_code: otp,
         otp_expires_at: otpExpires
       })
-      .eq('id', adminUser.id);
+      .eq('id', targetAdmin.id);
 
     if (updateError) throw updateError;
 
@@ -791,7 +827,7 @@ exports.verifyAdminOTP = async (req, res) => {
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('id, name, email, mobile, role, is_active, otp_code, otp_expires_at')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
 
     if (error || !user || user.role !== 'admin' || !user.is_active) {

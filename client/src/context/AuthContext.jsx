@@ -229,17 +229,35 @@ export const AuthProvider = ({ children }) => {
 
   const sendAdminOTP = async (email = 'souravkashyap4416@gmail.com') => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/admin/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await response.json();
-      if (response.ok && data.status === 'success') {
-        return { success: true, message: data.message, email: data.email };
-      } else {
-        return { success: false, message: data.message || 'Failed to send admin OTP' };
+      const endpoints = [
+        `${API_URL}/api/auth/admin/send-otp`,
+        `${API_URL}/api/admin/send-otp`,
+        `${API_URL}/api/auth/send-otp`
+      ];
+
+      let lastMessage = 'Failed to send admin OTP';
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          const data = await response.json();
+          if (response.ok && data.status === 'success') {
+            return { success: true, message: data.message, email: data.email };
+          }
+          if (data && data.message) {
+            lastMessage = data.message;
+          }
+          if (response.status !== 404) {
+            return { success: false, message: lastMessage };
+          }
+        } catch (err) {
+          console.warn(`Endpoint ${endpoint} hit error:`, err);
+        }
       }
+      return { success: false, message: lastMessage };
     } catch (error) {
       console.error('sendAdminOTP error:', error);
       return { success: false, message: 'Network error sending admin OTP.' };
@@ -248,23 +266,41 @@ export const AuthProvider = ({ children }) => {
 
   const verifyAdminOTP = async (email, otp) => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/admin/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, otp })
-      });
-      const data = await response.json();
-      if (response.ok && data.status === 'success') {
-        setUser(data.data.user);
-        setIsAuthenticated(true);
-        if (data.token) {
-          localStorage.setItem('token', data.token);
+      const endpoints = [
+        `${API_URL}/api/auth/admin/verify-otp`,
+        `${API_URL}/api/admin/verify-otp`,
+        `${API_URL}/api/auth/verify-otp`
+      ];
+
+      let lastMessage = 'OTP verification failed';
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, otp })
+          });
+          const data = await response.json();
+          if (response.ok && data.status === 'success') {
+            setUser(data.data.user);
+            setIsAuthenticated(true);
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+            }
+            return { success: true, user: data.data.user };
+          }
+          if (data && data.message) {
+            lastMessage = data.message;
+          }
+          if (response.status !== 404) {
+            return { success: false, message: lastMessage };
+          }
+        } catch (err) {
+          console.warn(`Endpoint ${endpoint} hit error:`, err);
         }
-        return { success: true, user: data.data.user };
-      } else {
-        return { success: false, message: data.message || 'OTP verification failed' };
       }
+      return { success: false, message: lastMessage };
     } catch (error) {
       console.error('verifyAdminOTP error:', error);
       return { success: false, message: 'Network error verifying admin OTP.' };
