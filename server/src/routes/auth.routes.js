@@ -18,6 +18,10 @@ router.post('/resend-otp', authController.resendOTP);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
+// Dedicated Admin OTP Portal Authentication Routes
+router.post('/admin/send-otp', authController.sendAdminOTP);
+router.post('/admin/verify-otp', authController.verifyAdminOTP);
+
 // Protected routes
 router.post('/logout', protect, authController.logout);
 router.get('/me', protect, authController.getMe);

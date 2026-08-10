@@ -971,6 +971,78 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
   }
 };
 
+/**
+ * Send secure 6-digit OTP email for Admin Login Portal
+ */
+const sendAdminOTPEmail = async (email, otp) => {
+  try {
+    const transporter = getTransporter();
+    
+    const htmlContent = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
+        <div style="max-width: 550px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+          
+          <!-- Header Banner -->
+          <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px 25px; text-align: center; color: #ffffff;">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #38bdf8;">AcademyWale</h1>
+            <p style="margin: 6px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: #94a3b8;">
+              🔒 Admin Security Portal Verification
+            </p>
+          </div>
+
+          <!-- Status Bar -->
+          <div style="background-color: #f0fdf4; border-bottom: 1px solid #dcfce7; padding: 12px 25px; font-size: 12px; color: #166534; text-align: center; font-weight: 600;">
+            Security Check: Login Request for ${email}
+          </div>
+
+          <!-- Body Content -->
+          <div style="padding: 30px 25px; text-align: center;">
+            <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 12px;">Your Admin Access Code</h2>
+            <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 25px;">
+              Use the single-use 6-digit Security Verification Code below to authenticate your session into the AcademyWale Admin Panel:
+            </p>
+
+            <!-- OTP Box -->
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed #0d9488; border-radius: 14px; padding: 22px; margin: 0 auto 25px auto; max-width: 320px;">
+              <span style="font-family: 'Courier New', Courier, monospace; font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #0f766e; display: inline-block;">
+                ${otp}
+              </span>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+              ⏱️ This code will expire in <strong>10 minutes</strong>.
+            </p>
+
+            <div style="background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; padding: 12px 16px; text-align: left; font-size: 12px; color: #9f1239; line-height: 1.5;">
+              ⚠️ <strong>Security Notice:</strong> Do not share this OTP with anyone. AcademyWale staff will never ask for your admin verification code. If you did not initiate this login, please change your credentials immediately.
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 18px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8;">
+            &copy; 2026 AcademyWale Admin Security Gateway. All rights reserved.
+          </div>
+          
+        </div>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: emailConfig.from,
+      to: email,
+      subject: `🔒 Admin Portal Login OTP: ${otp}`,
+      html: htmlContent
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ Admin OTP Email sent successfully to ${email}. Message ID: ${result.messageId}`);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ Admin OTP Email sending error:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendContactEmail,
   sendWelcomeEmail,
@@ -979,5 +1051,6 @@ module.exports = {
   sendPurchaseInvoiceEmail,
   sendOTPEmail,
   sendPasswordResetOTPEmail,
-  sendAdminNotificationEmail
-}; 
+  sendAdminNotificationEmail,
+  sendAdminOTPEmail
+};

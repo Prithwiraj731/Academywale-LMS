@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { supabaseAdmin } = require('../config/supabase.config');
-const { sendOTPEmail, sendPasswordResetOTPEmail } = require('../utils/email.utils');
+const { sendOTPEmail, sendPasswordResetOTPEmail, sendAdminOTPEmail } = require('../utils/email.utils');
 const { sendSMSOTP } = require('../utils/sms.utils');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
@@ -706,6 +706,136 @@ exports.updateName = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Error updating user name'
+    });
+  }
+};
+
+// @desc    Send OTP to Admin Email for Login
+// @route   POST /api/auth/admin/send-otp
+// @access  Public
+exports.sendAdminOTP = async (req, res) => {
+  try {
+    const email = (req.body.email || 'souravkashyap4416@gmail.com').toLowerCase().trim();
+    console.log(`🔒 Requesting Admin Login OTP for: ${email}`);
+
+    // Verify user exists and has admin role
+    const { data: adminUser, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, role, is_active')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (fetchError || !adminUser || adminUser.role !== 'admin' || !adminUser.is_active) {
+      console.warn(`❌ Admin OTP rejected for non-admin email: ${email}`);
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied. Only registered admin accounts can request admin login OTP.'
+      });
+    }
+
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    // Save OTP to admin user record in database
+    const { error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        otp_code: otp,
+        otp_expires_at: otpExpires
+      })
+      .eq('id', adminUser.id);
+
+    if (updateError) throw updateError;
+
+    // Send Admin OTP Email
+    const emailResult = await sendAdminOTPEmail(email, otp);
+
+    if (!emailResult.success) {
+      return res.status(500).json({
+        status: 'error',
+        message: `Failed to dispatch OTP email to ${email}. Error: ${emailResult.error}`
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: `Admin verification code sent to ${email}. Please check your inbox or spam folder.`,
+      email
+    });
+  } catch (error) {
+    console.error('❌ sendAdminOTP error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Server error generating admin OTP'
+    });
+  }
+};
+
+// @desc    Verify Admin OTP & Login
+// @route   POST /api/auth/admin/verify-otp
+// @access  Public
+exports.verifyAdminOTP = async (req, res) => {
+  try {
+    const email = (req.body.email || 'souravkashyap4416@gmail.com').toLowerCase().trim();
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Verification code (OTP) is required'
+      });
+    }
+
+    console.log(`🔐 Verifying Admin OTP for: ${email}`);
+
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('id, name, email, mobile, role, is_active, otp_code, otp_expires_at')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error || !user || user.role !== 'admin' || !user.is_active) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Access denied. Valid admin account required.'
+      });
+    }
+
+    if (!user.otp_code || user.otp_code !== String(otp).trim()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid 6-digit OTP code. Please check your email and try again.'
+      });
+    }
+
+    if (new Date(user.otp_expires_at) < new Date()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Verification code has expired. Please request a new Admin OTP.'
+      });
+    }
+
+    // Clear OTP fields & update last login timestamp
+    const { data: updatedAdmin, error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({
+        otp_code: null,
+        otp_expires_at: null,
+        last_login_at: new Date()
+      })
+      .eq('id', user.id)
+      .select('id, name, email, mobile, role, is_active')
+      .single();
+
+    if (updateError) throw updateError;
+
+    console.log(`✅ Admin OTP verified successfully for ${email}. Issuing JWT session token...`);
+    createSendToken(updatedAdmin, 200, res);
+  } catch (error) {
+    console.error('❌ verifyAdminOTP error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Server error verifying admin OTP'
     });
   }
 };
