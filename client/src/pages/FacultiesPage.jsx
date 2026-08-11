@@ -163,7 +163,7 @@ export default function FacultiesPage() {
                     key={faculty.id || faculty.slug}
                     title={faculty.name}
                     href={`/faculties/${faculty.slug}`}
-                    containerClassName="w-full h-full min-w-[150px] xs:min-w-[170px] sm:min-w-[210px] md:min-w-[230px] max-w-[250px] min-h-[230px] sm:min-h-[300px] mx-auto flex items-center justify-center"
+                    containerClassName="w-full h-full sm:min-w-[210px] md:min-w-[230px] sm:max-w-[250px] sm:min-h-[300px] mx-auto flex items-center justify-center"
                   >
                     <div
                       className="group bg-white/95 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-4 sm:p-6 cursor-pointer hover:scale-[1.03] w-full h-full border border-teal-100/50"

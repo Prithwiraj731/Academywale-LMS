@@ -48,6 +48,17 @@ export const PinContainer = ({
     }
   };
 
+  if (isMobile) {
+    return (
+      <a
+        className={cn("block cursor-pointer w-full h-full group/pin", containerClassName)}
+        href={href || "/"}
+      >
+        <div className={cn("relative z-50 w-full h-full", className)}>{children}</div>
+      </a>
+    );
+  }
+
   return (
     <a
       className={cn(

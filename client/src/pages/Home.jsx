@@ -544,32 +544,39 @@ export default function Home() {
               <div className="h-1 w-12 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
             </div>
           </div>
-          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 xs:gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 xs:gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 px-1 sm:px-0">
             {topFaculties.map(faculty => {
               return (
                 <PinContainer
                   key={faculty.id}
                   title={faculty.name}
                   href={`/faculties/${faculty.slug}`}
-                  containerClassName="w-full h-full min-w-[120px] xs:min-w-[140px] sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] max-w-[140px] xs:max-w-[160px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-[240px] min-h-[160px] xs:min-h-[180px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-[300px] max-h-[180px] xs:max-h-[200px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[320px] mx-auto"
+                  containerClassName="w-full h-full sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-[240px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-[300px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[320px] mx-auto"
                 >
-                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col items-center p-2 xs:p-3 sm:p-4 md:p-5 lg:p-8 cursor-pointer hover:scale-105 w-full h-full">
-                    <div className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 mb-1 xs:mb-2 sm:mb-3 md:mb-4 rounded-full overflow-hidden border-2 xs:border-3 sm:border-4 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center group-hover:border-blue-400 transition-colors duration-300">
+                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200/80 sm:border-none shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-between p-3.5 sm:p-4 md:p-5 lg:p-8 cursor-pointer hover:scale-[1.03] sm:hover:scale-105 w-full h-full min-h-[175px] xs:min-h-[190px] sm:min-h-0">
+                    <div className="w-20 h-20 xs:w-22 xs:h-22 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 mb-2 sm:mb-3 md:mb-4 rounded-full overflow-hidden border-3 sm:border-4 border-[#20b2aa] sm:border-blue-500 bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center group-hover:border-teal-600 transition-colors duration-300 shadow-md shrink-0">
                       <img
                         src={faculty.image}
                         alt={faculty.name}
                         className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
                         onError={(e) => {
                           e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-lg xs:text-xl sm:text-2xl font-bold text-gray-700" style={{ display: 'none' }}>
+                      <div className="w-full h-full bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center text-xl sm:text-2xl font-bold text-teal-800" style={{ display: 'none' }}>
                         {faculty.name.charAt(0)}
                       </div>
                     </div>
-                    <div className="text-xs xs:text-sm sm:text-base md:text-base font-semibold text-black text-center leading-tight group-hover:text-blue-600 transition-colors duration-300 px-1">
-                      {faculty.name}
+                    <div className="flex flex-col items-center text-center w-full">
+                      <div className="text-xs xs:text-sm sm:text-base md:text-base font-bold text-slate-800 text-center leading-snug group-hover:text-[#20b2aa] transition-colors duration-300 px-1">
+                        {faculty.name}
+                      </div>
+                      {faculty.specialization && (
+                        <span className="mt-1.5 px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-teal-700 bg-teal-50 rounded-full border border-teal-100/80 text-center line-clamp-1 max-w-full">
+                          {faculty.specialization}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </PinContainer>
