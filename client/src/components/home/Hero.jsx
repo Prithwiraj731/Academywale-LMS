@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import bannerImg from '../../assets/banner.png';
 import banner1_1Img from '../../assets/Banner1.1.png';
 import banner2Img from '../../assets/banner2.png';
 
 export default function Hero() {
-  const banners = [bannerImg, banner1_1Img, banner2Img];
+  const banners = [banner1_1Img, banner2Img];
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Auto slide every 6 seconds
