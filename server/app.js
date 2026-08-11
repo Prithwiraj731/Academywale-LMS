@@ -120,6 +120,8 @@ const imageMigrationRoutes = require('./src/routes/image-migration.routes.js');
 
 const authController = require('./src/controllers/auth.controller.js');
 const purchaseController = require('./src/controllers/purchase.controller.js');
+const courseController = require('./src/controllers/course.controller.js');
+const { requireAdminCookie } = require('./src/middlewares/auth.middleware.js');
 
 // Direct Admin OTP Routes (guarantees route matching)
 app.options('/api/auth/admin/send-otp', cors());
@@ -131,6 +133,12 @@ app.options('/api/auth/admin/verify-otp', cors());
 app.post('/api/auth/admin/verify-otp', authController.verifyAdminOTP);
 app.options('/api/admin/verify-otp', cors());
 app.post('/api/admin/verify-otp', authController.verifyAdminOTP);
+
+// Direct Admin Backup & Restore Routes (guarantees route matching)
+app.options('/api/admin/courses/backup', cors());
+app.get('/api/admin/courses/backup', requireAdminCookie, courseController.exportCourseBackup);
+app.options('/api/admin/courses/restore', cors());
+app.post('/api/admin/courses/restore', requireAdminCookie, courseController.restoreCourseBackup);
 
 app.options('/api/purchase/razorpay-order', cors());
 app.post('/api/purchase/razorpay-order', purchaseController.createRazorpayOrder);
