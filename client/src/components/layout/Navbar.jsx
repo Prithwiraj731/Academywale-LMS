@@ -16,16 +16,29 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   
+  const [isContactDropdownOpen, setIsContactDropdownOpen] = useState(false);
+  const [isSocialDropdownOpen, setIsSocialDropdownOpen] = useState(false);
+
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.profile-menu-container')) {
         setProfileMenu(false);
-      };
+      }
+      if (!e.target.closest('.topbar-contact-container')) {
+        setIsContactDropdownOpen(false);
+      }
+      if (!e.target.closest('.topbar-social-container')) {
+        setIsSocialDropdownOpen(false);
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Live faculty list (API faculties)
@@ -68,33 +81,165 @@ export default function Navbar() {
     <div className="flex flex-col">
       <>
       {/* Top contact bar */}
-      <div className="bg-gray-900 text-white text-xs w-full z-50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex flex-row justify-start sm:justify-between items-center gap-3 overflow-x-auto whitespace-nowrap">
-          <div className="flex flex-row items-center gap-3 sm:gap-6 shrink-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              <span className="text-xs sm:text-sm font-semibold">+91 9693320108</span>
+      <div className="bg-gray-900 text-white text-xs w-full z-50 relative border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2">
+          {/* Desktop Topbar Layout (visible on sm and larger) */}
+          <div className="hidden sm:flex flex-row justify-between items-center w-full">
+            <div className="flex flex-row items-center gap-6">
+              <a href="tel:+919693320108" className="flex items-center gap-2 hover:text-[#20b2aa] transition-colors">
+                <svg className="w-4 h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+                <span className="text-sm font-semibold">+91 9693320108</span>
+              </a>
+              <a href="mailto:support@academywale.com" className="flex items-center gap-2 hover:text-[#20b2aa] transition-colors">
+                <svg className="w-4 h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                <span className="text-sm font-semibold">support@academywale.com</span>
+              </a>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-              </svg>
-              <span className="text-xs sm:text-sm font-semibold">support@academywale.com</span>
+            <div className="flex items-center gap-4">
+              <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block" title="WhatsApp">
+                <img src={whatsappLogo} alt="WhatsApp" className="w-6 h-6 object-contain" />
+              </a>
+              <a href="https://t.me/CMAspirants_010" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block" title="Telegram">
+                <img src={telegramLogo} alt="Telegram" className="w-6 h-6 object-contain" />
+              </a>
+              <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block" title="LinkedIn">
+                <img src={linkedinLogo} alt="LinkedIn" className="w-6 h-6 object-contain" />
+              </a>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <a href="https://wa.me/+919693320108" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
-              <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-            </a>
-            <a href="https://t.me/CMAspirants_010" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
-              <img src={telegramLogo} alt="Telegram" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-            </a>
-            <a href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="hover:scale-110 active:scale-95 transition-all duration-200 block">
-              <img src={linkedinLogo} alt="LinkedIn" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-            </a>
+
+          {/* Mobile Topbar Layout with 2 Dropdowns (visible on mobile < sm) */}
+          <div className="flex sm:hidden justify-between items-center w-full text-xs">
+            {/* Left Dropdown: Phone Number + Email */}
+            <div className="relative topbar-contact-container">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsContactDropdownOpen((prev) => !prev);
+                  setIsSocialDropdownOpen(false);
+                }}
+                className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-gray-800/90 hover:bg-gray-800 text-white border border-gray-700/80 active:scale-95 transition-all font-semibold"
+              >
+                <svg className="w-3.5 h-3.5 text-[#20b2aa]" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+                <span className="text-xs tracking-tight">+91 9693320108</span>
+                <svg
+                  className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${isContactDropdownOpen ? 'rotate-180 text-[#20b2aa]' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Contact Dropdown Panel */}
+              {isContactDropdownOpen && (
+                <div className="absolute left-0 mt-1.5 w-64 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-2 z-50 text-xs font-medium space-y-1">
+                  <a
+                    href="tel:+919693320108"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-md bg-[#20b2aa]/15 text-[#20b2aa] flex items-center justify-center shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">Phone</span>
+                      <span className="text-xs font-semibold text-white">+91 9693320108</span>
+                    </div>
+                  </a>
+                  <a
+                    href="mailto:support@academywale.com"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-md bg-[#20b2aa]/15 text-[#20b2aa] flex items-center justify-center shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <div className="overflow-hidden">
+                      <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</span>
+                      <span className="text-xs font-semibold text-white truncate block">support@academywale.com</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Right Dropdown: WhatsApp + Social Channels */}
+            <div className="relative topbar-social-container flex items-center gap-1.5">
+              <a
+                href="https://wa.me/+919693320108"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:scale-105 active:scale-95 transition-all p-0.5"
+                title="WhatsApp"
+              >
+                <img src={whatsappLogo} alt="WhatsApp" className="w-5.5 h-5.5 object-contain" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSocialDropdownOpen((prev) => !prev);
+                  setIsContactDropdownOpen(false);
+                }}
+                className="flex items-center gap-1 py-1 px-2 rounded-lg bg-gray-800/90 hover:bg-gray-800 text-white border border-gray-700/80 active:scale-95 transition-all font-semibold"
+                aria-label="More social channels"
+              >
+                <span className="text-[10px] text-gray-300 font-bold uppercase">Socials</span>
+                <svg
+                  className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${isSocialDropdownOpen ? 'rotate-180 text-[#20b2aa]' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Social Dropdown Panel */}
+              {isSocialDropdownOpen && (
+                <div className="absolute right-0 mt-1.5 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-2 z-50 text-xs font-medium space-y-1">
+                  <a
+                    href="https://wa.me/+919693320108"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+                  >
+                    <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 object-contain shrink-0" />
+                    <span className="font-semibold text-xs">WhatsApp</span>
+                  </a>
+                  <a
+                    href="https://t.me/CMAspirants_010"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+                  >
+                    <img src={telegramLogo} alt="Telegram" className="w-5 h-5 object-contain shrink-0" />
+                    <span className="font-semibold text-xs">Telegram</span>
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/sourav-pathak-30b385279?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-800 text-white transition-colors"
+                  >
+                    <img src={linkedinLogo} alt="LinkedIn" className="w-5 h-5 object-contain shrink-0" />
+                    <span className="font-semibold text-xs">LinkedIn</span>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
