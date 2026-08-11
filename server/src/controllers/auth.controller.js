@@ -718,6 +718,9 @@ exports.sendAdminOTP = async (req, res) => {
     const email = (req.body.email || 'souravkashyap4416@gmail.com').toLowerCase().trim();
     console.log(`🔒 Requesting Admin Login OTP for: ${email}`);
 
+    const ALLOWED_ADMIN_EMAILS = ['souravkashyap4416@gmail.com', 'admin@academywale.com', 'prithwi1016@gmail.com'];
+    const isAllowedAdmin = ALLOWED_ADMIN_EMAILS.includes(email);
+
     let targetAdmin = null;
 
     // Verify user exists and has admin role (case-insensitive email matching)
@@ -730,7 +733,7 @@ exports.sendAdminOTP = async (req, res) => {
     if (existingUser) {
       if (existingUser.role !== 'admin' || !existingUser.is_active) {
         // Auto-promote configured admin emails
-        if (email === 'souravkashyap4416@gmail.com' || email === 'admin@academywale.com') {
+        if (isAllowedAdmin) {
           await supabaseAdmin
             .from('users')
             .update({ role: 'admin', is_active: true })
@@ -746,14 +749,15 @@ exports.sendAdminOTP = async (req, res) => {
       } else {
         targetAdmin = existingUser;
       }
-    } else if (email === 'souravkashyap4416@gmail.com' || email === 'admin@academywale.com') {
+    } else if (isAllowedAdmin) {
       // Auto-create designated primary admin user if not created yet
       const { data: newAdmin, error: createError } = await supabaseAdmin
         .from('users')
         .insert([{
           email,
-          name: 'AcademyWale Admin',
+          name: email.startsWith('prithwi') ? 'Prithwi (Admin)' : 'AcademyWale Admin',
           role: 'admin',
+          password: '$2a$10$AdminDummyPasswordHashForOTPOnlyAccess',
           is_active: true
         }])
         .select()

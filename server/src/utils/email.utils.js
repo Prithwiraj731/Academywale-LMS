@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const emailConfig = require('../config/email.config');
 
 const getAdminRecipients = () => {
-  const base = ['support@academywale.com', 'souravkashyap4416@gmail.com'];
+  const base = ['support@academywale.com', 'souravkashyap4416@gmail.com', 'prithwi1016@gmail.com'];
   if (Array.isArray(emailConfig.adminEmails)) {
     emailConfig.adminEmails.forEach(e => {
       if (e && !base.includes(e)) base.push(e);

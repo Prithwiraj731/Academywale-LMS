@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Lock, ShieldCheck, AlertTriangle, CheckCircle2, Lightbulb, ArrowLeft, Send, KeyRound } from 'lucide-react';
 
 export default function Admin() {
-  const [email, setEmail] = useState('souravkashyap4416@gmail.com');
+  const [email, setEmail] = useState('prithwi1016@gmail.com');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1); // 1: Email/Send OTP, 2: Verify OTP
   const [error, setError] = useState('');
@@ -102,7 +102,7 @@ export default function Admin() {
           </div>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight">Admin Security Portal</h2>
           <p className="text-xs text-slate-500 font-medium">
-            Passwordless 2FA Security Access for <span className="font-bold text-teal-700">souravkashyap4416@gmail.com</span>
+            Passwordless 2FA Security Access for Authorized Admins
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function Admin() {
               </label>
               <input
                 type="email"
-                placeholder="souravkashyap4416@gmail.com"
+                placeholder="prithwi1016@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50/50 font-semibold text-slate-800"
