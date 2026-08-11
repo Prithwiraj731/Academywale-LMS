@@ -212,14 +212,14 @@ export default function Contact() {
               </div>
               <div className="space-y-1">
                 <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Phone & Call Support</h4>
-                <p className="text-lg font-bold text-white tracking-wide">+91 93569 39702</p>
+                <p className="text-lg font-bold text-white tracking-wide">+91 9693320108</p>
                 <p className="text-xs text-slate-400">Direct helpline for admissions and queries</p>
               </div>
             </div>
 
             {/* WhatsApp Card */}
             <a
-              href="https://wa.me/919356939702"
+              href="https://wa.me/919693320108"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-slate-900/80 backdrop-blur-xl rounded-[28px] p-6 border border-slate-800 shadow-xl flex items-start gap-4 hover:border-emerald-500/50 transition group block"
