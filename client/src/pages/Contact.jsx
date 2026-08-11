@@ -255,7 +255,7 @@ export default function Contact() {
                 <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Headquarter Office</h4>
                 <p className="text-sm font-bold text-white leading-snug">AcademyWale Education Center</p>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Prestige Point, Office No. 302, Shukrawar Peth, Near Subhash Nagar, Pune, Maharashtra 411002
+                  Hotel Grand, Purana Bazar , Bank More, Dhanbad - 826001
                 </p>
               </div>
             </div>
