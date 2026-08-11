@@ -3,7 +3,7 @@ import banner2Img from '../../assets/banner2.png';
 import banner1_1Img from '../../assets/Banner1.1.png';
 
 export default function Hero() {
-  const banners = [banner1_1Img, banner2Img];
+  const banners = [banner2Img, banner1_1Img];
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Auto slide every 6 seconds
