@@ -17,10 +17,10 @@ export default function Hero() {
 
   return (
     <section className="relative w-full overflow-hidden bg-neutral-900">
-      <div className="w-full overflow-hidden relative group">
+      <div className="w-full h-[160px] xs:h-[220px] sm:h-[320px] md:h-[400px] lg:h-[460px] xl:h-[520px] overflow-hidden relative group">
         {/* Banner Slider */}
         <div
-          className="flex transition-transform duration-700 ease-out"
+          className="flex h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {banners.map((banner, idx) => (
@@ -28,7 +28,7 @@ export default function Hero() {
               key={idx}
               src={banner}
               alt={`Banner ${idx + 1}`}
-              className="w-full h-auto object-cover flex-shrink-0 select-none pointer-events-none"
+              className="w-full h-full object-cover flex-shrink-0 select-none pointer-events-none"
               style={{ minWidth: '100%' }}
             />
           ))}
