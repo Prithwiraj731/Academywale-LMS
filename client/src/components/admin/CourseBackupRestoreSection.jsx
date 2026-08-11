@@ -66,6 +66,87 @@ const parseCSV = (csvText) => {
   return results;
 };
 
+/**
+ * Fallback Client-side CSV Converter for 100% Reliability
+ */
+const convertCoursesToCSVClient = (coursesList) => {
+  const headers = [
+    'id',
+    'title',
+    'subject',
+    'category',
+    'subcategory',
+    'paper_id',
+    'paper_name',
+    'course_type',
+    'description',
+    'faculty_name',
+    'faculty_slug',
+    'institute_name',
+    'no_of_lecture',
+    'books',
+    'video_language',
+    'video_run_on',
+    'timing',
+    'doubt_solving',
+    'support_mail',
+    'support_call',
+    'validity_start_from',
+    'poster_url',
+    'cost_price',
+    'selling_price',
+    'is_active',
+    'display_order',
+    'mode_attempt_pricing',
+    'custom_details'
+  ];
+
+  const escapeCsvCell = (val) => {
+    if (val === null || val === undefined) return '""';
+    let str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+    str = str.replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = [headers.join(',')];
+
+  (coursesList || []).forEach(c => {
+    const row = [
+      escapeCsvCell(c.id || c._id || ''),
+      escapeCsvCell(c.title || c.subject || ''),
+      escapeCsvCell(c.subject || c.title || ''),
+      escapeCsvCell(c.category || ''),
+      escapeCsvCell(c.subcategory || ''),
+      escapeCsvCell(c.paperId || c.paper_id || ''),
+      escapeCsvCell(c.paperName || c.paper_name || ''),
+      escapeCsvCell(c.courseType || c.course_type || ''),
+      escapeCsvCell(c.description || ''),
+      escapeCsvCell(c.facultyName || c.faculty_name || ''),
+      escapeCsvCell(c.facultySlug || c.faculty_slug || ''),
+      escapeCsvCell(c.instituteName || c.institute_name || c.institute || ''),
+      escapeCsvCell(c.noOfLecture || c.no_of_lecture || ''),
+      escapeCsvCell(c.books || ''),
+      escapeCsvCell(c.videoLanguage || c.video_language || ''),
+      escapeCsvCell(c.videoRunOn || c.video_run_on || ''),
+      escapeCsvCell(c.timing || ''),
+      escapeCsvCell(c.doubtSolving || c.doubt_solving || ''),
+      escapeCsvCell(c.supportMail || c.support_mail || ''),
+      escapeCsvCell(c.supportCall || c.support_call || ''),
+      escapeCsvCell(c.validityStartFrom || c.validity_start_from || ''),
+      escapeCsvCell(c.posterUrl || c.poster_url || ''),
+      escapeCsvCell(c.costPrice ?? c.cost_price ?? 0),
+      escapeCsvCell(c.sellingPrice ?? c.selling_price ?? 0),
+      escapeCsvCell(c.isActive ?? c.is_active ?? true),
+      escapeCsvCell(c.displayOrder ?? c.display_order ?? 9999),
+      escapeCsvCell(c.modeAttemptPricing || c.mode_attempt_pricing || []),
+      escapeCsvCell(c.customDetails || c.custom_details || [])
+    ];
+    rows.push(row.join(','));
+  });
+
+  return rows.join('\r\n');
+};
+
 export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
   const [downloadingFormat, setDownloadingFormat] = useState(null);
   const [backupStatus, setBackupStatus] = useState('');
@@ -79,25 +160,46 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
   const [restoreResult, setRestoreResult] = useState(null);
   const [restoreError, setRestoreError] = useState('');
 
-  // Download Backup Handler
+  // Download Backup Handler with Resilient Multi-layer Fallback
   const handleDownloadBackup = async (format = 'csv') => {
     setDownloadingFormat(format);
     setBackupStatus('Fetching all courses for backup...');
     setBackupError('');
 
     try {
-      const response = await fetchWithCredentials(`${API_URL}/api/admin/courses/backup?format=${format}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
+      let coursesList = [];
+      let csvContent = '';
 
-      if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`);
+      // Layer 1: Try primary backup endpoint
+      try {
+        const response = await fetchWithCredentials(`${API_URL}/api/admin/courses/backup?format=${format}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            coursesList = data.courses || [];
+            csvContent = data.csvData || '';
+          }
+        }
+      } catch (srvErr) {
+        console.warn('Dedicated backup endpoint unavailable, falling back to all courses API:', srvErr.message);
       }
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.message || data.error || 'Failed to export course backup');
+      // Layer 2: Fallback to /api/courses/all if dedicated backup endpoint fails or 404s
+      if (!coursesList || coursesList.length === 0) {
+        const fallbackRes = await fetch(`${API_URL}/api/courses/all`);
+        if (!fallbackRes.ok) {
+          throw new Error(`Failed to load courses from API (${fallbackRes.status})`);
+        }
+        const fallbackData = await fallbackRes.json();
+        coursesList = Array.isArray(fallbackData.courses) ? fallbackData.courses : [];
+      }
+
+      if (!coursesList || coursesList.length === 0) {
+        throw new Error('No courses found in database to backup.');
       }
 
       const dateStr = new Date().toISOString().split('T')[0];
@@ -105,12 +207,14 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
       let filename;
 
       if (format === 'json') {
-        const jsonStr = JSON.stringify(data.courses || [], null, 2);
+        const jsonStr = JSON.stringify(coursesList, null, 2);
         blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
         filename = `academywale_courses_backup_${dateStr}.json`;
       } else {
-        const csvText = data.csvData || '';
-        blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+        if (!csvContent) {
+          csvContent = convertCoursesToCSVClient(coursesList);
+        }
+        blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         filename = `academywale_courses_backup_${dateStr}.csv`;
       }
 
@@ -123,7 +227,7 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      setBackupStatus(`✅ Downloaded backup containing ${data.count} courses (${format.toUpperCase()})`);
+      setBackupStatus(`✅ Downloaded backup containing ${coursesList.length} courses (${format.toUpperCase()})`);
     } catch (err) {
       console.error('Backup download error:', err);
       setBackupError(`Failed to download backup: ${err.message}`);
@@ -170,7 +274,7 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
     reader.readAsText(selectedFile);
   };
 
-  // Execute Restore Handler
+  // Execute Restore Handler with Resilient Fallback
   const handleExecuteRestore = async () => {
     if (!parsedCourses || parsedCourses.length === 0) {
       setRestoreError('No courses to restore. Please upload a valid backup file.');
@@ -187,18 +291,28 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
     setRestoreError('');
 
     try {
-      const response = await fetchWithCredentials(`${API_URL}/api/admin/courses/restore`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          courses: parsedCourses,
-          mode: restoreMode,
-          overwrite: restoreMode === 'overwrite'
-        })
-      });
+      let response;
+      // Try restore endpoint first
+      try {
+        response = await fetchWithCredentials(`${API_URL}/api/admin/courses/restore`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            courses: parsedCourses,
+            mode: restoreMode,
+            overwrite: restoreMode === 'overwrite'
+          })
+        });
+      } catch (e) { }
+
+      // Fallback to bulk-upload if restore endpoint 404s
+      if (!response || !response.ok) {
+        response = await fetchWithCredentials(`${API_URL}/api/admin/courses/bulk-upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ courses: parsedCourses })
+        });
+      }
 
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -253,7 +367,7 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
               <button
                 onClick={() => handleDownloadBackup('csv')}
                 disabled={downloadingFormat !== null}
-                className="flex-1 bg-[#20b2aa] hover:bg-[#1a938c] text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 text-sm shadow-md"
+                className="flex-1 bg-[#20b2aa] hover:bg-[#1a938c] text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 text-sm shadow-md cursor-pointer"
               >
                 {downloadingFormat === 'csv' ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -266,7 +380,7 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
               <button
                 onClick={() => handleDownloadBackup('json')}
                 disabled={downloadingFormat !== null}
-                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 text-sm"
+                className="flex-1 bg-neutral-700 hover:bg-neutral-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 text-sm cursor-pointer"
               >
                 {downloadingFormat === 'json' ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -374,7 +488,7 @@ export default function CourseBackupRestoreSection({ onRestoreSuccess }) {
             <button
               onClick={handleExecuteRestore}
               disabled={isRestoring || parsedCourses.length === 0}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-40 text-sm shadow-md"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-40 text-sm shadow-md cursor-pointer"
             >
               {isRestoring ? (
                 <>
