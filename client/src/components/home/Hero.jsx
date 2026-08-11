@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import banner1_1Img from '../../assets/Banner1.1.png';
 import banner2Img from '../../assets/banner2.png';
+import banner1_1Img from '../../assets/Banner1.1.png';
 
 export default function Hero() {
   const banners = [banner1_1Img, banner2Img];
