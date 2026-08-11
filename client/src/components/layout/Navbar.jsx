@@ -181,10 +181,10 @@ export default function Navbar() {
                 href="https://wa.me/+919693320108"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:scale-105 active:scale-95 transition-all p-0.5"
+                className="hover:scale-105 active:scale-95 transition-all p-0.5 shrink-0"
                 title="WhatsApp"
               >
-                <img src={whatsappLogo} alt="WhatsApp" className="w-5.5 h-5.5 object-contain" />
+                <img src={whatsappLogo} alt="WhatsApp" className="w-5 h-5 object-contain shrink-0" />
               </a>
 
               <button
