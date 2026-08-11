@@ -7,33 +7,33 @@ import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
 import FacultyImage from '../components/ui/FacultyImage';
 import CoursesByPaperSection from '../components/admin/CoursesByPaperSection';
+import CourseBackupRestoreSection from '../components/admin/CourseBackupRestoreSection';
 import { 
-  BookOpen, GraduationCap as GradCapIcon, Building2, UploadCloud, UserPlus, 
+  BookOpen, GraduationCap as GradCapIcon, Building2, UploadCloud, UserPlus, Database,
   Edit as EditIcon, Trash2, Mail, Ban, CheckCircle2, Settings, Eye, EyeOff, MessageSquare, Plus 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL, fetchWithCredentials } from '../api';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
 const TEACHES_OPTIONS = ['CA', 'CMA'];
 
-// Helper function to convert faculty name to slug
 const getSlugFromFacultyName = (name) => {
   if (!name) return '';
   return name.trim()
     .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/[^\w-]/g, '') // Remove non-word chars except hyphens
-    .replace(/^(ca|cma|cs)-/, ''); // Remove leading CA/CMA/CS prefix if present
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '')
+    .replace(/^(ca|cma|cs)-/, '');
 };
+
 const COURSE_OPTIONS = [
   'CA Foundation', 'CMA Foundation',
   'CA Inter', 'CMA Inter',
   'CA Final', 'CMA Final'
 ];
-import { API_URL, fetchWithCredentials } from '../api';
 
-// Modal styles
 const modalStyles = {
   overlay: { zIndex: 1000, background: 'rgba(0,0,0,0.3)' },
   content: { maxWidth: 500, margin: 'auto', borderRadius: 16, padding: 32 }
@@ -54,7 +54,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Check admin access - verify strictly with backend session role
   const isAdmin = user && user.role === 'admin';
 
   // If not admin, redirect but show loading state during redirect
@@ -2784,6 +2783,13 @@ export default function AdminDashboard() {
           <span className="text-xs sm:text-sm font-semibold">Bulk Upload</span>
         </button>
         <button
+          className={`${buttonBase} ${activePanel === 'backup' ? buttonActive : buttonInactive}`}
+          onClick={() => setActivePanel('backup')}
+        >
+          <Database className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
+          <span className="text-xs sm:text-sm font-semibold">Backup & Restore</span>
+        </button>
+        <button
           className={`${buttonBase} ${activePanel === 'manualEnrollment' ? buttonActive : buttonInactive}`}
           onClick={() => {
             setActivePanel('manualEnrollment');
@@ -3539,6 +3545,16 @@ export default function AdminDashboard() {
               </div>
             </form>
           </Modal>
+        </div>
+      )}
+      {activePanel === 'backup' && (
+        <div className="w-full max-w-6xl">
+          <CourseBackupRestoreSection onRestoreSuccess={() => {
+            setCourseListRefreshKey(prev => prev + 1);
+            if (typeof fetchAvailableCoursesForManualForm === 'function') {
+              fetchAvailableCoursesForManualForm();
+            }
+          }} />
         </div>
       )}
       {activePanel === 'bulk' && (

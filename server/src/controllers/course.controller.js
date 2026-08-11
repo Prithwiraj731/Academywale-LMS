@@ -1233,7 +1233,188 @@ exports.reorderCourses = async (req, res) => {
   }
 };
 
+/**
+ * Converts courses list into RFC 4180 compliant CSV string
+ */
+function convertCoursesToCsv(courses) {
+  const headers = [
+    'id',
+    'title',
+    'subject',
+    'category',
+    'subcategory',
+    'paper_id',
+    'paper_name',
+    'course_type',
+    'description',
+    'faculty_name',
+    'faculty_slug',
+    'institute_name',
+    'no_of_lecture',
+    'books',
+    'video_language',
+    'video_run_on',
+    'timing',
+    'doubt_solving',
+    'support_mail',
+    'support_call',
+    'validity_start_from',
+    'poster_url',
+    'cost_price',
+    'selling_price',
+    'is_active',
+    'display_order',
+    'mode_attempt_pricing',
+    'custom_details'
+  ];
+
+  const escapeCsvCell = (val) => {
+    if (val === null || val === undefined) return '""';
+    let str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+    str = str.replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = [headers.join(',')];
+
+  (courses || []).forEach(c => {
+    let customDetails = c.custom_details || c.customDetails || [];
+    if (typeof customDetails === 'string') {
+      try { customDetails = JSON.parse(customDetails); } catch (e) { customDetails = []; }
+    }
+
+    let modeAttemptPricing = c.mode_attempt_pricing || c.modeAttemptPricing || [];
+    if (typeof modeAttemptPricing === 'string') {
+      try { modeAttemptPricing = JSON.parse(modeAttemptPricing); } catch (e) { modeAttemptPricing = []; }
+    }
+
+    let displayOrder = c.display_order ?? c.displayOrder ?? 9999;
+    if (Array.isArray(customDetails)) {
+      const orderObj = customDetails.find(i => i && (i.fieldType === '__DISPLAY_ORDER__' || i.label === '__DISPLAY_ORDER__'));
+      if (orderObj && orderObj.value !== undefined && !isNaN(Number(orderObj.value))) {
+        displayOrder = Number(orderObj.value);
+      }
+    }
+
+    const row = [
+      escapeCsvCell(c.id || c._id || ''),
+      escapeCsvCell(c.title || c.subject || ''),
+      escapeCsvCell(c.subject || c.title || ''),
+      escapeCsvCell(c.category || ''),
+      escapeCsvCell(c.subcategory || ''),
+      escapeCsvCell(c.paper_id || c.paperId || ''),
+      escapeCsvCell(c.paper_name || c.paperName || ''),
+      escapeCsvCell(c.course_type || c.courseType || ''),
+      escapeCsvCell(c.description || ''),
+      escapeCsvCell(c.faculty_name || c.facultyName || ''),
+      escapeCsvCell(c.faculty_slug || c.facultySlug || ''),
+      escapeCsvCell(c.institute_name || c.instituteName || c.institute || ''),
+      escapeCsvCell(c.no_of_lecture || c.noOfLecture || ''),
+      escapeCsvCell(c.books || ''),
+      escapeCsvCell(c.video_language || c.videoLanguage || ''),
+      escapeCsvCell(c.video_run_on || c.videoRunOn || ''),
+      escapeCsvCell(c.timing || ''),
+      escapeCsvCell(c.doubt_solving || c.doubtSolving || ''),
+      escapeCsvCell(c.support_mail || c.supportMail || ''),
+      escapeCsvCell(c.support_call || c.supportCall || ''),
+      escapeCsvCell(c.validity_start_from || c.validityStartFrom || ''),
+      escapeCsvCell(c.poster_url || c.posterUrl || ''),
+      escapeCsvCell(c.cost_price ?? c.costPrice ?? 0),
+      escapeCsvCell(c.selling_price ?? c.sellingPrice ?? 0),
+      escapeCsvCell(c.is_active ?? c.isActive ?? true),
+      escapeCsvCell(displayOrder),
+      escapeCsvCell(modeAttemptPricing),
+      escapeCsvCell(customDetails)
+    ];
+    rows.push(row.join(','));
+  });
+
+  return rows.join('\r\n');
+}
+
+// @desc    Export course backup in CSV or JSON
+// @route   GET /api/admin/courses/backup
+// @access  Private/Admin
+exports.exportCourseBackup = async (req, res) => {
+  try {
+    console.log('📥 Course controller: exportCourseBackup called');
+    const format = (req.query.format || 'csv').toLowerCase();
+
+    const { data: courses, error } = await supabaseAdmin
+      .from('courses')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const mappedCourses = mapCoursesToFrontend(courses || []);
+    const dateStr = new Date().toISOString().split('T')[0];
+
+    if (format === 'json') {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="courses_backup_${dateStr}.json"`);
+      return res.json({
+        success: true,
+        count: mappedCourses.length,
+        timestamp: new Date().toISOString(),
+        courses: mappedCourses
+      });
+    }
+
+    const csvContent = convertCoursesToCsv(courses || []);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="courses_backup_${dateStr}.csv"`);
+    return res.json({
+      success: true,
+      count: mappedCourses.length,
+      timestamp: new Date().toISOString(),
+      csvData: csvContent,
+      courses: mappedCourses
+    });
+  } catch (error) {
+    return handleControllerError(error, 'Export course backup', res);
+  }
+};
+
+// @desc    Restore courses from backup JSON or CSV
+// @route   POST /api/admin/courses/restore
+// @access  Private/Admin
+exports.restoreCourseBackup = async (req, res) => {
+  try {
+    console.log('📦 Course controller: restoreCourseBackup called');
+    let { courses, mode, overwrite } = req.body;
+
+    if (!courses || !Array.isArray(courses) || courses.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input. An array of course backup items is required.'
+      });
+    }
+
+    const isOverwrite = overwrite === true || mode === 'overwrite';
+
+    if (isOverwrite) {
+      console.log('⚠️ Overwrite mode enabled: purging existing courses first.');
+      const { error: delError } = await supabaseAdmin
+        .from('courses')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (delError) {
+        console.warn('Warning deleting existing courses prior to restore:', delError.message);
+      }
+    }
+
+    // Pass data into bulk upload processor
+    req.body = { courses };
+    return exports.bulkUploadCourses(req, res);
+  } catch (error) {
+    return handleControllerError(error, 'Restore course backup', res);
+  }
+};
+
 exports.addNewCourseToFaculty = exports.addCourseToFaculty;
 
 module.exports = exports;
+
 

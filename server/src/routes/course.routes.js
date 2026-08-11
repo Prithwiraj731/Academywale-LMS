@@ -21,6 +21,8 @@ router.delete('/api/admin/course/:courseIndex', requireAdminCookie, (req, res) =
 router.put('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, upload.single('poster'), courseController.updateCourse);
 router.delete('/api/admin/courses/:facultySlug/:courseIndex', requireAdminCookie, courseController.deleteCourse);
 router.post('/api/admin/courses/bulk-upload', requireAdminCookie, courseController.bulkUploadCourses);
+router.get('/api/admin/courses/backup', requireAdminCookie, courseController.exportCourseBackup);
+router.post('/api/admin/courses/restore', requireAdminCookie, courseController.restoreCourseBackup);
 
 router.put('/api/admin/courses/reorder', courseController.reorderCourses);
 router.put('/api/courses/reorder', courseController.reorderCourses);
