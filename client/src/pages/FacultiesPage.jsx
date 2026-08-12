@@ -185,11 +185,6 @@ export default function FacultiesPage() {
                       <div className="text-sm sm:text-lg font-bold text-gray-900 text-center leading-tight group-hover:text-[#20b2aa] transition-colors duration-300 line-clamp-2">
                         {faculty.name}
                       </div>
-                      {faculty.specialization && (
-                        <span className="mt-2 px-2.5 py-0.5 text-xs sm:text-sm font-medium text-teal-700 bg-teal-50 rounded-full border border-teal-100/80 text-center line-clamp-1 max-w-full">
-                          {faculty.specialization}
-                        </span>
-                      )}
                     </div>
                   </PinContainer>
                 ))}

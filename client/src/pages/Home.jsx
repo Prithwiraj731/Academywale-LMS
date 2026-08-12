@@ -572,11 +572,6 @@ export default function Home() {
                       <div className="text-xs xs:text-sm sm:text-base md:text-base font-bold text-slate-800 text-center leading-snug group-hover:text-[#20b2aa] transition-colors duration-300 px-1">
                         {faculty.name}
                       </div>
-                      {faculty.specialization && (
-                        <span className="mt-1.5 px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-teal-700 bg-teal-50 rounded-full border border-teal-100/80 text-center line-clamp-1 max-w-full">
-                          {faculty.specialization}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </PinContainer>

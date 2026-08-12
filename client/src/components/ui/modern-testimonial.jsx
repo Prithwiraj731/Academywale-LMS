@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// Custom animation styles
+// Custom animation styles with zero gap on mobile to prevent cumulative slide offset
 const styles = `
   @keyframes fadeIn {
     0% {
@@ -13,27 +13,8 @@ const styles = `
     }
   }
   
-  @keyframes slideLeft {
-    0% {
-      transform: translateX(30px);
-      opacity: 0;
-    }
-    5% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    95% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(-30px);
-      opacity: 0;
-    }
-  }
-  
   .testimonial-section {
-    padding: 0 0.5rem;
+    padding: 0 1rem;
     width: 100%;
     box-sizing: border-box;
   }
@@ -46,50 +27,45 @@ const styles = `
   
   .testimonial-slider {
     display: flex;
-    transition: transform 0.5s ease-in-out;
+    transition: transform 0.4s ease-out;
     width: 100%;
-    gap: 0.5rem;
+    gap: 0;
   }
   
   .testimonial-slide {
     min-width: 100%;
     width: 100%;
-    padding: 0.25rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
+    flex-shrink: 0;
   }
   
   @media (min-width: 640px) {
     .testimonial-section {
-      padding: 0 1rem;
-    }
-    
-    .testimonial-slider {
-      gap: 1rem;
-    }
-    
-    .testimonial-slide {
-      padding: 0.5rem;
+      padding: 0 1.5rem;
     }
   }
   
   @media (min-width: 768px) {
     .testimonial-slider {
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
     
     .testimonial-slide {
-      min-width: calc(50% - 0.75rem);
+      min-width: calc(50% - 0.625rem);
+      width: calc(50% - 0.625rem);
       padding: 0;
     }
   }
   
   @media (min-width: 1024px) {
-    .testimonial-section {
-      padding: 0;
+    .testimonial-slider {
+      gap: 1.5rem;
     }
     
     .testimonial-slide {
       min-width: calc(33.333% - 1rem);
+      width: calc(33.333% - 1rem);
     }
   }
 `;
@@ -161,73 +137,107 @@ export default function ModernTestimonial({
   const [isPaused, setIsPaused] = useState(false);
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
+
+  // Touch gesture state for mobile swiping
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   
-  // Calculate how many testimonials to show based on screen size
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
   
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
-      if (sliderRef.current) {
-        sliderRef.current.style.transform = `translateX(-${activeIndex * 100}%)`;
-      }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [activeIndex]);
+  }, []);
   
   // Determine how many cards to show based on screen width
   let cardsToShow = 1;
   if (windowWidth >= 768) cardsToShow = 2;
   if (windowWidth >= 1024) cardsToShow = 3;
   
-  // Total number of slides (accounting for wrapping)
   const totalSlides = testimonials.length;
+  const maxIndex = Math.max(0, totalSlides - cardsToShow);
   
-  // Handle slider movement
+  // Handle slider movement with pixel/percentage accuracy
   const moveSlider = (index) => {
-    setActiveIndex(index);
+    const clampedIndex = Math.min(Math.max(0, index), maxIndex);
+    setActiveIndex(clampedIndex);
     if (sliderRef.current) {
-      const slideWidth = windowWidth < 768 ? 100 : 100 / cardsToShow;
-      sliderRef.current.style.transform = `translateX(-${index * slideWidth}%)`;
+      if (windowWidth < 768) {
+        sliderRef.current.style.transform = `translateX(-${clampedIndex * 100}%)`;
+      } else {
+        const gapPx = windowWidth >= 1024 ? 24 : 20;
+        const containerWidth = sliderRef.current.parentElement ? sliderRef.current.parentElement.offsetWidth : 0;
+        const cardWidth = (containerWidth - (gapPx * (cardsToShow - 1))) / cardsToShow;
+        const shiftPx = clampedIndex * (cardWidth + gapPx);
+        sliderRef.current.style.transform = `translateX(-${shiftPx}px)`;
+      }
+    }
+  };
+
+  useEffect(() => {
+    moveSlider(activeIndex);
+  }, [windowWidth, activeIndex]);
+  
+  // Touch swipe event handlers
+  const handleTouchStart = (e) => {
+    setIsPaused(true);
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    setIsPaused(false);
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 40;
+    if (distance > minSwipeDistance) {
+      const nextIndex = activeIndex >= maxIndex ? 0 : activeIndex + 1;
+      moveSlider(nextIndex);
+    } else if (distance < -minSwipeDistance) {
+      const prevIndex = activeIndex === 0 ? maxIndex : activeIndex - 1;
+      moveSlider(prevIndex);
     }
   };
   
   // Start/stop the auto slider
   useEffect(() => {
-    const startInterval = () => {
-      // Clear existing interval if any
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      
-      intervalRef.current = setInterval(() => {
-        if (!isPaused) {
-          const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
-          moveSlider(nextIndex);
-        }
-      }, 3000); // Change every 3 seconds
-    };
+    if (isPaused) return;
     
-    startInterval();
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = prev >= maxIndex ? 0 : prev + 1;
+        moveSlider(next);
+        return next;
+      });
+    }, 4500);
     
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [activeIndex, isPaused, cardsToShow, totalSlides]);
+  }, [isPaused, maxIndex, cardsToShow]);
   
   return (
-    <section className="py-12 bg-black text-white overflow-hidden">
+    <section className="py-12 xs:py-14 sm:py-16 bg-slate-950 text-white overflow-hidden border-t border-neutral-850">
       <style>{styles}</style>
       <div className="max-w-7xl mx-auto testimonial-section">
-        <div className="text-center mb-6 sm:mb-10">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-teal-400 to-[#20b2aa] text-transparent bg-clip-text">
-            {title}
+        <div className="text-center mb-8 sm:mb-12">
+          <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3 inline-block">
+            Student Feedback
+          </span>
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-heading">
+            See What Teachers & <span className="text-[#20b2aa]">Students Say</span>
           </h2>
-          <p className="text-base sm:text-lg text-gray-400 mt-2 sm:mt-3 px-2">
+          <p className="text-sm sm:text-base text-neutral-400 mt-2.5 sm:mt-3 px-2 max-w-xl mx-auto font-medium">
             {subtitle}
           </p>
         </div>
@@ -238,10 +248,11 @@ export default function ModernTestimonial({
             ref={sliderRef}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {testimonials.map((testimonial, index) => (
+            {testimonials.map((testimonial) => (
               <div className="testimonial-slide" key={`testimonial-${testimonial.id}`}>
                 <TestimonialCard 
                   testimonial={testimonial}
@@ -251,33 +262,31 @@ export default function ModernTestimonial({
           </div>
         </div>
         
-        {/* Navigation controls */}
-        <div className="flex justify-between items-center mt-6 sm:mt-8">
+        {/* Navigation controls & indicators */}
+        <div className="flex items-center justify-between mt-8 max-w-xs sm:max-w-md mx-auto px-4">
           <button 
             onClick={() => {
-              const prevIndex = activeIndex === 0 
-                ? totalSlides - cardsToShow 
-                : activeIndex - 1;
+              const prevIndex = activeIndex === 0 ? maxIndex : activeIndex - 1;
               moveSlider(prevIndex);
             }}
-            className="p-2 rounded-full bg-[#20b2aa] hover:bg-[#17817a] text-white transition-colors shadow-lg shadow-[#20b2aa]/20 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
+            className="p-2.5 rounded-full bg-neutral-900 hover:bg-[#20b2aa] border border-neutral-800 text-white transition-all shadow-md active:scale-95 flex items-center justify-center w-10 h-10 cursor-pointer"
             aria-label="Previous testimonial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
           
           {/* Pagination indicators */}
-          <div className="flex justify-center space-x-1.5 sm:space-x-2">
-            {Array.from({ length: totalSlides - cardsToShow + 1 }).map((_, index) => (
+          <div className="flex items-center gap-2">
+            {Array.from({ length: maxIndex + 1 }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => moveSlider(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                   activeIndex === index 
-                    ? 'bg-[#20b2aa] w-5' 
-                    : 'bg-gray-600'
+                    ? 'bg-[#20b2aa] w-6' 
+                    : 'bg-neutral-800 hover:bg-neutral-700 w-2'
                 }`}
                 aria-label={`Go to testimonial set ${index + 1}`}
               />
@@ -286,13 +295,13 @@ export default function ModernTestimonial({
           
           <button 
             onClick={() => {
-              const nextIndex = (activeIndex + 1) % (totalSlides - cardsToShow + 1);
+              const nextIndex = activeIndex >= maxIndex ? 0 : activeIndex + 1;
               moveSlider(nextIndex);
             }}
-            className="p-2 rounded-full bg-[#20b2aa] hover:bg-[#17817a] text-white transition-colors shadow-lg shadow-[#20b2aa]/20 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12"
+            className="p-2.5 rounded-full bg-neutral-900 hover:bg-[#20b2aa] border border-neutral-800 text-white transition-all shadow-md active:scale-95 flex items-center justify-center w-10 h-10 cursor-pointer"
             aria-label="Next testimonial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>
             </svg>
           </button>
@@ -305,19 +314,19 @@ export default function ModernTestimonial({
 function TestimonialCard({ testimonial }) {
   return (
     <div 
-      className="bg-gray-900/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm border border-teal-900/30 flex flex-col h-full hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:shadow-[#20b2aa]/15 relative mx-auto w-full max-w-sm sm:max-w-none"
+      className="bg-neutral-900/90 rounded-2xl p-5 sm:p-6 backdrop-blur-md border border-neutral-800 flex flex-col h-full hover:border-[#20b2aa]/40 transition-all duration-300 hover:shadow-[0_10px_30px_rgba(32,178,170,0.1)] relative w-full text-left justify-between"
     >
-      {/* Teal glow effect */}
-      <div className="absolute -top-1 -right-1 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-teal-400 to-[#20b2aa] rounded-full opacity-10 blur-xl"></div>
-      
+      {/* Subtle top accent gradient */}
+      <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[#20b2aa]/40 to-transparent"></div>
+
       {/* Main review text */}
-      <p className="text-gray-300 mb-3 sm:mb-6 flex-grow relative z-10 text-sm sm:text-base line-clamp-4 sm:line-clamp-none leading-relaxed">
+      <p className="text-neutral-300 mb-6 text-sm sm:text-base leading-relaxed font-medium">
         "{testimonial.review}"
       </p>
       
       {/* Author info */}
-      <div className="flex items-center mt-auto relative z-10">
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-[#20b2aa] flex-shrink-0">
+      <div className="flex items-center pt-4 border-t border-neutral-800/80">
+        <div className="h-11 w-11 rounded-full overflow-hidden ring-2 ring-[#20b2aa]/60 flex-shrink-0 bg-neutral-800">
           <img 
             src={testimonial.avatar} 
             alt={testimonial.name} 
@@ -325,11 +334,11 @@ function TestimonialCard({ testimonial }) {
             loading="lazy"
             onError={(e) => {
               e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
+              if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
             }}
           />
           <div 
-            className="h-full w-full bg-teal-800 flex items-center justify-center text-white"
+            className="h-full w-full bg-teal-900 flex items-center justify-center text-white font-bold text-sm"
             style={{ display: 'none' }}
           >
             {testimonial.name.charAt(0)}
@@ -337,10 +346,11 @@ function TestimonialCard({ testimonial }) {
         </div>
         
         <div className="ml-3 overflow-hidden">
-          <div className="font-semibold text-white text-sm sm:text-base truncate">{testimonial.name}</div>
-          <div className="text-xs sm:text-sm text-teal-300 truncate">{testimonial.role}</div>
+          <div className="font-bold text-white text-sm sm:text-base truncate">{testimonial.name}</div>
+          <div className="text-xs text-[#20b2aa] font-semibold truncate">{testimonial.role}</div>
         </div>
       </div>
     </div>
   );
 }
+

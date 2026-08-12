@@ -101,7 +101,7 @@ export default function Reviews() {
 
                     return (
                       <div key={rev._id} className="w-full flex-shrink-0 px-2">
-                        <div className="bg-[#fef9f4] rounded-lg shadow-md p-4 border border-yellow-200 mx-auto max-w-sm">
+                        <div className="bg-[#fef9f4] rounded-lg shadow-md p-4 border border-yellow-200 w-full">
                           <div className="flex items-start gap-3 mb-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#d4af37] flex-shrink-0">
                               {cloudinaryId ? (
