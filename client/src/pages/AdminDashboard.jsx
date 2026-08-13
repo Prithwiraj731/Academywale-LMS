@@ -2697,29 +2697,38 @@ export default function AdminDashboard() {
     setTestimonialStatus('');
     setTestimonialError('');
     if (!testimonialAdd.name.trim() || !testimonialAdd.text.trim()) {
-      setTestimonialError('Name and text are required.');
+      setTestimonialError('Name and message are required.');
       return;
     }
     const formData = new FormData();
     formData.append('name', testimonialAdd.name.trim());
-    formData.append('course', testimonialAdd.role); // Use role as course
-    formData.append('message', testimonialAdd.text.trim()); // Use text as message
+    formData.append('course', testimonialAdd.role || 'Student');
+    formData.append('role', testimonialAdd.role || 'Student');
+    formData.append('designation', testimonialAdd.role || 'Student');
+    formData.append('message', testimonialAdd.text.trim());
+    formData.append('text', testimonialAdd.text.trim());
     if (testimonialAdd.image) formData.append('image', testimonialAdd.image);
+
     try {
-      const res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
+      let res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_URL}/api/admin/testimonials`, { method: 'POST', body: formData });
+      }
       const data = await res.json();
-      if (res.ok && data.testimonial) {
-        setTestimonialStatus('Testimonial added!');
-        setTestimonialAdd({ name: '', role: 'teacher', text: '', image: null, imagePreview: null });
-        setTimeout(() => setTestimonialStatus(''), 2000);
+      if (res.ok && (data.success || data.testimonial)) {
+        setTestimonialStatus('Testimonial added successfully!');
+        setTestimonialAdd({ name: '', role: '', text: '', image: null, imagePreview: null });
+        setTimeout(() => setTestimonialStatus(''), 3000);
         // Refresh testimonials list
-        fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+        fetch(`${API_URL}/api/testimonials`)
+          .then(res => res.json())
+          .then(data => setTestimonials(data.testimonials || []));
       } else {
-        setTestimonialError(data.message || 'Failed to add testimonial');
+        setTestimonialError(data.message || data.error || 'Failed to add testimonial');
       }
     } catch (error) {
       console.error('Testimonial submission error:', error);
-      setTestimonialError('Server error');
+      setTestimonialError('Server error while saving testimonial');
     }
   };
   const openEditTestimonialModal = (t) => {
