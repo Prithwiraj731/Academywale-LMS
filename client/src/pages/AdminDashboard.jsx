@@ -311,6 +311,7 @@ export default function AdminDashboard() {
     studentEmail: '',
     studentPhone: '',
     courseId: '',
+    courseIds: [],
     amount: '',
     paymentMethod: 'offline',
     paymentStatus: 'completed',
@@ -331,6 +332,32 @@ export default function AdminDashboard() {
   const [manualEnrollmentError, setManualEnrollmentError] = useState('');
   const [manualEnrollmentSuccess, setManualEnrollmentSuccess] = useState('');
   const [editingManualEnrollmentId, setEditingManualEnrollmentId] = useState(null);
+
+  const toggleCourseSelection = (cId) => {
+    setManualEnrollmentForm(prev => {
+      const currentIds = Array.isArray(prev.courseIds) ? [...prev.courseIds] : (prev.courseId ? [prev.courseId] : []);
+      let newIds = [];
+      if (currentIds.includes(cId)) {
+        newIds = currentIds.filter(id => id !== cId);
+      } else {
+        newIds = [...currentIds, cId];
+      }
+
+      const getCId = (course) => course?.id || course?._id || course?.mongo_id || '';
+      const newSelectedCourses = availableCourses.filter(c => newIds.includes(getCId(c)));
+      const autoTotalAmount = newSelectedCourses.reduce((sum, c) => {
+        const price = Number(c.sellingPrice || c.selling_price || c.cost_price || 0);
+        return sum + price;
+      }, 0);
+
+      return {
+        ...prev,
+        courseIds: newIds,
+        courseId: newIds.length > 0 ? newIds[0] : '',
+        amount: autoTotalAmount > 0 ? String(autoTotalAmount) : prev.amount
+      };
+    });
+  };
 
   const filteredCoursesForCoupon = availableCourses.filter(c => {
     const title = String(c.title || '').toLowerCase();
@@ -457,8 +484,12 @@ export default function AdminDashboard() {
     setManualEnrollmentError('');
     setManualEnrollmentSuccess('');
 
-    if (!manualEnrollmentForm.studentName.trim() || !manualEnrollmentForm.studentEmail.trim() || !manualEnrollmentForm.courseId) {
-      setManualEnrollmentError('Student name, email, and course are required.');
+    const selectedIds = (manualEnrollmentForm.courseIds && manualEnrollmentForm.courseIds.length > 0)
+      ? manualEnrollmentForm.courseIds
+      : (manualEnrollmentForm.courseId ? [manualEnrollmentForm.courseId] : []);
+
+    if (!manualEnrollmentForm.studentName.trim() || !manualEnrollmentForm.studentEmail.trim() || selectedIds.length === 0) {
+      setManualEnrollmentError('Student name, email, and at least one course are required.');
       return;
     }
 
@@ -472,7 +503,8 @@ export default function AdminDashboard() {
       studentName: manualEnrollmentForm.studentName.trim(),
       studentEmail: manualEnrollmentForm.studentEmail.trim(),
       studentPhone: manualEnrollmentForm.studentPhone.trim(),
-      courseId: manualEnrollmentForm.courseId,
+      courseId: selectedIds[0] || '',
+      courseIds: selectedIds,
       amount: amountValue,
       paymentMethod: manualEnrollmentForm.paymentMethod,
       paymentStatus: manualEnrollmentForm.paymentStatus,
@@ -507,7 +539,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setManualEnrollmentSuccess(editingManualEnrollmentId ? 'Manual enrollment updated.' : 'Manual enrollment created and course access activated.');
+        setManualEnrollmentSuccess(editingManualEnrollmentId ? 'Manual enrollment updated.' : `Manual enrollment created for ${selectedIds.length} course${selectedIds.length > 1 ? 's' : ''} and access activated.`);
         resetManualEnrollmentForm();
         await fetchManualEnrollments();
       } else {
@@ -544,6 +576,7 @@ export default function AdminDashboard() {
       studentEmail: item.studentEmail || '',
       studentPhone: item.studentPhone || '',
       courseId: item.courseId || '',
+      courseIds: item.courseId ? [item.courseId] : [],
       amount: item.amount || '',
       paymentMethod: item.paymentMethod || 'offline',
       paymentStatus: item.paymentStatus || 'completed',
@@ -3787,12 +3820,56 @@ export default function AdminDashboard() {
             {/* Course & Payment Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-gray-700">Select Course *</label>
-                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    Showing {filteredAvailableCoursesForManualForm.length} of {availableCourses.length} courses
-                  </span>
+                <div className="flex flex-wrap justify-between items-center mb-1.5 gap-2">
+                  <label className="block text-xs font-bold text-gray-700">
+                    Select Course(s) * <span className="text-[11px] font-normal text-slate-500">(Click to select multiple)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {((manualEnrollmentForm.courseIds && manualEnrollmentForm.courseIds.length > 0) || manualEnrollmentForm.courseId) && (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                        {(manualEnrollmentForm.courseIds || []).length} Selected
+                      </span>
+                    )}
+                    <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                      Showing {filteredAvailableCoursesForManualForm.length} of {availableCourses.length}
+                    </span>
+                  </div>
                 </div>
+
+                {/* Selected Courses Badge Chips */}
+                {Array.isArray(manualEnrollmentForm.courseIds) && manualEnrollmentForm.courseIds.length > 0 && (
+                  <div className="mb-2.5 p-2 bg-emerald-50/80 border border-emerald-200 rounded-lg flex flex-wrap gap-1.5 items-center">
+                    <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider mr-1">Selected:</span>
+                    {manualEnrollmentForm.courseIds.map(cId => {
+                      const courseObj = availableCourses.find(c => getCourseId(c) === cId);
+                      const title = courseObj?.title || courseObj?.subject || cId;
+                      const price = courseObj?.sellingPrice || courseObj?.selling_price || courseObj?.cost_price || 0;
+                      return (
+                        <span key={cId} className="inline-flex items-center gap-1.5 text-xs bg-white text-emerald-900 px-2.5 py-1 rounded-md border border-emerald-300 shadow-sm font-medium">
+                          <span>{title}</span>
+                          {price > 0 && <span className="font-bold text-emerald-700">₹{Number(price).toLocaleString('en-IN')}</span>}
+                          <button
+                            type="button"
+                            onClick={() => toggleCourseSelection(cId)}
+                            className="text-emerald-500 hover:text-red-600 font-bold ml-0.5 cursor-pointer text-xs"
+                            title="Remove course"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      );
+                    })}
+                    {manualEnrollmentForm.courseIds.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setManualEnrollmentForm(prev => ({ ...prev, courseIds: [], courseId: '', amount: '' }))}
+                        className="text-[11px] text-red-600 hover:text-red-800 font-bold underline ml-auto px-1 cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Instant Course Search Box */}
                 <div className="relative mb-2">
@@ -3800,8 +3877,8 @@ export default function AdminDashboard() {
                     type="text"
                     value={manualCourseSelectSearch}
                     onChange={(e) => setManualCourseSelectSearch(e.target.value)}
-                    placeholder="🔍 Search course by title, faculty, or paper (e.g. AFM, Gourav, Costing)..."
-                    className="w-full rounded-lg border border-emerald-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/40 text-gray-800 font-medium placeholder-gray-400"
+                    placeholder="🔍 Search course by title, faculty, or paper name..."
+                    className="w-full rounded-lg border border-emerald-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-gray-800 font-medium placeholder-gray-400"
                   />
                   {manualCourseSelectSearch && (
                     <button
@@ -3815,24 +3892,47 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
-                {/* Course Dropdown */}
-                <select
-                  name="courseId"
-                  value={manualEnrollmentForm.courseId}
-                  onChange={handleManualEnrollmentChange}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                  required
-                >
-                  <option value="">-- Choose Course ({filteredAvailableCoursesForManualForm.length} options) --</option>
-                  {filteredAvailableCoursesForManualForm.map(c => {
-                    const cId = getCourseId(c);
-                    return (
-                      <option key={cId} value={cId}>
-                        {c.title || c.subject} {c.facultyName ? `(${c.facultyName})` : ''}
-                      </option>
-                    );
-                  })}
-                </select>
+                {/* Multi-Select Scrollable List Box */}
+                <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white divide-y divide-gray-100 shadow-inner">
+                  {filteredAvailableCoursesForManualForm.length === 0 ? (
+                    <div className="p-3 text-xs text-gray-500 text-center font-medium">No courses match search term</div>
+                  ) : (
+                    filteredAvailableCoursesForManualForm.map(c => {
+                      const cId = getCourseId(c);
+                      const isSelected = Array.isArray(manualEnrollmentForm.courseIds) && manualEnrollmentForm.courseIds.includes(cId);
+                      const price = c.sellingPrice || c.selling_price || c.cost_price || 0;
+                      return (
+                        <div
+                          key={cId}
+                          onClick={() => toggleCourseSelection(cId)}
+                          className={`flex items-center justify-between p-2.5 cursor-pointer text-xs transition-colors ${
+                            isSelected ? 'bg-emerald-50 text-emerald-950 font-semibold' : 'hover:bg-gray-50 text-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              className="rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span className="truncate">
+                              {c.title || c.subject}
+                              {c.facultyName ? <span className="text-slate-500 font-normal ml-1">({c.facultyName})</span> : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {price > 0 && (
+                              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-800 border border-emerald-200">
+                                ₹{Number(price).toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
 
               <div>

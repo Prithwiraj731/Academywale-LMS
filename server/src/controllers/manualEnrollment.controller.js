@@ -381,13 +381,13 @@ exports.getManualEnrollment = async (req, res) => {
 exports.createManualEnrollment = async (req, res) => {
   console.log('🔵 [MANUAL-ENROLLMENT-V3] createManualEnrollment invoked at', new Date().toISOString());
   console.log('🔵 [MANUAL-ENROLLMENT-V3] req.body keys:', Object.keys(req.body || {}));
-  console.log('🔵 [MANUAL-ENROLLMENT-V3] courseId:', req.body?.courseId);
   try {
     const {
       studentName,
       studentEmail,
       studentPhone,
       courseId,
+      courseIds,
       amount,
       paymentMethod = 'offline',
       paymentStatus = 'completed',
@@ -398,9 +398,16 @@ exports.createManualEnrollment = async (req, res) => {
       sendEmail = true
     } = req.body;
 
-    if (!courseId) {
-      console.log('🔴 [MANUAL-ENROLLMENT-V3] No courseId provided');
-      return res.status(400).json({ success: false, message: 'Course is required' });
+    let targetCourseIds = [];
+    if (Array.isArray(courseIds) && courseIds.length > 0) {
+      targetCourseIds = courseIds.filter(Boolean);
+    } else if (courseId) {
+      targetCourseIds = [courseId];
+    }
+
+    if (targetCourseIds.length === 0) {
+      console.log('🔴 [MANUAL-ENROLLMENT-V3] No courseId or courseIds provided');
+      return res.status(400).json({ success: false, message: 'At least one course is required' });
     }
 
     const paidAmount = Number(amount);
@@ -414,79 +421,125 @@ exports.createManualEnrollment = async (req, res) => {
       phone: studentPhone
     });
 
-    let course = await findCourseById(courseId);
-    if (!course) {
-      const { data: anyCourse } = await supabaseAdmin.from('courses').select('*').limit(1).maybeSingle();
-      course = anyCourse || {
-        id: courseId || `manual-${Date.now()}`,
-        faculty_id: null,
-        title: req.body.courseTitle || 'Manual Offline Enrollment',
-        subject: req.body.courseTitle || 'Manual Offline Enrollment',
-        faculty_name: 'AcademyWale Admin',
-        poster_url: '',
-        cost_price: paidAmount,
-        selling_price: paidAmount,
-        is_active: true
-      };
-    }
-
-    // Duplicate active enrollment check removed as requested so admin can create multiple enrollments for same user/course
-
-    const baseSnapshot = buildCourseSnapshot(course, selectedVariant, paidAmount);
-    const courseDetails = {
-      ...baseSnapshot,
-      manualEnrollment: {
-        source: 'admin_manual_enrollment',
-        paymentReference: String(paymentReference || '').trim(),
-        notes: String(notes || '').trim(),
-        createdByAdminId: req.user?.id || null,
-        createdAt: new Date().toISOString(),
-        accountCreated,
-        studentName: user.name,
-        studentEmail: user.email,
-        studentPhone: normalizePhone(studentPhone) || user.mobile || ''
+    const coursePromises = targetCourseIds.map(async (cId) => {
+      let c = await findCourseById(cId);
+      if (!c) {
+        c = {
+          id: cId || `manual-${Date.now()}`,
+          faculty_id: null,
+          title: req.body.courseTitle || 'Manual Offline Enrollment',
+          subject: req.body.courseTitle || 'Manual Offline Enrollment',
+          faculty_name: 'AcademyWale Admin',
+          poster_url: '',
+          cost_price: 0,
+          selling_price: 0,
+          is_active: true
+        };
       }
-    };
+      return c;
+    });
+    const courses = await Promise.all(coursePromises);
+
+    const totalCourseSellingPrices = courses.reduce((sum, c) => {
+      const variant = getVariantPrice(c, selectedVariant);
+      return sum + Number(variant.sellingPrice || c.selling_price || 0);
+    }, 0);
 
     const rawTransactionId = paymentReference ? String(paymentReference).trim() : generateOfflineTransactionId();
-    const transactionId = await ensureUniqueTransactionId(rawTransactionId);
+    const sharedTransactionId = await ensureUniqueTransactionId(rawTransactionId);
+    const defaultExpiry = accessExpiry || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: purchase, error: insertError } = await supabaseAdmin
-      .from('purchases')
-      .insert({
-        user_id: user.id,
-        course_id: course.id,
-        faculty_id: course.faculty_id || null,
-        course_details: courseDetails,
-        payment_method: paymentMethod,
-        payment_status: paymentStatus,
-        amount: paidAmount,
-        transaction_id: transactionId,
-        access_expiry: accessExpiry || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        is_active: true
-      })
-      .select('*')
-      .single();
+    const createdPurchases = [];
+    const allCourseSnapshots = [];
 
-    if (insertError) throw insertError;
+    for (let i = 0; i < courses.length; i++) {
+      const course = courses[i];
+      const variant = getVariantPrice(course, selectedVariant);
+      const courseSellingPrice = Number(variant.sellingPrice || course.selling_price || 0);
+
+      let itemPaidAmount = 0;
+      if (courses.length === 1) {
+        itemPaidAmount = paidAmount;
+      } else if (totalCourseSellingPrices > 0) {
+        itemPaidAmount = Math.round((courseSellingPrice / totalCourseSellingPrices) * paidAmount);
+      } else {
+        itemPaidAmount = Math.round(paidAmount / courses.length);
+      }
+
+      const baseSnapshot = buildCourseSnapshot(course, selectedVariant, itemPaidAmount);
+      const courseDetails = {
+        ...baseSnapshot,
+        manualEnrollment: {
+          source: 'admin_manual_enrollment',
+          paymentReference: String(paymentReference || '').trim(),
+          notes: String(notes || '').trim(),
+          createdByAdminId: req.user?.id || null,
+          createdAt: new Date().toISOString(),
+          accountCreated,
+          studentName: user.name,
+          studentEmail: user.email,
+          studentPhone: normalizePhone(studentPhone) || user.mobile || ''
+        }
+      };
+
+      allCourseSnapshots.push(courseDetails);
+
+      const { data: purchase, error: insertError } = await supabaseAdmin
+        .from('purchases')
+        .insert({
+          user_id: user.id,
+          course_id: course.id,
+          faculty_id: course.faculty_id || null,
+          course_details: courseDetails,
+          payment_method: paymentMethod,
+          payment_status: paymentStatus,
+          amount: itemPaidAmount,
+          transaction_id: sharedTransactionId,
+          access_expiry: defaultExpiry,
+          is_active: true
+        })
+        .select('*')
+        .single();
+
+      if (insertError) throw insertError;
+      createdPurchases.push({ ...purchase, users: user, courses: course });
+    }
 
     let emailResult = null;
     if (sendEmail) {
       try {
-        emailResult = await sendEnrollmentMail({ user, purchase, accountCreated, overrideAmount: paidAmount });
+        emailResult = await sendManualEnrollmentEmail({
+          userEmail: user.email,
+          userName: user.name || 'Student',
+          courses: allCourseSnapshots,
+          transactionId: sharedTransactionId,
+          amount: paidAmount,
+          paymentMethod: paymentMethod,
+          accountCreated,
+          userDetails: {
+            fullName: user.name,
+            email: user.email,
+            phone: user.mobile,
+            manualEnrollment: allCourseSnapshots[0]?.manualEnrollment || {}
+          }
+        });
+
         if (emailResult?.success) {
-          const updatedCourseDetails = {
-            ...courseDetails,
-            manualEnrollment: {
-              ...courseDetails.manualEnrollment,
-              mailSentAt: new Date().toISOString()
-            }
-          };
-          await supabaseAdmin
-            .from('purchases')
-            .update({ course_details: updatedCourseDetails })
-            .eq('id', purchase.id);
-          purchase.course_details = updatedCourseDetails;
+          const mailSentAt = new Date().toISOString();
+          for (const p of createdPurchases) {
+            const updatedCourseDetails = {
+              ...p.course_details,
+              manualEnrollment: {
+                ...p.course_details?.manualEnrollment,
+                mailSentAt
+              }
+            };
+            await supabaseAdmin
+              .from('purchases')
+              .update({ course_details: updatedCourseDetails })
+              .eq('id', p.id);
+            p.course_details = updatedCourseDetails;
+          }
         }
       } catch (eErr) {
         console.error('Email notification error during manual enrollment:', eErr);
@@ -494,10 +547,13 @@ exports.createManualEnrollment = async (req, res) => {
       }
     }
 
+    const formattedEnrollments = createdPurchases.map(formatEnrollment);
+
     return res.status(201).json({
       success: true,
-      message: 'Manual enrollment created successfully',
-      enrollment: formatEnrollment({ ...purchase, users: user, courses: course }),
+      message: `Manual enrollment created successfully for ${courses.length} course${courses.length > 1 ? 's' : ''}`,
+      enrollment: formattedEnrollments[0],
+      enrollments: formattedEnrollments,
       accountCreated,
       email: emailResult || { success: false, skipped: !sendEmail }
     });

@@ -275,11 +275,19 @@ const sendManualEnrollmentEmail = async (options) => {
 
     const userEmail = options.userEmail || options.email;
     const userName = options.userName || options.name || 'Valued Student';
-    const details = options.courseDetails || {};
     const transactionId = options.transactionId || options.paymentReference || 'N/A';
-    const amount = Number(options.amount !== undefined ? options.amount : (details.amountPaid || details.sellingPrice || 0));
+    const amount = Number(options.amount !== undefined ? options.amount : 0);
     const paymentMethod = options.paymentMethod || 'offline';
     const userDetails = options.userDetails || {};
+
+    let courseList = [];
+    if (Array.isArray(options.courses) && options.courses.length > 0) {
+      courseList = options.courses;
+    } else if (Array.isArray(options.purchases) && options.purchases.length > 0) {
+      courseList = options.purchases;
+    } else if (options.courseDetails) {
+      courseList = [options.courseDetails];
+    }
 
     const formattedDate = new Date().toLocaleString('en-IN', {
       timeZone: 'Asia/Kolkata',
@@ -290,49 +298,70 @@ const sendManualEnrollmentEmail = async (options) => {
       minute: '2-digit'
     });
 
-    const title = details.title || details.subject || 'Course Package';
-    const mode = details.mode || 'Recorded Video';
-    const validity = details.validity || details.attempt || 'Standard';
-    const faculty = details.facultyName || 'AcademyWale Faculty';
-    const attempt = details.attempt || '';
-    const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
-    const books = details.books || '';
-    const videoLanguage = details.videoLanguage || details.video_language || '';
-    const videoRunOn = details.videoRunOn || details.video_run_on || '';
-    const doubtSolving = details.doubtSolving || details.doubt_solving || '';
-    const supportMail = details.supportMail || details.support_mail || '';
-    const supportCall = details.supportCall || details.support_call || '';
-    const institute = details.institute || details.instituteName || details.institute_name || '';
+    const itemsTableRowsHtml = courseList.map((item, idx) => {
+      const details = item.course_details || item;
+      const title = details.title || details.subject || 'Course Package';
+      const mode = details.mode || 'Recorded Video';
+      const validity = details.validity || details.attempt || 'Standard';
+      const faculty = details.facultyName || 'AcademyWale Faculty';
+      const attempt = details.attempt || '';
+      const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
+      const books = details.books || '';
+      const videoLanguage = details.videoLanguage || details.video_language || '';
+      const videoRunOn = details.videoRunOn || details.video_run_on || '';
+      const doubtSolving = details.doubtSolving || details.doubt_solving || '';
+      const supportMail = details.supportMail || details.support_mail || '';
+      const supportCall = details.supportCall || details.support_call || '';
+      const institute = details.institute || details.instituteName || details.institute_name || '';
 
-    const detailLines = [];
-    if (Array.isArray(details.customOptions) && details.customOptions.length > 0) {
-      details.customOptions.forEach(opt => {
-        const lbl = String(opt.label || opt.name || '').trim();
-        const val = String(opt.value || '').trim();
-        if (lbl && val) {
-          detailLines.push(`${lbl}: <strong>${val}</strong>`);
-        } else if (val) {
-          detailLines.push(val);
-        }
-      });
-    } else {
-      if (mode) detailLines.push(`Mode: <strong>${mode}</strong>`);
-      if (validity) detailLines.push(`Validity / Attempt: <strong>${validity}</strong>`);
-      if (faculty) detailLines.push(`Faculty: <strong>${faculty}</strong>`);
-      if (attempt && attempt !== validity) detailLines.push(`Attempt: <strong>${attempt}</strong>`);
-      if (institute && institute !== 'N/A') detailLines.push(`Institute: <strong>${institute}</strong>`);
-      if (noOfLecture) detailLines.push(`Lectures: <strong>${noOfLecture}</strong>`);
-      if (books) detailLines.push(`Material: <strong>${books}</strong>`);
-      if (videoLanguage) detailLines.push(`Language: <strong>${videoLanguage}</strong>`);
-      if (videoRunOn) detailLines.push(`Run On: <strong>${videoRunOn}</strong>`);
-      if (doubtSolving) detailLines.push(`Doubts: <strong>${doubtSolving}</strong>`);
-    }
-    if (supportMail || supportCall) {
-      const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
-      detailLines.push(`Support: <strong>${supportInfo}</strong>`);
-    }
+      const detailLines = [];
+      if (Array.isArray(details.customOptions) && details.customOptions.length > 0) {
+        details.customOptions.forEach(opt => {
+          const lbl = String(opt.label || opt.name || '').trim();
+          const val = String(opt.value || '').trim();
+          if (lbl && val) {
+            detailLines.push(`${lbl}: <strong>${val}</strong>`);
+          } else if (val) {
+            detailLines.push(val);
+          }
+        });
+      } else {
+        if (mode) detailLines.push(`Mode: <strong>${mode}</strong>`);
+        if (validity) detailLines.push(`Validity / Attempt: <strong>${validity}</strong>`);
+        if (faculty) detailLines.push(`Faculty: <strong>${faculty}</strong>`);
+        if (attempt && attempt !== validity) detailLines.push(`Attempt: <strong>${attempt}</strong>`);
+        if (institute && institute !== 'N/A') detailLines.push(`Institute: <strong>${institute}</strong>`);
+        if (noOfLecture) detailLines.push(`Lectures: <strong>${noOfLecture}</strong>`);
+        if (books) detailLines.push(`Material: <strong>${books}</strong>`);
+        if (videoLanguage) detailLines.push(`Language: <strong>${videoLanguage}</strong>`);
+        if (videoRunOn) detailLines.push(`Run On: <strong>${videoRunOn}</strong>`);
+        if (doubtSolving) detailLines.push(`Doubts: <strong>${doubtSolving}</strong>`);
+      }
+      if (supportMail || supportCall) {
+        const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
+        detailLines.push(`Support: <strong>${supportInfo}</strong>`);
+      }
 
-    const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569; font-weight: 500;">${line}</div>`).join('');
+      const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569; font-weight: 500;">${line}</div>`).join('');
+      const itemPrice = Number(details.amountPaid || details.sellingPrice || details.selling_price || details.costPrice || details.amount || (courseList.length === 1 ? amount : 0));
+
+      return `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
+            <strong style="color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</strong><br/>
+            ${detailHtml}
+          </td>
+          <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
+            INR ${itemPrice > 0 ? itemPrice.toLocaleString('en-IN') : 'Enrolled'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const firstCourseTitle = courseList[0]?.title || courseList[0]?.course_details?.title || courseList[0]?.subject || 'AcademyWale';
+    const emailSubject = courseList.length > 1
+      ? `Course Enrollment Confirmed - ${courseList.length} Courses Enrolled | AcademyWale`
+      : `Course Enrollment Confirmed - ${firstCourseTitle}`;
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
@@ -363,7 +392,7 @@ const sendManualEnrollmentEmail = async (options) => {
               Your payment has been recorded and your course enrollment is now active. 🎉
             </p>
             <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 22px;">
-              Your course details are provided below. You can access your enrolled courses anytime by logging into your Student Dashboard.
+              Your enrolled course details are provided below. You can access your enrolled courses anytime by logging into your Student Dashboard.
             </p>
 
             <!-- Metadata Box -->
@@ -396,7 +425,7 @@ const sendManualEnrollmentEmail = async (options) => {
 
             <!-- Items Purchased Table -->
             <h3 style="font-size: 15px; font-weight: 800; color: #0f766e; margin-bottom: 10px; margin-top: 0;">
-              Enrolled Courses
+              Enrolled Courses (${courseList.length})
             </h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
               <thead>
@@ -406,15 +435,7 @@ const sendManualEnrollmentEmail = async (options) => {
                 </tr>
               </thead>
               <tbody>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                  <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
-                    <strong style="color: #0f766e; font-size: 15px;">1. ${title}</strong><br/>
-                    ${detailHtml}
-                  </td>
-                  <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
-                    INR ${Number(details.sellingPrice || details.selling_price || details.originalPrice || details.original_price || details.costPrice || details.cost_price || details.price || options.sellingPrice || amount).toLocaleString('en-IN')}
-                  </td>
-                </tr>
+                ${itemsTableRowsHtml}
               </tbody>
             </table>
 
@@ -422,7 +443,7 @@ const sendManualEnrollmentEmail = async (options) => {
             <div style="background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
               <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr>
-                  <td style="padding: 6px 0; font-size: 16px; font-weight: 800; color: #0f766e;">Amount Paid:</td>
+                  <td style="padding: 6px 0; font-size: 16px; font-weight: 800; color: #0f766e;">Total Amount Paid:</td>
                   <td style="padding: 6px 0; font-size: 20px; font-weight: 900; color: #0d9488; text-align: right;">
                     INR ${amount.toLocaleString('en-IN')}
                   </td>
@@ -444,7 +465,7 @@ const sendManualEnrollmentEmail = async (options) => {
     const mailOptions = {
       from: emailConfig.from,
       to: Array.from(new Set([userEmail, ...getAdminRecipients()])).filter(Boolean),
-      subject: `Course Enrollment Confirmed - ${details.title || details.subject || 'AcademyWale'}`,
+      subject: emailSubject,
       html: htmlContent
     };
 
