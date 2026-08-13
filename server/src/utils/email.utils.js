@@ -997,7 +997,7 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
  */
 const sendAdminOTPEmail = async (email, otp) => {
   try {
-    const transporter = getTransporter();
+    const transporter = createTransporter();
     
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
