@@ -68,7 +68,7 @@ router.post('/', async (req, res) => {
       console.warn('Supabase contact log warning:', dbError.message);
     }
 
-    // 2. Send email via transporter (support@academywale.com & souravkashyap4416@gmail.com)
+    // 2. Send email via transporter (support@academywale.com & academywale01@gmail.com)
     const mailResult = await sendContactEmail({
       name: senderName,
       email: senderEmail,

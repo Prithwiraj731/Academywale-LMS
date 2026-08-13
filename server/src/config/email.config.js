@@ -28,7 +28,7 @@ const resendFrom = cleanEnvValue(process.env.RESEND_FROM) || `AcademyWale <${use
 const configuredAdminEmails = cleanEnvValue(process.env.ADMIN_EMAILS);
 const ADMIN_EMAILS = configuredAdminEmails
   ? configuredAdminEmails.split(',').map(email => email.trim()).filter(Boolean)
-  : ['support@academywale.com', 'souravkashyap4416@gmail.com', 'prithwi1016@gmail.com'];
+  : ['support@academywale.com', 'academywale01@gmail.com', 'prithwi1016@gmail.com'];
 
 const emailConfig = {
   resendApiKey,
@@ -41,7 +41,7 @@ const emailConfig = {
   service,
   from: `"AcademyWale" <${user}>`,
   to: 'support@academywale.com',
-  personalEmail: 'souravkashyap4416@gmail.com',
+  personalEmail: 'academywale01@gmail.com',
   adminEmails: ADMIN_EMAILS
 };
 

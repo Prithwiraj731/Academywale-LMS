@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const emailConfig = require('../config/email.config');
 
 const getAdminRecipients = () => {
-  const base = ['support@academywale.com', 'souravkashyap4416@gmail.com', 'prithwi1016@gmail.com'];
+  const base = ['support@academywale.com', 'academywale01@gmail.com', 'prithwi1016@gmail.com'];
   if (Array.isArray(emailConfig.adminEmails)) {
     emailConfig.adminEmails.forEach(e => {
       if (e && !base.includes(e)) base.push(e);
@@ -162,7 +162,7 @@ const sendContactEmail = async (contactData) => {
         </div>
 
         <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 25px; text-align: center; font-size: 12px; color: #64748b;">
-          <p style="margin: 0;">This email was automatically dispatched to AcademyWale admins (<strong>support@academywale.com</strong> &amp; <strong>souravkashyap4416@gmail.com</strong>).</p>
+          <p style="margin: 0;">This email was automatically dispatched to AcademyWale admins (<strong>support@academywale.com</strong> &amp; <strong>academywale01@gmail.com</strong>).</p>
         </div>
       </div>
     `;
