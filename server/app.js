@@ -123,6 +123,10 @@ const purchaseController = require('./src/controllers/purchase.controller.js');
 const courseController = require('./src/controllers/course.controller.js');
 const { requireAdminCookie } = require('./src/middlewares/auth.middleware.js');
 
+const testimonialController = require('./src/controllers/testimonial.controller.js');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
 // Direct Admin OTP Routes (guarantees route matching)
 app.options('/api/auth/admin/send-otp', cors());
 app.post('/api/auth/admin/send-otp', authController.sendAdminOTP);
@@ -133,6 +137,24 @@ app.options('/api/auth/admin/verify-otp', cors());
 app.post('/api/auth/admin/verify-otp', authController.verifyAdminOTP);
 app.options('/api/admin/verify-otp', cors());
 app.post('/api/admin/verify-otp', authController.verifyAdminOTP);
+
+// Direct Testimonials Routes (guarantees route matching and CORS)
+app.options('/api/testimonials', cors());
+app.options('/api/testimonials/*', cors());
+app.options('/api/admin/testimonials', cors());
+app.options('/api/admin/testimonials/*', cors());
+
+app.get('/api/testimonials', testimonialController.getAllTestimonials);
+app.get('/api/admin/testimonials', testimonialController.getAllTestimonials);
+app.get('/api/testimonials/:id', testimonialController.getTestimonialById);
+app.get('/api/admin/testimonials/:id', testimonialController.getTestimonialById);
+
+app.post('/api/testimonials', upload.single('image'), testimonialController.createTestimonial);
+app.post('/api/admin/testimonials', upload.single('image'), testimonialController.createTestimonial);
+app.put('/api/testimonials/:id', upload.single('image'), testimonialController.updateTestimonial);
+app.put('/api/admin/testimonials/:id', upload.single('image'), testimonialController.updateTestimonial);
+app.delete('/api/testimonials/:id', testimonialController.deleteTestimonial);
+app.delete('/api/admin/testimonials/:id', testimonialController.deleteTestimonial);
 
 // Direct Admin Backup & Restore Routes (guarantees route matching)
 app.options('/api/admin/courses/backup', cors());
