@@ -79,7 +79,7 @@ app.get('/api/status', (req, res) => {
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    deployVersion: 'v6-testimonials-fix-2026-08-13',
+    deployVersion: 'v7-otp-fix-2026-08-13',
     buildTimestamp: '2026-08-13T20:00:00Z'
   });
 });
