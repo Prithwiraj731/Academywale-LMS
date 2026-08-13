@@ -96,6 +96,7 @@ exports.getAllTestimonials = async (req, res) => {
     const { data: testimonials, error } = await supabaseAdmin
       .from('testimonials')
       .select('*')
+      .neq('name', '__COUPON_METADATA__')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

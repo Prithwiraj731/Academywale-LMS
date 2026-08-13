@@ -17,7 +17,10 @@ export default function Reviews() {
   useEffect(() => {
     fetch(`${API_URL}/api/testimonials`)
       .then(res => res.json())
-      .then(data => setTestimonials(data.testimonials || []));
+      .then(data => {
+        const items = (data.testimonials || []).filter(t => t.name !== '__COUPON_METADATA__');
+        setTestimonials(items);
+      });
   }, []);
 
   // Auto-play functionality for mobile

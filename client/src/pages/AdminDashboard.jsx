@@ -2676,11 +2676,19 @@ export default function AdminDashboard() {
   const [editTestimonialLoading, setEditTestimonialLoading] = useState(false);
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
 
+  const refreshTestimonials = () => {
+    fetchWithCredentials(`${API_URL}/api/testimonials`)
+      .then(res => res.json())
+      .then(data => {
+        const items = (data.testimonials || []).filter(t => t.name !== '__COUPON_METADATA__');
+        setTestimonials(items);
+      })
+      .catch(err => console.error('Fetch testimonials error:', err));
+  };
+
   // Fetch testimonials
   useEffect(() => {
-    fetch(`${API_URL}/api/testimonials`)
-      .then(res => res.json())
-      .then(data => setTestimonials(data.testimonials || []));
+    refreshTestimonials();
   }, []);
 
   const handleTestimonialAddChange = e => {
@@ -2710,19 +2718,13 @@ export default function AdminDashboard() {
     if (testimonialAdd.image) formData.append('image', testimonialAdd.image);
 
     try {
-      let res = await fetch(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
-      if (!res.ok && res.status === 404) {
-        res = await fetch(`${API_URL}/api/admin/testimonials`, { method: 'POST', body: formData });
-      }
+      const res = await fetchWithCredentials(`${API_URL}/api/testimonials`, { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && (data.success || data.testimonial)) {
         setTestimonialStatus('Testimonial added successfully!');
         setTestimonialAdd({ name: '', role: '', text: '', image: null, imagePreview: null });
         setTimeout(() => setTestimonialStatus(''), 3000);
-        // Refresh testimonials list
-        fetch(`${API_URL}/api/testimonials`)
-          .then(res => res.json())
-          .then(data => setTestimonials(data.testimonials || []));
+        refreshTestimonials();
       } else {
         setTestimonialError(data.message || data.error || 'Failed to add testimonial');
       }
@@ -2765,11 +2767,11 @@ export default function AdminDashboard() {
       formData.append('image', editTestimonialData.image);
     }
     try {
-      const res = await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'PUT', body: formData });
+      const res = await fetchWithCredentials(`${API_URL}/api/testimonials/${id}`, { method: 'PUT', body: formData });
       const data = await res.json();
       if (res.ok && (data.success || data.testimonial)) {
         setEditTestimonialModalOpen(false);
-        fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+        refreshTestimonials();
       } else {
         setEditTestimonialError(data.message || data.error || 'Failed to update testimonial');
       }
@@ -2782,8 +2784,8 @@ export default function AdminDashboard() {
   const handleDeleteTestimonial = async id => {
     if (!id || !window.confirm('Delete this testimonial?')) return;
     try {
-      await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'DELETE' });
-      fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
+      await fetchWithCredentials(`${API_URL}/api/testimonials/${id}`, { method: 'DELETE' });
+      refreshTestimonials();
     } catch (err) {
       console.error('Delete testimonial error:', err);
     }
@@ -2856,9 +2858,7 @@ export default function AdminDashboard() {
           className={`${buttonBase} ${activePanel === 'testimonial' ? buttonActive : buttonInactive}`}
           onClick={() => {
             setActivePanel('testimonial');
-            fetch(`${API_URL}/api/testimonials`)
-              .then(res => res.json())
-              .then(data => setTestimonials(data.testimonials || []));
+            refreshTestimonials();
           }}
         >
           <MessageSquare className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />

@@ -147,12 +147,13 @@ export default function ModernTestimonial({
       .then(res => res.json())
       .then(data => {
         if (isMounted && data && Array.isArray(data.testimonials) && data.testimonials.length > 0) {
-          const formatted = data.testimonials.map((t, idx) => ({
+          const filtered = data.testimonials.filter(t => t.name !== '__COUPON_METADATA__');
+          const formatted = filtered.map((t, idx) => ({
             id: t.id || t._id || (idx + 1),
             name: t.name,
             role: t.role || t.designation || t.course || 'Student',
             review: t.review || t.text || t.message,
-            avatar: t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : testimonials[idx % testimonials.length].avatar),
+            avatar: t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : testimonials[idx % testimonials.length]?.avatar),
             handle: `@${t.name.toLowerCase().replace(/\s+/g, '_')}`
           }));
           setTestimonialList(formatted);
