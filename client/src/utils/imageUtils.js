@@ -163,38 +163,60 @@ export const getCourseImageUrl = (course) => {
 
 
 
+import testimonial1 from '../assets/testimonial/1.jpeg';
+import testimonial2 from '../assets/testimonial/2.jpg';
+import testimonial3 from '../assets/testimonial/3.jpg';
+import testimonial4 from '../assets/testimonial/4.jpg';
+import testimonial5 from '../assets/testimonial/5.jpg';
+import testimonial6 from '../assets/testimonial/6.jpg';
+
+const defaultTestimonialAvatars = {
+  'gourav pathak': testimonial1,
+  'muskan': testimonial2,
+  'sankalp gupta': testimonial3,
+  'afreen malika': testimonial4,
+  'kirti somani': testimonial5,
+  'yash agarwal': testimonial6
+};
+
 /**
  * Get the full image URL for testimonial images
  */
 export const getTestimonialImageUrl = (testimonial) => {
   if (!testimonial) return '/logo.svg';
-  
-  if (testimonial.public_id && testimonial.public_id.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${testimonial.public_id}`;
+
+  const rawUrl = typeof testimonial === 'string'
+    ? testimonial
+    : (testimonial.imageUrl || testimonial.image_url || testimonial.avatar || testimonial.image || '');
+
+  if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim() !== '') {
+    const trimmed = rawUrl.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+      return trimmed;
+    }
   }
 
-  if (testimonial.image && testimonial.image.trim() !== '') {
-    return `https://res.cloudinary.com/drlqhsjgm/image/upload/v1/academywale/permanent/${testimonial.image}`;
+  // Name-based fallback matching for original static testimonials
+  const nameKey = (testimonial.name || (typeof testimonial === 'object' ? testimonial.name : '') || '').trim().toLowerCase();
+  if (nameKey && defaultTestimonialAvatars[nameKey]) {
+    return defaultTestimonialAvatars[nameKey];
   }
-  
-  if (testimonial.imageUrl && testimonial.imageUrl.startsWith('http')) {
-    return testimonial.imageUrl;
+  for (const [key, avatarUrl] of Object.entries(defaultTestimonialAvatars)) {
+    if (nameKey && (nameKey.includes(key) || key.includes(nameKey))) {
+      return avatarUrl;
+    }
   }
-  
-  if (testimonial.imageUrl && testimonial.imageUrl.startsWith('/uploads')) {
-    return '/logo.svg';
-  }
-  
-  if (testimonial.imageUrl && testimonial.imageUrl.startsWith('/static')) {
-    return testimonial.imageUrl;
-  }
-  
+
   return '/logo.svg';
 };
 
 export const getTestimonialCloudinaryId = (testimonial) => {
   if (!testimonial) return null;
-  return testimonial.image || null;
+  const img = testimonial.image || testimonial.public_id;
+  if (img && typeof img === 'string' && !img.includes('/') && !img.startsWith('http')) {
+    return img;
+  }
+  return null;
 };
 
 /**

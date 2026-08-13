@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL, fetchWithCredentials } from '../api';
+import { getTestimonialImageUrl } from '../utils/imageUtils';
 
 const MODES = ['Live Watching', 'Recorded Videos'];
 const DURATIONS = ['August 2025', 'February 2026', 'August 2026', 'February 2027', 'August 2027'];
@@ -4475,7 +4476,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {testimonials.map((t) => {
-                  const avatarSrc = t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : '/logo.svg');
+                  const avatarSrc = getTestimonialImageUrl(t);
                   return (
                     <div key={t.id || t._id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                       <div>

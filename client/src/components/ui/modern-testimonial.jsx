@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { API_URL } from "../../api";
+import { getTestimonialImageUrl } from "../../utils/imageUtils";
 
 // Custom animation styles with zero gap on mobile to prevent cumulative slide offset
 const styles = `
@@ -153,7 +154,7 @@ export default function ModernTestimonial({
             name: t.name,
             role: t.role || t.designation || t.course || 'Student',
             review: t.review || t.text || t.message,
-            avatar: t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : testimonials[idx % testimonials.length]?.avatar),
+            avatar: getTestimonialImageUrl(t),
             handle: `@${t.name.toLowerCase().replace(/\s+/g, '_')}`
           }));
           setTestimonialList(formatted);
