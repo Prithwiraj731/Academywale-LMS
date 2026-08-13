@@ -27,16 +27,22 @@ async function uploadToSupabaseStorage(file, folder) {
 // Helper to format testimonial for client-side compatibility
 const formatTestimonial = (t) => {
   if (!t) return null;
+  const roleVal = t.course || '';
+  const msgVal = t.message || '';
+  const imgUrlVal = t.image_url || (t.image && t.image.startsWith('http') ? t.image : '');
   return {
     _id: t.id,
     id: t.id,
     name: t.name,
-    course: t.course,
-    role: t.course, // alias for role
-    message: t.message,
-    text: t.message, // alias for text
-    image: t.image,
-    imageUrl: t.image_url,
+    course: roleVal,
+    role: roleVal, // alias for role
+    designation: roleVal, // alias for designation
+    message: msgVal,
+    text: msgVal, // alias for text
+    review: msgVal, // alias for review
+    image: t.image || '',
+    imageUrl: imgUrlVal,
+    avatar: imgUrlVal,
     createdAt: t.created_at
   };
 };
@@ -44,9 +50,9 @@ const formatTestimonial = (t) => {
 // Create a new testimonial
 exports.createTestimonial = async (req, res) => {
   try {
-    const name = req.body.name;
-    const course = req.body.course || req.body.role; 
-    const message = req.body.message || req.body.text; 
+    const name = (req.body.name || '').trim();
+    const course = (req.body.course || req.body.role || req.body.designation || '').trim(); 
+    const message = (req.body.message || req.body.text || req.body.review || '').trim(); 
     
     let image = null;
     let imageUrl = '';
@@ -55,10 +61,12 @@ exports.createTestimonial = async (req, res) => {
       const uploadResult = await uploadToSupabaseStorage(req.file, 'testimonials');
       image = uploadResult.publicId;
       imageUrl = uploadResult.url;
+    } else if (req.body.imageUrl || req.body.image) {
+      imageUrl = req.body.imageUrl || req.body.image;
     }
 
     if (!name || !message) {
-      return res.status(400).json({ message: 'Name and message are required.' });
+      return res.status(400).json({ success: false, message: 'Name and message are required.' });
     }
 
     const { data: newTestimonial, error } = await supabaseAdmin
@@ -75,10 +83,10 @@ exports.createTestimonial = async (req, res) => {
 
     if (error) throw error;
 
-    res.status(201).json({ testimonial: formatTestimonial(newTestimonial) });
+    res.status(201).json({ success: true, testimonial: formatTestimonial(newTestimonial) });
   } catch (error) {
     console.error('Testimonial creation error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -91,9 +99,9 @@ exports.getAllTestimonials = async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    res.status(200).json({ testimonials: (testimonials || []).map(formatTestimonial) });
+    res.status(200).json({ success: true, testimonials: (testimonials || []).map(formatTestimonial) });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -108,18 +116,18 @@ exports.getTestimonialById = async (req, res) => {
 
     if (error) throw error;
     if (!testimonial) {
-      return res.status(404).json({ message: 'Testimonial not found' });
+      return res.status(404).json({ success: false, message: 'Testimonial not found' });
     }
-    res.status(200).json(formatTestimonial(testimonial));
+    res.status(200).json({ success: true, testimonial: formatTestimonial(testimonial) });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Update a testimonial
 exports.updateTestimonial = async (req, res) => {
   try {
-    const { name, course, message } = req.body;
+    const { name, course, role, designation, message, text, review } = req.body;
     const { id } = req.params;
 
     const { data: currentTestimonial, error: getErr } = await supabaseAdmin
@@ -130,13 +138,16 @@ exports.updateTestimonial = async (req, res) => {
 
     if (getErr) throw getErr;
     if (!currentTestimonial) {
-      return res.status(404).json({ message: 'Testimonial not found' });
+      return res.status(404).json({ success: false, message: 'Testimonial not found' });
     }
 
+    const updatedRole = designation !== undefined ? designation : (role !== undefined ? role : (course !== undefined ? course : currentTestimonial.course));
+    const updatedMsg = message !== undefined ? message : (text !== undefined ? text : (review !== undefined ? review : currentTestimonial.message));
+
     const updateData = {
-      name: name || currentTestimonial.name,
-      course: course !== undefined ? course : currentTestimonial.course,
-      message: message || currentTestimonial.message
+      name: name ? String(name).trim() : currentTestimonial.name,
+      course: updatedRole ? String(updatedRole).trim() : currentTestimonial.course,
+      message: updatedMsg ? String(updatedMsg).trim() : currentTestimonial.message
     };
 
     if (req.file) {
@@ -154,9 +165,9 @@ exports.updateTestimonial = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    res.status(200).json({ testimonial: formatTestimonial(updatedTestimonial) });
+    res.status(200).json({ success: true, testimonial: formatTestimonial(updatedTestimonial) });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -170,8 +181,8 @@ exports.deleteTestimonial = async (req, res) => {
       .eq('id', id);
 
     if (error) throw error;
-    res.status(200).json({ message: 'Testimonial deleted successfully' });
+    res.status(200).json({ success: true, message: 'Testimonial deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

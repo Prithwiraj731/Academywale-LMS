@@ -2742,31 +2742,42 @@ export default function AdminDashboard() {
     e.preventDefault();
     setEditTestimonialLoading(true);
     setEditTestimonialError('');
+    const id = editTestimonialData.id || editTestimonialData._id;
+    if (!id) {
+      setEditTestimonialError('Invalid testimonial ID');
+      setEditTestimonialLoading(false);
+      return;
+    }
     const formData = new FormData();
-    formData.append('name', editTestimonialData.name);
-    formData.append('role', editTestimonialData.role);
-    formData.append('text', editTestimonialData.text);
-    if (editTestimonialData.image) formData.append('image', editTestimonialData.image);
+    formData.append('name', editTestimonialData.name || '');
+    formData.append('role', editTestimonialData.role || editTestimonialData.course || editTestimonialData.designation || '');
+    formData.append('text', editTestimonialData.text || editTestimonialData.message || editTestimonialData.review || '');
+    if (editTestimonialData.image instanceof File) {
+      formData.append('image', editTestimonialData.image);
+    }
     try {
-      const res = await fetch(`${API_URL}/api/testimonials/${editTestimonialData._id}`, { method: 'PUT', body: formData });
+      const res = await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'PUT', body: formData });
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && (data.success || data.testimonial)) {
         setEditTestimonialModalOpen(false);
         fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
       } else {
-        setEditTestimonialError(data.error || 'Failed to update testimonial');
+        setEditTestimonialError(data.message || data.error || 'Failed to update testimonial');
       }
-    } catch {
-      setEditTestimonialError('Server error');
+    } catch (err) {
+      setEditTestimonialError(err.message || 'Server error');
+    } finally {
+      setEditTestimonialLoading(false);
     }
-    setEditTestimonialLoading(false);
   };
   const handleDeleteTestimonial = async id => {
-    if (!window.confirm('Delete this testimonial?')) return;
+    if (!id || !window.confirm('Delete this testimonial?')) return;
     try {
       await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'DELETE' });
       fetch(`${API_URL}/api/testimonials`).then(res => res.json()).then(data => setTestimonials(data.testimonials || []));
-    } catch { }
+    } catch (err) {
+      console.error('Delete testimonial error:', err);
+    }
   };
 
   // Render the AdminDashboard component
@@ -2831,6 +2842,18 @@ export default function AdminDashboard() {
         >
           <UserPlus className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
           <span className="text-xs sm:text-sm font-semibold">Offline Enrollment</span>
+        </button>
+        <button
+          className={`${buttonBase} ${activePanel === 'testimonial' ? buttonActive : buttonInactive}`}
+          onClick={() => {
+            setActivePanel('testimonial');
+            fetch(`${API_URL}/api/testimonials`)
+              .then(res => res.json())
+              .then(data => setTestimonials(data.testimonials || []));
+          }}
+        >
+          <MessageSquare className="w-6 h-6 mb-1 text-slate-700 group-hover:text-[#20b2aa]" />
+          <span className="text-xs sm:text-sm font-semibold">Add Testimonials</span>
         </button>
       </div>
       {/* Panel Switcher */}
@@ -4327,6 +4350,169 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {activePanel === 'testimonial' && (
+        <div className="w-full max-w-6xl bg-white/95 rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-blue-100 mb-8 space-y-8">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-2 flex items-center justify-center gap-2">
+              <MessageSquare className="w-7 h-7 text-[#20b2aa]" />
+              <span>Testimonials Management</span>
+            </h2>
+            <p className="text-sm text-gray-600 max-w-xl mx-auto">
+              Add and manage student & educator testimonials. All testimonials added here will dynamically reflect in the Testimonials section on the website.
+            </p>
+          </div>
+
+          {/* Add Testimonial Form Box */}
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-5 sm:p-6 rounded-xl border border-blue-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-200 pb-2">
+              <Plus className="w-5 h-5 text-emerald-600" />
+              <span>Add New Testimonial</span>
+            </h3>
+
+            {testimonialStatus && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold rounded-lg">
+                {testimonialStatus}
+              </div>
+            )}
+            {testimonialError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-semibold rounded-lg">
+                {testimonialError}
+              </div>
+            )}
+
+            <form onSubmit={handleTestimonialAddSubmit} className="space-y-4" encType="multipart/form-data">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={testimonialAdd.name}
+                    onChange={handleTestimonialAddChange}
+                    placeholder="e.g. Gourav Pathak"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Designation / Role / Course *</label>
+                  <input
+                    type="text"
+                    name="role"
+                    value={testimonialAdd.role}
+                    onChange={handleTestimonialAddChange}
+                    placeholder="e.g. CMA Final Student / Educator"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Testimonial Message / Review *</label>
+                <textarea
+                  name="text"
+                  value={testimonialAdd.text}
+                  onChange={handleTestimonialAddChange}
+                  rows={3}
+                  placeholder="Enter student review or feedback message..."
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white resize-y"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Upload Photo (Optional)</label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleTestimonialAddChange}
+                    className="text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer"
+                  />
+                  {testimonialAdd.imagePreview && (
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-emerald-300 shrink-0">
+                      <img src={testimonialAdd.imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Save Testimonial</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Testimonial List Section */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center justify-between border-b border-gray-200 pb-2">
+              <span>Existing Testimonials ({testimonials.length})</span>
+            </h3>
+
+            {testimonials.length === 0 ? (
+              <div className="p-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm font-medium">
+                No testimonials found. Add your first testimonial using the form above.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {testimonials.map((t) => {
+                  const avatarSrc = t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : '/logo.svg');
+                  return (
+                    <div key={t.id || t._id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                      <div>
+                        <div className="flex items-center gap-3 mb-3">
+                          <img
+                            src={avatarSrc}
+                            alt={t.name}
+                            className="w-12 h-12 rounded-full object-cover border border-gray-200 shrink-0 bg-slate-100"
+                            onError={(e) => { e.target.src = '/logo.svg'; }}
+                          />
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-gray-900 text-sm truncate">{t.name}</h4>
+                            <p className="text-xs text-emerald-700 font-semibold truncate">{t.role || t.designation || t.course || 'Student'}</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-600 line-clamp-4 leading-relaxed mb-3 italic">
+                          "{t.message || t.text}"
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => openEditTestimonialModal(t)}
+                          className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs rounded-lg border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          <EditIcon className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTestimonial(t.id || t._id)}
+                          className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs rounded-lg border border-red-200 transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-3xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-green-100 mb-8 mt-8">
         <h2 id="coupon-section-title" className="text-2xl font-bold text-green-700 mb-4">
           {editingCouponCode ? `Edit Coupon: ${editingCouponCode}` : 'Manage Coupon Codes'}
@@ -4998,6 +5184,108 @@ export default function AdminDashboard() {
           <div className="flex gap-2 mt-4 border-t pt-3">
             <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-bold text-sm">Cancel</button>
             <button type="submit" className="px-4 py-2 rounded bg-green-500 text-white font-bold text-sm" disabled={editLoading}>{editLoading ? 'Saving...' : 'Save'}</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Testimonial Modal */}
+      <Modal
+        isOpen={editTestimonialModalOpen}
+        onRequestClose={() => setEditTestimonialModalOpen(false)}
+        contentLabel="Edit Testimonial"
+        className="max-w-lg w-full bg-white p-6 rounded-2xl shadow-2xl outline-none mx-auto my-12 border border-gray-200"
+        overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"
+      >
+        <div className="flex justify-between items-center pb-3 border-b border-gray-200 mb-4">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <EditIcon className="w-5 h-5 text-amber-600" />
+            <span>Edit Testimonial</span>
+          </h3>
+          <button
+            type="button"
+            onClick={() => setEditTestimonialModalOpen(false)}
+            className="text-gray-400 hover:text-gray-600 text-sm font-bold px-2 py-1 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {editTestimonialError && (
+          <div className="mb-4 p-2.5 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-lg">
+            {editTestimonialError}
+          </div>
+        )}
+
+        <form onSubmit={handleEditTestimonialSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Full Name *</label>
+            <input
+              type="text"
+              name="name"
+              value={editTestimonialData.name || ''}
+              onChange={handleEditTestimonialChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Designation / Role / Course *</label>
+            <input
+              type="text"
+              name="role"
+              value={editTestimonialData.role || editTestimonialData.course || editTestimonialData.designation || ''}
+              onChange={handleEditTestimonialChange}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Testimonial Message / Review *</label>
+            <textarea
+              name="text"
+              value={editTestimonialData.text || editTestimonialData.message || editTestimonialData.review || ''}
+              onChange={handleEditTestimonialChange}
+              rows={4}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white resize-y"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Update Photo (Optional)</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleEditTestimonialChange}
+                className="text-xs text-gray-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer"
+              />
+              {editTestimonialImagePreview && (
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-300 shrink-0">
+                  <img src={editTestimonialImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-gray-200 mt-4">
+            <button
+              type="button"
+              onClick={() => setEditTestimonialModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-xs cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={editTestimonialLoading}
+              className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {editTestimonialLoading ? 'Saving...' : 'Update Testimonial'}
+            </button>
           </div>
         </form>
       </Modal>

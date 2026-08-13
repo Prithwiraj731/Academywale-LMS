@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { API_URL } from "../../api";
 
 // Custom animation styles with zero gap on mobile to prevent cumulative slide offset
 const styles = `
@@ -135,8 +136,33 @@ export default function ModernTestimonial({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [testimonialList, setTestimonialList] = useState(testimonials);
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
+
+  // Fetch live testimonials from database
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${API_URL}/api/testimonials`)
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && data && Array.isArray(data.testimonials) && data.testimonials.length > 0) {
+          const formatted = data.testimonials.map((t, idx) => ({
+            id: t.id || t._id || (idx + 1),
+            name: t.name,
+            role: t.role || t.designation || t.course || 'Student',
+            review: t.review || t.text || t.message,
+            avatar: t.imageUrl || t.avatar || (t.image && t.image.startsWith('http') ? t.image : testimonials[idx % testimonials.length].avatar),
+            handle: `@${t.name.toLowerCase().replace(/\s+/g, '_')}`
+          }));
+          setTestimonialList(formatted);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to fetch dynamic testimonials, using default fallback:', err);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   // Touch gesture state for mobile swiping
   const [touchStart, setTouchStart] = useState(null);
@@ -158,7 +184,7 @@ export default function ModernTestimonial({
   if (windowWidth >= 768) cardsToShow = 2;
   if (windowWidth >= 1024) cardsToShow = 3;
   
-  const totalSlides = testimonials.length;
+  const totalSlides = testimonialList.length;
   const maxIndex = Math.max(0, totalSlides - cardsToShow);
   
   // Handle slider movement with pixel/percentage accuracy
@@ -180,7 +206,7 @@ export default function ModernTestimonial({
 
   useEffect(() => {
     moveSlider(activeIndex);
-  }, [windowWidth, activeIndex]);
+  }, [windowWidth, activeIndex, testimonialList]);
   
   // Touch swipe event handlers
   const handleTouchStart = (e) => {
@@ -198,19 +224,25 @@ export default function ModernTestimonial({
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 40;
+    
     if (distance > minSwipeDistance) {
+      // Swiped left -> next
       const nextIndex = activeIndex >= maxIndex ? 0 : activeIndex + 1;
       moveSlider(nextIndex);
     } else if (distance < -minSwipeDistance) {
+      // Swiped right -> prev
       const prevIndex = activeIndex === 0 ? maxIndex : activeIndex - 1;
       moveSlider(prevIndex);
     }
   };
   
-  // Start/stop the auto slider
+  // Auto slide functionality
   useEffect(() => {
-    if (isPaused) return;
-    
+    if (isPaused) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
     intervalRef.current = setInterval(() => {
       setActiveIndex((prev) => {
         const next = prev >= maxIndex ? 0 : prev + 1;
@@ -224,35 +256,40 @@ export default function ModernTestimonial({
         clearInterval(intervalRef.current);
       }
     };
-  }, [isPaused, maxIndex, cardsToShow]);
+  }, [isPaused, maxIndex, windowWidth, testimonialList]);
   
   return (
-    <section className="py-12 xs:py-14 sm:py-16 bg-slate-950 text-white overflow-hidden border-t border-neutral-850">
+    <section className="py-16 bg-neutral-950 text-white relative overflow-hidden testimonial-section">
       <style>{styles}</style>
-      <div className="max-w-7xl mx-auto testimonial-section">
-        <div className="text-center mb-8 sm:mb-12">
-          <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3.5 py-1.5 rounded-full border border-[#20b2aa]/30 mb-3 inline-block">
-            Student Feedback
-          </span>
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-heading">
-            See What Teachers & <span className="text-[#20b2aa]">Students Say</span>
+      
+      {/* Background Decorative Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#20b2aa]/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#20b2aa]/10 border border-[#20b2aa]/30 text-[#20b2aa] text-xs font-semibold uppercase tracking-wider mb-4">
+            <span>Student & Teacher Reviews</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+            {title}
           </h2>
-          <p className="text-sm sm:text-base text-neutral-400 mt-2.5 sm:mt-3 px-2 max-w-xl mx-auto font-medium">
+          <p className="text-neutral-400 text-base sm:text-lg font-normal max-w-2xl mx-auto">
             {subtitle}
           </p>
         </div>
 
+        {/* Testimonials Slider Container */}
         <div className="testimonial-container">
           <div 
-            className="testimonial-slider"
             ref={sliderRef}
+            className="testimonial-slider"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {testimonials.map((testimonial) => (
+            {testimonialList.map((testimonial) => (
               <div className="testimonial-slide" key={`testimonial-${testimonial.id}`}>
                 <TestimonialCard 
                   testimonial={testimonial}
