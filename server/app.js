@@ -79,8 +79,8 @@ app.get('/api/status', (req, res) => {
     message: 'AcademyWale Backend Running on Supabase!',
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    deployVersion: 'v5-admin-otp-fixed-2026-08-10',
-    buildTimestamp: new Date().toISOString()
+    deployVersion: 'v6-testimonials-fix-2026-08-13',
+    buildTimestamp: '2026-08-13T20:00:00Z'
   });
 });
 
@@ -213,7 +213,8 @@ app.get('*', (req, res) => {
 
 // 404 handler for API routes only
 app.use('/api/*', (req, res) => {
-  res.status(404).json({ status: 'error', message: 'Route not found' });
+  console.warn(`⚠️ 404: ${req.method} ${req.originalUrl} not matched by any route`);
+  res.status(404).json({ status: 'error', message: 'Route not found', method: req.method, path: req.originalUrl });
 });
 
 // Global error handler
