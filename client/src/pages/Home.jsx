@@ -551,10 +551,10 @@ export default function Home() {
                   key={faculty.id}
                   title={faculty.name}
                   href={`/faculties/${faculty.slug}`}
-                  containerClassName="w-full h-full sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-[240px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-[300px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[320px] mx-auto"
+                  containerClassName="w-full sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-[240px] sm:min-h-[200px] md:min-h-[240px] lg:min-h-[300px] sm:max-h-[220px] md:max-h-[260px] lg:max-h-[320px] mx-auto flex items-center justify-center"
                 >
-                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200/80 sm:border-none shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-between p-3.5 sm:p-4 md:p-5 lg:p-8 cursor-pointer hover:scale-[1.03] sm:hover:scale-105 w-full h-full min-h-[175px] xs:min-h-[190px] sm:min-h-0">
-                    <div className="w-20 h-20 xs:w-22 xs:h-22 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 mb-2 sm:mb-3 md:mb-4 rounded-full overflow-hidden border-3 sm:border-4 border-[#20b2aa] sm:border-blue-500 bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center group-hover:border-teal-600 transition-colors duration-300 shadow-md shrink-0">
+                  <div className="group bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200/80 sm:border-none shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center p-3.5 sm:p-4 md:p-5 lg:p-6 cursor-pointer hover:scale-[1.03] sm:hover:scale-105 w-full h-full gap-2 sm:gap-3">
+                    <div className="w-16 h-16 xs:w-18 xs:h-18 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden border-3 sm:border-4 border-[#20b2aa] sm:border-blue-500 bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center group-hover:border-teal-600 transition-colors duration-300 shadow-md shrink-0">
                       <img
                         src={faculty.image}
                         alt={faculty.name}
