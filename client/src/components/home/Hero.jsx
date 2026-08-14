@@ -39,24 +39,24 @@ export default function Hero() {
   }, [banners.length]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-neutral-950">
+    <section className="relative w-full overflow-hidden bg-white">
       <div 
-        className="w-full aspect-[2172/724] relative overflow-hidden group select-none"
+        className="w-full aspect-[2172/724] relative overflow-hidden group select-none bg-white"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {/* Banner Slider */}
         <div
-          className="flex w-full h-full transition-transform duration-700 ease-out"
+          className="flex w-full h-full transition-transform duration-700 ease-out bg-white"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {banners.map((banner, idx) => (
-            <div key={idx} className="w-full h-full flex-shrink-0 relative">
+            <div key={idx} className="w-full h-full flex-shrink-0 relative bg-white">
               <img
                 src={banner}
                 alt={`Banner ${idx + 1}`}
-                className="w-full h-full object-contain sm:object-cover md:object-contain bg-neutral-950 select-none pointer-events-none"
+                className="w-full h-full object-contain sm:object-cover md:object-contain bg-white select-none pointer-events-none"
               />
             </div>
           ))}
@@ -91,7 +91,7 @@ export default function Hero() {
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 focus:outline-none cursor-pointer ${
-                currentIndex === idx ? 'w-5 sm:w-6 bg-[#20b2aa]' : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/80'
+                currentIndex === idx ? 'w-5 sm:w-6 bg-[#20b2aa]' : 'w-1.5 sm:w-2 bg-gray-400 hover:bg-gray-600'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
