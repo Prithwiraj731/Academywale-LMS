@@ -189,47 +189,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full text-left items-start">
-            {/* Left Column: Search & Quick Actions */}
-            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[360px]">
-              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
-                Quick Search
-              </span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2 text-center md:text-left font-heading">
-                Find Your Specific Course
-              </h3>
-              <p className="text-neutral-400 text-sm mb-6 max-w-sm text-center md:text-left">
-                Type subjects, papers, or faculty names to search instantly, or browse our entire catalog of classes.
-              </p>
-              
-              <form onSubmit={handleSearchSubmit} className="w-full max-w-md mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
-                <input
-                  type="text"
-                  placeholder="Search courses, subjects or faculty"
-                  value={searchVal}
-                  onChange={(e) => setSearchVal(e.target.value)}
-                  className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
-                />
-                <button
-                  type="submit"
-                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                  <span>Search</span>
-                </button>
-              </form>
-              <div className="w-full mt-auto pt-6 flex justify-center md:justify-start">
-                <MorphyButton
-                  onClick={() => navigate('/courses/all')}
-                  size="lg"
-                  className="shadow-xl hover:shadow-2xl font-extrabold flex items-center gap-2"
-                >
-                  <GradCapIcon className="w-5 h-5 text-white" />
-                  <span>Browse All Courses</span>
-                </MorphyButton>
-              </div>
-            </div>
-
-            {/* Right Column: Choose Learning Path */}
+            {/* Choose Learning Path */}
             <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[380px]">
               <div className="w-full max-w-md flex flex-col items-center md:items-start">
                 <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
@@ -379,6 +339,46 @@ export default function Home() {
                     )}
                   </AnimatePresence>
                 </div>
+              </div>
+            </div>
+
+            {/* Search & Quick Actions */}
+            <div className="flex flex-col justify-start items-center md:items-start bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 p-6 sm:p-8 rounded-3xl shadow-xl w-full min-h-[360px]">
+              <span className="text-xs font-bold tracking-widest text-[#20b2aa] uppercase bg-teal-500/10 px-3 py-1 rounded-full border border-[#20b2aa]/20 mb-4">
+                Quick Search
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-2 text-center md:text-left font-heading">
+                Find Your Specific Course
+              </h3>
+              <p className="text-neutral-400 text-sm mb-6 max-w-sm text-center md:text-left">
+                Type subjects, papers, or faculty names to search instantly, or browse our entire catalog of classes.
+              </p>
+              
+              <form onSubmit={handleSearchSubmit} className="w-full max-w-md mb-6 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-1.5 px-3 shadow-lg focus-within:border-[#20b2aa]/70 transition-all hover:bg-white/15">
+                <input
+                  type="text"
+                  placeholder="Search courses, subjects or faculty"
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  className="w-full bg-transparent text-white px-3 py-2 text-sm focus:outline-none placeholder-gray-400 font-medium"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#20b2aa] hover:bg-[#1a9690] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Search</span>
+                </button>
+              </form>
+              <div className="w-full mt-auto pt-6 flex justify-center md:justify-start">
+                <MorphyButton
+                  onClick={() => navigate('/courses/all')}
+                  size="lg"
+                  className="shadow-xl hover:shadow-2xl font-extrabold flex items-center gap-2"
+                >
+                  <GradCapIcon className="w-5 h-5 text-white" />
+                  <span>Browse All Courses</span>
+                </MorphyButton>
               </div>
             </div>
           </div>

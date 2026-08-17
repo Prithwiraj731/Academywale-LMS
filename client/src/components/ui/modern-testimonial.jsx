@@ -16,7 +16,8 @@ const styles = `
   }
   
   .testimonial-section {
-    padding: 0 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     width: 100%;
     box-sizing: border-box;
   }
@@ -44,7 +45,8 @@ const styles = `
   
   @media (min-width: 640px) {
     .testimonial-section {
-      padding: 0 1.5rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
     }
   }
   
@@ -261,7 +263,7 @@ export default function ModernTestimonial({
   }, [isPaused, maxIndex, windowWidth, testimonialList]);
   
   return (
-    <section className="py-16 bg-neutral-950 text-white relative overflow-hidden testimonial-section">
+    <section className="pt-16 pb-16 sm:pt-20 sm:pb-20 bg-neutral-950 text-white relative overflow-hidden testimonial-section">
       <style>{styles}</style>
       
       {/* Background Decorative Glow */}
