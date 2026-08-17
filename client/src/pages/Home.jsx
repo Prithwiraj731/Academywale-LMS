@@ -18,26 +18,8 @@ import { normalizeCoursesPricing } from '../utils/coursePricing';
 import { FaGraduationCap, FaChevronRight, FaBookReader, FaAward } from 'react-icons/fa';
 import CAClasses from '../components/home/CAClasses';
 import CMAClasses from '../components/home/CMAClasses';
-import sjcCert from '../assets/sjcCert.jpg';
-import bisnuKediaCert from '../assets/bisnuKediaCert.jpeg';
 
 import { API_URL } from '../api';
-
-const certificates = [
-  {
-    id: 1,
-    title: 'SJC Institute Authorized Partner',
-    subtitle: 'Authorized Business Partner certifying outstanding contribution to quality education',
-    image: sjcCert,
-  },
-  {
-    id: 2,
-    title: 'Bishnu Kedia Classes Authorized Partner',
-    subtitle: 'Official Authorization & Recognition Certificate for Excellence in Professional Coaching',
-    image: bisnuKediaCert,
-    badge: '★ Authorized Partner'
-  }
-];
 
 const videoHighlights = [
   {
@@ -60,19 +42,10 @@ export default function Home() {
   const [topFaculties, setTopFaculties] = useState([]);
   const [exclusiveCourses, setExclusiveCourses] = useState([]);
   const [activePath, setActivePath] = useState(null);
-  const [activeCertIndex, setActiveCertIndex] = useState(0);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const carouselRef = useRef(null);
 
   const [isPaused, setIsPaused] = useState(false);
-
-  // Auto slide certificates
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveCertIndex((prev) => (prev + 1) % certificates.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
 
   const scroll = (direction) => {
     if (carouselRef.current) {
@@ -753,123 +726,6 @@ export default function Home() {
                 <span>Swipe card to switch videos</span>
                 <ChevronRight className="w-3 h-3" />
               </span>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Recognized & Accredited Institutions Section (3D Stacked Carousel) */}
-      <section className="py-16 sm:py-24 px-4 bg-gradient-to-b from-gray-50/50 to-white relative overflow-hidden">
-        {/* Background Decorative Elements */}
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#20b2aa]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-        
-        {/* Dot pattern background */}
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto relative z-10">
-          {/* Synchronized Header */}
-          <div className="text-center mb-10 sm:mb-14">
-            <div className="group inline-flex flex-col items-center">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight drop-shadow-sm font-heading">
-                Our Recognitions & <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Accreditations</span>
-              </h2>
-              <div className="h-1 w-16 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-2 rounded-full" />
-            </div>
-            <p className="text-gray-600 mt-4 text-base sm:text-lg max-w-2xl mx-auto px-4 font-medium">
-              Officially recognized and accredited partner certifying our commitment to excellence in CA & CMA education
-            </p>
-          </div>
-
-          {/* 3D Stacked Certificate Carousel Container */}
-          <div className="flex flex-col items-center">
-            <div className="relative w-full max-w-3xl min-h-[380px] sm:min-h-[480px] flex items-center justify-center">
-              <AnimatePresence mode="popLayout">
-                {certificates.map((cert, index) => {
-                  const isCurrent = index === activeCertIndex;
-                  const isNext = (index === (activeCertIndex + 1) % certificates.length);
-
-                  return (
-                    <motion.div
-                      key={cert.id}
-                      initial={{ opacity: 0, scale: 0.8, y: 30 }}
-                      animate={{
-                        opacity: isCurrent ? 1 : (isNext ? 0.6 : 0.2),
-                        scale: isCurrent ? 1 : (isNext ? 0.92 : 0.84),
-                        y: isCurrent ? 0 : (isNext ? -20 : -40),
-                        rotate: isCurrent ? 0 : (isNext ? -3 : 3),
-                        zIndex: isCurrent ? 30 : (isNext ? 20 : 10)
-                      }}
-                      exit={{ opacity: 0, scale: 0.8, y: -40 }}
-                      transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-                      onClick={() => setActiveCertIndex(index)}
-                      className={`absolute w-full p-3 sm:p-5 bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border ${
-                        isCurrent ? 'border-[#20b2aa]/40 shadow-[0_25px_60px_-15px_rgba(32,178,170,0.3)]' : 'border-gray-200/80 shadow-md cursor-pointer'
-                      }`}
-                    >
-                      {/* Golden Ribbon Badge */}
-                      <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-40 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-white font-extrabold py-1.5 px-3.5 sm:py-2 sm:px-4 rounded-xl shadow-lg border border-amber-300 text-xs tracking-wider uppercase rotate-3 flex items-center gap-1 select-none">
-                        {cert.badge}
-                      </div>
-
-                      {/* Certificate Image Frame */}
-                      <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-gray-950 border border-gray-200 shadow-inner">
-                        <img 
-                          src={cert.image}
-                          alt={cert.title} 
-                          className="w-full h-auto max-h-[420px] object-contain transition-all duration-500"
-                        />
-                      </div>
-
-                      {/* Certificate Title Footer */}
-                      <div className="mt-3 text-center">
-                        <h4 className="text-base sm:text-lg font-bold text-gray-900">{cert.title}</h4>
-                        <p className="text-xs sm:text-sm text-gray-500 font-medium">{cert.subtitle}</p>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-
-            {/* Carousel Navigation & Indicators */}
-            <div className="mt-8 flex items-center gap-4 z-30">
-              <button
-                type="button"
-                onClick={() => setActiveCertIndex((prev) => (prev - 1 + certificates.length) % certificates.length)}
-                className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
-                title="Previous Certificate"
-              >
-                ‹
-              </button>
-
-              <div className="flex items-center gap-2">
-                {certificates.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveCertIndex(idx)}
-                    className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                      idx === activeCertIndex ? 'w-8 bg-[#20b2aa]' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setActiveCertIndex((prev) => (prev + 1) % certificates.length)}
-                className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
-                title="Next Certificate"
-              >
-                ›
-              </button>
-            </div>
-
-            {/* Verification Tag */}
-            <div className="mt-6 flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200/60 shadow-xs text-xs sm:text-sm text-gray-600 font-medium">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Verified Authorization by SJC Institute & Bishnu Kedia Classes</span>
             </div>
           </div>
         </div>

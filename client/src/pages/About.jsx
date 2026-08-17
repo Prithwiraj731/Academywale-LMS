@@ -1,13 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FaAward, FaLightbulb, FaBullseye, FaHandshake, FaBookOpen, FaUsers, FaGraduationCap, FaArrowRight } from 'react-icons/fa';
 import { MorphyButton } from '../components/ui/morphy-button';
 
-import souravImg from '../assets/about/sourav.jpeg';
-import prihwiImg from '../assets/about/prihwi.jpg';
+import sjcCert from '../assets/sjcCert.jpg';
+import bisnuKediaCert from '../assets/bisnuKediaCert.jpeg';
+
+const certificates = [
+  {
+    id: 1,
+    title: 'SJC Institute Authorized Partner',
+    subtitle: 'Authorized Business Partner certifying outstanding contribution to quality education',
+    image: sjcCert,
+    badge: '★ Authorized Partner'
+  },
+  {
+    id: 2,
+    title: 'Bishnu Kedia Classes Authorized Partner',
+    subtitle: 'Official Authorization & Recognition Certificate for Excellence in Professional Coaching',
+    image: bisnuKediaCert,
+    badge: '★ Authorized Partner'
+  }
+];
 
 export default function About() {
   const navigate = useNavigate();
+  const [activeCertIndex, setActiveCertIndex] = useState(0);
+
+  // Auto slide certificates
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveCertIndex((prev) => (prev + 1) % certificates.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-white text-slate-800 overflow-hidden font-sans">
@@ -195,8 +222,127 @@ export default function About() {
           </div>
         </section>
 
+        {/* RECOGNITIONS & ACCREDITATIONS SECTION */}
+        <section className="mb-24 sm:mb-32">
+          <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-b from-gray-50/70 via-white to-teal-50/20 border border-gray-200/70 p-6 sm:p-12 shadow-xl">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[#20b2aa]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            {/* Dot pattern background */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+
+            <div className="max-w-5xl mx-auto relative z-10">
+              {/* Synchronized Header */}
+              <div className="text-center mb-10 sm:mb-14">
+                <div className="group inline-flex flex-col items-center">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm font-heading">
+                    Our Recognitions & <span className="text-[#20b2aa] group-hover:text-teal-600 transition-colors duration-300">Accreditations</span>
+                  </h2>
+                  <div className="h-1.5 w-16 group-hover:w-full bg-[#20b2aa] transition-all duration-500 mt-3 rounded-full" />
+                </div>
+                <p className="text-gray-600 mt-4 text-base sm:text-lg max-w-2xl mx-auto px-4 font-medium">
+                  Officially recognized and accredited partner certifying our commitment to excellence in CA & CMA education
+                </p>
+              </div>
+
+              {/* 3D Stacked Certificate Carousel Container */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-full max-w-3xl min-h-[380px] sm:min-h-[480px] flex items-center justify-center">
+                  <AnimatePresence mode="popLayout">
+                    {certificates.map((cert, index) => {
+                      const isCurrent = index === activeCertIndex;
+                      const isNext = (index === (activeCertIndex + 1) % certificates.length);
+
+                      return (
+                        <motion.div
+                          key={cert.id}
+                          initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                          animate={{
+                            opacity: isCurrent ? 1 : (isNext ? 0.6 : 0.2),
+                            scale: isCurrent ? 1 : (isNext ? 0.92 : 0.84),
+                            y: isCurrent ? 0 : (isNext ? -20 : -40),
+                            rotate: isCurrent ? 0 : (isNext ? -3 : 3),
+                            zIndex: isCurrent ? 30 : (isNext ? 20 : 10)
+                          }}
+                          exit={{ opacity: 0, scale: 0.8, y: -40 }}
+                          transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                          onClick={() => setActiveCertIndex(index)}
+                          className={`absolute w-full p-3 sm:p-5 bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl border ${
+                            isCurrent ? 'border-[#20b2aa]/40 shadow-[0_25px_60px_-15px_rgba(32,178,170,0.3)]' : 'border-gray-200/80 shadow-md cursor-pointer'
+                          }`}
+                        >
+                          {/* Golden Ribbon Badge */}
+                          <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-40 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-white font-extrabold py-1.5 px-3.5 sm:py-2 sm:px-4 rounded-xl shadow-lg border border-amber-300 text-xs tracking-wider uppercase rotate-3 flex items-center gap-1 select-none">
+                            {cert.badge}
+                          </div>
+
+                          {/* Certificate Image Frame */}
+                          <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-gray-950 border border-gray-200 shadow-inner">
+                            <img 
+                              src={cert.image}
+                              alt={cert.title} 
+                              className="w-full h-auto max-h-[420px] object-contain transition-all duration-500"
+                            />
+                          </div>
+
+                          {/* Certificate Title Footer */}
+                          <div className="mt-3 text-center">
+                            <h4 className="text-base sm:text-lg font-bold text-gray-900">{cert.title}</h4>
+                            <p className="text-xs sm:text-sm text-gray-500 font-medium">{cert.subtitle}</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+
+                {/* Carousel Navigation & Indicators */}
+                <div className="mt-8 flex items-center gap-4 z-30">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCertIndex((prev) => (prev - 1 + certificates.length) % certificates.length)}
+                    className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
+                    title="Previous Certificate"
+                  >
+                    ‹
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {certificates.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveCertIndex(idx)}
+                        className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                          idx === activeCertIndex ? 'w-8 bg-[#20b2aa]' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveCertIndex((prev) => (prev + 1) % certificates.length)}
+                    className="w-10 h-10 rounded-full bg-white hover:bg-teal-50 border border-gray-200 text-gray-700 hover:text-teal-600 flex items-center justify-center font-bold transition-all shadow-md cursor-pointer"
+                    title="Next Certificate"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                {/* Verification Tag */}
+                <div className="mt-6 flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200/60 shadow-xs text-xs sm:text-sm text-gray-600 font-medium">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Verified Authorization by SJC Institute & Bishnu Kedia Classes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* TEAM SECTION */}
-        <section className="mt-16 sm:mt-24">
+        <section className="mt-8">
           <div className="text-center mb-16">
             <div className="group inline-flex flex-col items-center">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight drop-shadow-sm font-heading">
@@ -208,47 +354,23 @@ export default function About() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 max-w-4xl mx-auto px-4">
             {/* Executive 1: Sourav Pathak */}
-            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 border border-teal-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-[#20b2aa]/40 flex flex-col items-center text-center">
-              {/* Photo Container */}
-              <div className="relative w-36 h-36 mb-6">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#20b2aa] to-teal-400 rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
-                <div className="relative w-full h-full rounded-full p-1 bg-gradient-to-tr from-[#20b2aa] via-teal-300 to-blue-400 shadow-md">
-                  <img
-                    src={souravImg}
-                    alt="Sourav Pathak"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-gray-900 mb-1">Sourav Pathak</h3>
+            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 sm:p-10 border border-teal-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-[#20b2aa]/40 flex flex-col items-center text-center">
+              <h3 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Sourav Pathak</h3>
               <p className="text-xs font-black text-[#20b2aa] uppercase tracking-widest bg-teal-50 px-4 py-1.5 rounded-full border border-teal-200/60 shadow-sm mb-4">
                 Founder
               </p>
-              <p className="text-gray-600 text-sm leading-relaxed max-w-xs font-medium">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed max-w-sm font-medium">
                 Providing strategic direction, fostering partnerships, and steering the overall vision and growth of AcademyWale.
               </p>
             </div>
 
             {/* Executive 2: Prithwiraj Mazumdar */}
-            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 border border-blue-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40 flex flex-col items-center text-center">
-              {/* Photo Container */}
-              <div className="relative w-36 h-36 mb-6">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
-                <div className="relative w-full h-full rounded-full p-1 bg-gradient-to-tr from-blue-600 via-cyan-400 to-[#20b2aa] shadow-md">
-                  <img
-                    src={prihwiImg}
-                    alt="Prithwiraj Mazumdar"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-gray-900 mb-1">Prithwiraj Mazumdar</h3>
+            <div className="group relative bg-white/90 backdrop-blur-sm rounded-[32px] p-8 sm:p-10 border border-blue-100/80 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40 flex flex-col items-center text-center">
+              <h3 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Prithwiraj Mazumdar</h3>
               <p className="text-xs font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-full border border-blue-200/60 shadow-sm mb-4">
                 Tech Lead
               </p>
-              <p className="text-gray-600 text-sm leading-relaxed max-w-xs font-medium">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed max-w-sm font-medium">
                 Architecting core learning technologies, high-performance course playback systems, and database infrastructure.
               </p>
             </div>
