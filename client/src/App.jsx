@@ -30,6 +30,8 @@ import PaymentPage from './pages/PaymentPage';
 import UPIPaymentPage from './pages/UPIPaymentPage';
 import CourseFullDetailPage from './pages/CourseFullDetailPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import Disclaimer from './pages/Disclaimer';
 import CAFoundationPapers from './pages/CAFoundationPapers';
 import CAInterPapers from './pages/CAInterPapers';
 import CAFinalPapers from './pages/CAFinalPapers';
@@ -76,6 +78,8 @@ const App = () => {
         <Route path="/course/:courseType/:courseId" element={<CourseFullDetailPage />} />
         <Route path="/course-details/:courseType/:courseId" element={<CourseFullDetailPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
 
         {/* General paper overview pages */}
         <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />

@@ -131,3 +131,39 @@ CREATE INDEX IF NOT EXISTS idx_purchases_status ON public.purchases(payment_stat
 
 -- Full-text search helper for courses
 CREATE INDEX IF NOT EXISTS idx_courses_search ON public.courses USING gin(to_tsvector('english', title || ' ' || subject || ' ' || description));
+
+-- --- ROW LEVEL SECURITY (RLS) ---
+-- The backend uses service_role key (bypasses RLS).
+-- These policies only govern direct PostgREST API access (anon/authenticated).
+
+-- Enable RLS on all tables
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.faculties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.institutes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
+
+-- Public catalog tables: read-only via API
+CREATE POLICY "Allow public read access on faculties"
+  ON public.faculties FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Allow public read access on institutes"
+  ON public.institutes FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Allow public read access on courses"
+  ON public.courses FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "Allow public read access on testimonials"
+  ON public.testimonials FOR SELECT TO anon, authenticated USING (true);
+
+-- Sensitive tables: explicit deny-all via API (server uses service_role to bypass)
+CREATE POLICY "Deny all direct access on users"
+  ON public.users FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
+CREATE POLICY "Deny all direct access on purchases"
+  ON public.purchases FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
+CREATE POLICY "Deny all direct access on coupons"
+  ON public.coupons FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);

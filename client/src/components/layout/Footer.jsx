@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import VenomBeam from '../ui/venom-beam';
 import whatsappLogo from '../../assets/whatsapp.png';
 import telegramLogo from '../../assets/telegram.png';
@@ -93,9 +94,13 @@ export default function Footer() {
           <div className="mb-6 xs:mb-7 sm:mb-0">
             <h4 className="font-heading font-semibold text-base xs:text-lg sm:text-lg mb-3 xs:mb-4 sm:mb-6">Quick Links</h4>
             <ul className="space-y-2 xs:space-y-2.5 sm:space-y-3">
-              <li><a href="/about" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">About Us</a></li>
-              <li><a href="/faculties" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">Our Faculties</a></li>
-              <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition text-sm xs:text-sm sm:text-base">Privacy Policy</a></li>
+              <li><Link to="/about" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">About Us</Link></li>
+              <li><Link to="/courses/all" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">All Courses</Link></li>
+              <li><Link to="/faculties" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">Our Faculties</Link></li>
+              <li><Link to="/contact" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">Contact Us</Link></li>
+              <li><Link to="/privacy-policy" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">Privacy Policy</Link></li>
+              <li><Link to="/terms-and-conditions" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">Terms & Conditions</Link></li>
+              <li><Link to="/disclaimer" className="text-gray-300 hover:text-[#20b2aa] transition text-sm xs:text-sm sm:text-base">Disclaimer</Link></li>
             </ul>
           </div>
 
