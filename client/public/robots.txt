@@ -1,17 +1,38 @@
 User-agent: *
 Allow: /
+Allow: /courses/
+Allow: /course-details/
+Allow: /faculties/
+Allow: /resources/
+Allow: /test-series
 
+# Utility, auth and admin disallows
 Disallow: /admin
 Disallow: /admin-dashboard
 Disallow: /login
 Disallow: /register
+Disallow: /forgot-password
 Disallow: /student-dashboard
 Disallow: /payment
 Disallow: /payment/
 Disallow: /api/
 Disallow: /cart/
 Disallow: /order/
-Disallow: /course-details/
 Disallow: /cloudinary-example
+
+# Explicit Googlebot and Mediapartners-Google instructions
+User-agent: Mediapartners-Google
+Allow: /
+Allow: /courses/
+Allow: /course-details/
+Allow: /resources/
+Allow: /faculties/
+Allow: /test-series
+Disallow: /admin
+Disallow: /admin-dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /student-dashboard
+Disallow: /payment/
 
 Sitemap: https://academywale.com/sitemap.xml

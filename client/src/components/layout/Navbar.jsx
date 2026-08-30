@@ -12,6 +12,7 @@ export default function Navbar() {
   const [profileMenu, setProfileMenu] = useState(false);
   const [isCaDropdownOpen, setIsCaDropdownOpen] = useState(false);
   const [isCmaDropdownOpen, setIsCmaDropdownOpen] = useState(false);
+  const [isResourcesDropdownOpen, setIsResourcesDropdownOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -293,6 +294,32 @@ export default function Navbar() {
               </div>
               <Link to="/test-series" className="text-gray-800 hover:text-primary transition font-bold text-sm xl:text-base">Test Series</Link>
 
+              {/* Free Resources / Learning Hub Dropdown */}
+              <div className="relative group">
+                <Link to="/resources" className="text-gray-800 hover:text-[#20b2aa] transition flex items-center font-bold text-sm xl:text-base gap-1.5">
+                  <span>Learning Hub</span>
+                  <span className="px-1.5 py-0.5 text-[10px] bg-teal-500 text-white rounded font-extrabold uppercase">Free</span>
+                  <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-100 p-2.5">
+                  <div className="space-y-1 text-sm">
+                    <Link to="/resources" className="block px-3 py-2 text-teal-800 font-extrabold bg-teal-50/70 hover:bg-teal-100/70 rounded-lg">
+                      Free Learning Hub Overview
+                    </Link>
+                    <div className="pt-1 border-t border-gray-100">
+                      <Link to="/resources/ca" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">CA Notes & Study Guides</Link>
+                      <Link to="/resources/cma" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">CMA Notes & Costing Guides</Link>
+                      <Link to="/resources/notes" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">Ind AS & SFM Formula Sheets</Link>
+                      <Link to="/resources/mcqs" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">Interactive MCQs Engine</Link>
+                      <Link to="/resources/exam-preparation" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">3-Hour Exam Masterclass</Link>
+                      <Link to="/resources/exam-updates" className="block px-3 py-1.5 text-gray-700 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-semibold">Passing Criteria & Set-off Rules</Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="relative group">
                 <button className="text-gray-800 hover:text-primary transition flex items-center font-bold text-sm xl:text-base">
                   Faculties
@@ -493,6 +520,79 @@ export default function Navbar() {
                 >
                   Test Series
                 </Link>
+
+                {/* Free Learning Hub Mobile Menu */}
+                <div>
+                  <button
+                    onClick={() => setIsResourcesDropdownOpen(!isResourcesDropdownOpen)}
+                    className="w-full flex justify-between items-center font-semibold text-teal-700 py-2 px-4 focus:outline-none hover:bg-teal-50/50 rounded-lg transition"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>Learning Hub</span>
+                      <span className="px-1.5 py-0.5 text-[9px] bg-teal-500 text-white rounded font-bold uppercase">Free</span>
+                    </span>
+                    <svg
+                      className={`w-5 h-5 ml-1 transform transition-transform duration-200 ${isResourcesDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  {isResourcesDropdownOpen && (
+                    <div className="pl-4 space-y-1 bg-teal-50/40 rounded-lg py-2 mt-1">
+                      <Link 
+                        to="/resources" 
+                        className="block px-3 py-2 text-teal-800 font-bold hover:bg-teal-100 rounded-lg text-xs" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        All Free Resources
+                      </Link>
+                      <Link 
+                        to="/resources/ca" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CA Study Materials
+                      </Link>
+                      <Link 
+                        to="/resources/cma" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        CMA Study Materials
+                      </Link>
+                      <Link 
+                        to="/resources/notes" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Revision Notes & Cheat Sheets
+                      </Link>
+                      <Link 
+                        to="/resources/mcqs" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Interactive MCQs
+                      </Link>
+                      <Link 
+                        to="/resources/exam-preparation" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Exam Masterclass & Tips
+                      </Link>
+                      <Link 
+                        to="/resources/exam-updates" 
+                        className="block px-3 py-1.5 text-gray-700 hover:text-teal-700 rounded text-xs font-semibold" 
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Passing Rules & Updates
+                      </Link>
+                    </div>
+                  )}
+                </div>
 
                 <Link to="/faculties" className="block py-2 px-4 text-gray-700 hover:text-primary hover:bg-gray-50 rounded transition font-semibold">
                   All Faculties

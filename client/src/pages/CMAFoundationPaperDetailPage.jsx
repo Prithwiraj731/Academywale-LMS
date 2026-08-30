@@ -280,34 +280,56 @@ const CMAFoundationPaperDetailPage = () => {
             <h3 className="text-base sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-4">
               {currentPaper.title}
             </h3>
-            {currentPaper.description && (
-              <p className="text-sm text-gray-600 leading-relaxed max-w-2xl mx-auto border-t border-gray-150 pt-4 mt-2">
-                {currentPaper.description}
-              </p>
-            )}
+
+            {/* Subject Overview & Exam Blueprint */}
+            <div className="mt-4 pt-4 border-t border-teal-100 text-left grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="bg-teal-50/70 p-3 rounded-xl border border-teal-100">
+                <span className="font-bold text-teal-900 block mb-0.5">Passing Standard</span>
+                <span className="text-teal-800">40% subject min, 50% group aggregate (200/400).</span>
+              </div>
+              <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100">
+                <span className="font-bold text-blue-900 block mb-0.5">Paper Scope</span>
+                <span className="text-blue-800">100 Marks • ICMAI Syllabus 2022 coverage.</span>
+              </div>
+              <div className="bg-purple-50/70 p-3 rounded-xl border border-purple-100 flex flex-col justify-between">
+                <span className="font-bold text-purple-900 block mb-0.5">Free Study Notes</span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/resources/cma')}
+                  className="text-purple-700 font-bold hover:underline text-left"
+                >
+                  View Free CMA Guides →
+                </button>
+              </div>
+            </div>
           </div>
         )}
         
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block border-t-4 border-blue-500 border-solid rounded-full w-12 h-12 animate-spin mb-4"></div>
-            <p className="text-gray-600">Loading courses...</p>
+            <div className="inline-block border-t-4 border-teal-500 border-solid rounded-full w-12 h-12 animate-spin mb-4"></div>
+            <p className="text-gray-600 font-semibold">Loading available faculty courses...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-            <p className="text-red-700">{error}</p>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md my-4">
+            <p className="text-red-700 font-medium">{error}</p>
           </div>
         ) : courses.length === 0 ? (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="mt-4 text-xl text-gray-500">No courses available for this paper yet.</p>
-            <p className="mt-2 text-gray-500">Check back later or contact support.</p>
+          <div className="bg-white/80 border border-gray-200 rounded-2xl p-8 text-center max-w-xl mx-auto my-8 shadow-sm">
+            <h4 className="text-base font-bold text-gray-800 mb-1">New Batches Updating Shortly</h4>
+            <p className="text-xs text-gray-500 mb-4">
+              We are currently enrolling for the upcoming exam term. Meanwhile, you can explore our free syllabus study guides, notes, and MCQ practice sets.
+            </p>
+            <button
+              onClick={() => navigate('/resources/cma')}
+              className="bg-[#20b2aa] hover:bg-[#19958e] text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md"
+            >
+              Explore Free CMA Resources
+            </button>
           </div>
         ) : (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Available Courses</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Available Video Lectures & Batches</h2>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5">
               {courses.map((course, index) => (
                 <CourseCard 
@@ -319,6 +341,20 @@ const CMAFoundationPaperDetailPage = () => {
             </div>
           </div>
         )}
+
+        {/* Free Study Material Footer Card */}
+        <div className="mt-8 mb-4 bg-white/90 border border-teal-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-gray-900">Need Free Study Materials, Past Papers & MCQs?</h4>
+            <p className="text-xs text-gray-600">Access comprehensive chapter-wise study notes, formulas, and 3-hour exam time management strategies.</p>
+          </div>
+          <button
+            onClick={() => navigate('/resources')}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0"
+          >
+            Visit Learning Hub
+          </button>
+        </div>
       </div>
     </div>
   );

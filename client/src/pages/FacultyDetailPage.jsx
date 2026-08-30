@@ -4,6 +4,7 @@ import BackButton from '../components/common/BackButton';
 import { getFacultyImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../api';
 import CourseCard from '../components/common/CourseCard/CourseCard';
+import { getFacultyBySlug } from '../data/hardcodedFaculties';
 
 export default function FacultyDetailPage() {
   const { slug } = useParams();

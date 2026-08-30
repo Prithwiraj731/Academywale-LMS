@@ -839,13 +839,13 @@ const CourseFullDetailPage = () => {
 
         </div>
 
-        {/* 2. FULL WIDTH DETAILS SECTION BELOW (SPECIFICATIONS TABLE & HIGHLIGHTS) */}
+             {/* 2. FULL WIDTH DETAILS SECTION BELOW (SPECIFICATIONS TABLE, CURRICULUM, ROADMAP, FAQS & RESOURCES) */}
         <div className="order-3 mt-8">
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex border-b border-gray-200 bg-gray-50">
+            <div className="flex border-b border-gray-200 bg-gray-50 overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setActiveTab('info')}
-                className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'info'
+                className={`flex-1 py-4 px-4 sm:px-6 font-bold text-xs sm:text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'info'
                     ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
                     : 'border-transparent text-gray-500 hover:text-gray-900'
                   }`}
@@ -853,18 +853,36 @@ const CourseFullDetailPage = () => {
                 <FaBookOpen /> Product Info
               </button>
               <button
-                onClick={() => setActiveTab('highlights')}
-                className={`flex-1 py-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'highlights'
+                onClick={() => setActiveTab('curriculum')}
+                className={`flex-1 py-4 px-4 sm:px-6 font-bold text-xs sm:text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'curriculum'
                     ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
                     : 'border-transparent text-gray-500 hover:text-gray-900'
                   }`}
               >
-                <FaChalkboardTeacher /> Highlights & Features
+                <FaChalkboardTeacher /> Syllabus & Coverage
+              </button>
+              <button
+                onClick={() => setActiveTab('studyplan')}
+                className={`flex-1 py-4 px-4 sm:px-6 font-bold text-xs sm:text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'studyplan'
+                    ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-900'
+                  }`}
+              >
+                <FaRegClock /> Study Roadmap
+              </button>
+              <button
+                onClick={() => setActiveTab('faqs')}
+                className={`flex-1 py-4 px-4 sm:px-6 font-bold text-xs sm:text-sm tracking-wide border-b-2 transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'faqs'
+                    ? 'border-[#20b2aa] text-[#20b2aa] bg-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-900'
+                  }`}
+              >
+                <FaQuestionCircle /> Exam FAQs
               </button>
             </div>
 
             <div className="p-6 sm:p-8">
-              {activeTab === 'info' ? (
+              {activeTab === 'info' && (
                 /* SPECIFICATIONS TABLE */
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm border-collapse rounded-xl overflow-hidden border border-gray-150">
@@ -933,37 +951,102 @@ const CourseFullDetailPage = () => {
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                /* HIGHLIGHTS & DESCRIPTION */
+              )}
+
+              {activeTab === 'curriculum' && (
+                /* SYLLABUS & CURRICULUM */
                 <div className="space-y-6">
+                  <div className="prose prose-teal max-w-none">
+                    <h4 className="text-lg font-bold text-gray-900 mb-2">Curriculum Breakdown & Examination Scope</h4>
+                    <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                      This course is structured strictly according to the latest ICAI / ICMAI prescribed syllabus. Each chapter covers complete concept clarity, statutory interpretations, practical numerical illustrations, and past exam questions (PYQs).
+                    </p>
+                  </div>
+
                   {course.description && (
-                    <div className="prose prose-teal max-w-none">
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">Detailed Overview</h4>
-                      <div className="text-gray-700 space-y-4 text-sm sm:text-base leading-relaxed">
+                    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Faculty Course Notes</h5>
+                      <div className="text-gray-800 text-sm leading-relaxed">
                         {renderFormattedText(course.description)}
                       </div>
                     </div>
                   )}
 
-                  <div className="border-t border-gray-150 pt-6">
-                    <h4 className="text-md font-bold text-gray-900 mb-4">Included Features</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700 text-sm">
-                      <div className="flex items-center gap-2.5">
-                        <FaCheckCircle className="text-green-500 shrink-0" />
-                        <span>100% syllabus coverage based on ICAI/ICMAI</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <FaCheckCircle className="text-green-500 shrink-0" />
-                        <span>Mock tests & exam preparation tips included</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <FaCheckCircle className="text-green-500 shrink-0" />
-                        <span>Interactive doubts portal access</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <FaCheckCircle className="text-green-500 shrink-0" />
-                        <span>High-speed servers for lag-free video stream</span>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="p-4 rounded-xl bg-teal-50/50 border border-teal-100 space-y-1.5">
+                      <div className="text-xs font-bold text-teal-800 uppercase tracking-wider">Concept Building</div>
+                      <p className="text-xs text-teal-900 leading-relaxed">Comprehensive in-depth theory and standard statutory provisions with practical real-world corporate examples.</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 space-y-1.5">
+                      <div className="text-xs font-bold text-blue-800 uppercase tracking-wider">Exam Questions & RTPs</div>
+                      <p className="text-xs text-blue-900 leading-relaxed">Detailed solving of Revision Test Papers (RTPs), Mock Test Papers (MTPs), and past 5 examination terms.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'studyplan' && (
+                /* STUDY ROADMAP & TIMELINE */
+                <div className="space-y-6">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Recommended 120–150 Hour Study Timeline</h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Follow this proven 3-phase preparation structure designed by top faculty mentors to achieve high retention and examination confidence:
+                  </p>
+
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-teal-500 pl-4 py-1 space-y-1">
+                      <div className="text-sm font-bold text-gray-900">Phase 1: Conceptual Lectures & Notes (Days 1–45)</div>
+                      <p className="text-xs text-gray-600 leading-relaxed">Watch 2–3 hours of lectures daily. Simultaneously maintain handwritten class notes and solve all in-chapter module illustrations.</p>
+                    </div>
+
+                    <div className="border-l-4 border-blue-500 pl-4 py-1 space-y-1">
+                      <div className="text-sm font-bold text-gray-900">Phase 2: Question Bank & Self-Practice (Days 46–75)</div>
+                      <p className="text-xs text-gray-600 leading-relaxed">Solve all back-exercise questions from your hardcopy books without looking at solutions. Build chapter-wise formula & section summary sheets.</p>
+                    </div>
+
+                    <div className="border-l-4 border-purple-500 pl-4 py-1 space-y-1">
+                      <div className="text-sm font-bold text-gray-900">Phase 3: RTPs, MTPs & Timed Mock Tests (Days 76–90)</div>
+                      <p className="text-xs text-gray-600 leading-relaxed">Attempt at least 3 full-length 100-mark mock papers strictly under 3-hour timed exam conditions from 2:00 PM to 5:00 PM.</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Need free study materials & notes?</span>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/resources')}
+                      className="text-xs font-bold text-teal-600 hover:underline"
+                    >
+                      Visit AcademyWale Learning Hub →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'faqs' && (
+                /* EXAM & COURSE FAQS */
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Frequently Asked Questions (FAQs)</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                      <h5 className="text-sm font-bold text-gray-900">How will I receive the lecture serial keys and study books?</h5>
+                      <p className="text-xs text-gray-600 leading-relaxed">Login credentials and software activation keys are delivered to your registered email and WhatsApp within 24 hours of successful enrollment. Physical books are dispatched via tracked express courier.</p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                      <h5 className="text-sm font-bold text-gray-900">Can I watch the video lectures on both Windows Laptop and Android phone?</h5>
+                      <p className="text-xs text-gray-600 leading-relaxed">Yes, depending on the selected viewing mode (Google Drive / Pendrive / Mobile App), lectures can be viewed on supported Windows PCs or Android smartphones with smooth offline playback.</p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                      <h5 className="text-sm font-bold text-gray-900">How is doubt resolution handled during the course?</h5>
+                      <p className="text-xs text-gray-600 leading-relaxed">You receive direct access to the faculty mentor's dedicated WhatsApp doubt-clearing group and periodic live query resolution webinars.</p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                      <h5 className="text-sm font-bold text-gray-900">Are the lectures updated for the upcoming exam attempt?</h5>
+                      <p className="text-xs text-gray-600 leading-relaxed">Yes, all batches are fully compliant with the latest ICAI / ICMAI statutory amendments, finance act revisions, and updated exam patterns.</p>
                     </div>
                   </div>
                 </div>

@@ -299,9 +299,31 @@ const CAInterPaperDetailPage = () => {
               Paper - {currentPaper.id}
             </h2>
             <div className="h-0.5 w-16 bg-gradient-to-r from-teal-500 to-[#20b2aa] mx-auto my-3 rounded-full" />
-            <h3 className="text-base sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+            <h3 className="text-base sm:text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-4">
               {currentPaper.title}
             </h3>
+
+            {/* Subject Overview & Exam Blueprint */}
+            <div className="mt-4 pt-4 border-t border-teal-100 text-left grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="bg-teal-50/70 p-3 rounded-xl border border-teal-100">
+                <span className="font-bold text-teal-900 block mb-0.5">Passing Standard</span>
+                <span className="text-teal-800">40% subject min, 50% group aggregate (150/300).</span>
+              </div>
+              <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-100">
+                <span className="font-bold text-blue-900 block mb-0.5">Paper Scope</span>
+                <span className="text-blue-800">100 Marks (30% MCQ + 70% Descriptive).</span>
+              </div>
+              <div className="bg-purple-50/70 p-3 rounded-xl border border-purple-100 flex flex-col justify-between">
+                <span className="font-bold text-purple-900 block mb-0.5">Free Study Notes</span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/resources/ca')}
+                  className="text-purple-700 font-bold hover:underline text-left"
+                >
+                  View Free CA Guides →
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center text-red-600">Paper not found.</div>
@@ -309,26 +331,52 @@ const CAInterPaperDetailPage = () => {
 
         {/* Course Cards Grid */}
         <div className="w-full">
-          {loading && <div className="text-[#20b2aa] text-center py-10 font-bold">Loading courses...</div>}
+          {loading && <div className="text-[#20b2aa] text-center py-10 font-bold">Loading available faculty courses...</div>}
           {error && <div className="text-red-600 text-center py-10 font-bold">{error}</div>}
           
           {!loading && !error && courses.length === 0 && (
-            <div className="text-center text-gray-500 bg-white/70 backdrop-blur-sm p-10 rounded-3xl border border-gray-200 shadow-sm font-semibold max-w-xl mx-auto">
-              No courses available for this paper yet. Check back later.
+            <div className="bg-white/80 border border-gray-200 rounded-2xl p-8 text-center max-w-xl mx-auto my-8 shadow-sm">
+              <h4 className="text-base font-bold text-gray-800 mb-1">New Batches Updating Shortly</h4>
+              <p className="text-xs text-gray-500 mb-4">
+                We are currently enrolling for the upcoming exam term. Meanwhile, you can explore our free syllabus study guides, notes, and MCQ practice sets.
+              </p>
+              <button
+                onClick={() => navigate('/resources/ca')}
+                className="bg-[#20b2aa] hover:bg-[#19958e] text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md"
+              >
+                Explore Free CA Resources
+              </button>
             </div>
           )}
 
           {!loading && courses.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 max-w-7xl mx-auto">
-              {courses.map((course, idx) => (
-                <CourseCard 
-                  key={course._id || course.id || idx}
-                  course={course}
-                  onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id || course.id}`)}
-                />
-              ))}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 px-1">Available Video Lectures & Batches</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 max-w-7xl mx-auto">
+                {courses.map((course, idx) => (
+                  <CourseCard 
+                    key={course._id || course.id || idx}
+                    course={course}
+                    onViewDetails={() => navigate(`/course-details/${encodeURIComponent(course.courseType || 'course')}/${course._id || course.id}`)}
+                  />
+                ))}
+              </div>
             </div>
           )}
+        </div>
+
+        {/* Free Study Material Footer Card */}
+        <div className="mt-8 mb-4 bg-white/90 border border-teal-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-gray-900">Need Free Study Materials, Past Papers & MCQs?</h4>
+            <p className="text-xs text-gray-600">Access comprehensive chapter-wise study notes, formulas, and 3-hour exam time management strategies.</p>
+          </div>
+          <button
+            onClick={() => navigate('/resources')}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shrink-0"
+          >
+            Visit Learning Hub
+          </button>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 import { AdvancedImage } from '@cloudinary/react';
 import { auto } from '@cloudinary/url-gen/actions/resize';
 import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+import { useAdSenseRouteGuard } from './utils/adsensePolicy';
 
 // Import Layout
 import Layout from './components/layout/Layout';
@@ -48,7 +49,21 @@ import CMAInterPaperDetailPage from './pages/CMAInterPaperDetailPage';
 import CMAFinalPaperDetailPage from './pages/CMAFinalPaperDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Import Learning Hub & Resources Pages
+import LearningHubPage from './pages/resources/LearningHubPage';
+import CAResourcesPage from './pages/resources/CAResourcesPage';
+import CMAResourcesPage from './pages/resources/CMAResourcesPage';
+import StudyGuidesPage from './pages/resources/StudyGuidesPage';
+import ExamPrepPage from './pages/resources/ExamPrepPage';
+import RevisionNotesPage from './pages/resources/RevisionNotesPage';
+import MCQPracticePage from './pages/resources/MCQPracticePage';
+import ExamUpdatesPage from './pages/resources/ExamUpdatesPage';
+import ResourceDetailPage from './pages/resources/ResourceDetailPage';
+
 const App = () => {
+  // Enforce AdSense compliance across all client routes
+  useAdSenseRouteGuard();
+
   const cld = new Cloudinary({ cloud: { cloudName: 'drlqhsjgm' } });
 
   const img = cld
@@ -80,6 +95,17 @@ const App = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/disclaimer" element={<Disclaimer />} />
+
+        {/* Free Learning Hub & Resources Routes */}
+        <Route path="/resources" element={<LearningHubPage />} />
+        <Route path="/resources/ca" element={<CAResourcesPage />} />
+        <Route path="/resources/cma" element={<CMAResourcesPage />} />
+        <Route path="/resources/study-guides" element={<StudyGuidesPage />} />
+        <Route path="/resources/exam-preparation" element={<ExamPrepPage />} />
+        <Route path="/resources/notes" element={<RevisionNotesPage />} />
+        <Route path="/resources/mcqs" element={<MCQPracticePage />} />
+        <Route path="/resources/exam-updates" element={<ExamUpdatesPage />} />
+        <Route path="/resources/articles/:slug" element={<ResourceDetailPage />} />
 
         {/* General paper overview pages */}
         <Route path="/ca/foundation-papers" element={<CAFoundationPapers />} />
