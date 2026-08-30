@@ -14,7 +14,8 @@ import {
   Sparkles,
   Award,
   GraduationCap,
-  Layers
+  Layers,
+  ExternalLink
 } from 'lucide-react';
 import { educationalArticles } from '../../data/resourcesData';
 import BackButton from '../../components/common/BackButton';
@@ -154,16 +155,24 @@ export default function ResourceDetailPage() {
         {/* Syllabus Breakdown Table (if present) */}
         {article.syllabusCoverage && article.syllabusCoverage.length > 0 && (
           <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xl">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-teal-400" />
-              <span>Chapter-Wise Syllabus Weightage & Module Coverage</span>
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-teal-400" />
+                <span>Indicative Curriculum Breakdown & Module Weightage</span>
+              </h2>
+              <span className="text-[11px] text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full w-fit">
+                Faculty Curricular Analysis
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">
+              Note: Weightages below represent indicative curricular distribution based on syllabus volume and standard test blueprints. Official exam term marks may vary within ICAI/ICMAI institutional guidelines.
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm border-collapse rounded-xl overflow-hidden border border-slate-800">
                 <thead>
                   <tr className="bg-slate-800 text-slate-300 uppercase tracking-wider text-[11px] font-bold">
                     <th className="py-3 px-4 w-1/3">Module / Topic Area</th>
-                    <th className="py-3 px-4 w-1/6">Weightage</th>
+                    <th className="py-3 px-4 w-1/6">Est. Weightage</th>
                     <th className="py-3 px-4 w-1/2">Key Concepts & Focus Topics</th>
                   </tr>
                 </thead>
@@ -202,6 +211,46 @@ export default function ResourceDetailPage() {
             </section>
           ))}
         </main>
+
+        {/* Authoritative Sources & Regulatory References */}
+        {article.references && article.references.length > 0 && (
+          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xl">
+            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <ExternalLink className="w-4 h-4 text-teal-400" />
+              <span>Official Sources & Reference Links</span>
+            </h3>
+            <ul className="space-y-2.5">
+              {article.references.map((ref, rIdx) => (
+                <li key={rIdx} className="text-xs sm:text-sm text-slate-300 flex items-start gap-2.5">
+                  <span className="text-teal-400 font-bold mt-0.5">•</span>
+                  <div className="space-y-0.5">
+                    <div>
+                      <span className="font-semibold text-slate-200">{ref.title}:</span>{' '}
+                      <a 
+                        href={ref.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-teal-400 hover:text-teal-300 underline break-all inline-flex items-center gap-1"
+                      >
+                        <span>{ref.url}</span>
+                        <ExternalLink className="w-3 h-3 inline" />
+                      </a>
+                    </div>
+                    {ref.description && <p className="text-slate-400 text-xs">{ref.description}</p>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-500 italic space-y-1">
+              <p>
+                <strong>Academic Disclaimer:</strong> Official examination regulations, syllabus structures, passing criteria, and statutory tax rates are established by the Institute of Chartered Accountants of India (ICAI), the Institute of Cost Accountants of India (ICMAI), and relevant governmental bodies.
+              </p>
+              <p>
+                AcademyWale learning resources provide academic explanations, pedagogical summaries, and study strategies designed to support student preparation in alignment with published curricula.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Contextual Course Recommendation Banner */}
         {article.relatedCourses && article.relatedCourses.length > 0 && (

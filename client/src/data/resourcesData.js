@@ -19,67 +19,79 @@ export const educationalArticles = [
     category: 'ca',
     subCategory: 'study-guides',
     level: 'CA Foundation',
-    paper: 'Paper 1: Principles and Practice of Accounting',
-    title: 'CA Foundation Principles & Practice of Accounting: Chapter-Wise Weightage & 90-Day Strategy',
-    description: 'Master CA Foundation Paper 1 with high-weightage topic breakdowns, journal entry masteries, depreciation schedules, partnership accounts, and sample working note presentations.',
-    author: 'CA Expert Panel & AcademyWale Faculty',
-    publishedDate: '2025-01-15',
-    lastUpdated: '2025-02-20',
+    paper: 'Paper 1: Accounting (ICAI New Scheme)',
+    title: 'CA Foundation Accounting: Comprehensive Preparation Strategy, Working Notes & Curriculum Analysis',
+    description: 'Master CA Foundation Paper 1 under the ICAI New Scheme. Explore module-wise academic focus areas, journal entry conventions, depreciation schedules, partnership accounts, and working note presentation for step marks.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '12 min read',
     featured: true,
-    tags: ['CA Foundation', 'Accounting', 'Study Plan', 'Exam Weightage', 'Working Notes'],
+    tags: ['CA Foundation', 'Accounting', 'Study Plan', 'Curriculum Analysis', 'Working Notes'],
     syllabusCoverage: [
-      { module: 'Module 1: Theoretical Framework & Accounting Process', weightage: '15-20%', topics: ['Accounting Concepts, Principles & Conventions', 'Capital vs Revenue Expenditures', 'Contingent Assets & Liabilities', 'Accounting Policies & Standards Overview'] },
-      { module: 'Module 2: Bank Reconciliation, Inventories & Depreciation', weightage: '20-25%', topics: ['BRS with Adjusted Cash Book', 'Inventory Valuation Methods (FIFO, Weighted Avg)', 'Depreciation (SLM, WDV, Change in Method)'] },
-      { module: 'Module 3: Special Transactions & Bills of Exchange', weightage: '15-20%', topics: ['Bills of Exchange & Accommodation Bills', 'Consignment Accounting', 'Sale of Goods on Approval / Return Basis'] },
-      { module: 'Module 4: Final Accounts of Sole Proprietors & NPO', weightage: '20-25%', topics: ['Trading, P&L Account & Balance Sheet with adjustments', 'Receipts & Payments, Income & Expenditure, NPO Balance Sheets'] },
-      { module: 'Module 5: Partnership Accounts & Company Accounts', weightage: '20-25%', topics: ['Admission, Retirement, Death of Partner, Goodwill treatment', 'Issue of Shares, Forfeiture, Re-issue, Debentures basics'] },
+      { module: 'Module 1: Theoretical Framework & Accounting Process', weightage: '15-20%', topics: ['Accounting Concepts, Principles & Conventions', 'Capital vs Revenue Expenditures', 'Contingent Assets & Contingent Liabilities', 'Accounting Standards Overview'] },
+      { module: 'Module 2: Bank Reconciliation, Inventories & Depreciation', weightage: '20-25%', topics: ['BRS with Adjusted Cash Book', 'Inventory Valuation (AS 2 / FIFO & Weighted Average)', 'Depreciation (SLM, WDV, Change in Accounting Method)'] },
+      { module: 'Module 3: Special Transactions & Bills of Exchange', weightage: '15-20%', topics: ['Bills of Exchange & Accommodation Bills', 'Consignment Accounting', 'Sale of Goods on Approval or Return Basis'] },
+      { module: 'Module 4: Final Accounts of Sole Proprietors & NPO', weightage: '20-25%', topics: ['Financial Statements of Sole Proprietors with Adjustments', 'Receipts & Payments, Income & Expenditure, Balance Sheets for NPO'] },
+      { module: 'Module 5: Partnership Accounts & Company Accounts', weightage: '20-25%', topics: ['Admission, Retirement, Death of Partner, Goodwill Accounting', 'Issue of Shares, Forfeiture, Re-issue, Debentures Basics'] },
     ],
     keyTakeaways: [
-      'Focus 40% of revision time on Partnership Accounts, NPO, and Final Accounts as they consistently form 40-50 marks of the question paper.',
-      'Always draw neat ledger rulings and show explicit Working Notes with step markings—ICAI examiners award 30-40% of marks for working steps.',
-      'Solve past 5 terms ICAI RTPs (Revision Test Papers) and MTPs (Mock Test Papers) under timed 3-hour exam conditions.',
-      'Bank Reconciliation Statement with amended cash book is an easy 10-mark scoring question if overdraft rules are mastered.'
+      'Focus substantial revision time on Partnership Accounts, NPO, and Final Accounts as they represent core practical areas in the curriculum.',
+      'Always draw structured ledger rulings and provide explicit Working Notes—ICAI examiners award dedicated step marks for intermediate calculations.',
+      'Solve previous examination papers, Revision Test Papers (RTPs), and Mock Test Papers (MTPs) published by the ICAI Board of Studies under timed 3-hour conditions.',
+      'For Bank Reconciliation Statements, mastering the adjusted cash book technique simplifies multi-point overdraft reconciliations.'
     ],
     sections: [
       {
-        heading: '1. Understanding the CA Foundation Paper 1 Pattern',
-        content: `Principles and Practice of Accounting is a 100-mark subjective descriptive paper. The question paper typically consists of 6 compulsory/optional questions:
-- Question 1 is compulsory (20 marks): Generally includes 6 True/False statements with mandatory reasons (12 marks) and two short practical/theory questions (4 marks each).
-- Questions 2 to 6 (20 marks each): Students must attempt any 4 out of these 5 questions.
+        heading: '1. Overview of the CA Foundation Paper 1 Pattern',
+        content: `Under the ICAI New Scheme of Education and Training, Paper 1: Accounting is a 100-mark subjective, descriptive paper:
+- Question 1 is compulsory (20 marks): It typically features 6 True/False statements requiring statutory or conceptual reasoning (12 marks: 6 items × 2 marks each) and two short descriptive or practical computational questions (4 marks each).
+- Questions 2 to 6 (20 marks each): Candidates are required to attempt any 4 out of the 5 remaining questions.
 
-To clear this paper with an exemption (60+ marks), mastering Question 1 is non-negotiable. True/False questions require conceptual clarity from ICAI Study Material Study Modules.`
+To establish a strong foundation for an exemption (60+ marks), thorough understanding of the theoretical concepts in Module 1 of the ICAI Study Material is essential.`
       },
       {
-        heading: '2. High-Yield Chapters to Target First',
-        content: `Based on trend analysis of recent ICAI exam papers, prioritizing the following chapters guarantees a solid score:
-1. Partnership Accounts: Admission, Retirement cum Death, and Goodwill valuation (AS 26 compliant treatment).
-2. Financial Statements of Non-Profit Organizations (NPO): Preparation of Income and Expenditure Account from Receipts and Payments Account with subscription adjustments.
-3. Accounting for Special Transactions: Consignment accounts (Normal vs Abnormal loss calculation) and Bills of Exchange (Accommodation Bills).
-4. Company Accounts: Issue of shares at premium/discount, pro-rata allotment, forfeiture, and reissue entries.`
+        heading: '2. Core Curricular Modules Emphasized in Study Practice',
+        content: `In the academic syllabus prescribed by ICAI, the following key modules form the foundation of practical problem-solving:
+1. Partnership Accounts: Admission, Retirement cum Death, and treatment of Goodwill in accordance with applicable accounting principles.
+2. Financial Statements of Non-Profit Organizations (NPO): Preparing the Income and Expenditure Account and Balance Sheet from given Receipts and Payments data with subscription adjustments.
+3. Accounting for Special Transactions: Consignment transactions (distinguishing Normal vs. Abnormal losses) and Bills of Exchange (including Accommodation Bills).
+4. Company Accounts: Accounting for share capital, pro-rata allotment, forfeiture of shares, and reissue entries.`
       },
       {
-        heading: '3. Working Notes Presentation: How to Score Full Step Marks',
-        content: `ICAI marking schemes heavily reward proper working notes. Common student mistakes include doing rough calculations in margins without cross-referencing.
-Follow this standard protocol:
-- Main Answer: Present the Primary Balance Sheet, P&L, or Ledger first.
-- Working Notes (WN): Clearly label every supporting computation as "Working Note 1: Calculation of Sacrificing Ratio", "Working Note 2: Valuation of Hidden Goodwill", etc.
-- Always cross-reference the WN number directly inside the primary ledger or financial statement line item.`
+        heading: '3. Working Notes Presentation: Maximizing Step Marks',
+        content: `ICAI marking schemes allocate dedicated marks for working notes and intermediate calculations. Common student errors include performing calculations in margins without formal documentation.
+Recommended presentation standard:
+- Primary Solution: Present the main Ledger Accounts, Balance Sheet, or Profit & Loss statement first.
+- Working Notes (WN): Clearly title every supporting computation beneath the main solution (e.g., "Working Note 1: Calculation of Sacrificing Ratio", "Working Note 2: Allocation of Subscription Income").
+- Reference: Direct the examiner to the specific Working Note number directly inside the primary ledger or financial statement line item.`
       },
       {
-        heading: '4. 90-Day Study Timeline Blueprint',
-        content: `Phase 1 (Days 1 - 40): Core Syllabus Completion
-- Dedicate 3 hours daily to concept lectures and solving ICAI module illustration problems. Write down every journal entry manually rather than doing visual reading.
+        heading: '4. Suggested 90-Day Study Timeline',
+        content: `Phase 1 (Days 1 - 40): Comprehensive Syllabus Coverage
+- Dedicate daily study sessions to core concepts and working through illustrations from the ICAI Study Material. Write out full journal entries and ledger accounts manually.
 
-Phase 2 (Days 41 - 70): Chapter-Wise Practice & Working Note Perfection
-- Solve all Back Questions and 'Test Your Knowledge' questions from the ICAI study kit. Build a personal formula & adjustment summary notebook.
+Phase 2 (Days 41 - 70): Chapter-End Practice & Summary Revision
+- Complete the "Test Your Knowledge" questions at the end of each module. Maintain a concise revision notebook for key adjustment entries and formulas.
 
-Phase 3 (Days 71 - 90): RTP, MTP & 3-Hour Timed Mock Tests
-- Solve the last 4 ICAI RTPs and 2 full-length Mock Test series strictly from 2:00 PM to 5:00 PM to condition your biological exam clock.`
+Phase 3 (Days 71 - 90): RTP, MTP & Timed Mock Practice
+- Solve the most recent ICAI Revision Test Papers (RTPs) and complete at least two full-length Mock Test Papers (MTPs) under timed 3-hour conditions (2:00 PM to 5:00 PM) to simulate official examination conditions.`
+      }
+    ],
+    references: [
+      {
+        title: 'ICAI Board of Studies Knowledge Portal (CA Foundation Course)',
+        url: 'https://www.icai.org/post/foundation-course',
+        description: 'Official ICAI BoS syllabus, study material modules, Revision Test Papers (RTPs), and Mock Test Papers (MTPs).'
+      },
+      {
+        title: 'ICAI Examination Guidance & Regulations',
+        url: 'https://www.icai.org/post/examination',
+        description: 'Official examination dates, guidelines, passing regulations, and instructions to candidates.'
       }
     ],
     relatedCourses: [
-      { courseType: 'ca', level: 'foundation', paperId: '1', title: 'CA Foundation Principles and Practice of Accounting Video Classes' }
+      { courseType: 'ca', level: 'foundation', paperId: '1', title: 'CA Foundation Accounting Video Lectures & Mentorship' }
     ]
   },
   {
@@ -88,52 +100,72 @@ Phase 3 (Days 71 - 90): RTP, MTP & 3-Hour Timed Mock Tests
     category: 'ca',
     subCategory: 'study-guides',
     level: 'CA Intermediate',
-    paper: 'Paper 3: Taxation (Income Tax Law & Indirect Tax - GST)',
-    title: 'CA Inter Taxation: Complete Blueprint for Income Tax (50 Marks) and GST (50 Marks)',
-    description: 'A comprehensive preparation roadmap for CA Intermediate Paper 3. Learn how to tackle Total Income computation, TDS/TCS provisions, GST Input Tax Credit (ITC) matching, and amendments.',
-    author: 'CA Indirect & Direct Tax Advisory Team',
-    publishedDate: '2025-01-20',
-    lastUpdated: '2025-02-22',
+    paper: 'Paper 3: Taxation (ICAI New Scheme)',
+    title: 'CA Intermediate Taxation: Comprehensive Guide to Income Tax (50 Marks) and GST (50 Marks)',
+    description: 'An academic guide for CA Intermediate Paper 3. Review total income computation provisions, PGBP deductions, capital gain exemptions, TDS/TCS mechanisms, and GST Input Tax Credit (ITC) statutory conditions.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '15 min read',
     featured: true,
     tags: ['CA Inter', 'Taxation', 'Income Tax', 'GST', 'Input Tax Credit', 'TDS'],
     syllabusCoverage: [
-      { module: 'Section A: Income Tax Law (50 Marks)', weightage: '50%', topics: ['Basic Concepts, Residential Status & Scope of Total Income', 'Heads of Income (Salary, House Property, PGBP, Capital Gains, IFOS)', 'Clubbing, Set-off & Carry Forward of Losses', 'Deductions from GTI (Chapter VI-A)', 'TDS, TCS, Advance Tax & Return of Income'] },
-      { module: 'Section B: Goods and Services Tax (50 Marks)', weightage: '50%', topics: ['Concept of Supply (Sec 7 & Schedule I/II/III)', 'Charge of GST & Composition Levy (Sec 9 & Sec 10)', 'Place of Supply & Time of Supply', 'Value of Supply (Sec 15)', 'Input Tax Credit (Sec 16, 17, 18 & Rule 37/37A)', 'Registration, Tax Invoice, E-Way Bill & Returns (GSTR-1, GSTR-3B)'] },
+      { module: 'Section A: Income-tax Law (50 Marks)', weightage: '50%', topics: ['Basic Concepts, Residential Status & Scope of Total Income', 'Heads of Income (Salaries, House Property, PGBP, Capital Gains, Other Sources)', 'Clubbing of Income, Set-off and Carry Forward of Losses', 'Deductions from Gross Total Income (Chapter VI-A)', 'TDS, TCS, Advance Tax & Filing of Return of Income'] },
+      { module: 'Section B: Goods and Services Tax (50 Marks)', weightage: '50%', topics: ['Concept of Supply (Section 7, Schedule I, II, III)', 'Charge of GST & Composition Levy (Section 9 & Section 10)', 'Place of Supply & Time of Supply', 'Value of Supply (Section 15)', 'Input Tax Credit (Section 16, 17, 18 & Rules 37/37A)', 'Tax Invoice, Credit/Debit Notes, E-Way Bill & Returns (GSTR-1, GSTR-3B)'] },
     ],
     keyTakeaways: [
-      'GST is typically higher-scoring than Direct Tax. Ensure 100% mastery over Section 16 & 17(5) Blocked Credit provisions to secure 40+ out of 50 marks in GST.',
-      'For Income Tax, Total Income problems invariably integrate PGBP with Capital Gains, Clubbing, and Chapter VI-A deductions (80C, 80D, 80G, 80JJAA).',
-      'Never skip statutory amendments applicable for your exam term (Statutory Updates booklet issued by ICAI 6 months prior to exams).',
-      'In Total Income computations, state clear explanatory notes beneath the solution explaining why an exemption or deduction was allowed or disallowed.'
+      'Paper 3 comprises Section A (Income-tax Law - 50 Marks) and Section B (GST - 50 Marks), featuring 30% case-scenario based MCQs and 70% descriptive questions.',
+      'In GST, master Section 16 eligibility criteria, Section 17(5) blocked credits, and Section 15 valuation provisions.',
+      'In Income Tax, Total Income comprehensive problems integrate multiple heads of income with Chapter VI-A deductions and loss set-off provisions.',
+      'Always review the statutory amendments applicable for the relevant exam attempt as notified in the ICAI BoS Statutory Updates.'
     ],
     sections: [
       {
-        heading: '1. Structuring the Paper 3 Exam Approach',
-        content: `Taxation is a 100-mark paper divided equally between Section A (Income Tax Law - 50 Marks) and Section B (GST - 50 Marks).
-Both sections feature a mix of 30% Multiple Choice Questions (Case Scenario based MCQs) and 70% Descriptive Practical Problems.
+        heading: '1. Structuring the Paper 3 Examination Approach',
+        content: `CA Intermediate Paper 3: Taxation evaluates both direct and indirect tax laws:
+- Section A: Income-tax Law (50 Marks)
+- Section B: Goods and Services Tax (50 Marks)
 
-Strategy: Begin the exam with Section B (GST). GST provisions are direct, highly structured, and less prone to lengthy computational traps compared to complex Income Tax total income statements.`
+Both sections incorporate 30% Multiple Choice Questions (including case-scenario questions with no negative marking) and 70% Descriptive Practical Problems.
+
+Academic Recommendation: Many students find starting with Section B (GST) advantageous, as GST statutory provisions are highly structured and involve direct application of statutory rules.`
       },
       {
-        heading: '2. Section A: Income Tax High-Priority Areas',
-        content: `To build an ironclad preparation for Income Tax:
-- PGBP: Section 32 Depreciation (Additional Depreciation, Block of Assets), Section 35 (Scientific Research), Section 37 (General Deductions vs Inadmissible expenses), Section 40(a)(ia) TDS defaults, Section 40A(2) related party payments, and Section 43B statutory dues.
-- Capital Gains: Section 50C/50CA stamp duty valuation, Section 54/54EC/54F capital gain exemptions, and Section 112A/111A special rates.
-- Deductions: Section 80C, 80D (health insurance limits for self/parents/senior citizens), 80G (qualifying limits), and 80JJAA (employment generation deduction).
-- TDS/TCS: 194C, 194J, 194I, 194Q vs 206C(1H) cross-linkages.`
+        heading: '2. Section A: Key Income Tax Provisions',
+        content: `Core areas in the Income-tax curriculum include:
+- Profits and Gains of Business or Profession (PGBP): Section 32 (Depreciation on block of assets), Section 35 (Scientific research expenditure), Section 37(1) (General deduction principles), Section 40(a)(ia) (30% disallowance for non-deduction of resident TDS), and Section 43B (Deduction on actual payment basis).
+- Capital Gains: Section 50C (Stamp duty valuation for land/building), Section 54, 54EC, and 54F (Capital gains exemptions), and special tax rates under Sections 111A and 112A.
+- Chapter VI-A Deductions: Key sections including 80C, 80D (Health insurance limits), 80G (Donations), and 80JJAA (Deduction in respect of employment of new employees).
+- Tax Deduction at Source (TDS): Key compliance sections including 194C (Contractors), 194J (Professional fees), 194I (Rent), and 194Q (Purchase of goods).`
       },
       {
-        heading: '3. Section B: Goods & Services Tax (GST) Scoring Blueprint',
-        content: `The 5 pillars of GST at CA Intermediate level:
-1. Input Tax Credit (ITC): Eligibility conditions under Sec 16(2), Ineligible/Blocked credits under Sec 17(5), and Reversal mechanics under Rule 42/43.
-2. Time & Value of Supply: Section 12 (Goods), Section 13 (Services), and Section 15 (Valuation inclusions, post-supply discounts).
-3. Composition Scheme: Section 10 eligibility thresholds (₹1.5 Crore for manufacturers/traders, ₹75 Lakhs for special category states, Sec 10(2A) for service providers up to ₹50 Lakhs).
-4. Reverse Charge Mechanism (RCM): Section 9(3) notified goods & services (GTA, Legal services by Advocates, Director services, Sponsorship).`
+        heading: '3. Section B: Key Goods & Services Tax (GST) Provisions',
+        content: `Fundamental pillars of the GST curriculum:
+1. Input Tax Credit (ITC): Eligibility conditions under Section 16(2), Ineligible/Blocked credits under Section 17(5) (such as motor vehicles with seating capacity ≤ 13 persons, subject to specified business exceptions), and reversal mechanics under Rule 37/37A.
+2. Time and Value of Supply: Time of supply provisions under Section 12 (Goods) and Section 13 (Services), along with transaction value determination and post-supply discount rules under Section 15.
+3. Composition Levy: Eligibility conditions and turnover thresholds under Section 10(1) (₹1.5 Crore for manufacturers/traders; ₹75 Lakhs for special category states) and Section 10(2A) for service providers (up to ₹50 Lakhs).
+4. Reverse Charge Mechanism (RCM): Tax liability on recipient for notified goods and services under Section 9(3) of the CGST Act.`
+      }
+    ],
+    references: [
+      {
+        title: 'ICAI BoS Knowledge Portal (CA Intermediate Paper 3: Taxation)',
+        url: 'https://www.icai.org/post/intermediate-course',
+        description: 'Official syllabus, study material modules, and statutory update supplements.'
+      },
+      {
+        title: 'Income Tax Department, Government of India',
+        url: 'https://incometaxindia.gov.in',
+        description: 'Statutory provisions, tax acts, rules, and circulars.'
+      },
+      {
+        title: 'Central Board of Indirect Taxes and Customs (CBIC)',
+        url: 'https://cbic-gst.gov.in',
+        description: 'CGST/IGST Acts, statutory notifications, and GST rules.'
       }
     ],
     relatedCourses: [
-      { courseType: 'ca', level: 'inter', paperId: '7', title: 'CA Intermediate Taxation Comprehensive Batch (DT + GST)' }
+      { courseType: 'ca', level: 'inter', paperId: '7', title: 'CA Intermediate Taxation Comprehensive Classes (DT + GST)' }
     ]
   },
   {
@@ -142,55 +174,67 @@ Strategy: Begin the exam with Section B (GST). GST provisions are direct, highly
     category: 'cma',
     subCategory: 'study-guides',
     level: 'CMA Intermediate',
-    paper: 'Paper 8: Cost Accounting',
-    title: 'CMA Inter Cost Accounting: How to Score 75+ Marks with Standard Costing & Marginal Costing',
-    description: 'Detailed analysis of ICMAI CMA Intermediate Cost Accounting. Master variance analysis, break-even decision making, cost accounting standards (CAS), and process costing valuation.',
-    author: 'CMA Senior Faculty Panel',
-    publishedDate: '2025-01-25',
-    lastUpdated: '2025-02-18',
+    paper: 'Paper 8: Cost Accounting (ICMAI Syllabus 2022)',
+    title: 'CMA Intermediate Cost Accounting: Practical Techniques, Variance Analysis & Decision Making',
+    description: 'A study guide for ICMAI CMA Intermediate Paper 8. Review standard costing variance analysis formulas, marginal costing decision models, Cost Accounting Standards (CAS), and process costing statements.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '14 min read',
     featured: true,
     tags: ['CMA Inter', 'Cost Accounting', 'Marginal Costing', 'Standard Costing', 'Process Costing'],
     syllabusCoverage: [
-      { module: 'Module 1: Introduction to Cost Accounting & Cost Concepts', weightage: '10-15%', topics: ['Cost Objects, Cost Centers, Classification of Costs', 'Cost Sheet preparation with latest CAS taxonomy', 'Direct Materials, EOQ, ABC Analysis, Stock levels'] },
-      { module: 'Module 2: Elements of Cost (Material, Employee & Overheads)', weightage: '25-30%', topics: ['Material Costing (FIFO, LIFO, Weighted Avg, Scrap)', 'Employee Cost (Halsey, Rowan, Taylor differential rates)', 'Overheads allocation, apportionment, primary/secondary distribution, machine hour rate'] },
-      { module: 'Module 3: Cost Accounting Methods', weightage: '20-25%', topics: ['Job Costing, Batch Costing, Contract Costing (AS 7 / IND AS 115)', 'Process Costing (Equivalent Production, FIFO vs Weighted Avg, Joint & By-Products)'] },
-      { module: 'Module 4: Cost Accounting Techniques for Decision Making', weightage: '30-35%', topics: ['Marginal Costing (P/V Ratio, BEP, Margin of Safety, Key Factor analysis, Shut-down point)', 'Standard Costing & Variance Analysis (Material, Labour, Variable & Fixed Overhead variances)', 'Budget & Budgetary Control (Flexible Budget, Cash Budget, Zero-Based Budgeting)'] },
+      { module: 'Module 1: Introduction to Cost Accounting & Cost Concepts', weightage: '10-15%', topics: ['Cost Objects, Cost Centers, Classification of Costs', 'Cost Sheet Preparation & CAS Taxonomy', 'Direct Materials, EOQ, ABC Analysis, Stock Levels'] },
+      { module: 'Module 2: Elements of Cost (Material, Employee & Overheads)', weightage: '25-30%', topics: ['Material Costing (FIFO, LIFO, Weighted Average)', 'Employee Cost (Halsey, Rowan, Differential Piece Rates)', 'Overhead Allocation, Apportionment & Machine Hour Rate'] },
+      { module: 'Module 3: Cost Accounting Methods', weightage: '20-25%', topics: ['Job Costing & Batch Costing', 'Contract Costing Principles', 'Process Costing (Equivalent Production Units, FIFO vs Weighted Average, Joint & By-Products)'] },
+      { module: 'Module 4: Cost Accounting Techniques for Decision Making', weightage: '30-35%', topics: ['Marginal Costing (P/V Ratio, BEP, Margin of Safety, Key Factor Analysis)', 'Standard Costing & Variance Analysis (Material, Labour, Overhead Variances)', 'Budget & Budgetary Control (Flexible Budget, Cash Budget, Zero-Based Budgeting)'] },
     ],
     keyTakeaways: [
-      'Standard Costing and Marginal Costing together account for 35 to 45 marks in CMA Inter exams. Practice at least 20 comprehensive variance analysis problems.',
-      'In Process Costing, Statement of Equivalent Units requires crystal-clear understanding of opening WIP treatment under FIFO vs Weighted Average method.',
-      'Always memorize Cost Accounting Standards (CAS 1 to CAS 24) definitions and objectives for short-notes and MCQ sections.',
-      'Reconciliation of Cost and Financial Accounts is a scoring 8-10 mark question—remember the sign conventions (+/-) based on starting profit base.'
+      'Standard Costing and Marginal Costing represent substantial practical components of Paper 8 in the ICMAI Syllabus 2022.',
+      'In Process Costing, preparing the Statement of Equivalent Production requires precise application of Opening WIP under FIFO vs. Weighted Average methods.',
+      'Memorize core definitions, principles, and classifications prescribed under the Cost Accounting Standards (CAS) issued by ICMAI.',
+      'When preparing the Reconciliation of Cost and Financial Accounts, ensure consistent arithmetic adjustments relative to the starting profit base.'
     ],
     sections: [
       {
-        heading: '1. Why Cost Accounting is the Backbone of CMA',
-        content: `For every CMA student, Cost Accounting is not merely a scoring subject—it represents the foundational core of the Institute of Cost Accountants of India (ICMAI) qualification.
-In CMA Intermediate Paper 8, the examiner evaluates your ability to apply quantitative costing tools to real-world industrial decision making.`
+        heading: '1. Role of Cost Accounting in the CMA Curriculum',
+        content: `Cost Accounting forms the core foundational discipline of the Institute of Cost Accountants of India (ICMAI) professional qualification.
+In CMA Intermediate Paper 8, candidates are assessed on their understanding of cost ascertainment, cost control, and analytical decision-making frameworks.`
       },
       {
-        heading: '2. Mastering Marginal Costing & Decision Making',
-        content: `Marginal Costing formulas must be understood conceptually rather than memorized mechanically:
+        heading: '2. Marginal Costing Principles & Key Formulas',
+        content: `Marginal Costing focuses on the behavior of costs with changes in volume of output:
 - Profit Volume (P/V) Ratio = (Contribution / Sales) × 100 = (Change in Profit / Change in Sales) × 100.
 - Break-Even Point (Units) = Fixed Cost / Contribution per unit.
 - Break-Even Point (Value) = Fixed Cost / P/V Ratio.
 - Margin of Safety (MOS) = Total Sales - Break-Even Sales = Profit / P/V Ratio.
-- Key Factor / Limiting Factor Decisions: Always rank products based on Contribution per unit of limiting factor (e.g., Contribution per raw material kg or per machine hour).`
+- Key Factor / Limiting Factor Decision: When resources (such as raw material or labor hours) are restricted, rank products based on Contribution per unit of the limiting factor.`
       },
       {
-        heading: '3. Variance Analysis Formula Matrix for Standard Costing',
-        content: `Material Variances:
+        heading: '3. Variance Analysis Formula Framework in Standard Costing',
+        content: `Material Cost Variances:
 1. Material Cost Variance (MCV) = (Standard Quantity × Standard Price) - (Actual Quantity × Actual Price)
 2. Material Price Variance (MPV) = Actual Quantity × (Standard Price - Actual Price)
 3. Material Usage Variance (MUV) = Standard Price × (Standard Quantity - Actual Quantity)
-4. Verification: MCV = MPV + MUV.
+- Check: MCV = MPV + MUV.
 
-Labour Variances:
+Labour Cost Variances:
 1. Labour Cost Variance (LCV) = (Standard Hours × Standard Rate) - (Actual Hours Paid × Actual Rate)
 2. Labour Rate Variance (LRV) = Actual Hours Paid × (Standard Rate - Actual Rate)
 3. Labour Efficiency Variance (LEV) = Standard Rate × (Standard Hours - Actual Hours Worked)
 4. Idle Time Variance (ITV) = Actual Idle Hours × Standard Rate (Always Adverse).`
+      }
+    ],
+    references: [
+      {
+        title: 'ICMAI Directorate of Studies (Syllabus 2022)',
+        url: 'https://icmai.in/studentswebsite/studymat.php',
+        description: 'Official study material, syllabus architecture, and workbook resources for CMA Intermediate.'
+      },
+      {
+        title: 'Cost Accounting Standards Board (CASB)',
+        url: 'https://icmai.in',
+        description: 'Authoritative Cost Accounting Standards (CAS 1 to CAS 24) issued by ICMAI.'
       }
     ],
     relatedCourses: [
@@ -203,47 +247,58 @@ Labour Variances:
     category: 'exam-preparation',
     subCategory: 'exam-preparation',
     level: 'All Levels (CA & CMA)',
-    paper: 'General Exam Strategy',
-    title: '3-Hour Exam Masterclass: How to Maximize Score, Avoid Panic, and Present Answers for Step Marks',
-    description: 'An essential guide for professional exams. Learn the 15-minute reading time strategy, question selection matrix, working note formatting, and psychological stamina during the 3-hour marathon.',
-    author: 'AcademyWale Senior Mentors & Toppers Council',
-    publishedDate: '2025-01-28',
-    lastUpdated: '2025-02-25',
+    paper: 'General Examination Strategy',
+    title: '3-Hour Professional Exam Masterclass: Time Allocation, Answer Structuring & Step-Marking Guidelines',
+    description: 'An academic guide for CA & CMA examinations. Learn how to optimize the 15-minute initial reading time, apply the 1.8-minute per mark pacing rule, structure legal answers, and maintain clarity across descriptive papers.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '10 min read',
     featured: true,
     tags: ['Exam Strategy', 'Time Management', 'Answer Presentation', 'ICAI Exams', 'ICMAI Exams'],
     keyTakeaways: [
-      'The 15-minute initial reading time must be used solely to select the sequence of questions and identify the 1 optional question to leave out.',
-      'Target 1.8 minutes per mark (e.g., a 10-mark question must be completed within 18 minutes).',
-      'Start every new answer on a fresh page. Clearly write "Answer to Question No. 2(a)" in bold center.',
-      'Never erase errors aggressively. Draw a single clean line across incorrect text to maintain answer booklet neatness.'
+      'Utilize the 15-minute initial reading period to evaluate question options and determine the optimal sequence of attempt.',
+      'Maintain an average pacing guideline of 1.8 minutes per mark (e.g., allocate maximum 18 minutes for a 10-mark question).',
+      'Begin each major question on a fresh page of the answer booklet, with clear headings identifying the question number.',
+      'Format legal and theory answers with clear separation between statutory provisions, facts of the case, and final conclusions.'
     ],
     sections: [
       {
-        heading: '1. The 15-Minute Reading Time Strategy',
-        content: `When the question paper is handed out 15 minutes before the writing time begins (1:45 PM to 2:00 PM for ICAI):
-- Do NOT start calculating complex sums mentally.
-- Read through all 6 questions rapidly.
-- Strike out the ONE question that contains unfamiliar topics or complicated multi-step adjustments.
-- Rank the remaining 4 optional questions from strongest to weakest: Order of Attempt = [Best Question] -> [Second Best] -> [Third Best] -> [Compulsory Q1] -> [Weakest Question].`
+        heading: '1. Strategic Use of the 15-Minute Reading Period',
+        content: `In examinations offering an initial 15-minute reading period prior to writing (such as 1:45 PM to 2:00 PM for ICAI afternoon sessions):
+- Read across all available questions to assess familiarity with the underlying concepts.
+- Identify and select the optional question you plan to omit from your attempt.
+- Sequence the remaining questions, beginning with the question where your conceptual understanding and recall are strongest to build early momentum.`
       },
       {
-        heading: '2. The 1.8-Minute Rule for 100 Marks',
-        content: `A 100-mark paper has 180 minutes of writing time:
-- 100 Marks × 1.8 Minutes = 180 Minutes.
-- 5-mark question = Max 9 minutes.
-- 10-mark question = Max 18 minutes.
-- 14-mark question = Max 25 minutes.
+        heading: '2. The 1.8-Minute per Mark Pacing Guideline',
+        content: `In a 100-mark paper with 180 minutes of writing time:
+- Pacing ratio: 180 Minutes ÷ 100 Marks = 1.8 Minutes per Mark.
+- 5-mark question: ~9 minutes maximum.
+- 10-mark question: ~18 minutes maximum.
+- 14-mark question: ~25 minutes maximum.
 
-If a calculation does not tally at the 18-minute mark for a 10-mark sum, do NOT keep recalculating. Leave 4 blank lines, write "Working Notes continued on page X", and move to the next question. You will receive 7/10 for steps completed, but saving 15 minutes enables you to attempt another 10-mark question.`
+Academic Tip: If a practical computation does not balance at the allocated time limit, avoid spending excessive time searching for minor errors. Clearly label all completed steps and proceed to the next question. You retain step marks for the correct workings completed, while preserving valuable time for the remaining paper.`
       },
       {
-        heading: '3. Legal & Theory Paper Presentation Blueprint',
-        content: `For Corporate Law, Audit, and Business Laws descriptive questions, present answers in a 4-paragraph format:
-1. Applicable Legal Provision / Section: Quote the Act name and section if 100% certain (e.g., "As per Section 135 of the Companies Act, 2013..."). If uncertain about section number, write "As per relevant provisions of the Companies Act, 2013".
-2. Facts of the Case: Summarize the dispute in 2-3 concise lines.
-3. Analysis & Correlation: Apply the statutory provision to the given case facts.
-4. Conclusion: State the final verdict clearly in a single sentence (e.g., "Therefore, the appointment of Mr. X as director is void ab initio").`
+        heading: '3. Presentation Framework for Law and Auditing Descriptive Answers',
+        content: `For questions on Corporate Law, Taxation, and Auditing standards, structuring responses in four distinct components enhances readability:
+1. Applicable Statutory Provision / Standard: State the relevant Act, section, or Standard on Auditing (e.g., "As per the provisions of Section 135 of the Companies Act, 2013..."). If uncertain about the exact section number, cite the Act accurately without guessing specific section digits.
+2. Facts of the Problem: Briefly summarize the key facts presented in the question.
+3. Analysis & Statutory Application: Apply the legal provision to the factual scenario.
+4. Conclusion: State a clear and unambiguous conclusion addressing the specific query raised in the question.`
+      }
+    ],
+    references: [
+      {
+        title: 'ICAI Examination Guidance & Instructions to Examinees',
+        url: 'https://www.icai.org/post/examination',
+        description: 'Official rules, booklet formatting guidelines, and instructions for CA examinations.'
+      },
+      {
+        title: 'ICMAI Examination Department Guidance',
+        url: 'https://icmai.in/studentswebsite/exam.php',
+        description: 'Official instructions, admit card regulations, and exam hall protocols for CMA candidates.'
       }
     ],
     relatedCourses: [
@@ -256,54 +311,67 @@ If a calculation does not tally at the 18-minute mark for a 10-mark sum, do NOT 
     category: 'ca',
     subCategory: 'notes',
     level: 'CA Final',
-    paper: 'Paper 1: Financial Reporting',
-    title: 'CA Final Financial Reporting: High-Yield Ind AS Summary Cheat Sheet (Ind AS 115, 116, 109, 103)',
-    description: 'Quick-reference revision summary of key Indian Accounting Standards (Ind AS) covering Revenue from Contracts (115), Leases (116), Financial Instruments (109), and Business Combinations (103).',
-    author: 'CA Final FR Mentorship Group',
-    publishedDate: '2025-02-01',
-    lastUpdated: '2025-02-24',
+    paper: 'Paper 1: Financial Reporting (ICAI New Scheme)',
+    title: 'CA Final Financial Reporting: High-Yield Ind AS Reference Summary (Ind AS 115, 116, 109, 103)',
+    description: 'A structured revision summary of key Indian Accounting Standards (Ind AS) covering Revenue from Contracts (Ind AS 115), Leases (Ind AS 116), Financial Instruments (Ind AS 109), and Business Combinations (Ind AS 103).',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '16 min read',
     featured: false,
     tags: ['CA Final', 'Financial Reporting', 'Ind AS 115', 'Ind AS 116', 'Ind AS 109', 'Ind AS 103'],
     keyTakeaways: [
-      'Ind AS 115 follows a 5-step revenue recognition model: Identify Contract -> Identify PO -> Determine TP -> Allocate TP -> Recognize Revenue.',
-      'Ind AS 116 eliminates operating lease classification for lessees. Lessees must recognize Right-of-Use (ROU) Asset and Lease Liability for almost all leases.',
-      'Ind AS 109 classifies financial assets into Amortized Cost, FVTOCI, or FVTPL based on Business Model Test and SPPI Test.',
-      'Ind AS 103 mandates Acquisition Method for Business Combinations. Purchase consideration must be measured at fair value on acquisition date.'
+      'Ind AS 115 implements a 5-step revenue recognition model based on transfer of control rather than transfer of risks and rewards.',
+      'Ind AS 116 mandates a single lessee accounting model where lessees recognize a Right-of-Use (ROU) Asset and Lease Liability on the balance sheet.',
+      'Ind AS 109 classifies debt financial assets into Amortized Cost, FVTOCI, or FVTPL based on Business Model and SPPI tests.',
+      'Ind AS 103 requires the Acquisition Method for business combinations, with identifiable net assets and purchase consideration measured at acquisition-date fair value.'
     ],
     sections: [
       {
         heading: '1. Ind AS 115: Revenue from Contracts with Customers (5-Step Framework)',
-        content: `Step 1: Identify the Contract with the customer (Commercial substance, enforceable rights, payment terms, probable collectability).
-Step 2: Identify Performance Obligations (PO) in the contract (Distinct goods or services).
-Step 3: Determine the Transaction Price (TP) (Consider variable consideration, significant financing component, non-cash consideration, consideration payable to customer).
-Step 4: Allocate the Transaction Price to the performance obligations based on relative Standalone Selling Prices (SSP).
-Step 5: Recognize revenue when (or as) the entity satisfies a performance obligation (Over time vs Point in time).`
+        content: `Ind AS 115 establishes a comprehensive framework for recognizing revenue:
+- Step 1: Identify the Contract with the customer (enforceable rights, commercial substance, approved terms, collection is probable).
+- Step 2: Identify Performance Obligations (PO) in the contract (promises to transfer distinct goods or services).
+- Step 3: Determine the Transaction Price (TP) (accounting for variable consideration, significant financing components, and non-cash consideration).
+- Step 4: Allocate the Transaction Price to performance obligations based on relative Standalone Selling Prices (SSP).
+- Step 5: Recognize revenue when (or as) the entity satisfies a performance obligation (over time or at a point in time).`
       },
       {
         heading: '2. Ind AS 116: Leases Accounting Framework',
-        content: `Lessee Accounting:
-- Initial Measurement of Lease Liability: Present value of lease payments discounted using interest rate implicit in the lease (or incremental borrowing rate).
-- Initial Measurement of ROU Asset: Lease Liability + Initial direct costs + Lease payments made at/before commencement - Lease incentives received + Dismantling/restoration provision.
+        content: `Lessee Accounting Principles:
+- Initial Measurement of Lease Liability: Present value of future lease payments discounted using the interest rate implicit in the lease (or lessee's incremental borrowing rate).
+- Initial Measurement of ROU Asset: Lease liability amount + Initial direct costs + Advance lease payments - Lease incentives received + Estimated restoration/dismantling costs.
 - Subsequent Measurement:
-  - ROU Asset: Depreciated over shorter of lease term or useful life.
-  - Lease Liability: Increased by finance charge (interest expense) and reduced by lease payments.
-- Short-term lease (< 12 months) and Low-value asset exemptions: Can be expensed straight-line over lease term.`
+  - ROU Asset: Depreciated over the shorter of lease term or useful life.
+  - Lease Liability: Increased by finance charges and reduced by lease payments made.
+- Practical Exemptions: Short-term leases (≤ 12 months without purchase option) and leases of low-value assets may be expensed on a straight-line basis.`
       },
       {
         heading: '3. Ind AS 109: Financial Instruments Classification Matrix',
-        content: `Financial Assets (Debt Instruments):
+        content: `Classification of Financial Assets (Debt Instruments):
 1. Amortized Cost: Contractual cash flows solely represent Solely Payments of Principal & Interest (SPPI) + Held to collect contractual cash flows.
-2. FVTOCI (Fair Value Through Other Comprehensive Income): SPPI test passed + Held to both collect cash flows AND sell financial assets.
-3. FVTPL (Fair Value Through Profit or Loss): Default category for assets not meeting Amortized Cost or FVTOCI criteria.
+2. FVTOCI (Fair Value Through Other Comprehensive Income): SPPI test passed + Business model involves both collecting contractual cash flows and selling financial assets.
+3. FVTPL (Fair Value Through Profit or Loss): Default category for assets not qualifying for Amortized Cost or FVTOCI.
 
-Equity Instruments:
-- Default: FVTPL.
-- Irrevocable Election at Initial Recognition: FVTOCI (without subsequent recycling of cumulative gains/losses to P&L upon derecognition).`
+Classification of Equity Instruments:
+- Standard Classification: FVTPL.
+- Irrevocable Election at Initial Recognition: FVTOCI for non-held-for-trading equity investments (without subsequent recycling of accumulated OCI gains/losses to Profit & Loss upon derecognition).`
+      }
+    ],
+    references: [
+      {
+        title: 'Ministry of Corporate Affairs (MCA) Ind AS Compendium',
+        url: 'https://mca.gov.in',
+        description: 'Official statutory text of Companies (Indian Accounting Standards) Rules as notified by the Government of India.'
+      },
+      {
+        title: 'ICAI Accounting Standards Board (ASB)',
+        url: 'https://www.icai.org/post/indian-accounting-standards-indas',
+        description: 'Educational material, Ind AS guidance notes, and implementation guidelines.'
       }
     ],
     relatedCourses: [
-      { courseType: 'ca', level: 'final', paperId: '11', title: 'CA Final Financial Reporting (Ind AS) Comprehensive Video Lectures' }
+      { courseType: 'ca', level: 'final', paperId: '11', title: 'CA Final Financial Reporting (Ind AS) Comprehensive Classes' }
     ]
   },
   {
@@ -312,51 +380,72 @@ Equity Instruments:
     category: 'cma',
     subCategory: 'notes',
     level: 'CMA Final',
-    paper: 'Paper 14: Strategic Financial Management',
-    title: 'CMA Final Strategic Financial Management (SFM): Complete Derivatives, Forex & Portfolio Formula Sheet',
-    description: 'Comprehensive formula repository and calculation models for Foreign Exchange Risk Management, Interest Rate Futures, Black-Scholes Option Pricing, and Markowitz Portfolio Theory.',
-    author: 'CMA Treasury & SFM Specialist Faculty',
-    publishedDate: '2025-02-05',
-    lastUpdated: '2025-02-23',
+    paper: 'Paper 14: Strategic Financial Management (ICMAI Syllabus 2022)',
+    title: 'CMA Final Strategic Financial Management (SFM): Formulas for Derivatives, Forex & Portfolio Theory',
+    description: 'A reference formula sheet for CMA Final Paper 14. Review key quantitative models for Foreign Exchange Risk Management, Interest Rate Parity, Black-Scholes Option Pricing, and Markowitz Portfolio Theory.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '13 min read',
     featured: false,
     tags: ['CMA Final', 'SFM', 'Forex', 'Derivatives', 'Portfolio Management', 'Formulas'],
     keyTakeaways: [
-      'Interest Rate Parity (IRP): Forward Rate = Spot Rate × (1 + Interest Rate Domestic) / (1 + Interest Rate Foreign).',
-      'Capital Asset Pricing Model (CAPM): Expected Return = Rf + Beta × (Rm - Rf).',
-      'Black-Scholes Model relies on 5 variables: Current Stock Price (S), Strike Price (X), Time to Expiration (t), Risk-free Rate (r), and Volatility (σ).',
-      'In Forex cross-currency quotes, always use Ask/Bid spread rules: Buy at Ask, Sell at Bid.'
+      'Interest Rate Parity (IRP): Forward Rate = Spot Rate × (1 + r_domestic) / (1 + r_foreign).',
+      'Capital Asset Pricing Model (CAPM): Expected Return E(R) = Rf + Beta × [E(Rm) - Rf].',
+      'The Black-Scholes formula incorporates Spot Price (S), Strike Price (X), Time to Expiration (t), Risk-free Rate (r), and Volatility (σ).',
+      'When executing foreign exchange quotations, remember standard market spread conventions: Bank buys at Bid and sells at Ask.'
     ],
     sections: [
       {
-        heading: '1. Foreign Exchange Arithmetic & Arbitrage Formulas',
-        content: `1. Direct vs Indirect Quote:
-- Direct Quote (1 Foreign Currency = x Domestic Currency).
-- Indirect Quote (1 Domestic Currency = x Foreign Currency).
-- Direct Quote = 1 / Indirect Quote.
+        heading: '1. Foreign Exchange Arithmetic & Parity Relations',
+        content: `1. Direct vs. Indirect Quotations:
+- Direct Quote: 1 Foreign Currency Unit = x Domestic Currency Units.
+- Indirect Quote: 1 Domestic Currency Unit = x Foreign Currency Units.
+- Conversion: Direct Quote = 1 / Indirect Quote.
 
-2. Bid-Ask Spread:
+2. Bid-Ask Spread Percentage:
 - Spread % = [(Ask Price - Bid Price) / Ask Price] × 100.
 
 3. Purchasing Power Parity (PPP):
-- Forward Rate = Spot Rate × [(1 + Inflation Domestic) / (1 + Inflation Foreign)].
+- Forward Rate = Spot Rate × [(1 + Inflation_domestic) / (1 + Inflation_foreign)].
 
-4. Triangular Arbitrage Condition:
-- If Implied Cross Rate ≠ Market Cross Rate, triangular arbitrage profit exists. Route trades from undervalued currency to overvalued currency.`
+4. Interest Rate Parity (IRP):
+- Forward Rate = Spot Rate × [(1 + Interest_domestic) / (1 + Interest_foreign)].
+- When market forward rate deviates from IRP rate, Covered Interest Arbitrage (CIA) opportunities arise.`
       },
       {
-        heading: '2. Portfolio Management & Risk Analysis',
-        content: `1. Portfolio Return: Rp = (w1 × R1) + (w2 × R2).
+        heading: '2. Portfolio Theory & Risk-Adjusted Performance Measures',
+        content: `1. Portfolio Expected Return (2 Assets):
+   Rp = (w1 × R1) + (w2 × R2).
+
 2. Portfolio Variance (2 Assets):
-   σp² = (w1² × σ1²) + (w2² × σ2²) + 2 × w1 × w2 × Cov(1,2).
+   σp² = (w1² × σ1²) + (w2² × σ2²) + [2 × w1 × w2 × Cov(1,2)].
    where Cov(1,2) = Correlation(1,2) × σ1 × σ2.
-3. Sharpe Ratio = (Rp - Rf) / σp (Measures excess return per unit of total risk).
-4. Treynor Ratio = (Rp - Rf) / βp (Measures excess return per unit of systematic risk).
-5. Jensen's Alpha = Actual Return - [Rf + β × (Rm - Rf)].`
+
+3. Sharpe Ratio (Total Risk):
+   Sharpe = (Rp - Rf) / σp.
+
+4. Treynor Ratio (Systematic Risk):
+   Treynor = (Rp - Rf) / βp.
+
+5. Jensen's Alpha:
+   Alpha = Actual Return - [Rf + β × (Rm - Rf)].`
+      }
+    ],
+    references: [
+      {
+        title: 'ICMAI Directorate of Studies (CMA Final Syllabus 2022)',
+        url: 'https://icmai.in/studentswebsite/studymat.php',
+        description: 'Official CMA Final study materials, workbooks, and mock examination papers for Paper 14.'
+      },
+      {
+        title: 'Reserve Bank of India (RBI) Foreign Exchange Guidelines',
+        url: 'https://www.rbi.org.in',
+        description: 'Statutory guidelines and regulations governing foreign exchange transactions in India.'
       }
     ],
     relatedCourses: [
-      { courseType: 'cma', level: 'final', paperId: '14', title: 'CMA Final Strategic Financial Management (SFM) Video Classes' }
+      { courseType: 'cma', level: 'final', paperId: '14', title: 'CMA Final Strategic Financial Management (SFM) Classes' }
     ]
   },
   {
@@ -366,41 +455,54 @@ Equity Instruments:
     subCategory: 'exam-updates',
     level: 'All Levels (CA & CMA)',
     paper: 'Official Examination Regulations',
-    title: 'ICAI & ICMAI Passing Criteria, Aggregate Rules, and Paper Exemption Regulations Explained',
-    description: 'An authoritative guide explaining how the 40% individual subject mark, 50% group aggregate mark, set-off rules, and 3-term 60+ exemption rules function in CA and CMA exams.',
-    author: 'AcademyWale Student Compliance Cell',
-    publishedDate: '2025-02-10',
-    lastUpdated: '2025-02-26',
+    title: 'ICAI & ICMAI Passing Criteria, Aggregate Rules, Set-Off Mechanics, and Exemption Regulations Explained',
+    description: 'An authoritative reference explaining how the 40% individual paper minimum, 50% group aggregate, both-group set-off rules, and 60+ marks exemption carry-forward regulations operate in CA and CMA examinations.',
+    author: 'AcademyWale Academic Content Team',
+    publishedDate: '2025-08-15',
+    lastUpdated: '2026-08-30',
     readTime: '8 min read',
     featured: false,
     tags: ['Exam Rules', 'Passing Criteria', 'Exemption Rules', 'Set-off Rules', 'ICAI', 'ICMAI'],
     keyTakeaways: [
-      'To pass a single group, a candidate must obtain minimum 40% in each individual paper and minimum 50% in the aggregate of all papers in that group.',
-      'When appearing for Both Groups simultaneously, excess marks obtained in Group 1 can be set-off against deficit in Group 2 to meet the overall 50% aggregate.',
-      'Scoring 60 or more marks in any paper entitles you to an exemption for that paper for the next 3 consecutive examination terms.',
-      'To claim an exemption, a student must have appeared in all papers of that group in that examination term.'
+      'To pass an individual group, a candidate must obtain minimum 40% marks in each paper and minimum 50% marks in the aggregate of that group.',
+      'When appearing for Both Groups simultaneously in the same exam term, surplus aggregate marks from one group can be set-off against deficit in the other group.',
+      'Scoring 60 or more marks in any paper while appearing in all papers of a group grants a paper exemption under official institute regulations.',
+      'Under the ICAI New Scheme Regulation 38D, exemptions can be carried forward beyond 3 terms permanently with a 50% pass threshold in remaining papers.'
     ],
     sections: [
       {
         heading: '1. Passing Criteria for Single Group vs Both Groups',
-        content: `Single Group Rule:
-- Minimum marks required in each individual paper: 40 out of 100.
-- Minimum total marks required in the group: 50% of total aggregate (e.g., 150 out of 300 for a 3-paper group).
+        content: `Single Group Passing Requirements:
+- Minimum marks in each individual paper: 40 out of 100.
+- Minimum total marks in the group: 50% of the maximum aggregate (e.g., 150 out of 300 for a 3-paper group; 200 out of 400 for a 4-paper group).
 
-Both Groups Set-Off Advantage:
-- If a student appears in both groups in the same exam cycle:
-  - Example: Group 1 (3 papers) Score = 175/300 (Cleared + 25 surplus marks).
-  - Group 2 (3 papers) Score = 135/300 (All individual papers >= 40, but aggregate is 15 marks short of 150).
-  - Combined Total = 175 + 135 = 310 / 600 (> 50%).
-  - Result: The candidate is declared PASSED in BOTH groups through the statutory Set-Off rule!`
+Both Groups Set-Off Mechanics:
+When a candidate sits for all papers of both groups simultaneously in a single examination term:
+- Example: 
+  - Group 1 (3 papers) Total = 175 / 300 (Cleared with 25 marks surplus).
+  - Group 2 (3 papers) Total = 135 / 300 (Every individual paper has ≥ 40 marks, but group total is 15 marks below 150).
+  - Cumulative Total = 175 + 135 = 310 / 600 (Exceeds 50% aggregate threshold of 300).
+- Statutory Result: The candidate is declared to have PASSED in both groups by virtue of the institutional Set-Off regulation.`
       },
       {
-        heading: '2. The 60+ Marks Exemption Rules & Validity',
-        content: `Under ICAI and ICMAI regulations:
-1. Eligibility: If a student fails a group but secures 60% or more marks in one or more papers of that group, an exemption is automatically granted in those papers.
-2. Condition: The candidate must have appeared in all papers of that group. If absent in even one paper, no exemption can be claimed.
-3. Validity: The exemption remains valid for the next 3 consecutive exam terms.
-4. Calculation in subsequent terms: To pass the remaining papers, the student must score minimum 40 marks in each remaining paper and achieve 50% aggregate on the remaining papers combined.`
+        heading: '2. The 60+ Marks Exemption Framework & Regulations',
+        content: `Under the official regulations of ICAI and ICMAI:
+1. Eligibility: If a student appears in all papers of a group and fails the group as a whole, but secures 60% or more marks in one or more individual papers, an exemption is granted for those specific papers.
+2. Mandatory Condition: The candidate must have appeared in all papers of the group during that examination attempt. Absence in any paper disqualifies the student from claiming exemptions.
+3. Standard Exemption Duration: The exemption remains valid for the next 3 consecutive following examination terms.
+4. ICAI New Scheme Regulation 38D Permanent Extension: Under the ICAI New Scheme regulations, if a candidate is unable to clear the remaining papers within 3 terms, the exemption can be continued permanently, with the condition that the candidate must score minimum 50% marks in each of the remaining papers to pass the group.`
+      }
+    ],
+    references: [
+      {
+        title: 'The Chartered Accountants Regulations, 1988 (as amended)',
+        url: 'https://www.icai.org',
+        description: 'Official statutory regulations governing CA examinations, passing requirements, and Regulation 38D exemption provisions.'
+      },
+      {
+        title: 'The Institute of Cost Accountants of India Examination Bye-Laws',
+        url: 'https://icmai.in/studentswebsite/exam.php',
+        description: 'Official examination bye-laws, passing criteria, and paper exemption guidelines for CMA students.'
       }
     ],
     relatedCourses: [
@@ -412,26 +514,26 @@ Both Groups Set-Off Advantage:
 export const practiceMCQSets = [
   {
     id: 'mcq-set-1',
-    subject: 'CA Foundation Principles of Accounting',
+    subject: 'CA Foundation Accounting',
     category: 'ca',
     level: 'Foundation',
-    title: 'Accounting Standards, Capital & Revenue Expenditures, and BRS',
+    title: 'Accounting Principles, Capital & Revenue Expenditures, and BRS',
     questions: [
       {
         id: 1,
-        question: 'An expenditure incurred on the overhaul of a second-hand machinery purchased before putting it into working condition is a:',
+        question: 'An expenditure incurred on the complete overhaul of a second-hand machine purchased prior to putting it into working condition is classified as:',
         options: [
           'Revenue expenditure',
           'Capital expenditure',
           'Deferred revenue expenditure',
-          'Operating expense'
+          'Administrative operating expense'
         ],
         correctIndex: 1,
-        explanation: 'Any expenditure incurred to bring a fixed asset into its working condition or ready-to-use location is capitalized as part of the asset cost under Accounting Standard principles.'
+        explanation: 'Under fundamental accounting principles, any expenditure incurred to bring a fixed asset to its working condition and location for its intended use is capitalized as part of the cost of the asset.'
       },
       {
         id: 2,
-        question: 'Under AS 2 (Revised) "Valuation of Inventories", inventories must be valued at:',
+        question: 'Under AS 2 "Valuation of Inventories", inventories must be measured at:',
         options: [
           'Historical Cost only',
           'Net Realizable Value (NRV) only',
@@ -439,31 +541,31 @@ export const practiceMCQSets = [
           'Higher of Cost and Net Realizable Value'
         ],
         correctIndex: 2,
-        explanation: 'AS 2 strictly requires that inventories should be valued at the lower of historical cost and net realizable value (NRV), in accordance with the prudence (conservatism) concept.'
+        explanation: 'AS 2 (and Ind AS 2) requires that inventories be measured at the lower of cost and net realizable value (NRV), following the accounting principle of prudence (conservatism).'
       },
       {
         id: 3,
-        question: 'When preparing a Bank Reconciliation Statement starting with Cash Book Overdraft balance, an unpresented cheque should be:',
+        question: 'When preparing a Bank Reconciliation Statement starting from an Overdraft balance as per the Cash Book, an unpresented cheque issued to a creditor should be:',
         options: [
-          'Added to overdraft balance',
-          'Deducted from overdraft balance',
-          'Ignored completely',
-          'Multiplied by 2'
+          'Added to the overdraft balance',
+          'Deducted from the overdraft balance',
+          'Ignored in reconciliation',
+          'Doubled in the cash book'
         ],
         correctIndex: 1,
-        explanation: 'An unpresented cheque increases the passbook balance (or reduces the passbook overdraft). Since we are reconciling cash book to passbook, we deduct the unpresented cheque from the cash book overdraft.'
+        explanation: 'An unpresented cheque has not yet been debited by the bank, meaning the passbook overdraft is lower than the cash book overdraft. Reconciling from cash book to passbook requires deducting the unpresented cheque amount.'
       },
       {
         id: 4,
-        question: 'In the absence of a partnership deed, the rate of interest allowed on advances/loans given by a partner to the firm is:',
+        question: 'In the absence of any partnership agreement, what rate of interest is allowed on loans/advances advanced by a partner to the partnership firm?',
         options: [
-          'No interest is allowed',
+          'No interest is permitted',
           '6% per annum',
           '10% per annum',
           '12% per annum'
         ],
         correctIndex: 1,
-        explanation: 'Section 13(d) of the Indian Partnership Act, 1932 stipulates that subject to contract between the partners, a partner is entitled to interest at the rate of 6% per annum on any payment or advance beyond capital.'
+        explanation: 'Under Section 13(d) of the Indian Partnership Act, 1932, in the absence of a contract to the contrary, a partner is entitled to interest at the rate of 6% per annum on any advance made beyond agreed capital.'
       }
     ]
   },
@@ -472,43 +574,43 @@ export const practiceMCQSets = [
     subject: 'CA Intermediate GST & Taxation',
     category: 'ca',
     level: 'Intermediate',
-    title: 'Input Tax Credit (Sec 16 & 17) and Value of Supply (Sec 15)',
+    title: 'Input Tax Credit (Section 16 & 17) and Value of Supply (Section 15)',
     questions: [
       {
         id: 1,
-        question: 'Under Section 17(5) of the CGST Act, 2017, Input Tax Credit (ITC) is blocked on motor vehicles for transportation of persons having approved seating capacity of:',
+        question: 'Under Section 17(5)(a) of the CGST Act, 2017, Input Tax Credit (ITC) is blocked on motor vehicles for transportation of persons having approved seating capacity of:',
         options: [
-          'Up to 13 persons (including driver), subject to exceptions',
-          'Up to 20 persons',
-          'More than 13 persons',
-          'All motor vehicles without any exception'
+          'Not more than 13 persons (including the driver), subject to specified business exceptions',
+          'Not more than 20 persons',
+          'More than 13 persons in all circumstances',
+          'All passenger motor vehicles without exception'
         ],
         correctIndex: 0,
-        explanation: 'Sec 17(5)(a) blocks ITC on motor vehicles for transportation of persons having approved seating capacity of not more than 13 persons (including driver), unless used for making taxable supply of further supply of vehicles, passenger transportation, or driving training.'
+        explanation: 'Section 17(5)(a) of the CGST Act blocks ITC on motor vehicles for transportation of persons having approved seating capacity of ≤ 13 persons (including driver), unless used for taxable supplies of further supply of vehicles, passenger transportation, or driving training.'
       },
       {
         id: 2,
-        question: 'What is the maximum time limit to claim Input Tax Credit for a financial year under Section 16(4) of the CGST Act?',
+        question: 'What is the statutory deadline to claim Input Tax Credit for a financial year under Section 16(4) of the CGST Act, 2017?',
         options: [
           '31st March of the relevant financial year',
-          '30th November following the end of the financial year, or furnishing of annual return, whichever is earlier',
+          '30th November following the end of the financial year, or actual date of furnishing the annual return, whichever is earlier',
           '31st December following the end of the financial year',
-          '3 years from the date of invoice'
+          '3 years from the date of invoice issuance'
         ],
         correctIndex: 1,
-        explanation: 'As per the amended Section 16(4), the deadline is 30th November following the end of the financial year to which the invoice pertains, or the actual date of filing the annual return, whichever is earlier.'
+        explanation: 'As amended, Section 16(4) of the CGST Act stipulates that ITC for any invoice/debit note must be availed up to 30th November following the end of the financial year or the date of filing the annual return under Section 44, whichever is earlier.'
       },
       {
         id: 3,
-        question: 'Under Section 15 of the CGST Act, which of the following is NOT included in the Value of Supply?',
+        question: 'Under Section 15 of the CGST Act, 2017, which of the following is excluded from the Value of Supply?',
         options: [
-          'Any taxes, duties, cesses levied under other Acts (except CGST, SGST, IGST)',
-          'Incidental expenses charged by supplier (packaging, commission)',
-          'Subsidies directly linked to price (excluding government subsidies)',
-          'Post-supply discount agreed before/at supply and linked to relevant invoices'
+          'Taxes and duties levied under other Acts (excluding CGST, SGST, UTGST, and IGST)',
+          'Incidental expenses charged by the supplier (packing, commission)',
+          'Subsidies directly linked to the price (other than Government subsidies)',
+          'Post-supply discount agreed upon at/before supply and specifically linked to relevant invoices'
         ],
         correctIndex: 3,
-        explanation: 'Section 15(3)(b) specifically excludes post-supply discounts from the value of supply if established in terms of an agreement entered into before or at the time of supply and specifically linked to relevant invoices.'
+        explanation: 'Section 15(3)(b) excludes post-supply discounts from the transaction value if established in terms of an agreement entered into before or at the time of supply and specifically linked to relevant invoices.'
       }
     ]
   },
@@ -521,7 +623,7 @@ export const practiceMCQSets = [
     questions: [
       {
         id: 1,
-        question: 'If Total Sales = ₹10,00,000, Variable Cost = ₹6,00,000, and Fixed Cost = ₹2,00,000, the Margin of Safety (MOS) is:',
+        question: 'If Total Sales = ₹10,00,000, Variable Cost = ₹6,00,000, and Fixed Cost = ₹2,00,000, the Margin of Safety (MOS) in value is:',
         options: [
           '₹4,00,000',
           '₹5,00,000',
@@ -529,11 +631,11 @@ export const practiceMCQSets = [
           '₹2,00,000'
         ],
         correctIndex: 1,
-        explanation: 'Contribution = Sales - VC = 10,00,000 - 6,00,000 = 4,00,000. P/V Ratio = 4,00,000 / 10,00,000 = 40%. Break-Even Sales = Fixed Cost / PV Ratio = 2,00,000 / 0.40 = ₹5,00,000. MOS = Total Sales - Break-Even Sales = 10,00,000 - 5,00,000 = ₹5,00,000.'
+        explanation: 'Contribution = Sales - VC = ₹10,00,000 - ₹6,00,000 = ₹4,00,000. P/V Ratio = (₹4,00,000 / ₹10,00,000) = 40%. Break-Even Sales = Fixed Cost / PV Ratio = ₹2,00,000 / 0.40 = ₹5,00,000. Margin of Safety = Total Sales - Break-Even Sales = ₹10,00,000 - ₹5,00,000 = ₹5,00,000.'
       },
       {
         id: 2,
-        question: 'Material Price Variance (MPV) is computed as:',
+        question: 'In Standard Costing, Material Price Variance (MPV) is calculated as:',
         options: [
           'Standard Price × (Standard Quantity - Actual Quantity)',
           'Actual Quantity × (Standard Price - Actual Price)',
@@ -541,19 +643,19 @@ export const practiceMCQSets = [
           'Standard Quantity × (Standard Price - Actual Price)'
         ],
         correctIndex: 1,
-        explanation: 'Material Price Variance is calculated on the actual quantity consumed/purchased: MPV = Actual Quantity × (Standard Price - Actual Price).'
+        explanation: 'Material Price Variance measures the difference between standard price and actual price multiplied by the actual quantity purchased/consumed: MPV = Actual Quantity × (Standard Price - Actual Price).'
       },
       {
         id: 3,
-        question: 'Under Cost Accounting Standard 4 (CAS-4), the Cost of Production for captive consumption includes:',
+        question: 'Under Cost Accounting Standard 4 (CAS-4) issued by ICMAI, the Cost of Production for captive consumption comprises:',
         options: [
-          'Direct Material + Direct Wages + Factory Overheads + Quality Control Cost + Admin Overheads relating to production',
-          'Direct Material + Selling Overheads + Distribution Costs',
+          'Direct Material + Direct Wages + Direct Expenses + Works Overheads + Quality Control Cost + R&D Cost + Administration Overheads relating to production',
+          'Direct Material + Selling Overheads + Distribution Overheads',
           'Selling Price minus Profit Margin only',
-          'Only Prime Cost'
+          'Prime Cost only'
         ],
         correctIndex: 0,
-        explanation: 'CAS-4 specifies that Cost of Production comprises Material Consumed, Direct Wages, Direct Expenses, Works Overheads, Quality Control cost, R&D cost, and Administration Overheads related to production activity.'
+        explanation: 'CAS-4 specifies that Cost of Production includes Material Consumed, Direct Wages, Direct Expenses, Works Overheads, Quality Control costs, R&D costs, and Administration Overheads related to production activity.'
       }
     ]
   }
@@ -564,8 +666,8 @@ export const examSyllabusBlueprints = {
     foundation: {
       title: 'ICAI CA Foundation New Scheme Syllabus Architecture',
       papers: [
-        { paperNumber: 1, name: 'Accounting', marks: 100, type: 'Descriptive', keyFocus: 'Company Accounts, Partnership, NPO, Accounting Standards' },
-        { paperNumber: 2, name: 'Business Laws', marks: 100, type: 'Descriptive', keyFocus: 'Indian Regulatory Framework, Contract Act 1872, Sale of Goods 1930, Partnership Act 1932, LLP 2008, Companies Act 2013' },
+        { paperNumber: 1, name: 'Accounting', marks: 100, type: 'Descriptive', keyFocus: 'Company Accounts, Partnership, NPO, Accounting Standards Overview' },
+        { paperNumber: 2, name: 'Business Laws', marks: 100, type: 'Descriptive', keyFocus: 'Indian Regulatory Framework, Contract Act 1872, Sale of Goods 1930, Partnership Act 1932, LLP Act 2008, Companies Act 2013' },
         { paperNumber: 3, name: 'Quantitative Aptitude', marks: 100, type: 'Objective (MCQ with Negative Marking)', keyFocus: 'Mathematics (40 Marks), Logical Reasoning (20 Marks), Statistics (40 Marks)' },
         { paperNumber: 4, name: 'Business Economics', marks: 100, type: 'Objective (MCQ with Negative Marking)', keyFocus: 'Micro Economics, Macro Economics, National Income, Public Finance, Money Market, International Trade' }
       ]
@@ -573,13 +675,13 @@ export const examSyllabusBlueprints = {
     inter: {
       title: 'ICAI CA Intermediate New Scheme Syllabus Architecture',
       group1: [
-        { paperNumber: 1, name: 'Advanced Accounting', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Consolidated Financial Statements, AS 1 to AS 29, Business Restructuring, Internal Reconstruction' },
-        { paperNumber: 2, name: 'Corporate and Other Laws', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Company Law (Sec 1-148), Foreign Exchange Management Act (FEMA), General Clauses Act, Interpretation of Statutes' },
-        { paperNumber: 3, name: 'Taxation (Direct Tax & GST)', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Income Tax Law (50 Marks), Indirect Taxes / GST (50 Marks)' }
+        { paperNumber: 1, name: 'Advanced Accounting', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Consolidated Financial Statements, Accounting Standards (AS 1 to AS 29), Business Restructuring, Internal Reconstruction' },
+        { paperNumber: 2, name: 'Corporate and Other Laws', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Company Law (Sections 1-148), Foreign Exchange Management Act (FEMA), General Clauses Act, Interpretation of Statutes' },
+        { paperNumber: 3, name: 'Taxation (Direct Tax & GST)', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Income-tax Law (50 Marks), Indirect Taxes / GST (50 Marks)' }
       ],
       group2: [
         { paperNumber: 4, name: 'Cost and Management Accounting', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Standard Costing, Marginal Costing, Budgetary Control, Process & Service Costing' },
-        { paperNumber: 5, name: 'Auditing and Ethics', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Standards on Auditing (SAs), Audit Evidence, Internal Control, Company Audit, Ethics' },
+        { paperNumber: 5, name: 'Auditing and Ethics', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Standards on Auditing (SAs), Audit Evidence, Internal Control, Company Audit, Professional Ethics' },
         { paperNumber: 6, name: 'Financial Management and Strategic Management', marks: 100, type: 'Descriptive + 30% MCQ', keyFocus: 'Financial Management (50 Marks), Strategic Management (50 Marks)' }
       ]
     },
