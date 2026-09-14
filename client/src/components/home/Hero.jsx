@@ -140,7 +140,7 @@ export default function Hero() {
 
           {/* Interactive Button Overlay: "Explore Courses" */}
           <Link
-            to="/courses"
+            to="/courses/all"
             aria-label="Explore Courses"
             className="absolute left-[29.1%] top-[28.5%] w-[41.7%] h-[4.5%] rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#009da0] active:scale-95 active:bg-black/10 transition-transform duration-150 z-20"
             title="Explore Courses"
@@ -183,4 +183,4 @@ export default function Hero() {
     </section>
   );
 }
-
+
