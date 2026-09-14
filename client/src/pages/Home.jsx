@@ -165,7 +165,7 @@ export default function Home() {
       {/* Move Categories (Your Learning Journey) section to the top */}
       {/* Move Categories (Your Learning Journey) section to the top */}
       {/* Rearranged CA/CMA Path Buttons Section */}
-      <div className="relative py-16 xs:py-20 md:py-24 flex justify-center items-center overflow-hidden text-white relative z-10 bg-slate-950 border-y border-neutral-850">
+      <div id="learning-journey" className="relative py-16 xs:py-20 md:py-24 flex justify-center items-center overflow-hidden text-white relative z-10 bg-slate-950 border-y border-neutral-850">
         <Particles
           particleColors={['#20b2aa', '#ffffff']}
           particleCount={100}

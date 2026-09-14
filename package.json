@@ -1,5 +1,8 @@
 {
   "scripts": {
+    "dev": "npm --prefix client run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
     "start": "node server/app.js",
     "build": "cd client && npm install && npm run build",
     "postinstall": "cd server && npm install && cd ../client && npm install && npm run build"
