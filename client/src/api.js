@@ -56,7 +56,7 @@ api.interceptors.response.use(
 // Force HTTPS protocol on production API URL to prevent CORS preflight redirect failures
 let baseUrl = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:5000')
-  : (import.meta.env.VITE_API_URL || 'https://academywale-lms-backend.onrender.com');
+  : (import.meta.env.VITE_API_URL || 'https://academywale-lms-backend-nsd6.onrender.com');
 
 if (baseUrl && !import.meta.env.DEV) {
   if (baseUrl.startsWith('http://')) {

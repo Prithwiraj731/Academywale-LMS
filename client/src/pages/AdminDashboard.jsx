@@ -113,7 +113,7 @@ export default function AdminDashboard() {
   // Fetch faculty info when firstName changes (for update panel)
   useEffect(() => {
     if (facultyInfo.firstName.trim()) {
-      fetch(`/api/faculty-info/${facultyInfo.firstName.trim().toUpperCase()}`)
+      fetchWithCredentials(`${API_URL}/api/faculty-info/${facultyInfo.firstName.trim().toUpperCase()}`)
         .then(res => res.json())
         .then(data => {
           if (data.bio !== undefined) {

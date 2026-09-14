@@ -3,6 +3,7 @@ import {
   FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaClock, FaPaperPlane 
 } from 'react-icons/fa';
 import { AlertTriangle, Calendar, Zap, FileText, MessageSquare, HelpCircle } from 'lucide-react';
+import { API_URL } from '../api';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -29,7 +30,6 @@ export default function Contact() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -22,6 +22,7 @@ router.options('/api/admin/courses/standalone', (req, res) => {
     'https://academywale.com',
     'https://www.academywale.com',
     'https://academywale-lms-backend.onrender.com',
+    'https://academywale-lms-backend-nsd6.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'
@@ -89,6 +90,7 @@ router.post('/api/admin/courses/standalone', requireAdminCookie, (req, res) => {
     'https://academywale.com',
     'https://www.academywale.com',
     'https://academywale-lms-backend.onrender.com',
+    'https://academywale-lms-backend-nsd6.onrender.com',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000'

@@ -1,7 +1,7 @@
 {
   "rewrites": [
-    { "source": "/uploads/:path*", "destination": "https://academywale-lms-backend.onrender.com/uploads/:path*" },
-    { "source": "/api/:path*", "destination": "https://academywale-lms-backend.onrender.com/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://academywale-lms-backend-nsd6.onrender.com/uploads/:path*" },
+    { "source": "/api/:path*", "destination": "https://academywale-lms-backend-nsd6.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
