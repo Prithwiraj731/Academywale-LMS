@@ -243,19 +243,38 @@ const sendWelcomeEmail = async (userEmail, userName) => {
 // Send course enrollment confirmation
 const sendEnrollmentEmail = async (userEmail, userName, courseName) => {
   try {
+    const cleanEmail = String(userEmail || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      console.warn('sendEnrollmentEmail skipped: missing userEmail');
+      return { success: false, error: 'Recipient email is required' };
+    }
+
     const transporter = createTransporter();
     
     const mailOptions = {
       from: emailConfig.from,
-      to: userEmail,
-      subject: `Enrollment Confirmation - ${courseName}`,
+      to: cleanEmail,
+      subject: `Enrollment Confirmation - ${courseName || 'AcademyWale Course'}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Enrollment Confirmation</h2>
-          <p>Dear ${userName},</p>
-          <p>Your enrollment in <strong>${courseName}</strong> has been confirmed!</p>
-          <p>If you have any questions about the course, please contact us at support@academywale.com</p>
-          <p>Happy learning!<br>The AcademyWale Team</p>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 25px; text-align: center; color: #ffffff;">
+            <h2 style="margin: 0; font-size: 22px;">Enrollment Confirmation 🎉</h2>
+            <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">AcademyWale Learning Management System</p>
+          </div>
+          <div style="padding: 25px;">
+            <p style="font-size: 14px; color: #334155;">Dear <strong>${userName || 'Student'}</strong>,</p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6;">Your enrollment in <strong>${courseName || 'your course'}</strong> has been successfully confirmed!</p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6;">You can access your study materials, video lectures, and faculty details directly from your Student Dashboard:</p>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="https://academywale.com/student-dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px;">
+                Open Student Dashboard
+              </a>
+            </div>
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5;">If you have any questions, please contact our support team at <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a> or Call <strong>+91 9693320108</strong>.</p>
+          </div>
+          <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 20px; text-align: center; font-size: 11px; color: #94a3b8;">
+            Happy Learning! &bull; The AcademyWale Team
+          </div>
         </div>
       `
     };
@@ -478,24 +497,29 @@ const sendManualEnrollmentEmail = async (options) => {
 };
 
 // Send purchase invoice email (Professional HTML Receipt)
-const sendPurchaseInvoiceEmail = async (options) => {
+const sendPurchaseInvoiceEmail = async (options = {}) => {
   try {
     const transporter = createTransporter();
     
     // Normalize parameters
-    let userEmail = options.userEmail || options.email;
-    let userName = options.userName || options.name || 'Valued Student';
+    const userEmail = String(options.userEmail || options.email || options.userDetails?.email || '').trim().toLowerCase();
+    const userName = options.userName || options.name || options.userDetails?.fullName || options.userDetails?.name || 'Valued Student';
+    
     let purchases = options.purchases || options.courses || [];
-    let transactionId = options.transactionId || options.transaction_id || 'N/A';
-    let amount = options.amount || 0;
-    let paymentMethod = options.paymentMethod || 'Razorpay Online';
-    let couponCode = options.couponCode || options.coupon || '';
-    let discountPercent = options.discountPercent || 0;
-    let userDetails = options.userDetails || {};
-
     if (!Array.isArray(purchases)) {
-      purchases = [purchases];
+      purchases = purchases ? [purchases] : [];
     }
+    if (purchases.length === 0 && options.courseDetails) {
+      purchases = [options.courseDetails];
+    }
+
+    const transactionId = options.transactionId || options.transaction_id || options.paymentReference || 'N/A';
+    const amount = Number(options.amount !== undefined ? options.amount : 0);
+    const paymentMethod = options.paymentMethod || 'Razorpay Online';
+    const couponCode = options.couponCode || options.coupon || '';
+    const discountPercent = Number(options.discountPercent || options.discount || 0);
+    const userDetails = options.userDetails || {};
+    const userPhone = userDetails.phone || userDetails.phoneNumber || userDetails.mobile || options.userPhone || options.phone || '';
 
     const formattedDate = new Date().toLocaleString('en-IN', {
       timeZone: 'Asia/Kolkata',
@@ -506,39 +530,93 @@ const sendPurchaseInvoiceEmail = async (options) => {
       minute: '2-digit'
     });
 
+    const isUpiPayment = String(paymentMethod).toLowerCase().includes('upi') && !String(paymentMethod).toLowerCase().includes('razorpay');
+
     const itemsTableRowsHtml = purchases.map((item, idx) => {
       const details = item.course_details || item;
       const title = details.title || details.subject || 'Course Package';
       const mode = details.mode || 'Standard';
-      const validity = details.validity || 'Standard';
-      const faculty = details.facultyName || 'AcademyWale Mentor';
+      const validity = details.validity || details.attempt || 'Standard';
+      const faculty = details.facultyName || details.faculty_name || 'AcademyWale Mentor';
       const attempt = details.attempt || '';
       const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
-      const books = details.books || '';
+      const books = details.books || details.selectedOptions?.['Books Option'] || details.selectedOptions?.['Books'] || details.selectedOptions?.['Study Material'] || '';
       const videoLanguage = details.videoLanguage || details.video_language || '';
-      if (books) detailString += ` | Material: <strong>${books}</strong>`;
-      if (videoLanguage) detailString += ` | Language: <strong>${videoLanguage}</strong>`;
-      if (videoRunOn) detailString += ` | Run On: <strong>${videoRunOn}</strong>`;
-      if (doubtSolving) detailString += ` | Doubts: <strong>${doubtSolving}</strong>`;
+      const videoRunOn = details.videoRunOn || details.video_run_on || '';
+      const doubtSolving = details.doubtSolving || details.doubt_solving || '';
+      const supportMail = details.supportMail || details.support_mail || '';
+      const supportCall = details.supportCall || details.support_call || '';
+      const institute = details.institute || details.instituteName || details.institute_name || '';
+
+      const detailLines = [];
+      if (Array.isArray(details.customOptions) && details.customOptions.length > 0) {
+        details.customOptions.forEach(opt => {
+          const lbl = String(opt.label || opt.name || '').trim();
+          const val = String(opt.value || '').trim();
+          if (lbl && val) {
+            detailLines.push(`${lbl}: <strong>${val}</strong>`);
+          } else if (val) {
+            detailLines.push(val);
+          }
+        });
+      } else {
+        if (mode) detailLines.push(`Mode: <strong>${mode}</strong>`);
+        if (validity) detailLines.push(`Validity / Attempt: <strong>${validity}</strong>`);
+        if (faculty && faculty !== 'N/A') detailLines.push(`Faculty: <strong>${faculty}</strong>`);
+        if (attempt && attempt !== validity) detailLines.push(`Attempt: <strong>${attempt}</strong>`);
+        if (institute && institute !== 'N/A') detailLines.push(`Institute: <strong>${institute}</strong>`);
+        if (noOfLecture) detailLines.push(`Lectures: <strong>${noOfLecture}</strong>`);
+        if (books) detailLines.push(`Material: <strong>${books}</strong>`);
+        if (videoLanguage) detailLines.push(`Language: <strong>${videoLanguage}</strong>`);
+        if (videoRunOn) detailLines.push(`Run On: <strong>${videoRunOn}</strong>`);
+        if (doubtSolving) detailLines.push(`Doubts: <strong>${doubtSolving}</strong>`);
+      }
       if (supportMail || supportCall) {
         const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
-        detailString += ` | Support: <strong>${supportInfo}</strong>`;
+        detailLines.push(`Support: <strong>${supportInfo}</strong>`);
       }
+
+      const detailHtml = detailLines.map(line => `<div style="margin-top: 3px; font-size: 12px; color: #475569; font-weight: 500;">${line}</div>`).join('');
+      const itemPrice = Number(
+        details.amountPaid ||
+        item.amount ||
+        details.amount ||
+        details.sellingPrice ||
+        details.selling_price ||
+        details.costPrice ||
+        (purchases.length === 1 ? amount : 0)
+      );
 
       return `
         <tr style="border-bottom: 1px solid #e2e8f0;">
           <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; line-height: 1.5;">
             <strong style="color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</strong><br/>
-            <span style="font-size: 12px; color: #64748b; font-weight: 500;">
-              ${detailString}
-            </span>
+            ${detailHtml}
           </td>
           <td style="padding: 14px 12px; font-size: 14px; color: #1e293b; text-align: right; font-weight: bold; vertical-align: top;">
-            ₹${Number(actualCoursePrice).toLocaleString('en-IN')}
+            INR ${itemPrice > 0 ? itemPrice.toLocaleString('en-IN') : (amount > 0 && purchases.length === 1 ? amount.toLocaleString('en-IN') : 'Enrolled')}
           </td>
         </tr>
       `;
     }).join('');
+
+    const statusBadge = isUpiPayment
+      ? `<span style="color: #d97706; font-weight: 800;">SUBMITTED (VERIFICATION PENDING)</span>`
+      : `<span style="color: #16a34a; font-weight: 800;">VERIFIED & PAID</span>`;
+
+    const statusMessage = isUpiPayment
+      ? `<p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+          Your UPI payment reference has been recorded and is currently being verified by our admin team.
+        </p>
+        <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+          Once verified, your course will be activated and accessible on your Student Dashboard.
+        </p>`
+      : `<p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+          Your payment has been successfully confirmed.
+        </p>
+        <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
+          Your course details are provided below. You can access your courses anytime from your Student Dashboard.
+        </p>`;
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 35px 15px; color: #334155;">
@@ -555,24 +633,20 @@ const sendPurchaseInvoiceEmail = async (options) => {
           <!-- Status Bar -->
           <div style="background-color: #f0fdfa; border-bottom: 1px solid #ccfbf1; padding: 14px 25px; font-size: 13px; color: #0f766e;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span><strong>STATUS:</strong> <span style="color: #16a34a; font-weight: 800;">VERIFIED & PAID</span></span>
+              <span><strong>STATUS:</strong> ${statusBadge}</span>
               <span><strong>Transaction ID:</strong> ${transactionId}</span>
             </div>
           </div>
 
           <!-- Body Content -->
           <div style="padding: 28px 25px;">
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-top: 0; margin-bottom: 10px;">
               Dear <strong>${userName}</strong>,
             </p>
             <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
-              Thank you for purchasing from <strong>AcademyWale</strong>! 🎉
+              Thank you for choosing <strong>AcademyWale</strong>! 🎉
             </p>
-            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
-              Your payment has been successfully confirmed.
-            </p>
-            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 10px;">
-              Your course will be dispatched to your registered email address within 24–48 hours. You can access your course details from your Student Dashboard.
-            </p>
+            ${statusMessage}
             <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 22px;">
               If you have any questions or need assistance, please feel free to contact our support team.
             </p>
@@ -582,7 +656,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
               <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;"><strong>Order ID:</strong></td>
-                  <td style="padding: 4px 0; color: #0d9488; text-align: right; font-weight: 700; font-family: monospace;">${transactionId} (₹${Number(amount).toLocaleString('en-IN')})</td>
+                  <td style="padding: 4px 0; color: #0d9488; text-align: right; font-weight: 700; font-family: monospace;">${transactionId} (INR ${Number(amount).toLocaleString('en-IN')})</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;"><strong>Receipt Date:</strong></td>
@@ -594,12 +668,12 @@ const sendPurchaseInvoiceEmail = async (options) => {
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; color: #64748b;"><strong>Registered Email:</strong></td>
-                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userEmail}</td>
+                  <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userEmail || 'N/A'}</td>
                 </tr>
-                ${(userDetails.phone || options.userPhone || options.phone) ? `
+                ${userPhone ? `
                   <tr>
                     <td style="padding: 4px 0; color: #64748b;"><strong>Mobile Number:</strong></td>
-                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userDetails.phone || options.userPhone || options.phone}</td>
+                    <td style="padding: 4px 0; color: #1e293b; text-align: right; font-weight: 600;">${userPhone}</td>
                   </tr>
                 ` : ''}
               </table>
@@ -607,7 +681,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
 
             <!-- Items Purchased Table -->
             <h3 style="font-size: 15px; font-weight: 800; color: #0f766e; margin-bottom: 10px; margin-top: 0;">
-              Enrolled Courses
+              Enrolled Courses (${purchases.length})
             </h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 22px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
               <thead>
@@ -633,7 +707,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
                 <tr>
                   <td style="padding: 6px 0; font-size: 16px; font-weight: 800; color: #0f766e;">Total Amount Paid:</td>
                   <td style="padding: 6px 0; font-size: 20px; font-weight: 900; color: #0d9488; text-align: right;">
-                    ₹${Number(amount).toLocaleString('en-IN')}
+                    INR ${Number(amount).toLocaleString('en-IN')}
                   </td>
                 </tr>
               </table>
@@ -650,7 +724,7 @@ const sendPurchaseInvoiceEmail = async (options) => {
           <!-- Footer -->
           <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 25px; text-align: center; font-size: 12px; color: #64748b;">
             <p style="margin: 0 0 4px 0; font-weight: bold; color: #334155;">AcademyWale Learning Management System</p>
-            <p style="margin: 0;">Need assistance? Contact <a href="mailto:support@academywale.com" style="color: #0d9488;">support@academywale.com</a> or Call <strong>+91 9693320108</strong></p>
+            <p style="margin: 0;">Need assistance? Contact <a href="mailto:support@academywale.com" style="color: #0d9488; text-decoration: none; font-weight: bold;">support@academywale.com</a> or Call <strong>+91 9693320108</strong></p>
           </div>
 
         </div>
@@ -659,10 +733,15 @@ const sendPurchaseInvoiceEmail = async (options) => {
 
     const recipientList = Array.from(new Set([userEmail, ...getAdminRecipients()])).filter(Boolean);
 
+    const firstCourseTitle = purchases[0]?.course_details?.title || purchases[0]?.course_details?.subject || purchases[0]?.title || purchases[0]?.subject || 'Course';
+    const emailSubject = purchases.length > 1
+      ? `Tax Invoice & Receipt: ${purchases.length} Courses Purchased - AcademyWale (Txn: ${transactionId})`
+      : `Tax Invoice & Receipt: ${firstCourseTitle} - AcademyWale (Txn: ${transactionId})`;
+
     const mailOptions = {
       from: emailConfig.from,
-      to: recipientList,
-      subject: `Receipt: Course Purchase Confirmed - AcademyWale (Txn: ${transactionId})`,
+      to: recipientList.length > 0 ? recipientList : getAdminRecipients(),
+      subject: emailSubject,
       html: htmlContent
     };
 
@@ -746,52 +825,72 @@ const sendPasswordResetOTPEmail = async (userEmail, userName, otp) => {
 };
 
 // Send beautiful HTML notification email to admin
-const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, cartItems, transactionId, amount }) => {
+const sendAdminNotificationEmail = async (options = {}) => {
   try {
     const transporter = createTransporter();
     
+    const type = options.type || 'purchase';
     const isPrePayment = type === 'interest';
+    const paymentMethod = options.paymentMethod || (type === 'upi' ? 'UPI' : 'Online Payment');
+    const transactionId = options.transactionId || 'N/A';
+    const amount = Number(options.amount || 0);
+
+    const userDetails = options.userDetails || {
+      fullName: options.studentName || options.fullName || options.name || 'Student',
+      email: options.studentEmail || options.email || 'Not provided',
+      phone: options.studentPhone || options.phone || options.mobile || 'Not provided',
+      address: options.address || null
+    };
+
+    const studentFullName = userDetails.fullName || userDetails.name || options.studentName || 'Student';
+    const studentEmail = userDetails.email || options.studentEmail || 'Not provided';
+    const studentPhone = userDetails.phone || options.studentPhone || 'Not provided';
+
+    const isPendingUpi = String(paymentMethod).toLowerCase().includes('upi') && !String(paymentMethod).toLowerCase().includes('razorpay');
+
     const subject = isPrePayment 
       ? `[Checkout Initiated] User Profile & Address Verification - AcademyWale`
-      : `[Payment Submitted] New UPI Purchase Pending Verification - AcademyWale`;
+      : `[Payment ${isPendingUpi ? 'Submitted (Verification Needed)' : 'Confirmed'}] ${paymentMethod} (${transactionId}) - AcademyWale`;
       
     // Format Address
     const address = userDetails?.address;
-    const addressHtml = address 
+    const hasAddress = address && (address.street || address.city || address.state || address.pinCode);
+    const addressHtml = hasAddress 
       ? `
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
           <tr>
             <td style="padding: 6px 0; color: #64748b; width: 35%; font-size: 14px;"><strong>Street Address:</strong></td>
-            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.street}</td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.street || 'N/A'}</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>City:</strong></td>
-            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.city}</td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.city || 'N/A'}</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>State:</strong></td>
-            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.state}</td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.state || 'N/A'}</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Pin Code:</strong></td>
-            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.pinCode}</td>
+            <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${address.pinCode || 'N/A'}</td>
           </tr>
         </table>
       `
-      : `<p style="color: #ef4444; font-size: 14px;">No shipping address selected.</p>`;
+      : `<p style="color: #64748b; font-size: 13px; font-style: italic; margin-bottom: 20px;">Digital Course Delivery (No physical shipping address required).</p>`;
 
     // Format Course Items Summary
+    const rawItems = options.cartItems || options.courses || (options.courseDetails ? [options.courseDetails] : []);
     let itemsHtml = '';
-    if (cartItems && cartItems.length > 0) {
-      itemsHtml = cartItems.map((item, idx) => {
+    if (rawItems && rawItems.length > 0) {
+      itemsHtml = rawItems.map((item, idx) => {
         const details = item.course_details || item;
-        const title = details.title || details.subject || 'Course Package';
+        const title = details.title || details.courseName || details.subject || options.courseTitle || 'Course Package';
         const mode = details.mode || 'Standard';
         const validity = details.validity || 'Standard';
-        const faculty = details.facultyName || 'N/A';
+        const faculty = details.facultyName || details.faculty_name || 'N/A';
         const attempt = details.attempt || '';
         const noOfLecture = details.noOfLecture || details.no_of_lecture || '';
-        const books = details.books || '';
+        const books = details.books || details.selectedOptions?.['Books Option'] || details.selectedOptions?.['Books'] || '';
         const videoLanguage = details.videoLanguage || details.video_language || '';
         const videoRunOn = details.videoRunOn || details.video_run_on || '';
         const doubtSolving = details.doubtSolving || details.doubt_solving || '';
@@ -813,6 +912,8 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
           detailsText += ` | <strong>Support:</strong> ${supportInfo}`;
         }
 
+        const itemPrice = Number(item.price || item.amount || details.amountPaid || details.sellingPrice || (rawItems.length === 1 ? amount : 0));
+
         return `
           <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
             <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${idx + 1}. ${title}</h4>
@@ -820,48 +921,17 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
               ${detailsText}
             </p>
             <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
-              Price: ₹${item.price || item.amount || amount}
+              Price: INR ${itemPrice > 0 ? itemPrice.toLocaleString('en-IN') : amount.toLocaleString('en-IN')}
             </p>
           </div>
         `;
       }).join('');
     } else {
-      const courseName = courseDetails?.courseName || courseDetails?.title || 'LMS Course';
-      const mode = courseDetails?.mode || 'Standard';
-      const validity = courseDetails?.validity || 'Standard';
-      const faculty = courseDetails?.facultyName || 'N/A';
-      const attempt = courseDetails?.attempt || '';
-      const noOfLecture = courseDetails?.noOfLecture || courseDetails?.no_of_lecture || '';
-      const books = courseDetails?.books || '';
-      const videoLanguage = courseDetails?.videoLanguage || courseDetails?.video_language || '';
-      const videoRunOn = courseDetails?.videoRunOn || courseDetails?.video_run_on || '';
-      const doubtSolving = courseDetails?.doubtSolving || courseDetails?.doubt_solving || '';
-      const supportMail = courseDetails?.supportMail || courseDetails?.support_mail || '';
-      const supportCall = courseDetails?.supportCall || courseDetails?.support_call || '';
-      const institute = courseDetails?.institute || courseDetails?.instituteName || courseDetails?.institute_name || '';
-
-      let detailsText = `<strong>Mode:</strong> ${mode} | <strong>Validity:</strong> ${validity}`;
-      if (faculty && faculty !== 'N/A') detailsText += ` | <strong>Faculty:</strong> ${faculty}`;
-      if (attempt) detailsText += ` | <strong>Attempt/Term:</strong> ${attempt}`;
-      if (institute) detailsText += ` | <strong>Institute:</strong> ${institute}`;
-      if (noOfLecture) detailsText += ` | <strong>Lectures:</strong> ${noOfLecture}`;
-      if (books) detailsText += ` | <strong>Material:</strong> ${books}`;
-      if (videoLanguage) detailsText += ` | <strong>Language:</strong> ${videoLanguage}`;
-      if (videoRunOn) detailsText += ` | <strong>Run On:</strong> ${videoRunOn}`;
-      if (doubtSolving) detailsText += ` | <strong>Doubt Solving:</strong> ${doubtSolving}`;
-      if (supportMail || supportCall) {
-        const supportInfo = [supportMail, supportCall].filter(Boolean).join(' / ');
-        detailsText += ` | <strong>Support:</strong> ${supportInfo}`;
-      }
-
       itemsHtml = `
         <div style="padding: 12px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${courseName}</h4>
-          <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.5;">
-            ${detailsText}
-          </p>
+          <h4 style="margin: 0 0 5px 0; color: #0f766e; font-size: 15px;">${options.courseTitle || 'Course Package'}</h4>
           <p style="margin: 5px 0 0 0; font-size: 13px; color: #1e293b; font-weight: bold;">
-            Price: ₹${amount}
+            Price: INR ${amount.toLocaleString('en-IN')}
           </p>
         </div>
       `;
@@ -878,24 +948,26 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
         </div>
       `
       : `
-        <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
-          <h4 style="margin: 0 0 5px 0; color: #14532d; font-size: 14px;">Payment Verification Required</h4>
+        <div style="background-color: ${isPendingUpi ? '#fefce8' : '#f0fdf4'}; border-left: 4px solid ${isPendingUpi ? '#eab308' : '#22c55e'}; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 5px 0; color: ${isPendingUpi ? '#854d0e' : '#14532d'}; font-size: 14px;">
+            ${isPendingUpi ? 'Payment Verification Required' : 'Payment Completed & Confirmed'}
+          </h4>
           <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
             <tr>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px; width: 35%;"><strong>Transaction ID/UTR:</strong></td>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px; font-weight: bold;">${transactionId}</td>
+              <td style="padding: 4px 0; color: #64748b; font-size: 13px; width: 35%;"><strong>Transaction ID:</strong></td>
+              <td style="padding: 4px 0; color: #1e293b; font-size: 13px; font-weight: bold; font-family: monospace;">${transactionId}</td>
             </tr>
             <tr>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Amount Paid:</strong></td>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px; font-weight: bold;">₹${amount}</td>
+              <td style="padding: 4px 0; color: #64748b; font-size: 13px;"><strong>Amount:</strong></td>
+              <td style="padding: 4px 0; color: #0d9488; font-size: 14px; font-weight: bold;">INR ${amount.toLocaleString('en-IN')}</td>
             </tr>
             <tr>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Payment Mode:</strong></td>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px;">UPI (Scan/Mobile)</td>
+              <td style="padding: 4px 0; color: #64748b; font-size: 13px;"><strong>Payment Method:</strong></td>
+              <td style="padding: 4px 0; color: #1e293b; font-size: 13px;">${paymentMethod}</td>
             </tr>
             <tr>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px;"><strong>Submitted At:</strong></td>
-              <td style="padding: 4px 0; color: #14532d; font-size: 13px;">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+              <td style="padding: 4px 0; color: #64748b; font-size: 13px;"><strong>Date & Time:</strong></td>
+              <td style="padding: 4px 0; color: #1e293b; font-size: 13px;">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
             </tr>
           </table>
         </div>
@@ -903,13 +975,13 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
 
     const htmlContent = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; padding: 30px 15px; color: #334155;">
-        <div style="max-width: 600px; margin: 0 auto; bg-color: #ffffff; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border-top: 6px solid #0d9488;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border-top: 6px solid #0d9488;">
           
           <!-- Header Banner -->
           <div style="padding: 30px 20px; text-align: center; background-color: #f0fdfa;">
             <h2 style="margin: 0; color: #0d9488; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">AcademyWale Admin Notification</h2>
             <p style="margin: 8px 0 0 0; color: #0f766e; font-size: 14px; font-weight: 600;">
-              ${isPrePayment ? '🛒 CHECKOUT INTEREST SUBMITTED' : '💰 UPI PAYMENT TO VERIFY'}
+              ${isPrePayment ? '🛒 CHECKOUT INTEREST SUBMITTED' : (isPendingUpi ? '💰 UPI PAYMENT TO VERIFY' : '✅ ONLINE PAYMENT COMPLETED')}
             </p>
           </div>
           
@@ -922,17 +994,17 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
               <tr>
                 <td style="padding: 6px 0; color: #64748b; width: 35%; font-size: 14px;"><strong>Name:</strong></td>
-                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${userDetails?.fullName || 'Not provided'}</td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${studentFullName}</td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Email:</strong></td>
                 <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">
-                  <a href="mailto:${userDetails?.email}" style="color: #0d9488; text-decoration: none;">${userDetails?.email || 'Not provided'}</a>
+                  <a href="mailto:${studentEmail}" style="color: #0d9488; text-decoration: none;">${studentEmail}</a>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; color: #64748b; font-size: 14px;"><strong>Phone:</strong></td>
-                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${userDetails?.phone || 'Not provided'}</td>
+                <td style="padding: 6px 0; color: #1e293b; font-size: 14px;">${studentPhone}</td>
               </tr>
             </table>
 
@@ -950,20 +1022,18 @@ const sendAdminNotificationEmail = async ({ type, userDetails, courseDetails, ca
               ${itemsHtml}
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; font-weight: bold; font-size: 15px; color: #0f766e;">
                 <span>Total Amount:</span>
-                <span>₹${amount}</span>
+                <span>INR ${amount.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
             <!-- Section 4: Payment Details & CTA -->
             ${paymentHtml}
             
-            ${!isPrePayment ? `
-              <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
-                <a href="https://academywale.com/admin/dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);">
-                  Open Admin Dashboard to Verify
-                </a>
-              </div>
-            ` : ''}
+            <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
+              <a href="https://academywale.com/admin/dashboard" style="display: inline-block; background-color: #0d9488; color: #ffffff; font-weight: bold; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.2);">
+                Open Admin Dashboard
+              </a>
+            </div>
 
           </div>
           

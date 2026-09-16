@@ -20,6 +20,12 @@ router.get('/check/:userId/:facultyName/:courseIndex', purchaseController.checkC
 // Get purchase statistics (admin only)
 router.get('/stats', purchaseController.getPurchaseStats);
 
+// Get all purchases (admin only)
+router.get('/all', purchaseController.getAllPurchases);
+
+// Verify/Update payment status (admin only)
+router.put('/verify/:purchaseId', purchaseController.verifyPurchase);
+
 // Create Razorpay Order
 router.post('/razorpay-order', purchaseController.createRazorpayOrder);
 
